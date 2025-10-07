@@ -1,0 +1,60 @@
+@startuml
+' Title
+title Shipping Port Management Class Diagram
+
+' Entities
+class ShippingAgent
+class ShippingAgentRepresentative
+class VesselVisitNotification
+class Vessel
+class VesselType
+class Dock
+class CargoManifest
+class CargoManifestType
+class Cargo
+class Container
+class StorageArea
+class StorageAreaType
+class MobileResources
+class MobileResourcesType
+class Staff
+class Qualification
+
+' Relationships and multiplicities
+
+' --- Shipping Agent section ---
+ShippingAgent "1" <-- "1..*" ShippingAgentRepresentative : represents
+ShippingAgentRepresentative "1" --> "0..*" VesselVisitNotification : submits
+
+' --- Vessel section ---
+VesselVisitNotification "1" --> "1" Vessel : specifies
+Vessel "0..*" --> "1" VesselType : is of
+VesselVisitNotification "1" --> "1" Dock : specifies
+VesselVisitNotification "0..*" <-- "1" Staff : approves/rejects
+
+
+' --- Cargo manifest section ---
+VesselVisitNotification "1" --> "0..1..2" CargoManifest : contains
+CargoManifest "0..*" --> "1" CargoManifestType : is of
+CargoManifest "1" --> "*" Cargo : identifies
+CargoManifest "1" --> "*" Container : identifies
+
+
+' --- Cargo and Container ---
+Cargo "0..*" <-- "1" Container : stores
+Container "0..*" <-- "0..*" StorageArea : stores
+Container "0..1" <-- "0..*" MobileResources : move
+
+' --- Storage area section ---
+StorageArea "0..*" --> "1" StorageAreaType : is of
+
+' --- Mobile resources section ---
+MobileResources "0..*" --> "1" MobileResourcesType : is of
+MobileResources "0..*" <-- "1" Staff : manages
+
+' --- Staff section ---
+Staff "0..*" --> "1..*" Qualification
+Staff "1..*" --> "1..*" Staff : Manages
+
+
+@enduml
