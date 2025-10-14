@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using TodoApi.Models;
+using WebApp.Models;
 using WebApp.Models.Context;
+using WebApp.Models.Application.Services;
+using WebApp.Models.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,8 @@ builder.Services.AddDbContext<TodoContext>(opt =>
 builder.Services.AddDbContext<PortManagementContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("PortDb")));
 
+builder.Services.AddScoped<IQualificationRepository, QualificationRepository>();
+builder.Services.AddScoped<IQualificationService, QualificationService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
