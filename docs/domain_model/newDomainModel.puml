@@ -1,0 +1,195 @@
+@startuml
+title Port Logistics Management System - Aggregates and Value Objects Model
+
+'=======================================================
+' SHIPPING CONTEXT
+'=======================================================
+package "Shipping" {
+    class ShippingAgent {
+        +id : UUID
+        +name : String
+        +contactInfo : String
+    }
+
+    class ShippingAgentRepresentative {
+        +id : UUID
+        +name : String
+        +email : String
+        +phone : String
+    }
+
+    class Vessel {
+        +imoNumber : String
+        +name : String
+        +length : double
+        +capacityTEU : int
+    }
+
+    class VesselType <<ValueObject>> {
+        +name : String
+        +description : String
+        +maxTEU : int
+    }
+
+    class VesselVisitNotification {
+        +id : UUID
+        +ETA : DateTime
+        +ETD : DateTime
+        +remarks : String
+        +status : VisitStatus
+    }
+
+    enum VisitStatus {
+        PENDING
+        APPROVED
+        REJECTED
+        SCHEDULED
+        IN_PROGRESS
+        COMPLETED
+    }
+}
+
+'=======================================================
+' CARGO CONTEXT
+'=======================================================
+package "Cargo" {
+    class CargoManifest {
+        +id : UUID
+        +creationDate : DateTime
+        +manifestType : ManifestType
+    }
+
+    enum ManifestType {
+        LOADING
+        UNLOADING
+    }
+
+    class Container {
+        +isoCode : String
+        +bay : int
+        +row : int
+        +tier : int
+    }
+
+    class Item {
+        +id : UUID
+        +description : String
+        +cargoType : String
+        +weight : double
+    }
+}
+
+'=======================================================
+' FACILITIES CONTEXT
+'=======================================================
+package "Facilities" {
+    class StorageArea {
+        +id : UUID
+        +name : String
+        +capacity : int
+        +status : String
+    }
+
+    class StorageAreaType <<ValueObject>> {
+        +name : String
+        +description : String
+    }
+
+    class Dock {
+        +id : UUID
+        +name : String
+        +maxCranes : int
+        +status : DockStatus
+    }
+
+    enum DockStatus {
+        AVAILABLE
+        UNAVAILABLE
+        MAINTENANCE
+    }
+}
+
+'=======================================================
+' RESOURCES CONTEXT
+'=======================================================
+package "Resources" {
+    class Resource {
+        +id : UUID
+        +name : String
+        +availabilityStatus : AvailabilityStatus
+        +operationalWindow : Schedule
+    }
+
+    class ResourceType <<ValueObject>> {
+        +name : String
+        +capacity : double
+        +description : String
+    }
+
+    enum AvailabilityStatus {
+        AVAILABLE
+        UNAVAILABLE
+        MAINTENANCE
+    }
+
+    class Staff {
+        +id : UUID
+        +name : String
+        +status : StaffStatus
+        +operationalWindow : Schedule
+    }
+
+    class Qualification <<ValueObject>> {
+        +name : String
+        +description : String
+    }
+
+    enum StaffStatus {
+        AVAILABLE
+        ON_LEAVE
+        TRAINING
+    }
+
+    class Schedule <<ValueObject>> {
+        +daysOfWeek : String
+        +startTime : Time
+        +endTime : Time
+    }
+}
+
+'=======================================================
+' RELATIONSHIPS BETWEEN AGGREGATES
+'=======================================================
+
+' --- Shipping Agents and Representatives ---
+ShippingAgent "1" <-- "1..*" ShippingAgentRepresentative : employs >
+ShippingAgentRepresentative "1" --> "0..*" VesselVisitNotification : submits >
+
+' --- Vessels ---
+VesselVisitNotification "1" --> "1" Vessel : specifies >
+Vessel "0..*" --> "1" VesselType : is of type >
+VesselVisitNotification "1" --> "1" VisitStatus : status >
+
+' --- Vessel Visit and Cargo ---
+VesselVisitNotification "1" --> "0..2" CargoManifest : contains >
+CargoManifest "1" --> "*" Container : includes >
+CargoManifest "1" --> "0..2" ManifestType : type >
+Container "1" --> "*" Item : contains >
+
+' --- Facilities ---
+VesselVisitNotification "1" --> "1" Dock : assigned to >
+Dock "*" --> "1" StorageArea : located in >
+Dock "1" --> "1" DockStatus : status >
+StorageArea "1" --> "1" StorageAreaType : is of type >
+
+' --- Resources and Staff ---
+Resource "1" --> "1" ResourceType : is of type >
+Resource "0..*" <-- "1" Staff : operates >
+Staff "1" --> "*" Qualification : has >
+Staff "1" --> "0..*" Staff : manages >
+
+' --- Container logistics ---
+Container "0..*" <-- "0..*" StorageArea : stored in >
+Container "0..1" <-- "0..*" Resource : moved by >
+
+@enduml
