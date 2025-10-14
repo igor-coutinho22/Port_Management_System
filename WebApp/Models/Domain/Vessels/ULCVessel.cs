@@ -7,6 +7,11 @@ namespace WebApp.Models.Domain.Vessel
             : base(imo, Vesselname, operatorName, bays, rows, tiers, craneCount, dockLength)
         {
             Type = "Ultra Large Container";
+            MaxBays = 24;
+            MaxRows = 20;
+            MaxTiers = 10;
+
+            ValidateDimensions(bays, rows, tiers);
         }
     }
 }

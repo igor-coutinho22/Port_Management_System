@@ -6,6 +6,11 @@ namespace WebApp.Models.Domain.Vessel
             : base(imo, Vesselname, operatorName, bays, rows, tiers, craneCount, dockLength)
         {
             Type = "Post-Panamax";
+            MaxBays = 14;
+            MaxRows = 12;
+            MaxTiers = 7;
+
+            validateDimensions(bays, rows, tiers);
         }
     }
 }

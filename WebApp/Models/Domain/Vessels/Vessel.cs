@@ -17,12 +17,24 @@ namespace WebApp.Models.Domain.Vessel
                 _imo = value;
             }
         }
+        public string Description { get; set; }
         public string VesselName { get; set; }
         public string OperatorName { get; set; }
         public string Type { get; protected set; }
+
+
+        // Actual dimensions of this vessel instance
         public int Bays { get; protected set; }
         public int Rows { get; protected set; }
         public int Tiers { get; protected set; }
+
+
+        // Maximum dimensions allowed for this type
+        public int MaxBays { get; protected set; }
+        public int MaxRows { get; protected set; }
+        public int MaxTiers { get; protected set; }
+
+
         public int MaxTEUCapacity => Bays * Rows * Tiers;
         public int RequiredCraneCount { get; protected set; }
         public double RequiredDockLength { get; protected set; }
@@ -42,7 +54,7 @@ namespace WebApp.Models.Domain.Vessel
 
             CargoGrid = new Container[Bays, Rows, Tiers];
         }
-        
+
         public static bool IsValidIMO(string imo)
         {
             if (string.IsNullOrWhiteSpace(imo) || imo.Length != 7 || !int.TryParse(imo, out _))
@@ -54,5 +66,11 @@ namespace WebApp.Models.Domain.Vessel
 
             return sum % 10 == (imo[6] - '0');
         }
-    }
+        
+        public void ValidateDimensions(int bays, int rows, int tiers)
+        {
+            if (bays > MaxBays || rows > MaxRows || tiers > MaxTiers)
+                throw new ArgumentException("Dimensions exceed maximum allowed for this vessel type.");
+        }
+        }
 }

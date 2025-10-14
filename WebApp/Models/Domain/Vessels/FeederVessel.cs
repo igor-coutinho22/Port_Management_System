@@ -7,6 +7,11 @@ namespace WebApp.Models.Domain.Vessel
             : base(imo, Vesselname, operatorName, bays, rows, tiers, craneCount, dockLength)
         {
             Type = "Feeder";
+            MaxBays = 8;
+            MaxRows = 8;
+            MaxTiers = 4;
+
+            ValidateDimensions(bays, rows, tiers);
         }
     }
 }

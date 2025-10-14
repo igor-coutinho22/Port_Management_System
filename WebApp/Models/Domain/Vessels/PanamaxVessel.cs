@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace WebApp.Models.Domain.Vessel
 {
     class PanamaxVessel : Vessel
@@ -6,6 +8,11 @@ namespace WebApp.Models.Domain.Vessel
             : base(imo, Vesselname, operatorName, bays, rows, tiers, craneCount, dockLength)
         {
             Type = "Panamax";
+            MaxBays = 12;
+            MaxRows = 10;
+            MaxTiers = 6;
+
+            validateDimensions(bays, rows, tiers);
         }
     }
 }
