@@ -6,7 +6,7 @@ namespace WebApp.Models.Domain.Vessel
     {
         private string _imo;
 
-        // stored in string because if it strats with 0 and is an int/long it will drop the 0
+        // stored in string because if it starts with 0 and is an int/long it will drop the 0
         public string IMO
         {
             get => _imo;
