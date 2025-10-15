@@ -4,7 +4,7 @@ using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Models.Infrastructure.Repositories.VesselTypeRepository
 {
-    public class VesselTypeRepository
+    public class VesselTypeRepository : IVesselTypeRepository
     {
         private readonly List<VesselType> _vesselTypes = VesselType.GetAllTypes().ToList();
 
