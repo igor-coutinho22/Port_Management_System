@@ -1,4 +1,4 @@
-namespace WebApp.Models;
+namespace WebApp.Models.Domain.Resources;
 
 public class ResourceDTO
 {

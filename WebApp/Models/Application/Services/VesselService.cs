@@ -1,16 +1,14 @@
 using WebApp.Models.Domain.Vessel;
-using System;
-using System.Collections.Generic;
-using WebApp.Models.Infrastructure.Repositories.VesselRepository;
+using WebApp.Models.Infrastructure.Repositories;
 using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Models.Application.Services.VesselService
 {
     public class VesselService : IVesselService
     {
-        private readonly VesselRepository _vesselRepo;
+        private readonly IVesselRepository _vesselRepo;
 
-        public VesselService(VesselRepository vesselRepo)
+        public VesselService(IVesselRepository vesselRepo)
         {
             _vesselRepo = vesselRepo;
         }
