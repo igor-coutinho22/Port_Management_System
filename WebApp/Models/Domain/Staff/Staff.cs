@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using Domain.Common;
-using Domain.Staff.Enums;
-using Domain.Staff.Entities;
+using WebApp.Models.Domain.Common;
+using WebApp.Models.Domain.Qualifications;
 
-namespace Domain.Staff.Entities
+namespace WebApp.Models.Domain.Staff
 {
     public class Staff : BaseEntity
     {
@@ -16,11 +13,10 @@ namespace Domain.Staff.Entities
 
         public Schedule OperationalWindow { get; private set; }
 
-        private readonly List<Qualification> _qualifications = new();
-        public IReadOnlyCollection<Qualification> Qualifications => _qualifications.AsReadOnly();
+        // Relação N:N com Qualification via tabela de junção
+        public ICollection<QualificationLink> Qualifications { get; private set; } = new List<QualificationLink>();
 
-        // Required by EF
-        private Staff() { }
+        private Staff() { } // EF Core
 
         public Staff(string mecanographicNumber, string shortName, string email, string phone, Schedule operationalWindow)
         {
@@ -33,10 +29,10 @@ namespace Domain.Staff.Entities
             OperationalWindow = operationalWindow;
         }
 
-        public void AddQualification(Qualification qualification)
+        public void AddQualification(Guid qualificationId)
         {
-            if (!_qualifications.Contains(qualification))
-                _qualifications.Add(qualification);
+            if (!Qualifications.Any(q => q.QualificationId == qualificationId))
+                Qualifications.Add(new QualificationLink(Id, qualificationId));
         }
 
         public void ChangeStatus(StaffStatus newStatus)
@@ -44,14 +40,7 @@ namespace Domain.Staff.Entities
             Status = newStatus;
         }
 
-        public void Deactivate()
-        {
-            Status = StaffStatus.Inactive;
-        }
-
-        public void Reactivate()
-        {
-            Status = StaffStatus.Available;
-        }
+        public void Deactivate() => Status = StaffStatus.Inactive;
+        public void Reactivate() => Status = StaffStatus.Available;
     }
 }
