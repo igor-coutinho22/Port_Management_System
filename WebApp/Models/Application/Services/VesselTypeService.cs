@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using WebApp.Models.Domain.Vessel.VesselType;
-using WebApp.Models.Repositories;
+using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
 
 namespace WebApp.Models.Application.Services.VesselTypeService
 {

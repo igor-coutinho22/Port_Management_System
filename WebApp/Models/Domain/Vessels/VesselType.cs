@@ -56,7 +56,7 @@ namespace WebApp.Models.Domain.Vessels.VesselType
 
         public static IEnumerable<VesselType> GetAllTypes()
         {
-            return new[] { Feeder, Panamax, PostPanamax, ULCV };
+            return new[] { Feeder, Panamax, PostPanamax, ULCVessel };
         }
     }
 }

@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.Numerics;
+using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Models.Domain.Vessel
 {
@@ -10,6 +12,8 @@ namespace WebApp.Models.Domain.Vessel
         public string OperatorName { get; set; }
         public Container[,,] CargoGrid { get; set; }
 
+        public VesselType VesselType { get; set; }
+
         public int RequiredCraneCount { get; set; }
         public double RequiredDockLength { get; set; }
 
@@ -17,7 +21,7 @@ namespace WebApp.Models.Domain.Vessel
         public int Rows { get; private set; }
         public int Tiers { get; private set; }
 
-        protected Vessel(string imo, string vesselName, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
+        public Vessel(string imo, string vesselName, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
         {
             IsValidIMO(imo);
 
@@ -53,7 +57,7 @@ namespace WebApp.Models.Domain.Vessel
         
         public void ValidateDimensions(int bays, int rows, int tiers)
         {
-            if (bays > VesselType.MaxBays || rows > VesselType.MaxRows || tiers > VEsselType.MaxTiers)
+            if (bays > VesselType.MaxBays || rows > VesselType.MaxRows || tiers > VesselType.MaxTiers)
                 throw new ArgumentException("Dimensions exceed maximum allowed for this vessel type.");
         }
     }

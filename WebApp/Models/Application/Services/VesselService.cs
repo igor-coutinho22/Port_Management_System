@@ -1,7 +1,8 @@
 using WebApp.Models.Domain.Vessel;
-using WebApp.Models.Repositories;
 using System;
 using System.Collections.Generic;
+using WebApp.Models.Infrastructure.Repositories.VesselRepository;
+using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Models.Application.Services.VesselService
 {
@@ -14,7 +15,7 @@ namespace WebApp.Models.Application.Services.VesselService
             _vesselRepo = vesselRepo;
         }
 
-        public void RegisterVessel(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers)
+        public void RegisterVessel(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
         {
             // Validate IMO
             if (!Vessel.IsValidIMO(imo))
@@ -25,7 +26,7 @@ namespace WebApp.Models.Application.Services.VesselService
                 throw new ArgumentException("Dimensions exceed the vessel type limits.");
 
             // Create the vessel
-            var vessel = new Vessel(imo, name, operatorName, vesselType, bays, rows, tiers, vesselType.RequiredCraneCount, vesselType.RequiredDockLength);
+            var vessel = new Vessel(imo, name, operatorName, vesselType, bays, rows, tiers, requiredCraneCount, requiredDockLength);
 
             // Save it
             _vesselRepo.AddVessel(vessel);
