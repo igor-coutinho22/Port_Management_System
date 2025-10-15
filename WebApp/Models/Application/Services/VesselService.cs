@@ -6,7 +6,7 @@ using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Models.Application.Services.VesselService
 {
-    public class VesselService
+    public class VesselService : IVesselService
     {
         private readonly VesselRepository _vesselRepo;
 
