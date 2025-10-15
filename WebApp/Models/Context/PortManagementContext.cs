@@ -18,6 +18,7 @@ namespace WebApp.Models.Context
         public DbSet<QualificationLink> QualificationLinks { get; set; } = default!;
         public DbSet<Vessel> Vessels { get; set; } = default!;
         public DbSet<VesselType> VesselTypes { get; set; } = default!;
+        public DbSet<Resource> Resources { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

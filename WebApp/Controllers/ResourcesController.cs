@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TodoApi.Models;
+using WebApp.Models;
 using WebApp.Models.Context;
-using WebApp.Models.Domain.Resources;
+using WebApp.Models.Domain;
 
 namespace PortApi.Controllers
 {
@@ -10,19 +10,19 @@ namespace PortApi.Controllers
     [ApiController]
     public class ResourcesController : ControllerBase
     {
-        private readonly ResourceContext _context;
+        private readonly PortManagementContext _context;
 
-        public TodoItemsController(ResourceContext context)
+        public ResourcesController(PortManagementContext context)
         {
             _context = context;
         }
 
         // GET: api/Resources
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResoureceDTO>>> GetResources()
+        public async Task<ActionResult<IEnumerable<ResourceDTO>>> GetResources()
         {
             return await _context.Resources
-                .Select(x => ResourceToDto(x))
+                .Select(x => ResourceToDTO(x))
                 .ToListAsync();
         }
 
@@ -91,37 +91,36 @@ namespace PortApi.Controllers
             return CreatedAtAction(
                 nameof(GetResource),
                 new { id = resource.Id },
-                ItemToDTO(resource));
+                ResourceToDTO(resource));
         }
         // </snippet_Create>
 
-        // DELETE: api/TodoItems/5
+        // DELETE: api/Resources/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTodoItem(long id)
+        public async Task<IActionResult> Deleteresource(long id)
         {
-            var todoItem = await _context.TodoItems.FindAsync(id);
-            if (todoItem == null)
+            var resource = await _context.Resources.FindAsync(id);
+            if (resource == null)
             {
                 return NotFound();
             }
 
-            _context.TodoItems.Remove(todoItem);
+            _context.Resources.Remove(resource);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool TodoItemExists(long id)
+        private bool ResourceExists(long id)
         {
-            return _context.TodoItems.Any(e => e.Id == id);
+            return _context.Resources.Any(e => e.Id == id);
         }
 
-        private static TodoItemDTO ItemToDTO(TodoItem todoItem) =>
-           new TodoItemDTO
+        private static ResourceDTO ResourceToDTO(Resource resource) =>
+           new ResourceDTO
            {
-               Id = todoItem.Id,
-               Name = todoItem.Name,
-               IsComplete = todoItem.IsComplete
+               Id = resource.Id,
+               Name = resource.Name
            };
     }
 }
