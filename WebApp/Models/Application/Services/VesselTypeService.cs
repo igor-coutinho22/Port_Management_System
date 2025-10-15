@@ -4,7 +4,7 @@ using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
 
 namespace WebApp.Models.Application.Services.VesselTypeService
 {
-    public class VesselTypeService
+    public class VesselTypeService : IVesselTypeService
     {
         private readonly VesselTypeRepository _vesselTypeRepo;
 
