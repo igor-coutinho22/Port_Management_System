@@ -1,4 +1,4 @@
-@startuml
+@startuml PortLogisticsDomainModel
 title Port Logistics Management System - Aggregates and Value Objects Model
 
 '=======================================================
