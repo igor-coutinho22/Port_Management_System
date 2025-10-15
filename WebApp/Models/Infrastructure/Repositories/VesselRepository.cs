@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using WebApp.Models.Domain.Vessel;
 
 namespace WebApp.Models.Infrastructure.Repositories.VesselRepository
 {
-    public class VesselRepository
+    public class VesselRepository : IVesselRepository
     {
         private readonly List<Vessel> _vessels = new List<Vessel>();
 
