@@ -2,57 +2,41 @@ using System.Numerics;
 
 namespace WebApp.Models.Domain.Vessel
 {
-    public abstract class Vessel
+    public class Vessel
     {
-        private string _imo;
-
         // stored in string because if it strats with 0 and is an int/long it will drop the 0
-        public string IMO
-        {
-            get => _imo;
-            set
-            {
-                if (!IsValidIMO(value))
-                    throw new ArgumentException("Invalid IMO number.");
-                _imo = value;
-            }
-        }
-        public string Description { get; set; }
+        public string IMO{ get; private set; }
         public string VesselName { get; set; }
         public string OperatorName { get; set; }
-        public string Type { get; protected set; }
-
-
-        // Actual dimensions of this vessel instance
-        public int Bays { get; protected set; }
-        public int Rows { get; protected set; }
-        public int Tiers { get; protected set; }
-
-
-        // Maximum dimensions allowed for this type
-        public int MaxBays { get; protected set; }
-        public int MaxRows { get; protected set; }
-        public int MaxTiers { get; protected set; }
-
-
-        public int MaxTEUCapacity => Bays * Rows * Tiers;
-        public int RequiredCraneCount { get; protected set; }
-        public double RequiredDockLength { get; protected set; }
-
         public Container[,,] CargoGrid { get; set; }
 
-        protected Vessel(string imo, string vesselName, string operatorName, int bays, int rows, int tiers, int craneCount, double dockLength)
+        public int RequiredCraneCount { get; set; }
+        public double RequiredDockLength { get; set; }
+
+        public int Bays { get; private set; }
+        public int Rows { get; private set; }
+        public int Tiers { get; private set; }
+
+        protected Vessel(string imo, string vesselName, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
         {
+            IsValidIMO(imo);
+
             IMO = imo;
             VesselName = vesselName;
             OperatorName = operatorName;
+            VesselType = vesselType;
+
+            // Example grid initialization (optional)
+            CargoGrid = new Container[vesselType.MaxBays, vesselType.MaxRows, vesselType.MaxTiers];
+
+            ValidateDimensions(bays, rows, tiers);
+
             Bays = bays;
             Rows = rows;
             Tiers = tiers;
-            RequiredCraneCount = craneCount;
-            RequiredDockLength = dockLength;
 
-            CargoGrid = new Container[Bays, Rows, Tiers];
+            RequiredCraneCount = requiredCraneCount;
+            RequiredDockLength = requiredDockLength;
         }
 
         public static bool IsValidIMO(string imo)
@@ -69,8 +53,8 @@ namespace WebApp.Models.Domain.Vessel
         
         public void ValidateDimensions(int bays, int rows, int tiers)
         {
-            if (bays > MaxBays || rows > MaxRows || tiers > MaxTiers)
+            if (bays > VesselType.MaxBays || rows > VesselType.MaxRows || tiers > VEsselType.MaxTiers)
                 throw new ArgumentException("Dimensions exceed maximum allowed for this vessel type.");
         }
-        }
+    }
 }
