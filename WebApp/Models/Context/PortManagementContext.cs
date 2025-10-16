@@ -1,14 +1,16 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using WebApp.Models.Domain.Qualifications;
 using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Staff;
 using WebApp.Models.Domain.Vessel;
 using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Infrastructure.Configurations;
+using WebApp.Models.Domain.Users;
 
 namespace WebApp.Models.Context
 {
-    public class PortManagementContext : DbContext
+    public class PortManagementContext : IdentityDbContext<ApplicationUser>
     {
         public PortManagementContext(DbContextOptions<PortManagementContext> options)
             : base(options) { }

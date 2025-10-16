@@ -27,14 +27,6 @@ namespace WebApp.Models.Infrastructure.Configurations
 
             builder.Property(vt => vt.MaxTiers)
                 .IsRequired();
-
-            // Optional: pre-seed the known vessel types
-            builder.HasData(
-                VesselType.Feeder,
-                VesselType.Panamax,
-                VesselType.PostPanamax,
-                VesselType.ULCVessel
-            );
         }
     }
 }
