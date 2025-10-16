@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
 using WebApp.Models.Context;
 using WebApp.Models.Domain;
+using WebApp.Models.Domain.Resources;
 
 namespace PortApi.Controllers
 {
@@ -80,10 +81,7 @@ namespace PortApi.Controllers
         [HttpPost]
         public async Task<ActionResult<ResourceDTO>> PostResource(ResourceDTO resourceDTO)
         {
-            var resource = new Resource
-            {
-                Name = resourceDTO.Name
-            };
+            var resource = new Resource(resourceDTO.Id, resourceDTO.Name);
 
             _context.Resources.Add(resource);
             await _context.SaveChangesAsync();

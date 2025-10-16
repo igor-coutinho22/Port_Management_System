@@ -21,6 +21,7 @@ namespace WebApp.Models.Domain.Vessel
         public int Rows { get; private set; }
         public int Tiers { get; private set; }
 
+        protected Vessel() { } // EF Core
         public Vessel(string imo, string vesselName, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
         {
             IsValidIMO(imo);

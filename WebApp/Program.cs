@@ -50,4 +50,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("/", async context =>
+{
+    context.Response.Redirect("/index.html");
+});
+
 app.Run();

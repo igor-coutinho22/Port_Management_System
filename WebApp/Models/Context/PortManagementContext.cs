@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Domain.Qualifications;
+using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Staff;
 using WebApp.Models.Domain.Vessel;
 using WebApp.Models.Domain.Vessels.VesselType;
