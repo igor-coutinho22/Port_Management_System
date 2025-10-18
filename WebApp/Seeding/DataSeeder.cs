@@ -38,7 +38,7 @@ namespace WebApp.Seeding
             }
 
             // Create admin user (change these values for production!)
-            var adminEmail = "admin@localhost";
+            var adminEmail = "admin@isep.ipp.pt";
             var adminUserName = adminEmail;
             var adminPassword = "***REMOVED***"; // use configuration / secrets in real apps
 
