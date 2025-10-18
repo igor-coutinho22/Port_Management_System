@@ -50,15 +50,14 @@ namespace WebApp.Models.Infrastructure.Configurations
 
             // CargoGrid as JSON, safely handle null
                 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-            _ = builder.Property(static v => v.CargoGrid)
+            builder.Property(static v => v.CargoGrid)
                 .HasConversion(
                     static grid => JsonSerializer.Serialize(grid, (JsonSerializerOptions)null),
                     static json => string.IsNullOrEmpty(json)
                         ? new Container[0, 0, 0]
                         : JsonSerializer.Deserialize<Container[,,]>(json, (JsonSerializerOptions)null)!
                 )
-                .HasColumnType("jsonb"); // PostgreSQL; use "nvarchar(max)" for SQL Server
-                #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                .HasColumnType("nvarchar(max)"); 
         }
     }
 }

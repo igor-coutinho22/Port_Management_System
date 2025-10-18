@@ -7,6 +7,7 @@ using WebApp.Models.Domain.Vessel;
 using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Infrastructure.Configurations;
 using WebApp.Models.Domain.Users;
+using System.Text.Json;
 
 namespace WebApp.Models.Context
 {
@@ -45,13 +46,6 @@ namespace WebApp.Models.Context
                 .HasOne<Qualification>()
                 .WithMany()
                 .HasForeignKey(q => q.QualificationId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Vessel>()
-                .HasOne(v => v.VesselType)
-                .WithMany()
-                .HasForeignKey("VesselTypeName")
-                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<VesselType>().HasData(
