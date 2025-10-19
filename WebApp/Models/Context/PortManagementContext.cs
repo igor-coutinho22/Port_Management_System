@@ -48,12 +48,6 @@ namespace WebApp.Models.Context
                 .HasForeignKey(q => q.QualificationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<VesselType>().HasData(
-                VesselType.Feeder,
-                VesselType.Panamax,
-                VesselType.PostPanamax,
-                VesselType.ULCVessel);
-
             base.OnModelCreating(modelBuilder);
         }
     }
