@@ -8,6 +8,7 @@ using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Infrastructure.Configurations;
 using WebApp.Models.Domain.Users;
 using System.Text.Json;
+using WebApp.Models.Domain.StorageArea;
 
 namespace WebApp.Models.Context
 {
@@ -23,6 +24,7 @@ namespace WebApp.Models.Context
         public DbSet<Vessel> Vessels { get; set; } = default!;
         public DbSet<VesselType> VesselTypes { get; set; } = default!;
         public DbSet<Resource> Resources { get; set; } = default!;
+        public DbSet<StorageArea> StorageAreas { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +33,7 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new StaffConfiguration());
             modelBuilder.ApplyConfiguration(new VesselConfiguration());
             modelBuilder.ApplyConfiguration(new VesselTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new StorageAreaConfiguration());
 
             // Key para a tabela de ligação (many-to-many)
             modelBuilder.Entity<QualificationLink>()
