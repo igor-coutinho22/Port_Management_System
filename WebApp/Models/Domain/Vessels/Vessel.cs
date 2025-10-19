@@ -7,12 +7,12 @@ namespace WebApp.Models.Domain.Vessel
     public class Vessel
     {
         // stored in string because if it strats with 0 and is an int/long it will drop the 0
-        public string IMO{ get; private set; }
-        public string VesselName { get; set; }
-        public string OperatorName { get; set; }
-        public Container[,,] CargoGrid { get; set; }
+        public string IMO { get; private set; } = null!;
+        public string VesselName { get; set; } = null!;
+        public string OperatorName { get; set; } = null!;
+        public Container[,,] CargoGrid { get; set; } = null!;
 
-        public VesselType VesselType { get; set; }
+        public VesselType VesselType { get; set; } = null!;
 
         public int RequiredCraneCount { get; set; }
         public double RequiredDockLength { get; set; }
@@ -24,14 +24,14 @@ namespace WebApp.Models.Domain.Vessel
         protected Vessel() { } // EF Core
         public Vessel(string imo, string vesselName, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
         {
-            IsValidIMO(imo);
+            if (!IsValidIMO(imo))
+                throw new ArgumentException("Invalid IMO", nameof(imo));
 
             IMO = imo;
             VesselName = vesselName;
             OperatorName = operatorName;
             VesselType = vesselType;
 
-            // Example grid initialization (optional)
             CargoGrid = new Container[vesselType.MaxBays, vesselType.MaxRows, vesselType.MaxTiers];
 
             ValidateDimensions(bays, rows, tiers);
