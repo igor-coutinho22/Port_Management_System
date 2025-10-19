@@ -7,6 +7,9 @@ namespace WebApp.Models.Infrastructure.Repositories
     {
         List<VesselType> GetAll();
         VesselType? GetByName(string name);
+        List<VesselType> SearchByName(string partialName);
         List<VesselType> SearchByDescription(string keyword);
+        void Add(VesselType vesselType);
+        void Update(string currentName, VesselType updatedVesselType);
     }
 }

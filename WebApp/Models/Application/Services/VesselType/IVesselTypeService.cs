@@ -7,6 +7,9 @@ namespace WebApp.Models.Application.Services
     {
         List<VesselType> GetAllVesselTypes();
         VesselType? GetVesselTypeByName(string name);
-        List<VesselType> SearchVesselTypes(string keyword);
+        List<VesselType> SearchVesselTypesByName(string partialName);
+        List<VesselType> SearchVesselTypesByDescription(string keyword);
+        void AddVesselType(string name, string description, int maxBays, int maxRows, int maxTiers);
+        void UpdateVesselType(string currentName, string newName, string description, int maxBays, int maxRows, int maxTiers);
     }
 }
