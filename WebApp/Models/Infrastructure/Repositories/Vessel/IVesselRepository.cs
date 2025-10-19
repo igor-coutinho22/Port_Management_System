@@ -7,8 +7,8 @@ namespace WebApp.Models.Infrastructure.Repositories
     {
         void AddVessel(Vessel vessel);
         Vessel? GetByIMO(string imo);
-        Vessel? GetByName(string name);
-        List<Vessel> GetByOperator(string operatorName);
+        List<Vessel>? GetByName(string name);
+        List<Vessel>? GetByOperator(string operatorName);
         List<Vessel> GetAll();
     }
 }

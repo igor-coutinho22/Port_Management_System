@@ -16,10 +16,10 @@ namespace WebApp.Models.Infrastructure.Repositories.VesselRepository
         public Vessel? GetByIMO(string imo) =>
             _vessels.FirstOrDefault(v => v.IMO == imo);
 
-        public Vessel? GetByName(string name) =>
-            _vessels.FirstOrDefault(v => v.VesselName.Equals(name, StringComparison.OrdinalIgnoreCase));
+        public List<Vessel>? GetByName(string name) =>
+            _vessels.Where(v => v.VesselName.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
 
-        public List<Vessel> GetByOperator(string operatorName) =>
+        public List<Vessel>? GetByOperator(string operatorName) =>
             _vessels.Where(v => v.OperatorName.Equals(operatorName, StringComparison.OrdinalIgnoreCase)).ToList();
 
         public List<Vessel> GetAll() => _vessels;
