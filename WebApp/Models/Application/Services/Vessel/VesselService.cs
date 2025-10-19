@@ -31,8 +31,8 @@ namespace WebApp.Models.Application.Services.VesselService
         }
 
         public Vessel? GetVesselByIMO(string imo) => _vesselRepo.GetByIMO(imo);
-        public Vessel? GetVesselByName(string name) => _vesselRepo.GetByName(name);
-        public List<Vessel> GetVesselsByOperator(string operatorName) => _vesselRepo.GetByOperator(operatorName);
+        public List<Vessel>? GetVesselByName(string name) => _vesselRepo.GetByName(name);
+        public List<Vessel>? GetVesselsByOperator(string operatorName) => _vesselRepo.GetByOperator(operatorName);
         public List<Vessel> GetAllVessels() => _vesselRepo.GetAll();
     }
 }

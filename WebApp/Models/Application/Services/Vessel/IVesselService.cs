@@ -9,8 +9,8 @@ namespace WebApp.Models.Application.Services
         void RegisterVessel(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength);
         
         Vessel? GetVesselByIMO(string imo);
-        Vessel? GetVesselByName(string name);
-        List<Vessel> GetVesselsByOperator(string operatorName);
+        List<Vessel>? GetVesselByName(string name);
+        List<Vessel>? GetVesselsByOperator(string operatorName);
         List<Vessel> GetAllVessels();
     }
 }
