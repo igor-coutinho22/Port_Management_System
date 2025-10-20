@@ -1,195 +1,127 @@
-@startuml PortLogisticsDomainModel
-title Port Logistics Management System - Aggregates and Value Objects Model
+@startuml
+title Shipping Port Management - Domain Model (UML Style)
 
-'=======================================================
-' SHIPPING CONTEXT
-'=======================================================
-package "Shipping" {
-    class ShippingAgent {
-        +id : UUID
-        +name : String
-        +contactInfo : String
-    }
-
-    class ShippingAgentRepresentative {
-        +id : UUID
-        +name : String
-        +email : String
-        +phone : String
-    }
-
-    class Vessel {
-        +imoNumber : String
-        +name : String
-        +length : double
-        +capacityTEU : int
-    }
-
-    class VesselType <<ValueObject>> {
-        +name : String
-        +description : String
-        +maxTEU : int
-    }
-
-    class VesselVisitNotification {
-        +id : UUID
-        +ETA : DateTime
-        +ETD : DateTime
-        +remarks : String
-        +status : VisitStatus
-    }
-
-    enum VisitStatus {
-        PENDING
-        APPROVED
-        REJECTED
-        SCHEDULED
-        IN_PROGRESS
-        COMPLETED
-    }
-}
-
-'=======================================================
-' CARGO CONTEXT
-'=======================================================
-package "Cargo" {
-    class CargoManifest {
-        +id : UUID
-        +creationDate : DateTime
-        +manifestType : ManifestType
-    }
-
-    enum ManifestType {
-        LOADING
-        UNLOADING
-    }
-
-    class Container {
-        +isoCode : String
-        +bay : int
-        +row : int
-        +tier : int
-    }
-
-    class Item {
-        +id : UUID
-        +description : String
-        +cargoType : String
-        +weight : double
-    }
-}
-
-'=======================================================
-' FACILITIES CONTEXT
-'=======================================================
-package "Facilities" {
-    class StorageArea {
-        +id : UUID
-        +name : String
-        +capacity : int
-        +status : String
-    }
-
-    class StorageAreaType <<ValueObject>> {
-        +name : String
-        +description : String
-    }
-
-    class Dock {
-        +id : UUID
-        +name : String
-        +maxCranes : int
-        +status : DockStatus
-    }
-
-    enum DockStatus {
-        AVAILABLE
-        UNAVAILABLE
-        MAINTENANCE
-    }
-}
-
-'=======================================================
-' RESOURCES CONTEXT
-'=======================================================
-package "Resources" {
-    class Resource {
-        +id : UUID
-        +name : String
-        +availabilityStatus : AvailabilityStatus
-        +operationalWindow : Schedule
-    }
-
-    class ResourceType <<ValueObject>> {
-        +name : String
-        +capacity : double
-        +description : String
-    }
-
-    enum AvailabilityStatus {
-        AVAILABLE
-        UNAVAILABLE
-        MAINTENANCE
-    }
-
+' === Domain Layer ===
+package "Domain Layer" {
+  package "Staff Aggregate" {
     class Staff {
-        +id : UUID
-        +name : String
-        +status : StaffStatus
-        +operationalWindow : Schedule
+      +Id : Guid
+      +MecanographicNumber : string
+      +ShortName : string
+      +Email : string
+      +Phone : string
+      +OperationalWindow : Schedule
+      +Status : StaffStatus
+      +Qualifications : List<QualificationLink>
     }
 
-    class Qualification <<ValueObject>> {
-        +name : String
-        +description : String
+    class StaffStatus
+    class Schedule
+    class QualificationLink {
+      +StaffId : Guid
+      +QualificationId : Guid
     }
+  }
 
-    enum StaffStatus {
-        AVAILABLE
-        ON_LEAVE
-        TRAINING
+  package "Qualification Aggregate" {
+    class Qualification {
+      +Id : Guid
+      +Code : string
+      +Name : string
     }
+  }
 
-    class Schedule <<ValueObject>> {
-        +daysOfWeek : String
-        +startTime : Time
-        +endTime : Time
+  package "Resource Aggregate" {
+    class Resource {
+      +Id : Guid
+      +Name : string
+      +Type : string
+      +AssignedStaffId : Guid
     }
+  }
+
+  package "StorageArea Aggregate" {
+    class StorageArea {
+      +Id : Guid
+      +Name : string
+      +Capacity : int
+      +TypeId : Guid
+    }
+    class StorageAreaType {
+      +Id : Guid
+      +Name : string
+    }
+  }
+
+  package "Vessel Aggregate" {
+    class Vessel {
+      +Id : Guid
+      +Name : string
+      +IMO : string
+      +VesselTypeId : Guid
+    }
+    class VesselType {
+      +Id : Guid
+      +Code : string
+      +Description : string
+    }
+  }
 }
 
-'=======================================================
-' RELATIONSHIPS BETWEEN AGGREGATES
-'=======================================================
+' === Relationships between aggregates ===
+Staff "0..*" --> "0..*" Qualification : possesses >
+Resource "0..*" --> "1" Staff : operated by >
+Vessel "1" --> "1" VesselType : is of >
+StorageArea "1" --> "1" StorageAreaType : is of >
 
-' --- Shipping Agents and Representatives ---
-ShippingAgent "1" <-- "1..*" ShippingAgentRepresentative : employs >
-ShippingAgentRepresentative "1" --> "0..*" VesselVisitNotification : submits >
+' === Application Layer ===
+package "Application Layer" {
+  class StaffService
+  class QualificationService
+  class ResourceService
+  class VesselService
+  class StorageAreaService
+}
 
-' --- Vessels ---
-VesselVisitNotification "1" --> "1" Vessel : specifies >
-Vessel "0..*" --> "1" VesselType : is of type >
-VesselVisitNotification "1" --> "1" VisitStatus : status >
+StaffService --> StaffRepository
+QualificationService --> QualificationRepository
+ResourceService --> ResourceRepository
+VesselService --> VesselRepository
+StorageAreaService --> StorageAreaRepository
 
-' --- Vessel Visit and Cargo ---
-VesselVisitNotification "1" --> "0..2" CargoManifest : contains >
-CargoManifest "1" --> "*" Container : includes >
-CargoManifest "1" --> "0..2" ManifestType : type >
-Container "1" --> "*" Item : contains >
+' === Infrastructure Layer ===
+package "Infrastructure Layer" {
+  interface IStaffRepository
+  class StaffRepository
+  interface IQualificationRepository
+  class QualificationRepository
+  interface IResourceRepository
+  class ResourceRepository
+  interface IVesselRepository
+  class VesselRepository
+  interface IStorageAreaRepository
+  class StorageAreaRepository
+}
 
-' --- Facilities ---
-VesselVisitNotification "1" --> "1" Dock : assigned to >
-Dock "*" --> "1" StorageArea : located in >
-Dock "1" --> "1" DockStatus : status >
-StorageArea "1" --> "1" StorageAreaType : is of type >
+StaffRepository -up-|> IStaffRepository
+QualificationRepository -up-|> IQualificationRepository
+ResourceRepository -up-|> IResourceRepository
+VesselRepository -up-|> IVesselRepository
+StorageAreaRepository -up-|> IStorageAreaRepository
 
-' --- Resources and Staff ---
-Resource "1" --> "1" ResourceType : is of type >
-Resource "0..*" <-- "1" Staff : operates >
-Staff "1" --> "*" Qualification : has >
-Staff "1" --> "0..*" Staff : manages >
+' === API Layer ===
+package "API Layer" {
+  class StaffController
+  class QualificationController
+  class ResourceController
+  class VesselController
+  class StorageAreaController
+}
 
-' --- Container logistics ---
-Container "0..*" <-- "0..*" StorageArea : stored in >
-Container "0..1" <-- "0..*" Resource : moved by >
+StaffController --> StaffService
+QualificationController --> QualificationService
+ResourceController --> ResourceService
+VesselController --> VesselService
+StorageAreaController --> StorageAreaService
 
 @enduml
