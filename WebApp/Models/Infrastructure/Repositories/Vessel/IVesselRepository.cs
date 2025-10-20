@@ -5,10 +5,10 @@ namespace WebApp.Models.Infrastructure.Repositories
 {
     public interface IVesselRepository
     {
-        void AddVessel(Vessel vessel);
-        Vessel? GetByIMO(string imo);
-        List<Vessel>? GetByName(string name);
-        List<Vessel>? GetByOperator(string operatorName);
-        List<Vessel> GetAll();
+        Task AddVesselAsync(Vessel vessel);
+        Task<Vessel?> GetByIMOAsync(string imo);
+        Task<List<Vessel>> GetByNameAsync(string name);
+        Task<List<Vessel>> GetByOperatorAsync(string operatorName);
+        Task<List<Vessel>> GetAllAsync();
     }
 }

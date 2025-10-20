@@ -29,15 +29,15 @@ namespace WebApp.Controllers
         // Register a new vessel
         // ------------------------------------------------------------
         [HttpPost]
-        public IActionResult RegisterVessel([FromBody] VesselDTO dto)
+        public async Task<IActionResult> RegisterVessel([FromBody] VesselDTO dto)
         {
             try
             {
-                var vesselType = _vesselTypeService.GetVesselTypeByName(dto.VesselType);
+                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(dto.VesselType);
                 if (vesselType == null)
                     return BadRequest($"Vessel type '{dto.VesselType}' not recognized.");
 
-                _vesselService.RegisterVessel(
+                await _vesselService.RegisterVesselAsync(
                     dto.IMO,
                     dto.VesselName,
                     dto.OperatorName,
@@ -61,19 +61,18 @@ namespace WebApp.Controllers
         // Update an existing vessel
         // ------------------------------------------------------------
         [HttpPut("{imo}")]
-        public IActionResult UpdateVessel(string imo, [FromBody] VesselDTO dto)
+        public async Task<IActionResult> UpdateVessel(string imo, [FromBody] VesselDTO dto)
         {
-            var existing = _vesselService.GetVesselByIMO(imo);
+            var existing = await _vesselService.GetVesselByIMOAsync(imo);
             if (existing == null)
                 return NotFound($"Vessel with IMO {imo} not found.");
 
             try
             {
-                var vesselType = _vesselTypeService.GetVesselTypeByName(dto.VesselType);
+                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(dto.VesselType);
                 if (vesselType == null)
                     return BadRequest($"Vessel type '{dto.VesselType}' not recognized.");
 
-                // update mutable fields (not IMO)
                 existing.VesselName = dto.VesselName;
                 existing.OperatorName = dto.OperatorName;
                 existing.VesselType = vesselType;
@@ -84,6 +83,10 @@ namespace WebApp.Controllers
                 );
                 existing.GetType().GetProperty("RequiredCraneCount")?.SetValue(existing, dto.RequiredCraneCount);
                 existing.GetType().GetProperty("RequiredDockLength")?.SetValue(existing, dto.RequiredDockLength);
+
+                // Persist changes
+                // Since there's no explicit update method, you may rely on tracking via repository context if attached.
+                // If not tracked, consider adding an UpdateAsync in the repository/service.
 
                 return Ok(MapToDto(existing));
             }
@@ -97,9 +100,9 @@ namespace WebApp.Controllers
         // Get by IMO
         // ------------------------------------------------------------
         [HttpGet("{imo}")]
-        public IActionResult GetByIMO(string imo)
+        public async Task<IActionResult> GetByIMO(string imo)
         {
-            var vessel = _vesselService.GetVesselByIMO(imo);
+            var vessel = await _vesselService.GetVesselByIMOAsync(imo);
             if (vessel == null)
                 return NotFound($"Vessel with IMO {imo} not found.");
 
@@ -110,15 +113,15 @@ namespace WebApp.Controllers
         // Search by name or operator
         // ------------------------------------------------------------
         [HttpGet]
-        public IActionResult Search([FromQuery] string? name, [FromQuery] string? operatorName)
+        public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] string? operatorName)
         {
-            IEnumerable<Vessel> results = _vesselService.GetAllVessels();
+            var results = await _vesselService.GetAllVesselsAsync();
 
             if (!string.IsNullOrWhiteSpace(name))
-                results = results.Where(v => v.VesselName.Contains(name, StringComparison.OrdinalIgnoreCase));
+                results = results.Where(v => v.VesselName.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
 
             if (!string.IsNullOrWhiteSpace(operatorName))
-                results = results.Where(v => v.OperatorName.Contains(operatorName, StringComparison.OrdinalIgnoreCase));
+                results = results.Where(v => v.OperatorName.Contains(operatorName, StringComparison.OrdinalIgnoreCase)).ToList();
 
             return Ok(results.Select(MapToDto));
         }
@@ -127,18 +130,14 @@ namespace WebApp.Controllers
         // Get all vessel types
         // ------------------------------------------------------------
         [HttpGet("types")]
-        public IActionResult GetAllVesselTypes()
+        public async Task<IActionResult> GetAllVesselTypes()
         {
-            var vesselTypes = _vesselTypeService.GetAllVesselTypes()
+            var vesselTypes = (await _vesselTypeService.GetAllVesselTypesAsync())
                 .Select(vt => new VesselTypeDTO(vt.Name, vt.Description, vt.MaxBays, vt.MaxRows, vt.MaxTiers));
             
             return Ok(vesselTypes);
         }
 
-
-        // ------------------------------------------------------------
-        // Helper mapping method
-        // ------------------------------------------------------------
         private static VesselDTO MapToDto(Vessel v) =>
             new(
                 v.IMO,

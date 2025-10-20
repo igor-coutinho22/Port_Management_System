@@ -1,27 +1,41 @@
+using Microsoft.EntityFrameworkCore;
+using WebApp.Models.Context;
 using WebApp.Models.Domain.Vessel;
 
 namespace WebApp.Models.Infrastructure.Repositories.VesselRepository
 {
     public class VesselRepository : IVesselRepository
     {
-        private readonly List<Vessel> _vessels = new List<Vessel>();
+        private readonly PortManagementContext _context;
 
-        public void AddVessel(Vessel vessel)
+        public VesselRepository(PortManagementContext context)
         {
-            if (_vessels.Any(v => v.IMO == vessel.IMO))
-                throw new ArgumentException("A vessel with this IMO number already exists.");
-            _vessels.Add(vessel);
+            _context = context;
         }
 
-        public Vessel? GetByIMO(string imo) =>
-            _vessels.FirstOrDefault(v => v.IMO == imo);
+        public async Task AddVesselAsync(Vessel vessel)
+        {
+            var exists = await _context.Vessels.AnyAsync(v => v.IMO == vessel.IMO);
+            if (exists)
+                throw new ArgumentException("A vessel with this IMO number already exists.");
 
-        public List<Vessel>? GetByName(string name) =>
-            _vessels.Where(v => v.VesselName.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+            await _context.Vessels.AddAsync(vessel);
+            await _context.SaveChangesAsync();
+        }
 
-        public List<Vessel>? GetByOperator(string operatorName) =>
-            _vessels.Where(v => v.OperatorName.Equals(operatorName, StringComparison.OrdinalIgnoreCase)).ToList();
+        public async Task<Vessel?> GetByIMOAsync(string imo) =>
+            await _context.Vessels.FirstOrDefaultAsync(v => v.IMO == imo);
 
-        public List<Vessel> GetAll() => _vessels;
+        public async Task<List<Vessel>> GetByNameAsync(string name) =>
+            await _context.Vessels
+                .Where(v => v.VesselName.Contains(name))
+                .ToListAsync();
+
+        public async Task<List<Vessel>> GetByOperatorAsync(string operatorName) =>
+            await _context.Vessels
+                .Where(v => v.OperatorName == operatorName)
+                .ToListAsync();
+
+        public async Task<List<Vessel>> GetAllAsync() => await _context.Vessels.ToListAsync();
     }
 }

@@ -6,11 +6,11 @@ namespace WebApp.Models.Application.Services
 {
     public interface IVesselService
     {
-        void RegisterVessel(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength);
+        Task RegisterVesselAsync(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength);
         
-        Vessel? GetVesselByIMO(string imo);
-        List<Vessel>? GetVesselByName(string name);
-        List<Vessel>? GetVesselsByOperator(string operatorName);
-        List<Vessel> GetAllVessels();
+        Task<Vessel?> GetVesselByIMOAsync(string imo);
+        Task<List<Vessel>> GetVesselByNameAsync(string name);
+        Task<List<Vessel>> GetVesselsByOperatorAsync(string operatorName);
+        Task<List<Vessel>> GetAllVesselsAsync();
     }
 }

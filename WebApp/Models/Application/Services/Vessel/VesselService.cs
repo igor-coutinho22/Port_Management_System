@@ -13,26 +13,22 @@ namespace WebApp.Models.Application.Services.VesselService
             _vesselRepo = vesselRepo;
         }
 
-        public void RegisterVessel(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
+        public async Task RegisterVesselAsync(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
         {
-            // Validate IMO
             if (!Vessel.IsValidIMO(imo))
                 throw new ArgumentException("Invalid IMO number.");
 
-            // Validate dimensions against the vessel type
             if (bays > vesselType.MaxBays || rows > vesselType.MaxRows || tiers > vesselType.MaxTiers)
                 throw new ArgumentException("Dimensions exceed the vessel type limits.");
 
-            // Create the vessel
             var vessel = new Vessel(imo, name, operatorName, vesselType, bays, rows, tiers, requiredCraneCount, requiredDockLength);
 
-            // Save it
-            _vesselRepo.AddVessel(vessel);
+            await _vesselRepo.AddVesselAsync(vessel);
         }
 
-        public Vessel? GetVesselByIMO(string imo) => _vesselRepo.GetByIMO(imo);
-        public List<Vessel>? GetVesselByName(string name) => _vesselRepo.GetByName(name);
-        public List<Vessel>? GetVesselsByOperator(string operatorName) => _vesselRepo.GetByOperator(operatorName);
-        public List<Vessel> GetAllVessels() => _vesselRepo.GetAll();
+        public Task<Vessel?> GetVesselByIMOAsync(string imo) => _vesselRepo.GetByIMOAsync(imo);
+        public Task<List<Vessel>> GetVesselByNameAsync(string name) => _vesselRepo.GetByNameAsync(name);
+        public Task<List<Vessel>> GetVesselsByOperatorAsync(string operatorName) => _vesselRepo.GetByOperatorAsync(operatorName);
+        public Task<List<Vessel>> GetAllVesselsAsync() => _vesselRepo.GetAllAsync();
     }
 }
