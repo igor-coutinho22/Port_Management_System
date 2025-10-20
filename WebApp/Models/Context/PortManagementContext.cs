@@ -9,6 +9,7 @@ using WebApp.Models.Infrastructure.Configurations;
 using WebApp.Models.Domain.Users;
 using System.Text.Json;
 using WebApp.Models.Domain.StorageArea;
+using PortManagement.Domain.Enums;
 
 namespace WebApp.Models.Context
 {
@@ -25,6 +26,7 @@ namespace WebApp.Models.Context
         public DbSet<VesselType> VesselTypes { get; set; } = default!;
         public DbSet<Resource> Resources { get; set; } = default!;
         public DbSet<StorageArea> StorageAreas { get; set; } = default!;
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,7 +35,6 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new StaffConfiguration());
             modelBuilder.ApplyConfiguration(new VesselConfiguration());
             modelBuilder.ApplyConfiguration(new VesselTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new StorageAreaConfiguration());
 
             // Key para a tabela de ligação (many-to-many)
             modelBuilder.Entity<QualificationLink>()
@@ -50,6 +51,31 @@ namespace WebApp.Models.Context
                 .WithMany()
                 .HasForeignKey(q => q.QualificationId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<StorageArea>(builder =>
+            {
+                builder.HasKey(sa => sa.Id);
+
+                builder.Property(sa => sa.Name)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                builder.Property(sa => sa.MaxCapacityTeu).IsRequired();
+                builder.Property(sa => sa.CurrentOccupancyTeu).IsRequired();
+
+                builder.HasMany(sa => sa.Distances)
+                    .WithOne(d => d.FromStorageArea)
+                    .HasForeignKey(d => d.FromStorageAreaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Use a discriminator for the derived types (TPH)
+                builder
+                    .HasDiscriminator<StorageAreaType>("StorageAreaType")
+                    .HasValue<Dock>(StorageAreaType.Dock)
+                    .HasValue<ContainerYard>(StorageAreaType.ContainerYard)
+                    .HasValue<Warehouse>(StorageAreaType.Warehouse);
+            });
+
 
             base.OnModelCreating(modelBuilder);
         }

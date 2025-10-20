@@ -29,7 +29,7 @@ namespace WebApp.Models.Domain.StorageArea
             MaxVesselLengthMeters = maxVesselLengthMeters;
         }
 
-        public override string GetUsageDescription()
+        override public string GetUsageDescription()
         {
             return $"Dock for vessel berthing, equipped with {FixedStsCranesCount} STS cranes.";
         }
