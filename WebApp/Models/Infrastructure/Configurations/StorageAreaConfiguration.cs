@@ -23,11 +23,6 @@ namespace WebApp.Models.Infrastructure.Configurations
 
             builder.Property(sa => sa.CurrentOccupancyTeu)
                 .IsRequired();
-
-            builder.HasMany(sa => sa.Distances)
-                .WithOne(d => d.FromStorageArea)
-                .HasForeignKey(d => d.FromStorageAreaId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
