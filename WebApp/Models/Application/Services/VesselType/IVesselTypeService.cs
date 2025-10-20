@@ -5,11 +5,11 @@ namespace WebApp.Models.Application.Services
 {
     public interface IVesselTypeService
     {
-        List<VesselType> GetAllVesselTypes();
-        VesselType? GetVesselTypeByName(string name);
-        List<VesselType> SearchVesselTypesByName(string partialName);
-        List<VesselType> SearchVesselTypesByDescription(string keyword);
-        void AddVesselType(string name, string description, int maxBays, int maxRows, int maxTiers);
-        void UpdateVesselType(string currentName, string newName, string description, int maxBays, int maxRows, int maxTiers);
+        Task<List<VesselType>> GetAllVesselTypesAsync();
+        Task<VesselType?> GetVesselTypeByNameAsync(string name);
+        Task<List<VesselType>> SearchVesselTypesByNameAsync(string partialName);
+        Task<List<VesselType>> SearchVesselTypesByDescriptionAsync(string keyword);
+        Task AddVesselTypeAsync(string name, string description, int maxBays, int maxRows, int maxTiers);
+        Task UpdateVesselTypeAsync(string currentName, string newName, string description, int maxBays, int maxRows, int maxTiers);
     }
 }

@@ -14,39 +14,24 @@ namespace WebApp.Models.Application.Services.VesselTypeService
             _vesselTypeRepo = vesselTypeRepo;
         }
 
-        // ----------------------------
-        // Get all vessel types
-        // ----------------------------
-        public List<VesselType> GetAllVesselTypes() => _vesselTypeRepo.GetAll();
+        public Task<List<VesselType>> GetAllVesselTypesAsync() => _vesselTypeRepo.GetAllAsync();
 
-        // ----------------------------
-        // Get a vessel type by exact name
-        // ----------------------------
-        public VesselType? GetVesselTypeByName(string name) => _vesselTypeRepo.GetByName(name);
+        public Task<VesselType?> GetVesselTypeByNameAsync(string name) => _vesselTypeRepo.GetByNameAsync(name);
 
-        // ----------------------------
-        // Search vessel types by name or description keyword
-        // ----------------------------
-        public List<VesselType> SearchVesselTypesByName(string partialName) => _vesselTypeRepo.SearchByName(partialName);
+        public Task<List<VesselType>> SearchVesselTypesByNameAsync(string partialName) => _vesselTypeRepo.SearchByNameAsync(partialName);
 
-        public List<VesselType> SearchVesselTypesByDescription(string keyword) => _vesselTypeRepo.SearchByDescription(keyword);
+        public Task<List<VesselType>> SearchVesselTypesByDescriptionAsync(string keyword) => _vesselTypeRepo.SearchByDescriptionAsync(keyword);
 
-        // ----------------------------
-        // Add a new vessel type
-        // ----------------------------
-        public void AddVesselType(string name, string description, int maxBays, int maxRows, int maxTiers)
+        public async Task AddVesselTypeAsync(string name, string description, int maxBays, int maxRows, int maxTiers)
         {
             var vesselType = new VesselType(name, description, maxBays, maxRows, maxTiers);
-            _vesselTypeRepo.Add(vesselType);
+            await _vesselTypeRepo.AddAsync(vesselType);
         }
 
-        // ----------------------------
-        // Update an existing vessel type
-        // ----------------------------
-        public void UpdateVesselType(string currentName, string newName, string description, int maxBays, int maxRows, int maxTiers)
+        public async Task UpdateVesselTypeAsync(string currentName, string newName, string description, int maxBays, int maxRows, int maxTiers)
         {
             var updatedVesselType = new VesselType(newName, description, maxBays, maxRows, maxTiers);
-            _vesselTypeRepo.Update(currentName, updatedVesselType);
+            await _vesselTypeRepo.UpdateAsync(currentName, updatedVesselType);
         }
     }
 }
