@@ -1,24 +1,118 @@
+using Microsoft.EntityFrameworkCore;
+using WebApp.Models.Context;
 using WebApp.Models.Domain.Resources;
+using WebApp.Models.Domain.Resources.Enums;
+using WebApp.Models.Domain.Resources.Interfaces;
 
 namespace WebApp.Models.Infrastructure.Repositories.Resources
 {
     public class ResourceRepository : IResourceRepository
     {
-        private readonly List<Resource> _resources = new List<Resource>();
-
+        private readonly PortManagementContext _context;
+        public ResourceRepository(PortManagementContext context)
+        {
+            _context = context;
+        }
         public void AddResource(Resource resource)
         {
-            if (_resources.Any(v => v.Id == resource.Id))
-                throw new ArgumentException("A Resource with this Id already exists.");
-            _resources.Add(resource);
+            _context.Resources.Add(resource);
+            _context.SaveChanges();
         }
 
-        public Resource? GetById(long id) =>
-            _resources.FirstOrDefault(r => r.Id == id);
+        public async Task AddResourceAsync(Resource resource)
+        {
+            await _context.Resources.AddAsync(resource);
+            await _context.SaveChangesAsync();
+        }
 
-        public Resource? GetByName(string name) =>
-            _resources.FirstOrDefault(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        
+        public Resource? GetById(string id) =>
+            _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .FirstOrDefault(r => r.Id == id);
 
-        public List<Resource> GetAll() => _resources;
+        public async Task<Resource?> GetByIdAsync(string id) =>
+            await _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+        public Resource? GetByDescription(string description) =>
+            _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .FirstOrDefault(r => r.Description.Equals(description, StringComparison.OrdinalIgnoreCase));
+
+         public async Task<Resource?> GetByDescriptionAsync(string description) =>
+            await _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .FirstOrDefaultAsync(r => r.Description.Equals(description, StringComparison.OrdinalIgnoreCase));
+
+        public List<Resource> GetAll() =>
+            _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .ToList();
+        public async Task<List<Resource>> GetAllAsync() =>
+            await _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .ToListAsync();
+
+        public List<Resource> GetByType(ResourceType type) =>
+            _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .Where(r => r.ResourceType == type)
+                .ToList();
+
+        public async Task<List<Resource>> GetByTypeAsync(ResourceType type) =>
+            await _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .Where(r => r.ResourceType == type)
+                .ToListAsync();
+
+        public List<Resource> GetByStatus(ResourceAvailabilityStatus status) =>
+            _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .Where(r => r.Status == status)
+                .ToList();
+
+        public async Task<List<Resource>> GetByStatusAsync(ResourceAvailabilityStatus status) =>
+            await _context.Resources
+                .Include(r => r.qualificationRequirements)
+                .Where(r => r.Status == status)
+                .ToListAsync();
+
+        public void UpdateAvailability(string id, ResourceAvailabilityStatus newStatus)
+        {
+            var resource = _context.Resources.FirstOrDefault(r => r.Id == id);
+            if (resource == null)
+                throw new KeyNotFoundException($"Resource with ID '{id}' not found.");
+
+            resource.Status = newStatus;
+            _context.SaveChanges();
+        }
+
+       public async Task UpdateAvailabilityAsync(string id, ResourceAvailabilityStatus newStatus)
+        {
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
+            if (resource == null)
+                throw new KeyNotFoundException($"Resource with ID '{id}' not found.");
+
+            resource.Status = newStatus;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateResourceAsync(Resource resource)
+        {
+            _context.Resources.Update(resource);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(string id)
+        {
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
+            if (resource == null)
+                throw new KeyNotFoundException($"Resource with ID '{id}' not found.");
+
+            _context.Resources.Remove(resource);
+            await _context.SaveChangesAsync();
+        }
     }
 }
