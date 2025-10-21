@@ -1,12 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
-using WebApp.Models.Application.Services.VesselService;
-using WebApp.Models.Application.Services.VesselTypeService;
 using WebApp.Models.Domain.Vessel;
-using WebApp.Models.Domain.Vessels.VesselType;
-using System.Collections.Generic;
-using System.Linq;
 using WebApp.Models.Application.Services;
 
 namespace WebApp.Controllers
@@ -29,26 +24,11 @@ namespace WebApp.Controllers
         // Register a new vessel
         // ------------------------------------------------------------
         [HttpPost]
-        public async Task<IActionResult> RegisterVessel([FromBody] VesselDTO dto)
+        public async Task<IActionResult> RegisterVesselAsync([FromBody] VesselDTO dto)
         {
             try
             {
-                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(dto.VesselType);
-                if (vesselType == null)
-                    return BadRequest($"Vessel type '{dto.VesselType}' not recognized.");
-
-                await _vesselService.RegisterVesselAsync(
-                    dto.IMO,
-                    dto.VesselName,
-                    dto.OperatorName,
-                    vesselType,
-                    dto.Bays,
-                    dto.Rows,
-                    dto.Tiers,
-                    dto.RequiredCraneCount,
-                    dto.RequiredDockLength
-                );
-
+                await _vesselService.RegisterVesselDTOAsync(dto);
                 return CreatedAtAction(nameof(GetByIMO), new { imo = dto.IMO }, dto);
             }
             catch (ArgumentException ex)
@@ -63,32 +43,10 @@ namespace WebApp.Controllers
         [HttpPut("{imo}")]
         public async Task<IActionResult> UpdateVessel(string imo, [FromBody] VesselDTO dto)
         {
-            var existing = await _vesselService.GetVesselByIMOAsync(imo);
-            if (existing == null)
-                return NotFound($"Vessel with IMO {imo} not found.");
-
             try
             {
-                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(dto.VesselType);
-                if (vesselType == null)
-                    return BadRequest($"Vessel type '{dto.VesselType}' not recognized.");
-
-                existing.VesselName = dto.VesselName;
-                existing.OperatorName = dto.OperatorName;
-                existing.VesselType = vesselType;
-                existing.ValidateDimensions(
-                    dto.Bays,
-                    dto.Rows,
-                    dto.Tiers
-                );
-                existing.GetType().GetProperty("RequiredCraneCount")?.SetValue(existing, dto.RequiredCraneCount);
-                existing.GetType().GetProperty("RequiredDockLength")?.SetValue(existing, dto.RequiredDockLength);
-
-                // Persist changes
-                // Since there's no explicit update method, you may rely on tracking via repository context if attached.
-                // If not tracked, consider adding an UpdateAsync in the repository/service.
-
-                return Ok(MapToDto(existing));
+                await _vesselService.UpdateVesselAsync(imo, dto.VesselName, dto.OperatorName, await _vesselTypeService.GetVesselTypeByNameAsync(dto.VesselType) ?? throw new ArgumentException($"Vessel type '{dto.VesselType}' not recognized."), dto.Bays, dto.Rows, dto.Tiers, dto.RequiredCraneCount, dto.RequiredDockLength);
+                return NoContent();
             }
             catch (ArgumentException ex)
             {

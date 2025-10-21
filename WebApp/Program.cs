@@ -70,6 +70,10 @@ builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IVesselRepository, VesselRepository>();
 builder.Services.AddScoped<IVesselService, VesselService>();
 
+// Vessel type services & repository (required by VesselService)
+builder.Services.AddScoped<WebApp.Models.Infrastructure.Repositories.IVesselTypeRepository, WebApp.Models.Infrastructure.Repositories.VesselTypeRepository.VesselTypeRepository>();
+builder.Services.AddScoped<WebApp.Models.Application.Services.IVesselTypeService, WebApp.Models.Application.Services.VesselTypeService.VesselTypeService>();
+
 var app = builder.Build();
 
 // ---------- Ensure DB + seed roles/admin ----------

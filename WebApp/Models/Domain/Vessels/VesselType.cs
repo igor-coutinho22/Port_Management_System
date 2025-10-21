@@ -10,9 +10,9 @@ namespace WebApp.Models.Domain.Vessels.VesselType
 
         public string Name { get; set; }
         public string Description { get; set; }
-        public int MaxBays { get; set; }
-        public int MaxRows { get; set; }
-        public int MaxTiers { get; set; }
+        public int MaxBays { get; protected set; }
+        public int MaxRows { get; protected set; }
+        public int MaxTiers { get; protected set; }
         public int MaxTEUCapacity => MaxRows * MaxBays * MaxTiers;
 
         public VesselType(string name, string description, int maxBays, int maxRows, int maxTiers)

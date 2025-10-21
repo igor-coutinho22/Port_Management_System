@@ -24,17 +24,9 @@ namespace WebApp.Models.Infrastructure.Repositories.VesselRepository
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateVesselAsync(Vessel vessel, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
+        public async Task UpdateVesselAsync(Vessel vessel)
         {
-            vessel.VesselName = name;
-            vessel.OperatorName = operatorName;
-            vessel.VesselType = vesselType;
-            vessel.UpdateBays(bays);
-            vessel.UpdateRows(rows);
-            vessel.UpdateTiers(tiers);
-            vessel.RequiredCraneCount = requiredCraneCount;
-            vessel.RequiredDockLength = requiredDockLength;
-
+            _context.Vessels.Update(vessel);
             await _context.SaveChangesAsync();
         }
 
