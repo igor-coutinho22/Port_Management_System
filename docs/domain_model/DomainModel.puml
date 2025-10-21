@@ -1,60 +1,127 @@
 @startuml
-' Title
-title Shipping Port Management Class Diagram
+title Shipping Port Management - Domain Model (UML Style)
 
-' Entities
-class ShippingAgent
-class ShippingAgentRepresentative
-class VesselVisitNotification
-class Vessel
-class VesselType
-class Dock
-class CargoManifest
-class CargoManifestType
-class Cargo
-class Container
-class StorageArea
-class StorageAreaType
-class MobileResources
-class MobileResourcesType
-class Staff
-class Qualification
+' === Domain Layer ===
+package "Domain Layer" {
+  package "Staff Aggregate" {
+    class Staff {
+      +Id : Guid
+      +MecanographicNumber : string
+      +ShortName : string
+      +Email : string
+      +Phone : string
+      +OperationalWindow : Schedule
+      +Status : StaffStatus
+      +Qualifications : List<QualificationLink>
+    }
 
-' Relationships and multiplicities
+    class StaffStatus
+    class Schedule
+    class QualificationLink {
+      +StaffId : Guid
+      +QualificationId : Guid
+    }
+  }
 
-' --- Shipping Agent section ---
-ShippingAgent "1" <-- "1..*" ShippingAgentRepresentative : represents
-ShippingAgentRepresentative "1" --> "0..*" VesselVisitNotification : submits
+  package "Qualification Aggregate" {
+    class Qualification {
+      +Id : Guid
+      +Code : string
+      +Name : string
+    }
+  }
 
-' --- Vessel section ---
-VesselVisitNotification "1" --> "1" Vessel : specifies
-Vessel "0..*" --> "1" VesselType : is of
-VesselVisitNotification "1" --> "1" Dock : specifies
-VesselVisitNotification "0..*" <-- "1" Staff : approves/rejects
+  package "Resource Aggregate" {
+    class Resource {
+      +Id : Guid
+      +Name : string
+      +Type : string
+      +AssignedStaffId : Guid
+    }
+  }
 
+  package "StorageArea Aggregate" {
+    class StorageArea {
+      +Id : Guid
+      +Name : string
+      +Capacity : int
+      +TypeId : Guid
+    }
+    class StorageAreaType {
+      +Id : Guid
+      +Name : string
+    }
+  }
 
-' --- Cargo manifest section ---
-VesselVisitNotification "1" --> "0..1..2" CargoManifest : contains
-CargoManifest "0..*" --> "1" CargoManifestType : is of
-CargoManifest "1" --> "*" Cargo : identifies
-CargoManifest "1" --> "*" Container : identifies
+  package "Vessel Aggregate" {
+    class Vessel {
+      +Id : Guid
+      +Name : string
+      +IMO : string
+      +VesselTypeId : Guid
+    }
+    class VesselType {
+      +Id : Guid
+      +Code : string
+      +Description : string
+    }
+  }
+}
 
+' === Relationships between aggregates ===
+Staff "0..*" --> "0..*" Qualification : possesses >
+Resource "0..*" --> "1" Staff : operated by >
+Vessel "1" --> "1" VesselType : is of >
+StorageArea "1" --> "1" StorageAreaType : is of >
 
-' --- Cargo and Container ---
-Cargo "0..*" <-- "1" Container : stores
-Container "0..*" <-- "0..*" StorageArea : stores
-Container "0..1" <-- "0..*" MobileResources : move
+' === Application Layer ===
+package "Application Layer" {
+  class StaffService
+  class QualificationService
+  class ResourceService
+  class VesselService
+  class StorageAreaService
+}
 
-' --- Storage area section ---
-StorageArea "0..*" --> "1" StorageAreaType : is of
+StaffService --> StaffRepository
+QualificationService --> QualificationRepository
+ResourceService --> ResourceRepository
+VesselService --> VesselRepository
+StorageAreaService --> StorageAreaRepository
 
-' --- Mobile resources section ---
-MobileResources "0..*" --> "1" MobileResourcesType : is of
-MobileResources "0..*" <-- "1" Staff : manages
+' === Infrastructure Layer ===
+package "Infrastructure Layer" {
+  interface IStaffRepository
+  class StaffRepository
+  interface IQualificationRepository
+  class QualificationRepository
+  interface IResourceRepository
+  class ResourceRepository
+  interface IVesselRepository
+  class VesselRepository
+  interface IStorageAreaRepository
+  class StorageAreaRepository
+}
 
-' --- Staff section ---
-Staff "0..*" --> "1..*" Qualification
-Staff "1..*" --> "1..*" Staff : Manages
+StaffRepository -up-|> IStaffRepository
+QualificationRepository -up-|> IQualificationRepository
+ResourceRepository -up-|> IResourceRepository
+VesselRepository -up-|> IVesselRepository
+StorageAreaRepository -up-|> IStorageAreaRepository
 
+' === API Layer ===
+package "API Layer" {
+  class StaffController
+  class QualificationController
+  class ResourceController
+  class VesselController
+  class StorageAreaController
+}
+
+StaffController --> StaffService
+QualificationController --> QualificationService
+ResourceController --> ResourceService
+VesselController --> VesselService
+StorageAreaController --> StorageAreaService
 
 @enduml
