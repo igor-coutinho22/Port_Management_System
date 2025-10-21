@@ -61,5 +61,73 @@ namespace WebApp.Models.Application.Services.Resources
 
             _resourceRepo.UpdateAvailability(id, newStatus);
         }
+
+        //Async Methods
+
+        public async Task DeleteAsync(string id)
+            => await _resourceRepo.DeleteAsync(id);
+        public async Task ActivateAsync(string id)
+            => await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Active);
+
+        public async Task DeactivateAsync(string id)
+            => await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Inactive);
+
+        public async Task PutInMaintenanceAsync(string id)
+            => await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.UnderMaintenance);
+
+        public async Task EndMaintenanceAsync(string id)
+            => await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Active);
+        public async Task RegisterResourceAsync(
+            string id,
+            string description,
+            ResourceType type,
+            int operationalCapacity,
+            ResourceAvailabilityStatus status,
+            int setupTime,
+            HashSet<Qualification> qualifications)
+        {
+            var existing = await _resourceRepo.GetByIdAsync(id);
+            if (existing != null)
+                throw new ArgumentException($"A resource with ID '{id}' already exists.");
+
+            var resource = new Resource(
+                id,
+                description,
+                type,
+                operationalCapacity,
+                status,
+                setupTime,
+                qualifications
+            );
+
+            await _resourceRepo.AddResourceAsync(resource);
+        }
+
+        public async Task<Resource?> GetResourceByIdAsync(string id) =>
+            await _resourceRepo.GetByIdAsync(id);
+
+        public async Task<Resource?> GetResourceByDescriptionAsync(string description) =>
+            await _resourceRepo.GetByDescriptionAsync(description);
+
+        public async Task<List<Resource>> GetAllResourcesAsync() =>
+            await _resourceRepo.GetAllAsync();
+
+        public async Task<List<Resource>> GetResourcesByTypeAsync(ResourceType type) =>
+            await _resourceRepo.GetByTypeAsync(type);
+
+        public async Task<List<Resource>> GetResourcesByStatusAsync(ResourceAvailabilityStatus status) =>
+            await _resourceRepo.GetByStatusAsync(status);
+
+        public async Task UpdateAvailabilityAsync(string id, ResourceAvailabilityStatus newStatus)
+        {
+            var resource = await _resourceRepo.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Resource with ID '{id}' not found.");
+
+            await _resourceRepo.UpdateAvailabilityAsync(id, newStatus);
+        }
+
+
     }
+    
+    
 }

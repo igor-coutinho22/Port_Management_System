@@ -19,21 +19,24 @@ namespace PortApi.Controllers
             _resourceService = resourceService;
         }
 
+        // GET: api/resources
         [HttpGet]
-        public ActionResult<IEnumerable<ResourceDTO>> GetResources(
+        public async Task<ActionResult<IEnumerable<ResourceDTO>>> GetResources(
             [FromQuery] string? id,
             [FromQuery] string? description,
             [FromQuery] ResourceType? type,
             [FromQuery] ResourceAvailabilityStatus? status)
         {
-            var resources = _resourceService.GetAllResources();
+            var resources = await _resourceService.GetAllResourcesAsync();
 
             if (!string.IsNullOrWhiteSpace(id))
                 resources = resources.Where(r => r.Id!.Equals(id, StringComparison.OrdinalIgnoreCase)).ToList();
 
             if (!string.IsNullOrWhiteSpace(description))
-                resources = resources.Where(r => r.Description != null &&
-                    r.Description.Contains(description, StringComparison.OrdinalIgnoreCase)).ToList();
+                resources = resources
+                    .Where(r => r.Description != null &&
+                                r.Description.Contains(description, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
             if (type.HasValue)
                 resources = resources.Where(r => r.ResourceType == type.Value).ToList();
@@ -44,22 +47,24 @@ namespace PortApi.Controllers
             return Ok(resources.Select(ResourceToDTO));
         }
 
+        // GET: api/resources/{id}
         [HttpGet("{id}")]
-        public ActionResult<ResourceDTO> GetResource(string id)
+        public async Task<ActionResult<ResourceDTO>> GetResource(string id)
         {
-            var resource = _resourceService.GetResourceById(id);
+            var resource = await _resourceService.GetResourceByIdAsync(id);
             if (resource == null)
                 return NotFound();
 
             return Ok(ResourceToDTO(resource));
         }
 
+        // POST: api/resources
         [HttpPost]
-        public ActionResult<ResourceDTO> PostResource(ResourceDTO resourceDTO)
+        public async Task<ActionResult<ResourceDTO>> PostResource(ResourceDTO resourceDTO)
         {
             var qualifications = resourceDTO.QualificationRequirements ?? new HashSet<Qualification>();
 
-            _resourceService.RegisterResource(
+            await _resourceService.RegisterResourceAsync(
                 id: resourceDTO.Id!,
                 description: resourceDTO.Description!,
                 type: resourceDTO.ResourceType,
@@ -69,36 +74,74 @@ namespace PortApi.Controllers
                 qualifications: qualifications
             );
 
-            var created = _resourceService.GetResourceById(resourceDTO.Id!);
+            var created = await _resourceService.GetResourceByIdAsync(resourceDTO.Id!);
             return CreatedAtAction(nameof(GetResource), new { id = created!.Id }, ResourceToDTO(created));
         }
 
+        // PUT: api/resources/{id}
         [HttpPut("{id}")]
-        public IActionResult PutResource(string id, ResourceDTO resourceDTO)
+        public async Task<IActionResult> PutResource(string id, ResourceDTO resourceDTO)
         {
-            var resource = _resourceService.GetResourceById(id);
+            var resource = await _resourceService.GetResourceByIdAsync(id);
             if (resource == null)
                 return NotFound();
 
-            // You can add other update logic here (capacity, setup time, etc.)
+            // Update properties directly
             resource.Description = resourceDTO.Description;
             resource.OperationalCapacity = resourceDTO.OperationalCapacity;
             resource.SetupTime = resourceDTO.SetupTime;
             resource.Status = resourceDTO.Status;
             resource.ResourceType = resourceDTO.ResourceType;
 
+            await _resourceService.UpdateAvailabilityAsync(id, resourceDTO.Status);
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteResource(string id)
+        // PATCH: api/resources/{id}/activate
+        [HttpPatch("{id}/activate")]
+        public async Task<IActionResult> ActivateResource(string id)
         {
-            var resource = _resourceService.GetResourceById(id);
+            await _resourceService.ActivateAsync(id);
+            var updated = await _resourceService.GetResourceByIdAsync(id);
+            return Ok(ResourceToDTO(updated!));
+        }
+
+        // PATCH: api/resources/{id}/deactivate
+        [HttpPatch("{id}/deactivate")]
+        public async Task<IActionResult> DeactivateResource(string id)
+        {
+            await _resourceService.DeactivateAsync(id);
+            var updated = await _resourceService.GetResourceByIdAsync(id);
+            return Ok(ResourceToDTO(updated!));
+        }
+
+        // PATCH: api/resources/{id}/maintenance/start
+        [HttpPatch("{id}/maintenance/start")]
+        public async Task<IActionResult> PutInMaintenance(string id)
+        {
+            await _resourceService.PutInMaintenanceAsync(id);
+            var updated = await _resourceService.GetResourceByIdAsync(id);
+            return Ok(ResourceToDTO(updated!));
+        }
+
+        // PATCH: api/resources/{id}/maintenance/end
+        [HttpPatch("{id}/maintenance/end")]
+        public async Task<IActionResult> EndMaintenance(string id)
+        {
+            await _resourceService.EndMaintenanceAsync(id);
+            var updated = await _resourceService.GetResourceByIdAsync(id);
+            return Ok(ResourceToDTO(updated!));
+        }
+
+        // DELETE: api/resources/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteResource(string id)
+        {
+            var resource = await _resourceService.GetResourceByIdAsync(id);
             if (resource == null)
                 return NotFound();
 
-            // Assuming repository/service handles removal
-            // You can add a DeleteResource() method in your service if needed
+            await _resourceService.DeleteAsync(id);
             return NoContent();
         }
 

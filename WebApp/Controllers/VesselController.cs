@@ -87,7 +87,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Get all vessel types
         // ------------------------------------------------------------
-        [HttpGet("getAllVesselTypes")]
+        [HttpGet()]
         public async Task<IActionResult> GetAllVesselTypesAsync()
         {
             var vesselTypes = await _vesselTypeService.GetAllVesselTypesAsync();
