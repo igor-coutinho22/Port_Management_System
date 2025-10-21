@@ -1,0 +1,59 @@
+@startuml
+title US 2.2.11 – Register and Manage Staff
+
+actor "Logistics Operator" as User
+
+' === Layers ===
+participant "StaffController" as Controller
+participant "StaffService" as Service
+participant "StaffRepository" as Repository
+participant "PortManagementContext" as DbContext
+entity "Staff (Aggregate Root)" as Staff
+entity "Qualification (Aggregate Root)" as Qualification
+
+' === Register new staff ===
+User -> Controller : POST /api/staff\n(StaffDTO)
+Controller -> Service : RegisterStaff(StaffDTO)
+Service -> Repository : CreateStaff(Staff)
+Repository -> DbContext : Add(Staff)
+DbContext --> Repository : Staff entity persisted
+Repository --> Service : Staff saved
+Service --> Controller : StaffDTO (Created)
+Controller --> User : 201 Created (Staff info)
+
+' === Retrieve staff list ===
+User -> Controller : GET /api/staff?filter=available
+Controller -> Service : GetAllStaff(filter)
+Service -> Repository : GetAll(filter)
+Repository -> DbContext : Query(Staff)
+DbContext --> Repository : List<Staff>
+Repository --> Service : List<Staff>
+Service --> Controller : List<StaffDTO>
+Controller --> User : 200 OK (List)
+
+' === Deactivate staff ===
+User -> Controller : PUT /api/staff/{id}/deactivate
+Controller -> Service : DeactivateStaff(id)
+Service -> Repository : GetById(id)
+Repository -> DbContext : Find(Staff)
+DbContext --> Repository : Staff
+Repository --> Service : Staff
+Service -> Staff : Deactivate()
+Staff -> Staff : Set Status = Unavailable
+Service -> Repository : Update(Staff)
+Repository -> DbContext : SaveChanges()
+Service --> Controller : OK
+Controller --> User : 200 OK (Deactivated)
+
+' === Staff-Qualification relation ===
+User -> Controller : PUT /api/staff/{id}/qualifications/{qualificationId}
+Controller -> Service : AssignQualification(staffId, qualificationId)
+Service -> Repository : GetById(staffId)
+Repository --> Service : Staff
+Service -> Qualification : Validate(qualificationId)
+Service -> Staff : AddQualification(qualificationId)
+Service -> Repository : Update(Staff)
+Repository -> DbContext : SaveChanges()
+Controller --> User : 200 OK (Qualification assigned)
+
+@enduml
