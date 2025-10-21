@@ -29,7 +29,7 @@ namespace WebApp.Controllers
             try
             {
                 await _vesselService.RegisterVesselDTOAsync(dto);
-                return CreatedAtAction(nameof(GetByIMO), new { imo = dto.IMO }, dto);
+                return CreatedAtAction(nameof(GetByIMOAsync), new { imo = dto.IMO }, dto);
             }
             catch (ArgumentException ex)
             {
@@ -41,7 +41,7 @@ namespace WebApp.Controllers
         // Update an existing vessel
         // ------------------------------------------------------------
         [HttpPut("{imo}")]
-        public async Task<IActionResult> UpdateVessel(string imo, [FromBody] VesselDTO dto)
+        public async Task<IActionResult> UpdateVesselAsync(string imo, [FromBody] VesselDTO dto)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace WebApp.Controllers
         // Get by IMO
         // ------------------------------------------------------------
         [HttpGet("{imo}")]
-        public async Task<IActionResult> GetByIMO(string imo)
+        public async Task<IActionResult> GetByIMOAsync(string imo)
         {
             var vessel = await _vesselService.GetVesselByIMOAsync(imo);
             if (vessel == null)
@@ -71,7 +71,7 @@ namespace WebApp.Controllers
         // Search by name or operator
         // ------------------------------------------------------------
         [HttpGet]
-        public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] string? operatorName)
+        public async Task<IActionResult> SearchAsync([FromQuery] string? name, [FromQuery] string? operatorName)
         {
             var results = await _vesselService.GetAllVesselsAsync();
 
@@ -88,7 +88,7 @@ namespace WebApp.Controllers
         // Get all vessel types
         // ------------------------------------------------------------
         [HttpGet("types")]
-        public async Task<IActionResult> GetAllVesselTypes()
+        public async Task<IActionResult> GetAllVesselTypesAsync()
         {
             var vesselTypes = (await _vesselTypeService.GetAllVesselTypesAsync())
                 .Select(vt => new VesselTypeDTO(vt.Name, vt.Description, vt.MaxBays, vt.MaxRows, vt.MaxTiers));

@@ -1,15 +1,13 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using WebApp.Models.Application.Services;
 using WebApp.Models.Application.Services.VesselService;
+using WebApp.Models.Application.Services.VesselTypeService;
 using WebApp.Models.Context;
 using WebApp.Models.Domain.Users;
 using WebApp.Models.Infrastructure.Repositories;
 using WebApp.Models.Infrastructure.Repositories.VesselRepository;
-using WebApp.Seeding; 
+using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,10 +67,8 @@ builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IVesselRepository, VesselRepository>();
 builder.Services.AddScoped<IVesselService, VesselService>();
-
-// Vessel type services & repository (required by VesselService)
-builder.Services.AddScoped<WebApp.Models.Infrastructure.Repositories.IVesselTypeRepository, WebApp.Models.Infrastructure.Repositories.VesselTypeRepository.VesselTypeRepository>();
-builder.Services.AddScoped<WebApp.Models.Application.Services.IVesselTypeService, WebApp.Models.Application.Services.VesselTypeService.VesselTypeService>();
+builder.Services.AddScoped<IVesselTypeRepository, VesselTypeRepository>();
+builder.Services.AddScoped<IVesselTypeService, VesselTypeService>();
 
 var app = builder.Build();
 

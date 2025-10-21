@@ -73,11 +73,16 @@ namespace WebApp.Models.Domain.Vessel
             ValidateDimensions(Bays, newRows, Tiers);
             Rows = newRows;
         }
-        
+
         public void UpdateTiers(int newTiers)
         {
             ValidateDimensions(Bays, Rows, newTiers);
             Tiers = newTiers;
+        }
+        
+        public override string ToString()
+        {
+            return $"{VesselName} (IMO: {IMO}, Operator: {OperatorName}, Type: {VesselType.Name}, Dimensions: {Bays}x{Rows}x{Tiers}, Required Cranes: {RequiredCraneCount}, Required Dock Length: {RequiredDockLength})";
         }
     }
 }

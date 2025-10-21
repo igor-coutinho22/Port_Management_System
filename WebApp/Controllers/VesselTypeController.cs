@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Models.Application.Services.VesselTypeService;
 using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Application.DTOs;
-using System.Collections.Generic;
-using System.Linq;
 using WebApp.Models.Application.Services;
 
 namespace WebApp.Controllers

@@ -36,5 +36,34 @@ namespace WebApp.Models.Domain.Vessels.VesselType
 
         // Return all vessel types
         public static IEnumerable<VesselType> GetAllTypes() => _allTypes;
+
+        public void UpdateMaxBays(int newMaxBays)
+        {
+            if (newMaxBays <= 0)
+                throw new ArgumentException("Max bays must be greater than zero.", nameof(newMaxBays));
+
+            MaxBays = newMaxBays;
+        }
+
+        public void UpdateMaxRows(int newMaxRows)
+        {
+            if (newMaxRows <= 0)
+                throw new ArgumentException("Max rows must be greater than zero.", nameof(newMaxRows));
+
+            MaxRows = newMaxRows;
+        }
+
+        public void UpdateMaxTiers(int newMaxTiers)
+        {
+            if (newMaxTiers <= 0)
+                throw new ArgumentException("Max tiers must be greater than zero.", nameof(newMaxTiers));
+
+            MaxTiers = newMaxTiers;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} - {Description} (Max Bays: {MaxBays}, Max Rows: {MaxRows}, Max Tiers: {MaxTiers}, Max TEU Capacity: {MaxTEUCapacity})";
+        }
     }
 }
