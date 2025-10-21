@@ -18,7 +18,7 @@ namespace WebApp.Models.Context
         public PortManagementContext(DbContextOptions<PortManagementContext> options)
             : base(options) { }
 
-        // tabelas (DbSet)
+        // DbSets
         public DbSet<Qualification> Qualifications { get; set; } = default!;
         public DbSet<Staff> Staff { get; set; } = default!;
         public DbSet<QualificationLink> QualificationLinks { get; set; } = default!;
@@ -26,17 +26,16 @@ namespace WebApp.Models.Context
         public DbSet<VesselType> VesselTypes { get; set; } = default!;
         public DbSet<Resource> Resources { get; set; } = default!;
         public DbSet<StorageArea> StorageAreas { get; set; } = default!;
-        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Entidades
+            // Apply entity configurations
             modelBuilder.ApplyConfiguration(new QualificationConfiguration());
             modelBuilder.ApplyConfiguration(new StaffConfiguration());
             modelBuilder.ApplyConfiguration(new VesselConfiguration());
             modelBuilder.ApplyConfiguration(new VesselTypeConfiguration());
 
-            // Key para a tabela de ligação (many-to-many)
+            // Qualification link (many-to-many)
             modelBuilder.Entity<QualificationLink>()
                 .HasKey(q => new { q.StaffId, q.QualificationId });
 
@@ -52,6 +51,7 @@ namespace WebApp.Models.Context
                 .HasForeignKey(q => q.QualificationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Storage area hierarchy
             modelBuilder.Entity<StorageArea>(builder =>
             {
                 builder.HasKey(sa => sa.Id);
@@ -63,7 +63,6 @@ namespace WebApp.Models.Context
                 builder.Property(sa => sa.MaxCapacityTeu).IsRequired();
                 builder.Property(sa => sa.CurrentOccupancyTeu).IsRequired();
 
-                // Use a discriminator for the derived types (TPH)
                 builder
                     .HasDiscriminator<StorageAreaType>("StorageAreaType")
                     .HasValue<Dock>(StorageAreaType.Dock)

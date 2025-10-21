@@ -12,6 +12,7 @@ namespace WebApp.Models.Domain.Vessel
         public string OperatorName { get; set; } = null!;
         public Container[,,] CargoGrid { get; set; } = null!;
 
+        public string VesselTypeName { get; set; } = null!;
         public VesselType VesselType { get; set; } = null!;
 
         public int RequiredCraneCount { get; set; }

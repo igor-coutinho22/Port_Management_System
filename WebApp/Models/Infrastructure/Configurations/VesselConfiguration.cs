@@ -44,7 +44,7 @@ namespace WebApp.Models.Infrastructure.Configurations
             // Navigation: VesselType
             builder.HasOne<VesselType>()
                 .WithMany()
-                .HasForeignKey("VesselTypeName") // Shadow property
+                .HasForeignKey(v => v.VesselTypeName)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
