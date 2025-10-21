@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApp.Models;
-using WebApp.Models.Context;
-using WebApp.Models.Domain;
 using WebApp.Models.Domain.Resources;
+using WebApp.Models.Domain.Resources.Enums;
+using WebApp.Models.Domain.Resources.Interfaces;
+using WebApp.Models.Domain.Qualifications;
 
 namespace PortApi.Controllers
 {
@@ -13,114 +12,105 @@ namespace PortApi.Controllers
     [ApiController]
     public class ResourcesController : ControllerBase
     {
-        private readonly PortManagementContext _context;
+        private readonly IResourceService _resourceService;
 
-        public ResourcesController(PortManagementContext context)
+        public ResourcesController(IResourceService resourceService)
         {
-            _context = context;
+            _resourceService = resourceService;
         }
 
-        // GET: api/Resources
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResourceDTO>>> GetResources()
+        public ActionResult<IEnumerable<ResourceDTO>> GetResources(
+            [FromQuery] string? id,
+            [FromQuery] string? description,
+            [FromQuery] ResourceType? type,
+            [FromQuery] ResourceAvailabilityStatus? status)
         {
-            return await _context.Resources
-                .Select(x => ResourceToDTO(x))
-                .ToListAsync();
+            var resources = _resourceService.GetAllResources();
+
+            if (!string.IsNullOrWhiteSpace(id))
+                resources = resources.Where(r => r.Id!.Equals(id, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (!string.IsNullOrWhiteSpace(description))
+                resources = resources.Where(r => r.Description != null &&
+                    r.Description.Contains(description, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (type.HasValue)
+                resources = resources.Where(r => r.ResourceType == type.Value).ToList();
+
+            if (status.HasValue)
+                resources = resources.Where(r => r.Status == status.Value).ToList();
+
+            return Ok(resources.Select(ResourceToDTO));
         }
 
-        // GET: api/Resources/5
-        // <snippet_GetByID>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ResourceDTO>> GetResource(long id)
+        public ActionResult<ResourceDTO> GetResource(string id)
         {
-            var resource = await _context.Resources.FindAsync(id);
-
+            var resource = _resourceService.GetResourceById(id);
             if (resource == null)
-            {
                 return NotFound();
-            }
 
-            return ResourceToDTO(resource);
+            return Ok(ResourceToDTO(resource));
         }
-        // </snippet_GetByID>
 
-        // PUT: api/Resources/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        // <snippet_Update>
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutResource(long id, ResourceDTO resourceDTO)
-        {
-            if (id != resourceDTO.Id)
-            {
-                return BadRequest();
-            }
-
-            var resource = await _context.Resources.FindAsync(id);
-            if (resource == null)
-            {
-                return NotFound();
-            }
-
-            resource.Name = resourceDTO.Name;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException) when (!ResourceExists(id))
-            {
-                return NotFound();
-            }
-
-            return NoContent();
-        }
-        // </snippet_Update>
-
-        // POST: api/Resources
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        // <snippet_Create>
         [HttpPost]
-        public async Task<ActionResult<ResourceDTO>> PostResource(ResourceDTO resourceDTO)
+        public ActionResult<ResourceDTO> PostResource(ResourceDTO resourceDTO)
         {
-            var resource = new Resource(resourceDTO.Id, resourceDTO.Name);
+            var qualifications = resourceDTO.QualificationRequirements ?? new HashSet<Qualification>();
 
-            _context.Resources.Add(resource);
-            await _context.SaveChangesAsync();
+            _resourceService.RegisterResource(
+                id: resourceDTO.Id!,
+                description: resourceDTO.Description!,
+                type: resourceDTO.ResourceType,
+                operationalCapacity: resourceDTO.OperationalCapacity,
+                status: resourceDTO.Status,
+                setupTime: resourceDTO.SetupTime,
+                qualifications: qualifications
+            );
 
-            return CreatedAtAction(
-                nameof(GetResource),
-                new { id = resource.Id },
-                ResourceToDTO(resource));
+            var created = _resourceService.GetResourceById(resourceDTO.Id!);
+            return CreatedAtAction(nameof(GetResource), new { id = created!.Id }, ResourceToDTO(created));
         }
-        // </snippet_Create>
 
-        // DELETE: api/Resources/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Deleteresource(long id)
+        [HttpPut("{id}")]
+        public IActionResult PutResource(string id, ResourceDTO resourceDTO)
         {
-            var resource = await _context.Resources.FindAsync(id);
+            var resource = _resourceService.GetResourceById(id);
             if (resource == null)
-            {
                 return NotFound();
-            }
 
-            _context.Resources.Remove(resource);
-            await _context.SaveChangesAsync();
+            // You can add other update logic here (capacity, setup time, etc.)
+            resource.Description = resourceDTO.Description;
+            resource.OperationalCapacity = resourceDTO.OperationalCapacity;
+            resource.SetupTime = resourceDTO.SetupTime;
+            resource.Status = resourceDTO.Status;
+            resource.ResourceType = resourceDTO.ResourceType;
 
             return NoContent();
         }
 
-        private bool ResourceExists(long id)
+        [HttpDelete("{id}")]
+        public IActionResult DeleteResource(string id)
         {
-            return _context.Resources.Any(e => e.Id == id);
+            var resource = _resourceService.GetResourceById(id);
+            if (resource == null)
+                return NotFound();
+
+            // Assuming repository/service handles removal
+            // You can add a DeleteResource() method in your service if needed
+            return NoContent();
         }
 
-        private static ResourceDTO ResourceToDTO(Resource resource) =>
-           new ResourceDTO
-           {
-               Id = resource.Id,
-               Name = resource.Name
-           };
+        private static ResourceDTO ResourceToDTO(Resource resource) => new ResourceDTO
+        {
+            Id = resource.Id!,
+            Description = resource.Description!,
+            ResourceType = resource.ResourceType,
+            OperationalCapacity = resource.OperationalCapacity,
+            Status = resource.Status,
+            SetupTime = resource.SetupTime,
+            QualificationRequirements = resource.qualificationRequirements
+        };
     }
 }

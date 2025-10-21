@@ -1,9 +1,14 @@
 // File: WebApp/Seeding/DataSeeder.cs
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using WebApp.Models.Context;
+using WebApp.Models.Domain.Qualifications;
+using WebApp.Models.Domain.Resources;
+using WebApp.Models.Domain.Resources.Enums;
 using WebApp.Models.Domain.Users;
 
 namespace WebApp.Seeding
@@ -79,6 +84,63 @@ namespace WebApp.Seeding
                 {
                     logger.LogInformation("Admin user added to Admin role.");
                 }
+            }
+        }
+
+        public static async Task SeedDomainDataAsync(IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<PortManagementContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DataSeeder");
+
+            await context.Database.MigrateAsync();
+
+            if (!await context.Set<Qualification>().AnyAsync())
+            {
+                var qualifications = new List<Qualification>
+                {
+                    new("Q1", "Crane Operator License"),
+                    new("Q2", "Heavy Vehicle Driver's License"),
+                    new("Q3", "Hazardous Cargo Handling"),
+                    new("Q4","Driver's License")
+                };
+
+                await context.AddRangeAsync(qualifications);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Seeded {Count} Qualifications.", qualifications.Count);
+            }
+
+            if (!await context.Set<Resource>().AnyAsync())
+            {
+                var allQualifications = await context.Set<Qualification>().ToListAsync();
+
+                var resources = new List<Resource>
+                {
+                    new("R001", "STS Crane #1",
+                        ResourceType.STSCrane,
+                        operationalCapacity: 60,
+                        status: ResourceAvailabilityStatus.Active,
+                        setupTime: 120,
+                        qualifications: new HashSet<Qualification> { allQualifications[0], allQualifications[2] }),
+
+                    new("R002", "Yard Crane #1",
+                        ResourceType.YardCrane,
+                        operationalCapacity: 40,
+                        status: ResourceAvailabilityStatus.Active,
+                        setupTime: 40,
+                        qualifications: new HashSet<Qualification> { allQualifications[0] }),
+
+                    new("R003", "Truck #1",
+                        ResourceType.Truck,
+                        operationalCapacity: 20,
+                        status: ResourceAvailabilityStatus.UnderMaintenance,
+                        setupTime: 5,
+                        qualifications: new HashSet<Qualification> { allQualifications[3] })
+                };
+
+                await context.AddRangeAsync(resources);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Seeded {Count} Resources.", resources.Count);
             }
         }
     }
