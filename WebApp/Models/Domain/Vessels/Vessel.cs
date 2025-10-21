@@ -17,9 +17,9 @@ namespace WebApp.Models.Domain.Vessel
         public int RequiredCraneCount { get; set; }
         public double RequiredDockLength { get; set; }
 
-        public int Bays { get; private set; }
-        public int Rows { get; private set; }
-        public int Tiers { get; private set; }
+        public int Bays { get; protected set; }
+        public int Rows { get; protected set; }
+        public int Tiers { get; protected set; }
 
         protected Vessel() { } // EF Core
         public Vessel(string imo, string vesselName, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
@@ -55,11 +55,29 @@ namespace WebApp.Models.Domain.Vessel
 
             return sum % 10 == (imo[6] - '0');
         }
-        
+
         public void ValidateDimensions(int bays, int rows, int tiers)
         {
             if (bays > VesselType.MaxBays || rows > VesselType.MaxRows || tiers > VesselType.MaxTiers)
                 throw new ArgumentException("Dimensions exceed maximum allowed for this vessel type.");
+        }
+
+        public void UpdateBays(int newBays)
+        {
+            ValidateDimensions(newBays, Rows, Tiers);
+            Bays = newBays;
+        }
+
+        public void UpdateRows(int newRows)
+        {
+            ValidateDimensions(Bays, newRows, Tiers);
+            Rows = newRows;
+        }
+        
+        public void UpdateTiers(int newTiers)
+        {
+            ValidateDimensions(Bays, Rows, newTiers);
+            Tiers = newTiers;
         }
     }
 }

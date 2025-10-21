@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
 using WebApp.Models.Domain.Vessel;
+using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Models.Infrastructure.Repositories.VesselRepository
 {
@@ -20,6 +21,20 @@ namespace WebApp.Models.Infrastructure.Repositories.VesselRepository
                 throw new ArgumentException("A vessel with this IMO number already exists.");
 
             await _context.Vessels.AddAsync(vessel);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateVesselAsync(Vessel vessel, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
+        {
+            vessel.VesselName = name;
+            vessel.OperatorName = operatorName;
+            vessel.VesselType = vesselType;
+            vessel.UpdateBays(bays);
+            vessel.UpdateRows(rows);
+            vessel.UpdateTiers(tiers);
+            vessel.RequiredCraneCount = requiredCraneCount;
+            vessel.RequiredDockLength = requiredDockLength;
+
             await _context.SaveChangesAsync();
         }
 
