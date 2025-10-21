@@ -4,10 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WebApp.Models.Application.Services;
+using WebApp.Models.Application.Services.Resources;
 using WebApp.Models.Application.Services.VesselService;
 using WebApp.Models.Context;
+using WebApp.Models.Domain.Resources.Interfaces;
 using WebApp.Models.Domain.Users;
 using WebApp.Models.Infrastructure.Repositories;
+using WebApp.Models.Infrastructure.Repositories.Resources;
 using WebApp.Models.Infrastructure.Repositories.VesselRepository;
 using WebApp.Seeding; 
 
@@ -19,7 +22,7 @@ builder.Services.AddDbContext<PortManagementContext>(options =>
         sqlOptions => sqlOptions.EnableRetryOnFailure())
 );
 
-// ---------- Identity with Roles (use ApplicationUser) ----------
+// ---------- Identity with Roles ----------
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.Password.RequireDigit = true;
@@ -28,13 +31,13 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.Password.RequiredLength = 6;
     options.SignIn.RequireConfirmedAccount = false;
 })
-.AddRoles<IdentityRole>() // enable role management
+.AddRoles<IdentityRole>() 
 .AddEntityFrameworkStores<PortManagementContext>()
 .AddDefaultTokenProviders();
 
 builder.Logging.AddConsole();
 
-// Configure Identity cookie paths
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
@@ -42,37 +45,41 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
 });
 
-// ---------- Authentication (optional additional schemes) ----------
-builder.Services.AddAuthentication(); // keep defaults (cookie)
+builder.Services.AddAuthentication(); 
 
-// ---------- Authorization policies ----------
 builder.Services.AddAuthorization(options =>
 {
-    // role-based policy example
     options.AddPolicy("RequireManagerRole", policy =>
         policy.RequireRole("Manager", "Admin"));
-
-    // policy requiring a specific claim (example)
-    // options.AddPolicy("RequireDepartmentX", p => p.RequireClaim("Department", "X"));
 });
 
-// ---------- MVC / Razor / Swagger ----------
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages(); // required for Identity UI
+
+builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+{
+    // Use enum names instead of numbers
+    // Aldo accepts lower case
+    options.JsonSerializerOptions.Converters.Add(
+    new System.Text.Json.Serialization.JsonStringEnumConverter(
+        System.Text.Json.JsonNamingPolicy.CamelCase, 
+        allowIntegerValues: false
+    ));
+
+});;
+builder.Services.AddRazorPages(); 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ---------- Application DI (example services) ----------
 builder.Services.AddScoped<IQualificationRepository, QualificationRepository>();
 builder.Services.AddScoped<IQualificationService, QualificationService>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IVesselRepository, VesselRepository>();
 builder.Services.AddScoped<IVesselService, VesselService>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
+builder.Services.AddScoped<IResourceService, ResourceService>();
 
 var app = builder.Build();
 
-// ---------- Ensure DB + seed roles/admin ----------
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -81,8 +88,8 @@ using (var scope = app.Services.CreateScope())
         var db = services.GetRequiredService<PortManagementContext>();
         db.Database.Migrate();
 
-        // Seed roles and a root admin user (implement below)
         await WebApp.Seeding.DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
+        await WebApp.Seeding.DataSeeder.SeedDomainDataAsync(services);
     }
     catch (Exception ex)
     {
@@ -92,7 +99,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ---------- Middleware ----------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -107,7 +113,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapRazorPages(); // Identity UI
+app.MapRazorPages();
 app.MapGet("/", context =>
 {
     context.Response.Redirect("/index.html");

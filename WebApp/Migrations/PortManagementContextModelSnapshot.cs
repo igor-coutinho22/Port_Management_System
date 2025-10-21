@@ -175,24 +175,38 @@ namespace WebApp.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("ResourceId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("ResourceId");
 
                     b.ToTable("Qualifications");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Resources.Resource", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Name")
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OperationalCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ResourceType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SetupTime")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -545,6 +559,13 @@ namespace WebApp.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.Qualifications.Qualification", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.Resources.Resource", null)
+                        .WithMany("qualificationRequirements")
+                        .HasForeignKey("ResourceId");
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Staff.QualificationLink", b =>
                 {
                     b.HasOne("WebApp.Models.Domain.Qualifications.Qualification", null)
@@ -630,6 +651,11 @@ namespace WebApp.Migrations
                     b.HasOne("WebApp.Models.Domain.StorageArea.ContainerYard", null)
                         .WithMany("DocksServed")
                         .HasForeignKey("ContainerYardId");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.Resources.Resource", b =>
+                {
+                    b.Navigation("qualificationRequirements");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.Staff", b =>
