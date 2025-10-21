@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class NewInitial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -253,48 +253,19 @@ namespace WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Distance",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FromStorageAreaId = table.Column<int>(type: "int", nullable: false),
-                    ToStorageAreaId = table.Column<int>(type: "int", nullable: false),
-                    Value = table.Column<double>(type: "float", nullable: false),
-                    Unit = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Distance", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Distance_StorageAreas_FromStorageAreaId",
-                        column: x => x.FromStorageAreaId,
-                        principalTable: "StorageAreas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Distance_StorageAreas_ToStorageAreaId",
-                        column: x => x.ToStorageAreaId,
-                        principalTable: "StorageAreas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Vessels",
                 columns: table => new
                 {
                     IMO = table.Column<string>(type: "nvarchar(7)", maxLength: 7, nullable: false),
                     VesselName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     OperatorName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    CargoGrid = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VesselTypeName = table.Column<string>(type: "nvarchar(50)", nullable: false),
                     VesselTypeName1 = table.Column<string>(type: "nvarchar(50)", nullable: false),
                     RequiredCraneCount = table.Column<int>(type: "int", nullable: false),
                     RequiredDockLength = table.Column<double>(type: "float", nullable: false),
                     Bays = table.Column<int>(type: "int", nullable: false),
                     Rows = table.Column<int>(type: "int", nullable: false),
-                    Tiers = table.Column<int>(type: "int", nullable: false),
-                    VesselTypeName = table.Column<string>(type: "nvarchar(50)", nullable: false)
+                    Tiers = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -377,16 +348,6 @@ namespace WebApp.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Distance_FromStorageAreaId",
-                table: "Distance",
-                column: "FromStorageAreaId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Distance_ToStorageAreaId",
-                table: "Distance",
-                column: "ToStorageAreaId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_QualificationLinks_QualificationId",
                 table: "QualificationLinks",
                 column: "QualificationId");
@@ -437,10 +398,10 @@ namespace WebApp.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Distance");
+                name: "QualificationLinks");
 
             migrationBuilder.DropTable(
-                name: "QualificationLinks");
+                name: "StorageAreas");
 
             migrationBuilder.DropTable(
                 name: "Vessels");
@@ -450,9 +411,6 @@ namespace WebApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "StorageAreas");
 
             migrationBuilder.DropTable(
                 name: "Qualifications");

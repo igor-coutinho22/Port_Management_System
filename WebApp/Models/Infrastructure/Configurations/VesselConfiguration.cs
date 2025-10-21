@@ -45,19 +45,10 @@ namespace WebApp.Models.Infrastructure.Configurations
             builder.HasOne<VesselType>()
                 .WithMany()
                 .HasForeignKey(v => v.VesselTypeName)
+                .HasPrincipalKey(vt => vt.Name)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // CargoGrid as JSON, safely handle null
-                #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-            builder.Property(static v => v.CargoGrid)
-                .HasConversion(
-                    static grid => JsonSerializer.Serialize(grid, (JsonSerializerOptions)null),
-                    static json => string.IsNullOrEmpty(json)
-                        ? new Container[0, 0, 0]
-                        : JsonSerializer.Deserialize<Container[,,]>(json, (JsonSerializerOptions)null)!
-                )
-                .HasColumnType("nvarchar(max)"); 
+                
         }
     }
 }

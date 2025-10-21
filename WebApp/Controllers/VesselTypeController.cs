@@ -19,19 +19,48 @@ namespace WebApp.Controllers
         }
 
         // ------------------------------------------------------------
-        // Get all vessel types
+        // Add a new vessel type
         // ------------------------------------------------------------
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpPost("create")]
+        public async Task<IActionResult> AddVesselType([FromBody] VesselTypeDTO dto)
         {
-            var vesselTypes = await _vesselTypeService.GetAllVesselTypesAsync();
-            return Ok(vesselTypes.Select(MapToDto));
+            try
+            {
+                await _vesselTypeService.AddVesselTypeAsync(dto.Name, dto.Description, dto.MaxBays, dto.MaxRows, dto.MaxTiers);
+                return CreatedAtAction(nameof(GetByName), new { name = dto.Name }, dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        // ------------------------------------------------------------
+        // Update an existing vessel type
+        // ------------------------------------------------------------
+        [HttpPut("Update/{currentName}")]
+        public async Task<IActionResult> UpdateVesselType(string currentName, [FromBody] VesselTypeDTO dto)
+        {
+            var existing = await _vesselTypeService.GetVesselTypeByNameAsync(currentName);
+            if (existing == null)
+                return NotFound($"Vessel type '{currentName}' not found.");
+
+            try
+            {
+                await _vesselTypeService.UpdateVesselTypeAsync(currentName, dto.Name, dto.Description, dto.MaxBays, dto.MaxRows, dto.MaxTiers);
+                var updated = await _vesselTypeService.GetVesselTypeByNameAsync(dto.Name);
+                return Ok(MapToDto(updated!));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // ------------------------------------------------------------
         // Get by exact name
         // ------------------------------------------------------------
-        [HttpGet("{name}")]
+        [HttpGet("GetByName/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
             var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(name);
@@ -55,46 +84,20 @@ namespace WebApp.Controllers
             if (!string.IsNullOrWhiteSpace(description))
                 results = await _vesselTypeService.SearchVesselTypesByDescriptionAsync(description);
 
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(description))
+                return NotFound($"Name and/or Description query parameters must be provided.");
+
             return Ok(results.Select(MapToDto));
         }
-
+        
         // ------------------------------------------------------------
-        // Add a new vessel type
+        // Get all vessel types
         // ------------------------------------------------------------
-        [HttpPost]
-        public async Task<IActionResult> AddVesselType([FromBody] VesselTypeDTO dto)
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAll()
         {
-            try
-            {
-                await _vesselTypeService.AddVesselTypeAsync(dto.Name, dto.Description, dto.MaxBays, dto.MaxRows, dto.MaxTiers);
-                return CreatedAtAction(nameof(GetByName), new { name = dto.Name }, dto);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        // ------------------------------------------------------------
-        // Update an existing vessel type
-        // ------------------------------------------------------------
-        [HttpPut("{currentName}")]
-        public async Task<IActionResult> UpdateVesselType(string currentName, [FromBody] VesselTypeDTO dto)
-        {
-            var existing = await _vesselTypeService.GetVesselTypeByNameAsync(currentName);
-            if (existing == null)
-                return NotFound($"Vessel type '{currentName}' not found.");
-
-            try
-            {
-                await _vesselTypeService.UpdateVesselTypeAsync(currentName, dto.Name, dto.Description, dto.MaxBays, dto.MaxRows, dto.MaxTiers);
-                var updated = await _vesselTypeService.GetVesselTypeByNameAsync(dto.Name);
-                return Ok(MapToDto(updated!));
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var vesselTypes = await _vesselTypeService.GetAllVesselTypesAsync();
+            return Ok(vesselTypes.Select(MapToDto));
         }
 
         private static VesselTypeDTO MapToDto(VesselType vt) =>

@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251020185019_NewInitial")]
-    partial class NewInitial
+    [Migration("20251021162040_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -266,36 +266,6 @@ namespace WebApp.Migrations
                     b.ToTable("Staff");
                 });
 
-            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.Distance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("FromStorageAreaId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ToStorageAreaId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("Value")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FromStorageAreaId");
-
-                    b.HasIndex("ToStorageAreaId");
-
-                    b.ToTable("Distance");
-                });
-
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.StorageArea", b =>
                 {
                     b.Property<int>("Id")
@@ -407,10 +377,6 @@ namespace WebApp.Migrations
 
                     b.Property<int>("Bays")
                         .HasColumnType("int");
-
-                    b.Property<string>("CargoGrid")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OperatorName")
                         .IsRequired()
@@ -613,25 +579,6 @@ namespace WebApp.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.Distance", b =>
-                {
-                    b.HasOne("WebApp.Models.Domain.StorageArea.StorageArea", "FromStorageArea")
-                        .WithMany("Distances")
-                        .HasForeignKey("FromStorageAreaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("WebApp.Models.Domain.StorageArea.StorageArea", "ToStorageArea")
-                        .WithMany()
-                        .HasForeignKey("ToStorageAreaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FromStorageArea");
-
-                    b.Navigation("ToStorageArea");
-                });
-
             modelBuilder.Entity("WebApp.Models.Domain.Vessel.Vessel", b =>
                 {
                     b.HasOne("WebApp.Models.Domain.Vessels.VesselType.VesselType", null)
@@ -664,11 +611,6 @@ namespace WebApp.Migrations
             modelBuilder.Entity("WebApp.Models.Domain.Staff.Staff", b =>
                 {
                     b.Navigation("Qualifications");
-                });
-
-            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.StorageArea", b =>
-                {
-                    b.Navigation("Distances");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.ContainerYard", b =>

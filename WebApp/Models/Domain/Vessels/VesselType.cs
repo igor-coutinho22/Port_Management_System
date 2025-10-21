@@ -8,8 +8,8 @@ namespace WebApp.Models.Domain.Vessels.VesselType
     {
         private static readonly List<VesselType> _allTypes = new();
 
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public string Name { get; set; } =  null!;
+        public string Description { get; set; } = null!;
         public int MaxBays { get; protected set; }
         public int MaxRows { get; protected set; }
         public int MaxTiers { get; protected set; }
@@ -32,6 +32,11 @@ namespace WebApp.Models.Domain.Vessels.VesselType
 
             // Add to the static list
             _allTypes.Add(this);
+        }
+
+        protected VesselType()
+        {
+            // For ORM or serialization purposes
         }
 
         // Return all vessel types

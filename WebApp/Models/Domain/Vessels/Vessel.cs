@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
 using WebApp.Models.Domain.Vessels.VesselType;
 
@@ -10,7 +11,9 @@ namespace WebApp.Models.Domain.Vessel
         public string IMO { get; private set; } = null!;
         public string VesselName { get; set; } = null!;
         public string OperatorName { get; set; } = null!;
-        public Container[,,] CargoGrid { get; set; } = null!;
+
+        [NotMapped]
+        public VesselGrid CargoGrid { get; set; } = null!;
 
         public string VesselTypeName { get; set; } = null!;
         public VesselType VesselType { get; set; } = null!;
@@ -31,9 +34,11 @@ namespace WebApp.Models.Domain.Vessel
             IMO = imo;
             VesselName = vesselName;
             OperatorName = operatorName;
-            VesselType = vesselType;
+            VesselType = vesselType ?? throw new ArgumentNullException(nameof(vesselType));
+            // populate FK so EF can persist the relation
+            VesselTypeName = vesselType.Name ?? throw new ArgumentException("VesselType must have a Name", nameof(vesselType));
 
-            CargoGrid = new Container[vesselType.MaxBays, vesselType.MaxRows, vesselType.MaxTiers];
+            CargoGrid = new VesselGrid(bays, rows, tiers);
 
             ValidateDimensions(bays, rows, tiers);
 

@@ -23,7 +23,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Register a new vessel
         // ------------------------------------------------------------
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> RegisterVesselAsync([FromBody] VesselDTO dto)
         {
             try
@@ -40,7 +40,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Update an existing vessel
         // ------------------------------------------------------------
-        [HttpPut("{imo}")]
+        [HttpPut("Update{imo}")]
         public async Task<IActionResult> UpdateVesselAsync(string imo, [FromBody] VesselDTO dto)
         {
             try
@@ -57,7 +57,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Get by IMO
         // ------------------------------------------------------------
-        [HttpGet("{imo}")]
+        [HttpGet("getByIMO/{imo}")]
         public async Task<IActionResult> GetByIMOAsync(string imo)
         {
             var vessel = await _vesselService.GetVesselByIMOAsync(imo);
@@ -70,7 +70,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Search by name or operator
         // ------------------------------------------------------------
-        [HttpGet]
+        [HttpGet("searchByNameAndOperator")]
         public async Task<IActionResult> SearchAsync([FromQuery] string? name, [FromQuery] string? operatorName)
         {
             var results = await _vesselService.GetAllVesselsAsync();
@@ -87,11 +87,10 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Get all vessel types
         // ------------------------------------------------------------
-        [HttpGet("types")]
+        [HttpGet("getAllVesselTypes")]
         public async Task<IActionResult> GetAllVesselTypesAsync()
         {
-            var vesselTypes = (await _vesselTypeService.GetAllVesselTypesAsync())
-                .Select(vt => new VesselTypeDTO(vt.Name, vt.Description, vt.MaxBays, vt.MaxRows, vt.MaxTiers));
+            var vesselTypes = await _vesselTypeService.GetAllVesselTypesAsync();
             
             return Ok(vesselTypes);
         }
