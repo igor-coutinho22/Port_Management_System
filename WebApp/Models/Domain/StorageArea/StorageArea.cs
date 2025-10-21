@@ -14,9 +14,6 @@ namespace WebApp.Models.Domain.StorageArea
         public int MaxCapacityTeu { get; protected set; }
         public int CurrentOccupancyTeu { get; protected set; }
 
-        // Relationship: Tracks distances to other areas for logistics planning.
-        public virtual ICollection<Distance> Distances { get; protected set; } = new List<Distance>();
-
         // EF Core needs a parameterless constructor (can be protected)
         protected StorageArea() { }
 

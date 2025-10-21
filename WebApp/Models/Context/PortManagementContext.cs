@@ -63,11 +63,6 @@ namespace WebApp.Models.Context
                 builder.Property(sa => sa.MaxCapacityTeu).IsRequired();
                 builder.Property(sa => sa.CurrentOccupancyTeu).IsRequired();
 
-                builder.HasMany(sa => sa.Distances)
-                    .WithOne(d => d.FromStorageArea)
-                    .HasForeignKey(d => d.FromStorageAreaId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
                 // Use a discriminator for the derived types (TPH)
                 builder
                     .HasDiscriminator<StorageAreaType>("StorageAreaType")
@@ -75,7 +70,6 @@ namespace WebApp.Models.Context
                     .HasValue<ContainerYard>(StorageAreaType.ContainerYard)
                     .HasValue<Warehouse>(StorageAreaType.Warehouse);
             });
-
 
             base.OnModelCreating(modelBuilder);
         }

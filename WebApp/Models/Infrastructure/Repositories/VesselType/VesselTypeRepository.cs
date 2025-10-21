@@ -1,72 +1,47 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using WebApp.Models.Context;
 using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Models.Infrastructure.Repositories.VesselTypeRepository
 {
     public class VesselTypeRepository : IVesselTypeRepository
     {
-        private readonly List<VesselType> _vesselTypes = VesselType.GetAllTypes().ToList();
+        private readonly PortManagementContext _context;
 
-        // ----------------------------
-        // Get all vessel types
-        // ----------------------------
-        public List<VesselType> GetAll() => _vesselTypes;
-
-        // ----------------------------
-        // Exact match by name
-        // ----------------------------
-        public VesselType? GetByName(string name) =>
-            _vesselTypes.FirstOrDefault(vt => vt.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-        // ----------------------------
-        // Partial match by name
-        // ----------------------------
-        public List<VesselType> SearchByName(string partialName) =>
-            _vesselTypes
-                .Where(vt => vt.Name.Contains(partialName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-        // ----------------------------
-        // Partial match by description
-        // ----------------------------
-        public List<VesselType> SearchByDescription(string keyword) =>
-            _vesselTypes.Where(vt => vt.Description.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
-
-        // ----------------------------
-        // Add a new vessel type
-        // ----------------------------
-        public void Add(VesselType vesselType)
+        public VesselTypeRepository(PortManagementContext context)
         {
-            if (_vesselTypes.Any(vt => vt.Name.Equals(vesselType.Name, StringComparison.OrdinalIgnoreCase)))
-                throw new InvalidOperationException($"A vessel type with the name '{vesselType.Name}' already exists.");
-
-            _vesselTypes.Add(vesselType);
+            _context = context;
         }
 
-        // ----------------------------
-        // Update an existing vessel type
-        // ----------------------------
-        public void Update(string currentName, VesselType updatedVesselType)
+        public async Task<List<VesselType>> GetAllVesselTypesAsync() => await _context.VesselTypes.ToListAsync();
+
+        public async Task<VesselType?> GetVesselTypeByNameAsync(string name) =>
+            await _context.VesselTypes.FirstOrDefaultAsync(vt => vt.Name == name);
+
+        public async Task<List<VesselType>> SearchVesselTypeByNameAsync(string partialName) =>
+            await _context.VesselTypes
+                .Where(vt => vt.Name.Contains(partialName))
+                .ToListAsync();
+
+        public async Task<List<VesselType>> SearchVesselTypeByDescriptionAsync(string keyword) =>
+            await _context.VesselTypes
+                .Where(vt => vt.Description.Contains(keyword))
+                .ToListAsync();
+
+        public async Task AddVesselTypeAsync(VesselType vesselType)
         {
-            var existing = GetByName(currentName);
-            if (existing == null)
-                throw new KeyNotFoundException($"Vessel type '{currentName}' not found.");
+            var exists = await _context.VesselTypes.AnyAsync(vt => vt.Name == vesselType.Name);
+            if (exists)
+                throw new InvalidOperationException($"A vessel type with the name '{vesselType.Name}' already exists.");
 
-            // Prevent renaming to an already existing name
-            if (!currentName.Equals(updatedVesselType.Name, StringComparison.OrdinalIgnoreCase) &&
-                _vesselTypes.Any(vt => vt.Name.Equals(updatedVesselType.Name, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidOperationException($"A vessel type with the name '{updatedVesselType.Name}' already exists.");
-            }
+            await _context.VesselTypes.AddAsync(vesselType);
+            await _context.SaveChangesAsync();
+        }
 
-            // Update properties
-            existing.Name = updatedVesselType.Name;
-            existing.Description = updatedVesselType.Description;
-            existing.MaxBays = updatedVesselType.MaxBays;
-            existing.MaxRows = updatedVesselType.MaxRows;
-            existing.MaxTiers = updatedVesselType.MaxTiers;
+        public async Task UpdateVesselTypeAsync(VesselType updatedVesselType)
+        {
+            _context.VesselTypes.Update(updatedVesselType);
+            await _context.SaveChangesAsync();
         }
     }
 }

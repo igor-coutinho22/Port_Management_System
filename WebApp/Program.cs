@@ -6,13 +6,15 @@ using Microsoft.Extensions.Hosting;
 using WebApp.Models.Application.Services;
 using WebApp.Models.Application.Services.Resources;
 using WebApp.Models.Application.Services.VesselService;
+using WebApp.Models.Application.Services.VesselTypeService;
 using WebApp.Models.Context;
 using WebApp.Models.Domain.Resources.Interfaces;
 using WebApp.Models.Domain.Users;
 using WebApp.Models.Infrastructure.Repositories;
 using WebApp.Models.Infrastructure.Repositories.Resources;
 using WebApp.Models.Infrastructure.Repositories.VesselRepository;
-using WebApp.Seeding; 
+using WebApp.Seeding;
+using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +33,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.Password.RequiredLength = 6;
     options.SignIn.RequireConfirmedAccount = false;
 })
-.AddRoles<IdentityRole>() 
+.AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<PortManagementContext>()
 .AddDefaultTokenProviders();
 
@@ -45,7 +47,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
 });
 
-builder.Services.AddAuthentication(); 
+builder.Services.AddAuthentication();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -60,12 +62,12 @@ builder.Services.AddControllersWithViews().AddJsonOptions(options =>
     // Aldo accepts lower case
     options.JsonSerializerOptions.Converters.Add(
     new System.Text.Json.Serialization.JsonStringEnumConverter(
-        System.Text.Json.JsonNamingPolicy.CamelCase, 
+        System.Text.Json.JsonNamingPolicy.CamelCase,
         allowIntegerValues: false
     ));
 
 });;
-builder.Services.AddRazorPages(); 
+builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -75,6 +77,8 @@ builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IVesselRepository, VesselRepository>();
 builder.Services.AddScoped<IVesselService, VesselService>();
+builder.Services.AddScoped<IVesselTypeRepository, VesselTypeRepository>();
+builder.Services.AddScoped<IVesselTypeService, VesselTypeService>();
 builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 
