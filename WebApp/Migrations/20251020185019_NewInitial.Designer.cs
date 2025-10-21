@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251018190005_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251020185019_NewInitial")]
+    partial class NewInitial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -178,24 +178,38 @@ namespace WebApp.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("ResourceId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("ResourceId");
 
                     b.ToTable("Qualifications");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Resources.Resource", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Name")
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OperationalCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ResourceType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SetupTime")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -250,6 +264,70 @@ namespace WebApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Staff");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.Distance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FromStorageAreaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ToStorageAreaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Value")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromStorageAreaId");
+
+                    b.HasIndex("ToStorageAreaId");
+
+                    b.ToTable("Distance");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.StorageArea", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CurrentOccupancyTeu")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxCapacityTeu")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("StorageAreaType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StorageAreas");
+
+                    b.HasDiscriminator<int>("StorageAreaType");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Users.ApplicationUser", b =>
@@ -396,40 +474,41 @@ namespace WebApp.Migrations
                     b.HasKey("Name");
 
                     b.ToTable("VesselTypes");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Name = "Feeder",
-                            Description = "Feeder vessels are smaller container ships that typically operate on regional routes, transporting containers to and from larger hub ports. They usually have a capacity ranging from 100 to 3,000 TEUs (Twenty-Foot Equivalent Units). Feeder vessels are designed to navigate shallower waters and smaller ports that larger vessels cannot access.",
-                            MaxBays = 8,
-                            MaxRows = 8,
-                            MaxTiers = 4
-                        },
-                        new
-                        {
-                            Name = "Panamax",
-                            Description = "Panamax vessels are designed to fit through the original locks of the Panama Canal. They typically have a maximum length of about 294 meters (965 feet), a beam (width) of 32.3 meters (106 feet), and a draft (depth) of 12.04 meters (39.5 feet). Panamax vessels can carry around 4,500 to 5,000 TEUs (Twenty-Foot Equivalent Units).",
-                            MaxBays = 12,
-                            MaxRows = 10,
-                            MaxTiers = 6
-                        },
-                        new
-                        {
-                            Name = "Post-Panamax",
-                            Description = "Post-Panamax vessels are larger than Panamax vessels and are designed to exceed the size limitations of the original Panama Canal locks. They typically have a maximum length of about 366 meters (1,200 feet), a beam (width) of 49 meters (160 feet), and a draft (depth) of 15.2 meters (50 feet). Post-Panamax vessels can carry around 10,000 to 13,000 TEUs (Twenty-Foot Equivalent Units).",
-                            MaxBays = 14,
-                            MaxRows = 12,
-                            MaxTiers = 7
-                        },
-                        new
-                        {
-                            Name = "Ultra Large Container Vessel (ULCV)",
-                            Description = "Ultra Large Container Vessels (ULCVs) are among the largest container ships in the world, designed to maximize cargo capacity for long-haul routes. They typically have a maximum length of about 400 meters (1,312 feet), a beam (width) of 59 meters (194 feet), and a draft (depth) of 16 meters (52 feet). ULCVs can carry over 20,000 TEUs (Twenty-Foot Equivalent Units), making them highly efficient for transporting large volumes of goods across oceans.",
-                            MaxBays = 24,
-                            MaxRows = 20,
-                            MaxTiers = 10
-                        });
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.ContainerYard", b =>
+                {
+                    b.HasBaseType("WebApp.Models.Domain.StorageArea.StorageArea");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.Dock", b =>
+                {
+                    b.HasBaseType("WebApp.Models.Domain.StorageArea.StorageArea");
+
+                    b.Property<int?>("ContainerYardId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FixedStsCranesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxVesselLengthMeters")
+                        .HasColumnType("int");
+
+                    b.HasIndex("ContainerYardId");
+
+                    b.HasDiscriminator().HasValue(0);
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.Warehouse", b =>
+                {
+                    b.HasBaseType("WebApp.Models.Domain.StorageArea.StorageArea");
+
+                    b.Property<string>("SpecializedCargoType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue(2);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -483,6 +562,13 @@ namespace WebApp.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.Qualifications.Qualification", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.Resources.Resource", null)
+                        .WithMany("qualificationRequirements")
+                        .HasForeignKey("ResourceId");
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Staff.QualificationLink", b =>
                 {
                     b.HasOne("WebApp.Models.Domain.Qualifications.Qualification", null)
@@ -527,6 +613,25 @@ namespace WebApp.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.Distance", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.StorageArea.StorageArea", "FromStorageArea")
+                        .WithMany("Distances")
+                        .HasForeignKey("FromStorageAreaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WebApp.Models.Domain.StorageArea.StorageArea", "ToStorageArea")
+                        .WithMany()
+                        .HasForeignKey("ToStorageAreaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FromStorageArea");
+
+                    b.Navigation("ToStorageArea");
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Vessel.Vessel", b =>
                 {
                     b.HasOne("WebApp.Models.Domain.Vessels.VesselType.VesselType", null)
@@ -544,9 +649,31 @@ namespace WebApp.Migrations
                     b.Navigation("VesselType");
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.Dock", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.StorageArea.ContainerYard", null)
+                        .WithMany("DocksServed")
+                        .HasForeignKey("ContainerYardId");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.Resources.Resource", b =>
+                {
+                    b.Navigation("qualificationRequirements");
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Staff.Staff", b =>
                 {
                     b.Navigation("Qualifications");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.StorageArea", b =>
+                {
+                    b.Navigation("Distances");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.ContainerYard", b =>
+                {
+                    b.Navigation("DocksServed");
                 });
 #pragma warning restore 612, 618
         }
