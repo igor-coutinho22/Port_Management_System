@@ -101,37 +101,66 @@ namespace PortApi.Controllers
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> ActivateResource(string id)
         {
-            await _resourceService.ActivateAsync(id);
-            var updated = await _resourceService.GetResourceByIdAsync(id);
-            return Ok(ResourceToDTO(updated!));
+            try
+            {
+                await _resourceService.ActivateAsync(id);
+                var updated = await _resourceService.GetResourceByIdAsync(id);
+                return Ok(ResourceToDTO(updated!));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // PATCH: api/resources/{id}/deactivate
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> DeactivateResource(string id)
         {
-            await _resourceService.DeactivateAsync(id);
-            var updated = await _resourceService.GetResourceByIdAsync(id);
-            return Ok(ResourceToDTO(updated!));
+            try
+            {
+                await _resourceService.DeactivateAsync(id);
+                var updated = await _resourceService.GetResourceByIdAsync(id);
+                return Ok(ResourceToDTO(updated!));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // PATCH: api/resources/{id}/maintenance/start
         [HttpPatch("{id}/maintenance/start")]
         public async Task<IActionResult> PutInMaintenance(string id)
         {
-            await _resourceService.PutInMaintenanceAsync(id);
-            var updated = await _resourceService.GetResourceByIdAsync(id);
-            return Ok(ResourceToDTO(updated!));
+            try
+            {
+                await _resourceService.PutInMaintenanceAsync(id);
+                var updated = await _resourceService.GetResourceByIdAsync(id);
+                return Ok(ResourceToDTO(updated!));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // PATCH: api/resources/{id}/maintenance/end
         [HttpPatch("{id}/maintenance/end")]
         public async Task<IActionResult> EndMaintenance(string id)
         {
-            await _resourceService.EndMaintenanceAsync(id);
-            var updated = await _resourceService.GetResourceByIdAsync(id);
-            return Ok(ResourceToDTO(updated!));
+            try
+            {
+                await _resourceService.EndMaintenanceAsync(id);
+                var updated = await _resourceService.GetResourceByIdAsync(id);
+                return Ok(ResourceToDTO(updated!));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
 
         // DELETE: api/resources/{id}
         [HttpDelete("{id}")]

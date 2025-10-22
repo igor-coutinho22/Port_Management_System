@@ -67,16 +67,55 @@ namespace WebApp.Models.Application.Services.Resources
         public async Task DeleteAsync(string id)
             => await _resourceRepo.DeleteAsync(id);
         public async Task ActivateAsync(string id)
-            => await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Active);
+        {
+            var resource = await _resourceRepo.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Resource '{id}' not found.");
+
+            if (resource.Status == ResourceAvailabilityStatus.Active)
+                throw new InvalidOperationException($"A resource with status '{resource.Status}' cannot be activated.");
+
+            if (resource.Status == ResourceAvailabilityStatus.UnderMaintenance)
+                throw new InvalidOperationException($"A resource with status '{resource.Status}' cannot be activated.");
+
+            await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Active);
+        }
 
         public async Task DeactivateAsync(string id)
-            => await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Inactive);
+        {
+            var resource = await _resourceRepo.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Resource '{id}' not found.");
+
+            if (resource.Status == ResourceAvailabilityStatus.Inactive)
+                throw new InvalidOperationException($"A resource with status '{resource.Status}' cannot be deactivated.");
+
+            await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Inactive);
+        }
 
         public async Task PutInMaintenanceAsync(string id)
-            => await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.UnderMaintenance);
+        {
+            var resource = await _resourceRepo.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Resource '{id}' not found.");
+
+            if (resource.Status == ResourceAvailabilityStatus.UnderMaintenance)
+                throw new InvalidOperationException($"A resource with status '{resource.Status}' cannot be set for maintenance.");
+
+            if (resource.Status == ResourceAvailabilityStatus.Inactive)
+                throw new InvalidOperationException($"A resource with status '{resource.Status}' cannot be set for maintenance.");
+
+            await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.UnderMaintenance);
+        }
 
         public async Task EndMaintenanceAsync(string id)
-            => await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Active);
+        {
+            var resource = await _resourceRepo.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Resource '{id}' not found.");
+
+            if (resource.Status != ResourceAvailabilityStatus.UnderMaintenance)
+                throw new InvalidOperationException($"A resource with status '{resource.Status}' cannot end maintenance.");
+
+            await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Active);
+        }
+        
         public async Task RegisterResourceAsync(
             string id,
             string description,
