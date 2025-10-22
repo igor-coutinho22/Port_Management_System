@@ -21,7 +21,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Add a new vessel type
         // ------------------------------------------------------------
-        [HttpPost("create")]
+        [HttpPost()]
         public async Task<IActionResult> AddVesselType([FromBody] VesselTypeDTO dto)
         {
             try
@@ -38,7 +38,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Update an existing vessel type
         // ------------------------------------------------------------
-        [HttpPut("Update/{currentName}")]
+        [HttpPut("{currentName}")]
         public async Task<IActionResult> UpdateVesselType(string currentName, [FromBody] VesselTypeDTO dto)
         {
             var existing = await _vesselTypeService.GetVesselTypeByNameAsync(currentName);
@@ -73,8 +73,8 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Search by partial name and description
         // ------------------------------------------------------------
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchByName([FromQuery] string? name, [FromQuery] string? description)
+        [HttpGet("searchByNameAndOrDescription")]
+        public async Task<IActionResult> SearchByNameAndOrDescription([FromQuery] string? name, [FromQuery] string? description)
         {
             IEnumerable<VesselType> results = await _vesselTypeService.GetAllVesselTypesAsync();
 
@@ -84,7 +84,7 @@ namespace WebApp.Controllers
             if (!string.IsNullOrWhiteSpace(description))
                 results = await _vesselTypeService.SearchVesselTypesByDescriptionAsync(description);
 
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(description))
+            if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(description))
                 return NotFound($"Name and/or Description query parameters must be provided.");
 
             return Ok(results.Select(MapToDto));
