@@ -1,8 +1,10 @@
 @startuml
-title Shipping Port Management - Domain Model (UML Style)
+title Shipping Port Management - Complete Domain Model (Corrected UML + DDD Layers)
 
-' === Domain Layer ===
+' === DOMAIN LAYER ===
 package "Domain Layer" {
+
+  ' ---- STAFF AGGREGATE ----
   package "Staff Aggregate" {
     class Staff {
       +Id : Guid
@@ -23,6 +25,7 @@ package "Domain Layer" {
     }
   }
 
+  ' ---- QUALIFICATION AGGREGATE ----
   package "Qualification Aggregate" {
     class Qualification {
       +Id : Guid
@@ -31,15 +34,24 @@ package "Domain Layer" {
     }
   }
 
+  ' ---- RESOURCE AGGREGATE ----
   package "Resource Aggregate" {
     class Resource {
       +Id : Guid
       +Name : string
-      +Type : string
+      +TypeId : Guid
       +AssignedStaffId : Guid
+      +AvailabilityStatus : string
+    }
+
+    class ResourceType {
+      +Id : Guid
+      +Name : string
+      +Description : string
     }
   }
 
+  ' ---- STORAGE AREA AGGREGATE ----
   package "StorageArea Aggregate" {
     class StorageArea {
       +Id : Guid
@@ -53,6 +65,7 @@ package "Domain Layer" {
     }
   }
 
+  ' ---- VESSEL AGGREGATE ----
   package "Vessel Aggregate" {
     class Vessel {
       +Id : Guid
@@ -66,30 +79,81 @@ package "Domain Layer" {
       +Description : string
     }
   }
+
+  ' ---- VESSEL VISIT NOTIFICATION AGGREGATE ----
+  package "Vessel Visit Notification Aggregate" {
+    class VesselVisitNotification {
+      +Id : Guid
+      +VisitDate : DateTime
+      +VesselId : Guid
+      +DockId : Guid
+      +Status : string
+      +LoadingManifestId : Guid
+      +UnloadingManifestId : Guid
+    }
+
+    class Dock {
+      +Id : Guid
+      +Name : string
+      +Capacity : int
+    }
+
+    class CargoManifest {
+      +Id : Guid
+      +ManifestTypeId : Guid
+      +VesselVisitNotificationId : Guid
+    }
+
+    class CargoManifestType {
+      +Id : Guid
+      +Description : string
+    }
+
+    class ShippingAgent {
+      +Id : Guid
+      +Name : string
+      +Address : string
+    }
+
+    class ShippingAgentRepresentative {
+      +Id : Guid
+      +Name : string
+      +Email : string
+      +ShippingAgentId : Guid
+    }
+  }
 }
 
-' === Relationships between aggregates ===
+' === AGGREGATE RELATIONSHIPS ===
 Staff "0..*" --> "0..*" Qualification : possesses >
 Resource "0..*" --> "1" Staff : operated by >
 Vessel "1" --> "1" VesselType : is of >
 StorageArea "1" --> "1" StorageAreaType : is of >
+VesselVisitNotification "1" --> "1" Vessel : specifies >
+VesselVisitNotification "1" --> "1" Dock : assigned to >
+VesselVisitNotification "0..2" --> "1" CargoManifest : includes >
+CargoManifest "1" --> "1" CargoManifestType : is of >
+VesselVisitNotification "1" --> "1" ShippingAgentRepresentative : submitted by >
+ShippingAgentRepresentative "1" --> "1" ShippingAgent : belongs to >
 
-' === Application Layer ===
+' === APPLICATION LAYER ===
 package "Application Layer" {
   class StaffService
   class QualificationService
   class ResourceService
-  class VesselService
   class StorageAreaService
+  class VesselService
+  class VesselVisitNotificationService
 }
 
-StaffService --> StaffRepository
-QualificationService --> QualificationRepository
-ResourceService --> ResourceRepository
-VesselService --> VesselRepository
-StorageAreaService --> StorageAreaRepository
+StaffService --> IStaffRepository
+QualificationService --> IQualificationRepository
+ResourceService --> IResourceRepository
+StorageAreaService --> IStorageAreaRepository
+VesselService --> IVesselRepository
+VesselVisitNotificationService --> IVesselVisitNotificationRepository
 
-' === Infrastructure Layer ===
+' === INFRASTRUCTURE LAYER ===
 package "Infrastructure Layer" {
   interface IStaffRepository
   class StaffRepository
@@ -97,31 +161,36 @@ package "Infrastructure Layer" {
   class QualificationRepository
   interface IResourceRepository
   class ResourceRepository
-  interface IVesselRepository
-  class VesselRepository
   interface IStorageAreaRepository
   class StorageAreaRepository
+  interface IVesselRepository
+  class VesselRepository
+  interface IVesselVisitNotificationRepository
+  class VesselVisitNotificationRepository
 }
 
 StaffRepository -up-|> IStaffRepository
 QualificationRepository -up-|> IQualificationRepository
 ResourceRepository -up-|> IResourceRepository
-VesselRepository -up-|> IVesselRepository
 StorageAreaRepository -up-|> IStorageAreaRepository
+VesselRepository -up-|> IVesselRepository
+VesselVisitNotificationRepository -up-|> IVesselVisitNotificationRepository
 
-' === API Layer ===
+' === API LAYER ===
 package "API Layer" {
   class StaffController
   class QualificationController
   class ResourceController
-  class VesselController
   class StorageAreaController
+  class VesselController
+  class VesselVisitNotificationController
 }
 
 StaffController --> StaffService
 QualificationController --> QualificationService
 ResourceController --> ResourceService
-VesselController --> VesselService
 StorageAreaController --> StorageAreaService
+VesselController --> VesselService
+VesselVisitNotificationController --> VesselVisitNotificationService
 
 @enduml
