@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
 using WebApp.Models.Domain.StorageArea;
 
-using System.Threading.Tasks;
+using WebApp.Models.Domain.Docks;
 
 namespace WebApp.Models.Infrastructure.Repositories
 {
@@ -56,38 +56,100 @@ namespace WebApp.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateDockAsync(Dock dock, string name, int maxCapacityTeu, int currentOccupancyTeu, int fixedStsCranesCount, int maxVesselLengthMeters)
-        {
-            if (_context.Entry(dock).State == EntityState.Detached)
-            {
-                _context.StorageAreas.Attach(dock);
-            }
-
-            dock.Name = name;
-            dock.ChangeMaxCapacity(maxCapacityTeu);
-            dock.UpdateCurrentOccupancy(currentOccupancyTeu);
-            dock.UpdateStsCranesCount(fixedStsCranesCount);
-            dock.UpdateMaxVesselLength(maxVesselLengthMeters);
-
-            await _context.SaveChangesAsync();
-        }
-
         public Task<StorageArea?> GetByNameAsync(string name)
         {
-            // If needed distances eagerly, add .Include(sa => sa.Distances)
             return _context.StorageAreas
+                .Include(sa => sa.DockConnections)
                 .FirstOrDefaultAsync(sa => sa.Name == name);
         }
 
         public Task<StorageArea?> SearchByIdAsync(int id)
         {
-            // Using FindAsync for PK lookup (returns tracked entity if already loaded)
-            return _context.StorageAreas.FindAsync(id).AsTask();
+            return _context.StorageAreas
+                .Include(sa => sa.DockConnections)
+                .FirstOrDefaultAsync(sa => sa.Id == id);
         }
 
         public Task<List<StorageArea>> GetAllAsync()
         {
-            return _context.StorageAreas.ToListAsync();
+            return _context.StorageAreas
+                .Include(sa => sa.DockConnections)
+                .ToListAsync();
+        }
+
+        public async Task AddConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds)
+        {
+            // ensure StorageArea exists
+            var sa = await _context.StorageAreas.FindAsync(storageAreaId);
+            if (sa == null) throw new ArgumentException("StorageArea not found", nameof(storageAreaId));
+
+            // upsert: if exists, update
+            var existing = await _context.DockStorageAreaInfos
+                .FirstOrDefaultAsync(d => d.StorageAreaId == storageAreaId && d.DockId == dockId);
+
+            if (existing != null)
+            {
+                existing.DistanceMeters = distanceMeters;
+                existing.TravelSeconds = travelSeconds;
+            }
+            else
+            {
+                var info = new DockStorageAreaInfo
+                {
+                    StorageAreaId = storageAreaId,
+                    DockId = dockId,
+                    DistanceMeters = distanceMeters,
+                    TravelSeconds = travelSeconds
+                };
+                await _context.DockStorageAreaInfos.AddAsync(info);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds)
+        {
+            var existing = await _context.DockStorageAreaInfos
+                .FirstOrDefaultAsync(d => d.StorageAreaId == storageAreaId && d.DockId == dockId);
+
+            if (existing == null) throw new ArgumentException("Connection not found");
+
+            existing.DistanceMeters = distanceMeters;
+            existing.TravelSeconds = travelSeconds;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> RemoveConnectionAsync(int storageAreaId, int dockId)
+        {
+            var existing = await _context.DockStorageAreaInfos
+                .FirstOrDefaultAsync(d => d.StorageAreaId == storageAreaId && d.DockId == dockId);
+
+            if (existing == null) return false;
+
+            _context.DockStorageAreaInfos.Remove(existing);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public Task<List<DockStorageAreaInfo>> GetConnectionsForStorageAreaAsync(int storageAreaId)
+        {
+            return _context.DockStorageAreaInfos
+                .Where(d => d.StorageAreaId == storageAreaId)
+                .ToListAsync();
+        }
+
+        public async Task DeleteStorageAreaAsync(int storageAreaId)
+        {
+            var sa = await _context.StorageAreas.FindAsync(storageAreaId);
+            if (sa == null) throw new ArgumentException("StorageArea not found", nameof(storageAreaId));
+
+            // remove associated DockStorageAreaInfo rows first (FKs might cascade depending on configuration)
+            var connections = _context.DockStorageAreaInfos.Where(d => d.StorageAreaId == storageAreaId);
+            _context.DockStorageAreaInfos.RemoveRange(connections);
+
+            _context.StorageAreas.Remove(sa);
+            await _context.SaveChangesAsync();
         }
     }
 }
