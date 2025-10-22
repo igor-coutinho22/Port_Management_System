@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using PortManagement.Domain.Enums;
 using WebApp.Models.Domain.StorageArea;
 
-namespace WebApp.Models.Domain.StorageArea
+namespace WebApp.Models.Domain.Docks
 {
-    public class Dock : StorageArea
+    public class Dock
     {
+        public int Id { get; protected set; }
+
         // Fixed infrastructure dictates maximum available STS cranes
         public int FixedStsCranesCount { get; set; }
 
@@ -14,24 +16,17 @@ namespace WebApp.Models.Domain.StorageArea
 
         protected Dock()
         {
-            Type = StorageAreaType.Dock;
         }
 
-        public Dock(string name, int maxCapacityTeu, int currentOccupancyTeu, int fixedStsCranesCount, int maxVesselLengthMeters)
-            : base(StorageAreaType.Dock, name, maxCapacityTeu, currentOccupancyTeu)
+        public Dock(int FixedStsCranesCount, int MaxVesselLengthMeters)
         {
-            if (fixedStsCranesCount < 0)
-                throw new ArgumentOutOfRangeException(nameof(fixedStsCranesCount), "Fixed STS cranes count must be >= 0.");
-            if (maxVesselLengthMeters <= 0)
-                throw new ArgumentOutOfRangeException(nameof(maxVesselLengthMeters), "Max vessel length must be > 0 meters.");
+            if (FixedStsCranesCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(FixedStsCranesCount), "Fixed STS cranes count must be >= 0.");
+            if (MaxVesselLengthMeters <= 0)
+                throw new ArgumentOutOfRangeException(nameof(MaxVesselLengthMeters), "Max vessel length must be > 0 meters.");
 
-            FixedStsCranesCount = fixedStsCranesCount;
-            MaxVesselLengthMeters = maxVesselLengthMeters;
-        }
-
-        override public string GetUsageDescription()
-        {
-            return $"Dock for vessel berthing, equipped with {FixedStsCranesCount} STS cranes.";
+            this.FixedStsCranesCount = FixedStsCranesCount;
+            this.MaxVesselLengthMeters = MaxVesselLengthMeters;
         }
 
         public void UpdateStsCranesCount(int newCount)
