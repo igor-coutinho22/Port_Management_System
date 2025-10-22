@@ -1,0 +1,74 @@
+@startuml
+title US 2.2.5 – Register Shipping Agent Organization (Create with ≥1 Representative) & Retrieve
+
+actor "Shipping Agent Representative" as User
+
+' === Layers ===
+participant "OrganizationsController" as Controller
+participant "OrganizationService" as Service
+participant "OrganizationRepository" as Repository
+participant "PortManagementContext" as DbContext
+entity "ShippingAgentOrganization (Aggregate Root)" as Organization
+entity "Representative (Entity)" as Representative
+
+' === Register new Organization ===
+' 
+User -> Controller : POST /api/organizations\n(CreateOrganizationRequest)
+Controller -> Service : CreateAsync(request)
+
+' === Validate: at least one representative ===
+Service -> Service : Ensure request.Representatives.Any() == true
+
+' === Validate: unique TaxNumber (NIF) ===
+Service -> Repository : GetByTaxNumberAsync(request.taxNumber)
+Repository -> DbContext : Query Organization by TaxNumber
+DbContext --> Repository : null (not found)
+Repository --> Service : null
+
+' === Build aggregate root ===
+Service -> Organization : new ShippingAgentOrganization(legalName, altNames, address, taxNumber)
+
+' === Add each representative to Organization ===
+loop for each rep in request.Representatives
+  Service -> Representative : new Representative(org.Id, name, citizenId, nationality, email, phone)
+  Service -> Organization : AddRepresentative(rep)
+end
+
+' === Persist aggregate (organization + representatives) ===
+Service -> Repository : AddAsync(organization)
+Repository -> DbContext : Add(organization incl. representatives)
+DbContext --> Repository : Organization persisted
+Repository --> Service : Saved
+
+' === Return Created ===
+Service --> Controller : OrganizationDto (Created)
+Controller --> User : 201 Created\nLocation: /api/organizations/{id}
+
+' === Retrieve Organization by Id ===
+User -> Controller : GET /api/organizations/{id}
+Controller -> Service : GetAsync(id)
+Service -> Repository : GetByIdAsync(id)
+Repository -> DbContext : Find/Include(Representatives)
+DbContext --> Repository : Organization (+ reps)
+Repository --> Service : Organization
+Service --> Controller : OrganizationDto
+Controller --> User : 200 OK (Organization info)
+
+' === Validation: Missing Representatives = 400 ===
+User -> Controller : POST /api/organizations\n(Representatives = [])
+Controller -> Service : CreateAsync(request)
+Service -> Service : Check request.Representatives.Any() == false
+Service --> Controller : 400 Bad Request\n"At least one representative is required."
+Controller --> User : 400 Bad Request
+
+' === Validation: Duplicate TaxNumber = 409 ===
+User -> Controller : POST /api/organizations\n(TaxNumber already used)
+Controller -> Service : CreateAsync(request)
+Service -> Repository : GetByTaxNumberAsync(request.taxNumber)
+Repository -> DbContext : Query Organization by TaxNumber
+DbContext --> Repository : Organization found
+Repository --> Service : Organization (exists)
+Service --> Controller : 409 Conflict\n"Tax number already exists."
+Controller --> User : 409 Conflict
+
+@enduml
