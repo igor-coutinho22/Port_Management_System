@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.StorageArea;
 using WebApp.Models.Infrastructure.Repositories;
 
@@ -26,12 +25,6 @@ namespace WebApp.Models.Application.Services
             await _storageAreaRepo.AddStorageAreaAsync(warehouse);
         }
         
-        public async Task AddDockAsync(string name, int maxCapacityTeu, int currentOccupancyTeu, int fixedStsCranesCount, int maxVesselLengthMeters)
-        {
-            var dock = new Dock(name, maxCapacityTeu, currentOccupancyTeu, fixedStsCranesCount, maxVesselLengthMeters);
-            await _storageAreaRepo.AddStorageAreaAsync(dock);
-        }
-
         public async Task UpdateContainerYardAsync(int id, string name, int maxCapacityTeu, int currentOccupancyTeu, ICollection<Dock> docksServed)
         {
             var yard = await GetStorageAreaByIdAsync(id) as ContainerYard;
@@ -48,18 +41,25 @@ namespace WebApp.Models.Application.Services
             await _storageAreaRepo.UpdateWarehouseAsync(warehouse, name, maxCapacityTeu, currentOccupancyTeu, specializedCargoType);
         }
 
-        public async Task UpdateDockAsync(int id, string name, int maxCapacityTeu, int currentOccupancyTeu, int fixedStsCranesCount, int maxVesselLengthMeters)
-        {
-            var dock = await GetStorageAreaByIdAsync(id) as Dock;
-            if (dock == null)
-                throw new ArgumentException("Storage area not found or is not a dock.");
-            await _storageAreaRepo.UpdateDockAsync(dock, name, maxCapacityTeu, currentOccupancyTeu, fixedStsCranesCount, maxVesselLengthMeters);
-        }
-
         public Task<StorageArea?> GetStorageAreaByNameAsync(string name) => _storageAreaRepo.GetByNameAsync(name);
 
         public Task<StorageArea?> GetStorageAreaByIdAsync(int id) => _storageAreaRepo.SearchByIdAsync(id);
 
         public Task<List<StorageArea>> GetAllStorageAreasAsync() => _storageAreaRepo.GetAllAsync();
+
+        public Task AddConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds)
+            => _storageAreaRepo.AddConnectionAsync(storageAreaId, dockId, distanceMeters, travelSeconds);
+
+        public Task UpdateConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds)
+            => _storageAreaRepo.UpdateConnectionAsync(storageAreaId, dockId, distanceMeters, travelSeconds);
+
+        public Task<bool> RemoveConnectionAsync(int storageAreaId, int dockId)
+            => _storageAreaRepo.RemoveConnectionAsync(storageAreaId, dockId);
+
+        public Task<List<DockStorageAreaInfo>> GetConnectionsForStorageAreaAsync(int storageAreaId)
+            => _storageAreaRepo.GetConnectionsForStorageAreaAsync(storageAreaId);
+
+        public Task DeleteStorageAreaAsync(int storageAreaId)
+            => _storageAreaRepo.DeleteStorageAreaAsync(storageAreaId);
     }
 }

@@ -33,12 +33,14 @@ namespace WebApp.Models.Application.Services.VesselService
             await RegisterVesselAsync(dto.IMO, dto.VesselName, dto.OperatorName, vesselType, dto.Bays, dto.Rows, dto.Tiers, dto.RequiredCraneCount, dto.RequiredDockLength);
         }
 
-        public async Task UpdateVesselAsync(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
+        public async Task UpdateVesselAsync(string imo, string newIMO, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
         {
             var vessel = await _vesselRepo.GetByIMOAsync(imo);
             if (vessel == null)
                 throw new ArgumentException("Vessel not found.", nameof(imo));
 
+            if (vessel.IMO != newIMO)
+                throw new ArgumentException("Changing IMO number is not allowed.", nameof(newIMO));
             vessel.VesselName = name;
             vessel.OperatorName = operatorName;
             vessel.VesselType = vesselType;

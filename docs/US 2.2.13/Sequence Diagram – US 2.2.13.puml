@@ -1,0 +1,56 @@
+@startuml
+title US 2.2.13 – Register and Manage Qualifications
+
+actor "Logistics Operator" as User
+
+' === Layers ===
+participant "QualificationController" as Controller
+participant "QualificationService" as Service
+participant "QualificationRepository" as Repository
+participant "PortManagementContext" as DbContext
+entity "Qualification (Aggregate Root)" as Qualification
+
+' === Register a new Qualification ===
+User -> Controller : POST /api/qualification\n(QualificationDTO)
+Controller -> Service : RegisterQualification(QualificationDTO)
+Service -> Qualification : new Qualification(code, name)
+Service -> Repository : Add(Qualification)
+Repository -> DbContext : Add(Qualification)
+DbContext --> Repository : Qualification persisted
+Repository --> Service : Qualification saved
+Service --> Controller : QualificationDTO (Created)
+Controller --> User : 201 Created (Qualification info)
+
+' === Update an existing Qualification ===
+User -> Controller : PUT /api/qualification/{id}
+Controller -> Service : UpdateQualification(id, updatedDTO)
+Service -> Repository : GetById(id)
+Repository -> DbContext : Find(Qualification)
+DbContext --> Repository : Qualification
+Repository --> Service : Qualification
+Service -> Qualification : Update(name)
+Service -> Repository : Update(Qualification)
+Repository -> DbContext : SaveChanges()
+Controller --> User : 200 OK (Qualification updated)
+
+' === Search qualifications ===
+User -> Controller : GET /api/qualification?code=STS
+Controller -> Service : GetQualifications(filter)
+Service -> Repository : GetAll(filter)
+Repository -> DbContext : Query(Qualification)
+DbContext --> Repository : List<Qualification>
+Repository --> Service : List<Qualification>
+Service --> Controller : List<QualificationDTO>
+Controller --> User : 200 OK (List)
+
+' === Attempt to assign a non-existent qualification (validation example) ===
+User -> Controller : PUT /api/staff/{id}/qualifications/{qualificationId}
+Controller -> Service : AssignQualification(staffId, qualificationId)
+Service -> Repository : Exists(qualificationId)
+Repository -> DbContext : CheckExists(qualificationId)
+DbContext --> Repository : false
+Repository --> Service : false
+Service --> Controller : 400 Bad Request\n("Qualification not found")
+Controller --> User : Error Response
+
+@enduml
