@@ -11,6 +11,7 @@ namespace WebApp.Models.Domain.Agents
         public string Nationality { get; private set; } = default!;
         public string Email { get; private set; } = default!;
         public string Phone { get; private set; } = default!;
+        public bool IsActive { get; private set; } = true;
 
         private Representative() { } // EF
 
@@ -24,5 +25,12 @@ namespace WebApp.Models.Domain.Agents
             Email = email;
             Phone = phone;
         }
+
+        public void Update(string name, string citizenId, string nationality, string email, string phone)
+        {
+            Name = name; CitizenId = citizenId; Nationality = nationality; Email = email; Phone = phone;
+        }
+
+        public void SetActive(bool active) => IsActive = active;
     }
 }
