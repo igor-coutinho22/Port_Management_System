@@ -10,6 +10,8 @@ using WebApp.Models.Domain.Users;
 using System.Text.Json;
 using WebApp.Models.Domain.StorageArea;
 using PortManagement.Domain.Enums;
+using WebApp.Models.Domain.VesselVisits;
+using WebApp.Models.Infrastructure.Configurations.VesselVisits; 
 
 namespace WebApp.Models.Context
 {
@@ -18,7 +20,7 @@ namespace WebApp.Models.Context
         public PortManagementContext(DbContextOptions<PortManagementContext> options)
             : base(options) { }
 
-        // DbSets
+        // === DbSets existentes ===
         public DbSet<Qualification> Qualifications { get; set; } = default!;
         public DbSet<Staff> Staff { get; set; } = default!;
         public DbSet<QualificationLink> QualificationLinks { get; set; } = default!;
@@ -26,21 +28,24 @@ namespace WebApp.Models.Context
         public DbSet<VesselType> VesselTypes { get; set; } = default!;
         public DbSet<Resource> Resources { get; set; } = default!;
         public DbSet<StorageArea> StorageAreas { get; set; } = default!;
-        public DbSet<ShippingAgentOrganization> Organizations { get; set; } = default!;
-        public DbSet<Representative> Representatives { get; set; } = default!;
+        public DbSet<VesselVisitNotification> VesselVisitNotifications { get; set; } = default!;
+        public DbSet<CargoManifest> CargoManifests { get; set; } = default!;
+        public DbSet<Container> Containers { get; set; } = default!;
+        public DbSet<CrewMember> CrewMembers { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Apply entity configurations
             modelBuilder.ApplyConfiguration(new QualificationConfiguration());
             modelBuilder.ApplyConfiguration(new StaffConfiguration());
             modelBuilder.ApplyConfiguration(new VesselConfiguration());
             modelBuilder.ApplyConfiguration(new VesselTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new OrganizationConfiguration());   
+            modelBuilder.ApplyConfiguration(new OrganizationConfiguration());
             modelBuilder.ApplyConfiguration(new RepresentativeConfiguration());
+            modelBuilder.ApplyConfiguration(new VesselVisitNotificationConfiguration());
+            modelBuilder.ApplyConfiguration(new CargoManifestConfiguration());
+            modelBuilder.ApplyConfiguration(new ContainerConfiguration());
+            modelBuilder.ApplyConfiguration(new CrewMemberConfiguration());
 
-
-            // Qualification link (many-to-many)
             modelBuilder.Entity<QualificationLink>()
                 .HasKey(q => new { q.StaffId, q.QualificationId });
 
@@ -56,7 +61,6 @@ namespace WebApp.Models.Context
                 .HasForeignKey(q => q.QualificationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Storage area hierarchy
             modelBuilder.Entity<StorageArea>(builder =>
             {
                 builder.HasKey(sa => sa.Id);
