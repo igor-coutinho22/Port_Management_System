@@ -11,7 +11,8 @@ using System.Text.Json;
 using WebApp.Models.Domain.StorageArea;
 using PortManagement.Domain.Enums;
 using WebApp.Models.Domain.VesselVisits;
-using WebApp.Models.Infrastructure.Configurations.VesselVisits; 
+using WebApp.Models.Infrastructure.Configurations.VesselVisits;
+using WebApp.Models.Domain.Agents;
 
 namespace WebApp.Models.Context
 {
@@ -32,6 +33,8 @@ namespace WebApp.Models.Context
         public DbSet<CargoManifest> CargoManifests { get; set; } = default!;
         public DbSet<Container> Containers { get; set; } = default!;
         public DbSet<CrewMember> CrewMembers { get; set; } = default!;
+        public DbSet<ShippingAgentOrganization> Organizations { get; set; }
+        public DbSet<Representative> Representatives { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
