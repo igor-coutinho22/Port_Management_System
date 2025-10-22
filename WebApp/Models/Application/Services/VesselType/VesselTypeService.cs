@@ -35,7 +35,8 @@ namespace WebApp.Models.Application.Services.VesselTypeService
             if (vesselTypeToUpdate == null)
                 throw new ArgumentException($"Vessel type '{currentName}' not found.");
 
-            vesselTypeToUpdate.Name = newName;
+            if (vesselTypeToUpdate.Name != newName)
+                throw new ArgumentException("Changing vessel type name is not allowed.", nameof(newName));
             vesselTypeToUpdate.Description = description;
             vesselTypeToUpdate.UpdateMaxBays(maxBays);
             vesselTypeToUpdate.UpdateMaxRows(maxRows);

@@ -30,19 +30,50 @@ namespace WebApp.Models.Infrastructure.Repositories.VesselRepository
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Vessel?> GetByIMOAsync(string imo) =>
-            await _context.Vessels.FirstOrDefaultAsync(v => v.IMO == imo);
+        public async Task<Vessel?> GetByIMOAsync(string imo)
+        {
+            var vessel = await _context.Vessels
+                .Include(v => v.VesselType)
+                .FirstOrDefaultAsync(v => v.IMO == imo);
 
-        public async Task<List<Vessel>> GetByNameAsync(string name) =>
-            await _context.Vessels
+            // CargoGrid is not persisted (NotMapped), keep it null here so callers decide initialization if needed.
+
+            return vessel;
+        }
+
+        public async Task<List<Vessel>> GetByNameAsync(string name)
+        {
+            var list = await _context.Vessels
+                .Include(v => v.VesselType)
                 .Where(v => v.VesselName.Contains(name))
                 .ToListAsync();
 
-        public async Task<List<Vessel>> GetByOperatorAsync(string operatorName) =>
-            await _context.Vessels
+            // CargoGrid is not persisted (NotMapped), keep it null here so callers decide initialization if needed.
+
+            return list;
+        }
+
+        public async Task<List<Vessel>> GetByOperatorAsync(string operatorName)
+        {
+            var list = await _context.Vessels
+                .Include(v => v.VesselType)
                 .Where(v => v.OperatorName == operatorName)
                 .ToListAsync();
 
-        public async Task<List<Vessel>> GetAllAsync() => await _context.Vessels.ToListAsync();
+            // CargoGrid is not persisted (NotMapped), keep it null here so callers decide initialization if needed.
+
+            return list;
+        }
+
+        public async Task<List<Vessel>> GetAllAsync()
+        {
+            var list = await _context.Vessels
+                .Include(v => v.VesselType)
+                .ToListAsync();
+
+            // CargoGrid is not persisted (NotMapped), keep it null here so callers decide initialization if needed.
+
+            return list;
+        }
     }
 }

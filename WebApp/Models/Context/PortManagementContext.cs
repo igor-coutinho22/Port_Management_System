@@ -26,6 +26,8 @@ namespace WebApp.Models.Context
         public DbSet<VesselType> VesselTypes { get; set; } = default!;
         public DbSet<Resource> Resources { get; set; } = default!;
         public DbSet<StorageArea> StorageAreas { get; set; } = default!;
+        public DbSet<ShippingAgentOrganization> Organizations { get; set; } = default!;
+        public DbSet<Representative> Representatives { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +36,9 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new StaffConfiguration());
             modelBuilder.ApplyConfiguration(new VesselConfiguration());
             modelBuilder.ApplyConfiguration(new VesselTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new OrganizationConfiguration());   
+            modelBuilder.ApplyConfiguration(new RepresentativeConfiguration());
+
 
             // Qualification link (many-to-many)
             modelBuilder.Entity<QualificationLink>()

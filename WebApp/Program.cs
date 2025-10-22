@@ -81,6 +81,9 @@ builder.Services.AddScoped<IVesselTypeRepository, VesselTypeRepository>();
 builder.Services.AddScoped<IVesselTypeService, VesselTypeService>();
 builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
+builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+
 
 var app = builder.Build();
 
