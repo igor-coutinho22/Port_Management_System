@@ -7,9 +7,9 @@ using WebApp.Models.Domain.Vessel;
 using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Infrastructure.Configurations;
 using WebApp.Models.Domain.Users;
-using System.Text.Json;
 using WebApp.Models.Domain.StorageArea;
 using PortManagement.Domain.Enums;
+using WebApp.Models.Domain.Agents;
 
 namespace WebApp.Models.Context
 {
@@ -26,6 +26,7 @@ namespace WebApp.Models.Context
         public DbSet<VesselType> VesselTypes { get; set; } = default!;
         public DbSet<Resource> Resources { get; set; } = default!;
         public DbSet<StorageArea> StorageAreas { get; set; } = default!;
+        public DbSet<DockStorageAreaInfo> DockStorageAreaInfos { get; set; } = default!;
         public DbSet<ShippingAgentOrganization> Organizations { get; set; } = default!;
         public DbSet<Representative> Representatives { get; set; } = default!;
 
@@ -36,8 +37,9 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new StaffConfiguration());
             modelBuilder.ApplyConfiguration(new VesselConfiguration());
             modelBuilder.ApplyConfiguration(new VesselTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new OrganizationConfiguration());   
+            modelBuilder.ApplyConfiguration(new OrganizationConfiguration());
             modelBuilder.ApplyConfiguration(new RepresentativeConfiguration());
+            modelBuilder.ApplyConfiguration(new DockStorageAreaInfoConfiguration());
 
 
             // Qualification link (many-to-many)
@@ -70,7 +72,6 @@ namespace WebApp.Models.Context
 
                 builder
                     .HasDiscriminator<StorageAreaType>("StorageAreaType")
-                    .HasValue<Dock>(StorageAreaType.Dock)
                     .HasValue<ContainerYard>(StorageAreaType.ContainerYard)
                     .HasValue<Warehouse>(StorageAreaType.Warehouse);
             });
