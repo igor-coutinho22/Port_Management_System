@@ -13,6 +13,7 @@ using WebApp.Models.Domain.Agents;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Infrastructure.Configurations.VesselVisits;
 using WebApp.Models.Domain.Docks;
+using WebApp.Models.Infrastructure.Configurations.Docks;
 
 namespace WebApp.Models.Context
 {
