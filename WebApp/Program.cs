@@ -87,6 +87,8 @@ builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IRepresentativeRepository, RepresentativeRepository>();
 builder.Services.AddScoped<IRepresentativeService, RepresentativeService>();
+builder.Services.AddScoped<IDockRepository, DockRepository>();
+builder.Services.AddScoped<IDockService, DockService>();
 
 
 var app = builder.Build();
