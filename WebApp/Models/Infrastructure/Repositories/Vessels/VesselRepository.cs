@@ -75,5 +75,10 @@ namespace WebApp.Models.Infrastructure.Repositories.VesselRepository
 
             return list;
         }
+        public async Task DeleteVesselAsync(Vessel vessel)
+        {
+            _context.Vessels.Remove(vessel);
+            await _context.SaveChangesAsync();
+        }
     }
 }

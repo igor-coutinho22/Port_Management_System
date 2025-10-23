@@ -14,10 +14,12 @@ namespace WebApp.Controllers
     public class StorageAreaController : ControllerBase
     {
         private readonly IStorageAreaService _service;
+        private readonly IDockService _dockService;
 
-        public StorageAreaController(IStorageAreaService service)
+        public StorageAreaController(IStorageAreaService service, IDockService dockService)
         {
             _service = service;
+            _dockService = dockService;
         }
 
         [HttpPost("containerYard")]
@@ -25,8 +27,21 @@ namespace WebApp.Controllers
         {
             try
             {
-                // pass dock id list to service; service will resolve Dock entities when ready
-                await _service.AddContainerYardAsync(dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, dockIds.Select(id => new Dock("","",0,0,0)).ToList());
+                // Retrieve actual dock entities by their IDs in parallel
+                var dockTasks = dockIds.Select(id => _dockService.GetByIdAsync(id)).ToList();
+                var dockResults = await Task.WhenAll(dockTasks);
+
+                var docks = new List<Dock>();
+                for (int i = 0; i < dockResults.Length; i++)
+                {
+                    if (dockResults[i] == null)
+                    {
+                        return BadRequest($"Dock with ID {dockIds[i]} not found.");
+                    }
+                    docks.Add(dockResults[i]!);
+                }
+
+                await _service.AddContainerYardAsync(dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, docks);
                 return CreatedAtAction(nameof(GetByName), new { name = dto.Name }, dto);
             }
             catch (ArgumentException ex)
@@ -57,7 +72,21 @@ namespace WebApp.Controllers
 
             try
             {
-                await _service.UpdateContainerYardAsync(id, dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, dto.DockIds.Select(id => new WebApp.Models.Domain.Docks.Dock("","",0,0,0)).ToList());
+                // Retrieve actual dock entities by their IDs in parallel
+                var dockTasks = dto.DockIds.Select(dockId => _dockService.GetByIdAsync(dockId)).ToList();
+                var dockResults = await Task.WhenAll(dockTasks);
+
+                var docks = new List<Dock>();
+                for (int i = 0; i < dockResults.Length; i++)
+                {
+                    if (dockResults[i] == null)
+                    {
+                        return BadRequest($"Dock with ID {dto.DockIds[i]} not found.");
+                    }
+                    docks.Add(dockResults[i]!);
+                }
+
+                await _service.UpdateContainerYardAsync(id, dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, docks);
                 var updated = await _service.GetStorageAreaByIdAsync(id);
                 return Ok(updated);
             }

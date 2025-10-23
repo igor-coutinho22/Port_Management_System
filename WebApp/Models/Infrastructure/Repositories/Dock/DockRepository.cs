@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
+using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.StorageArea;
 
 namespace WebApp.Models.Infrastructure.Repositories
@@ -23,17 +24,17 @@ namespace WebApp.Models.Infrastructure.Repositories
 
         public async Task AddAsync(Dock dock)
         {
-            _context.StorageAreas.Add(dock);
+            _context.Docks.Add(dock);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Dock dock)
         {
-            _context.StorageAreas.Update(dock);
+            _context.Docks.Update(dock);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Dock>> SearchAsync(string? name, string? location, Guid? vesselTypeId)
+        public async Task<IEnumerable<Dock>> SearchAsync(string? name, string? location, string? vesselTypeName)
         {
             var query = _context.StorageAreas.OfType<Dock>().Include(d => d.AllowedVesselTypes).AsQueryable();
 
@@ -43,8 +44,8 @@ namespace WebApp.Models.Infrastructure.Repositories
             if (!string.IsNullOrEmpty(location))
                 query = query.Where(d => d.Location.Contains(location));
 
-            if (vesselTypeId.HasValue)
-                query = query.Where(d => d.AllowedVesselTypes.Any(v => v.Id == vesselTypeId.Value));
+            if (vesselTypeName != null)
+                query = query.Where(d => d.AllowedVesselTypes.Any(vt => vt.Name == vesselTypeName));
 
             return await query.ToListAsync();
         }

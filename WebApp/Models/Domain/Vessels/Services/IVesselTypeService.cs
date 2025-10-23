@@ -11,5 +11,6 @@ namespace WebApp.Models.Application.Services
         Task<List<VesselType>> SearchVesselTypesByDescriptionAsync(string keyword);
         Task AddVesselTypeAsync(string name, string description, int maxBays, int maxRows, int maxTiers);
         Task UpdateVesselTypeAsync(string currentName, string newName, string description, int maxBays, int maxRows, int maxTiers);
+        Task DeleteVesselTypeAsync(string name);
     }
 }

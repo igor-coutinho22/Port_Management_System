@@ -44,5 +44,14 @@ namespace WebApp.Models.Application.Services.VesselTypeService
 
             await _vesselTypeRepo.UpdateVesselTypeAsync(vesselTypeToUpdate);
         }
+
+        public async Task DeleteVesselTypeAsync(string name)
+        {
+            var vesselTypeToDelete = await GetVesselTypeByNameAsync(name);
+            if (vesselTypeToDelete == null)
+                throw new ArgumentException($"Vessel type '{name}' not found.");
+
+            await _vesselTypeRepo.DeleteVesselTypeAsync(vesselTypeToDelete);
+        }
     }
 }

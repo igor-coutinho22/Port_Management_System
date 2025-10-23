@@ -34,7 +34,7 @@ namespace WebApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
         // ------------------------------------------------------------
         // Update an existing vessel type
         // ------------------------------------------------------------
@@ -89,7 +89,7 @@ namespace WebApp.Controllers
 
             return Ok(results.Select(MapToDto));
         }
-        
+
         // ------------------------------------------------------------
         // Get all vessel types
         // ------------------------------------------------------------
@@ -102,5 +102,22 @@ namespace WebApp.Controllers
 
         private static VesselTypeDTO MapToDto(VesselType vt) =>
             new VesselTypeDTO(vt.Name, vt.Description, vt.MaxBays, vt.MaxRows, vt.MaxTiers);
+
+        // ------------------------------------------------------------
+        // Delete a vessel type
+        // ------------------------------------------------------------
+        [HttpDelete("{name}")]
+        public async Task<IActionResult> DeleteVesselType(string name)
+        {
+            try
+            {
+                await _vesselTypeService.DeleteVesselTypeAsync(name);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

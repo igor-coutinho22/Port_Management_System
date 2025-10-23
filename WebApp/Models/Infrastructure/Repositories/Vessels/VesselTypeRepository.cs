@@ -43,5 +43,11 @@ namespace WebApp.Models.Infrastructure.Repositories.VesselTypeRepository
             _context.VesselTypes.Update(updatedVesselType);
             await _context.SaveChangesAsync();
         }
+
+        public async Task DeleteVesselTypeAsync(VesselType vesselType)
+        {
+            _context.VesselTypes.Remove(vesselType);
+            await _context.SaveChangesAsync();
+        }
     }
 }

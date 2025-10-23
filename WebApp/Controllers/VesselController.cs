@@ -118,5 +118,22 @@ namespace WebApp.Controllers
                 v.Rows,
                 v.Tiers
             );
+
+        // ------------------------------------------------------------
+        // Delete a vessel
+        // ------------------------------------------------------------
+        [HttpDelete("{imo}")]
+        public async Task<IActionResult> DeleteVesselAsync(string imo)
+        {
+            try
+            {
+                await _vesselService.DeleteVesselAsync(imo);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

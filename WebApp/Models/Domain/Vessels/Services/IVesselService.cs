@@ -14,5 +14,6 @@ namespace WebApp.Models.Application.Services
         Task<List<Vessel>> GetVesselByNameAsync(string name);
         Task<List<Vessel>> GetVesselsByOperatorAsync(string operatorName);
         Task<List<Vessel>> GetAllVesselsAsync();
+        Task DeleteVesselAsync(string imo);
     }
 }

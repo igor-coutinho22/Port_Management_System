@@ -57,5 +57,13 @@ namespace WebApp.Models.Application.Services.VesselService
         public Task<List<Vessel>> GetVesselByNameAsync(string name) => _vesselRepo.GetByNameAsync(name);
         public Task<List<Vessel>> GetVesselsByOperatorAsync(string operatorName) => _vesselRepo.GetByOperatorAsync(operatorName);
         public Task<List<Vessel>> GetAllVesselsAsync() => _vesselRepo.GetAllAsync();
+        public async Task DeleteVesselAsync(string imo)
+        {
+            var vesselToDelete = await GetVesselByIMOAsync(imo);
+            if (vesselToDelete == null)
+                throw new ArgumentException($"Vessel with IMO '{imo}' not found.");
+
+            await _vesselRepo.DeleteVesselAsync(vesselToDelete);
+        }
     }
 }

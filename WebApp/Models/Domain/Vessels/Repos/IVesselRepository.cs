@@ -12,5 +12,6 @@ namespace WebApp.Models.Infrastructure.Repositories
         Task<List<Vessel>> GetByNameAsync(string name);
         Task<List<Vessel>> GetByOperatorAsync(string operatorName);
         Task<List<Vessel>> GetAllAsync();
+        Task DeleteVesselAsync(Vessel vessel);
     }
 }

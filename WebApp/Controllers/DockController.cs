@@ -30,9 +30,9 @@ namespace WebApp.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] string? location, [FromQuery] Guid? vesselTypeId)
+        public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] string? location, [FromQuery] string vesselTypeName)
         {
-            var docks = await _service.SearchAsync(name, location, vesselTypeId);
+            var docks = await _service.SearchAsync(name, location, vesselTypeName);
             return Ok(docks);
         }
 

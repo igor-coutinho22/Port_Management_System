@@ -10,5 +10,6 @@ namespace WebApp.Models.Infrastructure.Repositories
         Task<List<VesselType>> SearchVesselTypeByDescriptionAsync(string keyword);
         Task AddVesselTypeAsync(VesselType vesselType);
         Task UpdateVesselTypeAsync(VesselType updatedVesselType);
+        Task DeleteVesselTypeAsync(VesselType vesselType);
     }
 }

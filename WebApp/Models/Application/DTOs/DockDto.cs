@@ -7,6 +7,6 @@ namespace WebApp.Models.Application.DTOs
         public double LengthMeters { get; set; }
         public double DepthMeters { get; set; }
         public double MaxDraftMeters { get; set; }
-        public List<Guid> AllowedVesselTypeIds { get; set; } = new();
+        public List<string> AllowedVesselTypes { get; set; } = new();
     }
 }

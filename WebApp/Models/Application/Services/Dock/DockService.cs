@@ -1,18 +1,8 @@
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Infrastructure.Repositories;
-using WebApp.Models.Domain.Vessels.VesselType;
 
-namespace WebApp.Models.Application.Services
-{
-    public interface IDockService
-    {
-        Task<Dock> CreateAsync(DockDto dto);
-        Task<Dock?> GetByIdAsync(Guid id);
-        Task<IEnumerable<Dock>> SearchAsync(string? name, string? location, Guid? vesselTypeId);
-        Task UpdateAsync(Guid id, DockDto dto);
-    }
-
+namespace WebApp.Models.Application.Services;
     public class DockService : IDockService
     {
         private readonly IDockRepository _dockRepository;
@@ -28,9 +18,9 @@ namespace WebApp.Models.Application.Services
         {
             var dock = new Dock(dto.Name, dto.Location, dto.LengthMeters, dto.DepthMeters, dto.MaxDraftMeters);
 
-            foreach (var vtId in dto.AllowedVesselTypeIds)
+            foreach (var vtName in dto.AllowedVesselTypes)
             {
-                var type = await _vesselTypeRepository.GetByIdAsync(vtId);
+                var type = await _vesselTypeRepository.GetVesselTypeByNameAsync(vtName);
                 if (type != null) dock.AllowVesselType(type);
             }
 
@@ -41,8 +31,8 @@ namespace WebApp.Models.Application.Services
         public async Task<Dock?> GetByIdAsync(Guid id) =>
             await _dockRepository.GetByIdAsync(id);
 
-        public async Task<IEnumerable<Dock>> SearchAsync(string? name, string? location, Guid? vesselTypeId) =>
-            await _dockRepository.SearchAsync(name, location, vesselTypeId);
+        public async Task<IEnumerable<Dock>> SearchAsync(string? name, string? location, string? vesselTypeName) =>
+            await _dockRepository.SearchAsync(name, location, vesselTypeName);
 
         public async Task UpdateAsync(Guid id, DockDto dto)
         {
@@ -52,13 +42,12 @@ namespace WebApp.Models.Application.Services
             dock.Update(dto.Name, dto.Location, dto.LengthMeters, dto.DepthMeters, dto.MaxDraftMeters);
             dock.AllowedVesselTypes.Clear();
 
-            foreach (var vtId in dto.AllowedVesselTypeIds)
+            foreach (var vtName in dto.AllowedVesselTypes)
             {
-                var type = await _vesselTypeRepository.GetByIdAsync(vtId);
+                var type = await _vesselTypeRepository.GetVesselTypeByNameAsync(vtName);
                 if (type != null) dock.AllowVesselType(type);
             }
 
             await _dockRepository.UpdateAsync(dock);
         }
     }
-}
