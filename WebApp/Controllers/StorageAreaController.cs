@@ -1,7 +1,9 @@
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Services;
+using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.StorageArea;
 
 namespace WebApp.Controllers
@@ -19,14 +21,12 @@ namespace WebApp.Controllers
         }
 
         [HttpPost("containerYard")]
-        public async Task<IActionResult> AddContainerYard([FromBody] StorageAreaDTO dto, [FromBody] List<int> dockIds)
+        public async Task<IActionResult> AddContainerYard([FromBody] StorageAreaDTO dto, [FromQuery] List<Guid> dockIds)
         {
             try
             {
-                // Convert dockIds to Dock objects minimally: repository/service expect ICollection<Dock>
-                var docks = dockIds.Select(id => new WebApp.Models.Domain.Docks.Dock(0, 1)).ToList();
-                // NOTE: The Dock class currently requires parameters; ideally pass real dock entities.
-                await _service.AddContainerYardAsync(dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, docks);
+                // pass dock id list to service; service will resolve Dock entities when ready
+                await _service.AddContainerYardAsync(dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, dockIds.Select(id => new Dock("","",0,0,0)).ToList());
                 return CreatedAtAction(nameof(GetByName), new { name = dto.Name }, dto);
             }
             catch (ArgumentException ex)
@@ -50,15 +50,14 @@ namespace WebApp.Controllers
         }
 
         [HttpPut("containerYard/{id}")]
-        public async Task<IActionResult> UpdateContainerYard(int id, [FromBody] StorageAreaDTO dto, [FromBody] List<int> dockIds)
+        public async Task<IActionResult> UpdateContainerYard(int id, [FromBody] ContainerYardDto dto)
         {
             var existing = await _service.GetStorageAreaByIdAsync(id) as ContainerYard;
             if (existing == null) return NotFound();
 
             try
             {
-                var docks = dockIds.Select(i => new WebApp.Models.Domain.Docks.Dock(0, 1)).ToList();
-                await _service.UpdateContainerYardAsync(id, dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, docks);
+                await _service.UpdateContainerYardAsync(id, dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, dto.DockIds.Select(id => new WebApp.Models.Domain.Docks.Dock("","",0,0,0)).ToList());
                 var updated = await _service.GetStorageAreaByIdAsync(id);
                 return Ok(updated);
             }
@@ -69,14 +68,14 @@ namespace WebApp.Controllers
         }
 
         [HttpPut("warehouse/{id}")]
-        public async Task<IActionResult> UpdateWarehouse(int id, [FromBody] StorageAreaDTO dto, [FromQuery] string specializedCargoType)
+        public async Task<IActionResult> UpdateWarehouse(int id, [FromBody] WarehouseDto dto)
         {
             var existing = await _service.GetStorageAreaByIdAsync(id) as Warehouse;
             if (existing == null) return NotFound();
 
             try
             {
-                await _service.UpdateWarehouseAsync(id, dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, specializedCargoType);
+                await _service.UpdateWarehouseAsync(id, dto.Name, dto.MaxCapacityTeu, dto.CurrentOccupancyTeu, dto.SpecializedCargoType);
                 var updated = await _service.GetStorageAreaByIdAsync(id);
                 return Ok(updated);
             }
@@ -124,7 +123,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPut("{storageAreaId}/connections/{dockId}")]
-        public async Task<IActionResult> UpdateConnection(int storageAreaId, int dockId, [FromBody] StorageAreaConnectionDTO dto)
+        public async Task<IActionResult> UpdateConnection(int storageAreaId, Guid dockId, [FromBody] StorageAreaConnectionDTO dto)
         {
             try
             {
@@ -138,7 +137,7 @@ namespace WebApp.Controllers
         }
 
         [HttpDelete("{storageAreaId}/connections/{dockId}")]
-        public async Task<IActionResult> DeleteConnection(int storageAreaId, int dockId)
+        public async Task<IActionResult> DeleteConnection(int storageAreaId, Guid dockId)
         {
             var removed = await _service.RemoveConnectionAsync(storageAreaId, dockId);
             if (!removed) return NotFound();
