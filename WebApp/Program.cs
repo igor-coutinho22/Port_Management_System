@@ -79,6 +79,8 @@ builder.Services.AddScoped<IVesselRepository, VesselRepository>();
 builder.Services.AddScoped<IVesselService, VesselService>();
 builder.Services.AddScoped<IVesselTypeRepository, VesselTypeRepository>();
 builder.Services.AddScoped<IVesselTypeService, VesselTypeService>();
+builder.Services.AddScoped<IStorageAreaRepository, StorageAreaRepository>();
+builder.Services.AddScoped<IStorageAreaService, StorageAreaService>();
 builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
