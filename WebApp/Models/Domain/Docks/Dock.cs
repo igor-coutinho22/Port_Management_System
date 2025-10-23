@@ -1,46 +1,50 @@
-using System.Collections.Generic;
-using PortManagement.Domain.Enums;
-using WebApp.Models.Domain.StorageArea;
+using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Models.Domain.Docks
 {
     public class Dock
     {
-        public int Id { get; protected set; }
+        public Guid Id { get; private set; }
+        public string Name { get; private set; } = string.Empty;
+        public string Location { get; private set; } = string.Empty;
+        public double LengthMeters { get; private set; }
+        public double DepthMeters { get; private set; }
+        public double MaxDraftMeters { get; private set; }
 
-        // Fixed infrastructure dictates maximum available STS cranes
-        public int FixedStsCranesCount { get; set; }
+        public List<VesselType> AllowedVesselTypes { get; private set; } = new();
 
-        // An implicit 'capacity' constraint based on vessel size (not strictly TEUs but length/berth space)
-        public int MaxVesselLengthMeters { get; set; }
+        private Dock() { } // EF Core
 
-        protected Dock()
+        public Dock(string name, string location, double length, double depth, double maxDraft)
         {
+            Id = Guid.NewGuid();
+            Name = name;
+            Location = location;
+            LengthMeters = length;
+            DepthMeters = depth;
+            MaxDraftMeters = maxDraft;
         }
 
-        public Dock(int FixedStsCranesCount, int MaxVesselLengthMeters)
+        public void Update(string name, string location, double length, double depth, double maxDraft)
         {
-            if (FixedStsCranesCount < 0)
-                throw new ArgumentOutOfRangeException(nameof(FixedStsCranesCount), "Fixed STS cranes count must be >= 0.");
-            if (MaxVesselLengthMeters <= 0)
-                throw new ArgumentOutOfRangeException(nameof(MaxVesselLengthMeters), "Max vessel length must be > 0 meters.");
-
-            this.FixedStsCranesCount = FixedStsCranesCount;
-            this.MaxVesselLengthMeters = MaxVesselLengthMeters;
+            Name = name;
+            Location = location;
+            LengthMeters = length;
+            DepthMeters = depth;
+            MaxDraftMeters = maxDraft;
         }
 
-        public void UpdateStsCranesCount(int newCount)
+        public void AllowVesselType(VesselType vesselType)
         {
-            if (newCount < 0)
-                throw new ArgumentOutOfRangeException(nameof(newCount), "Fixed STS cranes count must be >= 0.");
-            FixedStsCranesCount = newCount;
+            if (!AllowedVesselTypes.Any(v => v.Name == vesselType.Name))
+                AllowedVesselTypes.Add(vesselType);
         }
 
-        public void UpdateMaxVesselLength(int newLengthMeters)
+        public void RemoveVesselType(string vesselTypeName)
         {
-            if (newLengthMeters <= 0)
-                throw new ArgumentOutOfRangeException(nameof(newLengthMeters), "Max vessel length must be > 0 meters.");
-            MaxVesselLengthMeters = newLengthMeters;
+            var type = AllowedVesselTypes.FirstOrDefault(v => v.Name == vesselTypeName);
+            if (type != null)
+                AllowedVesselTypes.Remove(type);
         }
     }
 }
