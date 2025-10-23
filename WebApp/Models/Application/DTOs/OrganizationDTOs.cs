@@ -16,7 +16,4 @@ namespace WebApp.Models.Application.DTOs
         string TaxNumber
     );
 
-    public record CreateRepresentativeRequest(
-        string Name, string CitizenId, string Nationality, string Email, string Phone
-    );
 }
