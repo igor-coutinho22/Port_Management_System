@@ -7,7 +7,7 @@ namespace WebApp.Models.Domain.StorageArea
         public int Id { get; set; }
 
         // Foreign keys
-        public int DockId { get; set; }
+        public Guid DockId { get; set; }
         public int StorageAreaId { get; set; }
 
         // Value fields

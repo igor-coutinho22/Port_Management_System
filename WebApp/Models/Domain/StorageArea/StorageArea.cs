@@ -72,7 +72,7 @@ namespace WebApp.Models.Domain.StorageArea
         /// Get the connection info for a given dock id, or null if none exists.
         /// This reads from the persistent navigation collection <see cref="DockConnections"/>.
         /// </summary>
-        public DockStorageAreaInfo? GetInfoForDock(int dockId)
+        public DockStorageAreaInfo? GetInfoForDock(Guid dockId)
         {
             return DockConnections?.FirstOrDefault(c => c.DockId == dockId);
         }
@@ -81,7 +81,7 @@ namespace WebApp.Models.Domain.StorageArea
         /// Add or update a connection entry in the in-memory navigation collection.
         /// Repository code should persist the change (SaveChangesAsync) afterwards.
         /// </summary>
-        public void SetInfoForDock(int dockId, DockStorageAreaInfo info)
+        public void SetInfoForDock(Guid dockId, DockStorageAreaInfo info)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
 
@@ -104,7 +104,7 @@ namespace WebApp.Models.Domain.StorageArea
         /// Remove any connection associated with the dock id from the navigation collection.
         /// Repository should persist the removal.
         /// </summary>
-        public bool RemoveInfoForDock(int dockId)
+        public bool RemoveInfoForDock(Guid dockId)
         {
             var conn = DockConnections.FirstOrDefault(c => c.DockId == dockId);
             if (conn == null) return false;
