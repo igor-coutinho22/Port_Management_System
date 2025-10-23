@@ -47,5 +47,14 @@ namespace WebApp.Controllers
                 return NotFound();
             return Ok(qualification);
         }
+
+        [HttpGet()]
+        public async Task<ActionResult<IEnumerable<QualificationDto>>> GetAll()
+        {
+            var results = await _service.SearchAsync(null, null);
+            if (results == null)
+                return NotFound();
+            return Ok(results);
+        }
     }
 }
