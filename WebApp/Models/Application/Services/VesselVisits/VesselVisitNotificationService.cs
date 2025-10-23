@@ -5,6 +5,7 @@ namespace WebApp.Models.Application.Services
 {
     public interface IVesselVisitNotificationService
     {
+        Task<VesselVisitNotification?> GetByIdAsync(Guid id);
         Task<VesselVisitNotification> CreateAsync(VesselVisitNotification notification);
         Task SubmitAsync(Guid id);
     }
@@ -16,6 +17,11 @@ namespace WebApp.Models.Application.Services
         public VesselVisitNotificationService(IVesselVisitNotificationRepository repository)
         {
             _repository = repository;
+        }
+
+        public async Task<VesselVisitNotification?> GetByIdAsync(Guid id) // 👈 implementação
+        {
+            return await _repository.GetByIdAsync(id);
         }
 
         public async Task<VesselVisitNotification> CreateAsync(VesselVisitNotification notification)
