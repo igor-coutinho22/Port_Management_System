@@ -18,9 +18,9 @@ namespace WebApp.Models.Application.Services
         Task<List<StorageArea>> GetAllStorageAreasAsync();
         
         // Connection CRUD
-        Task AddConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds);
-        Task UpdateConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds);
-        Task<bool> RemoveConnectionAsync(int storageAreaId, int dockId);
+        Task AddConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds);
+        Task UpdateConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds);
+        Task<bool> RemoveConnectionAsync(int storageAreaId, Guid dockId);
         Task<List<DockStorageAreaInfo>> GetConnectionsForStorageAreaAsync(int storageAreaId);
 
         // Delete storage area

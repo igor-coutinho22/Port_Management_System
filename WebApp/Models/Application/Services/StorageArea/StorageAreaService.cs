@@ -47,13 +47,13 @@ namespace WebApp.Models.Application.Services
 
         public Task<List<StorageArea>> GetAllStorageAreasAsync() => _storageAreaRepo.GetAllAsync();
 
-        public Task AddConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds)
+        public Task AddConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds)
             => _storageAreaRepo.AddConnectionAsync(storageAreaId, dockId, distanceMeters, travelSeconds);
 
-        public Task UpdateConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds)
+        public Task UpdateConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds)
             => _storageAreaRepo.UpdateConnectionAsync(storageAreaId, dockId, distanceMeters, travelSeconds);
 
-        public Task<bool> RemoveConnectionAsync(int storageAreaId, int dockId)
+        public Task<bool> RemoveConnectionAsync(int storageAreaId, Guid dockId)
             => _storageAreaRepo.RemoveConnectionAsync(storageAreaId, dockId);
 
         public Task<List<DockStorageAreaInfo>> GetConnectionsForStorageAreaAsync(int storageAreaId)

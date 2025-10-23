@@ -14,9 +14,9 @@ namespace WebApp.Models.Infrastructure.Repositories
         Task<List<StorageArea>> GetAllAsync();
         
         // Connection CRUD between Dock and StorageArea
-        Task AddConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds);
-        Task UpdateConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds);
-        Task<bool> RemoveConnectionAsync(int storageAreaId, int dockId);
+        Task AddConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds);
+        Task UpdateConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds);
+        Task<bool> RemoveConnectionAsync(int storageAreaId, Guid dockId);
         Task<List<DockStorageAreaInfo>> GetConnectionsForStorageAreaAsync(int storageAreaId);
 
         // Delete a storage area (and related persistent connection rows)

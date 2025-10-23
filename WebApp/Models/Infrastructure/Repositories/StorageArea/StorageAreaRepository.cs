@@ -77,20 +77,19 @@ namespace WebApp.Models.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task AddConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds)
+    public async Task AddConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds)
         {
             // ensure StorageArea exists
             var sa = await _context.StorageAreas.FindAsync(storageAreaId);
             if (sa == null) throw new ArgumentException("StorageArea not found", nameof(storageAreaId));
 
-            // upsert: if exists, update
+            // upsert: if exists, return error
             var existing = await _context.DockStorageAreaInfos
                 .FirstOrDefaultAsync(d => d.StorageAreaId == storageAreaId && d.DockId == dockId);
 
             if (existing != null)
             {
-                existing.DistanceMeters = distanceMeters;
-                existing.TravelSeconds = travelSeconds;
+                throw new ArgumentException("Connection already exists");
             }
             else
             {
@@ -107,7 +106,7 @@ namespace WebApp.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateConnectionAsync(int storageAreaId, int dockId, double distanceMeters, int travelSeconds)
+        public async Task UpdateConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds)
         {
             var existing = await _context.DockStorageAreaInfos
                 .FirstOrDefaultAsync(d => d.StorageAreaId == storageAreaId && d.DockId == dockId);
@@ -120,7 +119,7 @@ namespace WebApp.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> RemoveConnectionAsync(int storageAreaId, int dockId)
+        public async Task<bool> RemoveConnectionAsync(int storageAreaId, Guid dockId)
         {
             var existing = await _context.DockStorageAreaInfos
                 .FirstOrDefaultAsync(d => d.StorageAreaId == storageAreaId && d.DockId == dockId);
