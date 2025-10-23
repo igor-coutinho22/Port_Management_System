@@ -25,8 +25,13 @@ namespace WebApp.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            
-            return Ok();
+            var notification = await _service.GetByIdAsync(id);
+            if (notification == null)
+            {
+                return NotFound(new { Message = $"Vessel Visit Notification with ID {id} not found." });
+            }
+
+            return Ok(notification);    
         }
 
         [HttpPut("{id}/submit")]

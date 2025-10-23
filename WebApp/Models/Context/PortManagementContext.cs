@@ -12,6 +12,7 @@ using PortManagement.Domain.Enums;
 using WebApp.Models.Domain.Agents;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Infrastructure.Configurations.VesselVisits;
+using WebApp.Models.Domain.Docks;
 
 namespace WebApp.Models.Context
 {
@@ -35,10 +36,10 @@ namespace WebApp.Models.Context
         public DbSet<DockStorageAreaInfo> DockStorageAreaInfos { get; set; } = default!;
         public DbSet<ShippingAgentOrganization> Organizations { get; set; } = default!;
         public DbSet<Representative> Representatives { get; set; } = default!;
+        public DbSet<Dock> Docks { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Apply entity configurations
             modelBuilder.ApplyConfiguration(new QualificationConfiguration());
             modelBuilder.ApplyConfiguration(new StaffConfiguration());
             modelBuilder.ApplyConfiguration(new VesselConfiguration());
@@ -50,6 +51,8 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new ContainerConfiguration());
             modelBuilder.ApplyConfiguration(new CrewMemberConfiguration());
             modelBuilder.ApplyConfiguration(new DockStorageAreaInfoConfiguration());
+            modelBuilder.ApplyConfiguration(new DockConfiguration());
+
 
 
             // Qualification link (many-to-many)
