@@ -85,6 +85,8 @@ builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<IRepresentativeRepository, RepresentativeRepository>();
+builder.Services.AddScoped<IRepresentativeService, RepresentativeService>();
 
 
 var app = builder.Build();
