@@ -10,6 +10,8 @@ using WebApp.Models.Domain.Users;
 using WebApp.Models.Domain.StorageArea;
 using PortManagement.Domain.Enums;
 using WebApp.Models.Domain.Agents;
+using WebApp.Models.Domain.VesselVisits;
+using WebApp.Models.Infrastructure.Configurations.VesselVisits;
 
 namespace WebApp.Models.Context
 {
@@ -26,6 +28,10 @@ namespace WebApp.Models.Context
         public DbSet<VesselType> VesselTypes { get; set; } = default!;
         public DbSet<Resource> Resources { get; set; } = default!;
         public DbSet<StorageArea> StorageAreas { get; set; } = default!;
+        public DbSet<VesselVisitNotification> VesselVisitNotifications { get; set; } = default!;
+        public DbSet<CargoManifest> CargoManifests { get; set; } = default!;
+        public DbSet<Container> Containers { get; set; } = default!;
+        public DbSet<CrewMember> CrewMembers { get; set; } = default!;
         public DbSet<DockStorageAreaInfo> DockStorageAreaInfos { get; set; } = default!;
         public DbSet<ShippingAgentOrganization> Organizations { get; set; } = default!;
         public DbSet<Representative> Representatives { get; set; } = default!;
@@ -39,6 +45,10 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new VesselTypeConfiguration());
             modelBuilder.ApplyConfiguration(new OrganizationConfiguration());
             modelBuilder.ApplyConfiguration(new RepresentativeConfiguration());
+            modelBuilder.ApplyConfiguration(new VesselVisitNotificationConfiguration());
+            modelBuilder.ApplyConfiguration(new CargoManifestConfiguration());
+            modelBuilder.ApplyConfiguration(new ContainerConfiguration());
+            modelBuilder.ApplyConfiguration(new CrewMemberConfiguration());
             modelBuilder.ApplyConfiguration(new DockStorageAreaInfoConfiguration());
 
 
