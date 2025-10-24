@@ -1,0 +1,23 @@
+@startuml ResourceC4Views_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+title C4 Level 2 - Container Diagram (Resource Management)
+
+Person(operator, "Logistics Operator")
+
+System_Boundary(app, "Port Management Web Application") {
+    Container(api, "ASP.NET Core Web API", "C#", "Exposes REST endpoints for managing resources")
+    Container(appService, "Application Layer", "C#", "Implements business use cases (services, DTOs)")
+    Container(domain, "Domain Layer", "C#", "Entities, Enums, and Domain Logic")
+    Container(infra, "Infrastructure Layer", "C#", "Repositories and EF Core persistence")
+}
+
+ContainerDb(db, "Azure SQL Database", "SQL", "Stores Resources, Qualifications, Staff, etc.")
+
+Rel(operator, api, "Uses", "HTTPS/JSON")
+Rel(api, appService, "Invokes use cases")
+Rel(appService, domain, "Uses domain models")
+Rel(appService, infra, "Uses repositories via interfaces")
+Rel(infra, db, "Reads/Writes", "EF Core")
+
+SHOW_LEGEND()
+@enduml

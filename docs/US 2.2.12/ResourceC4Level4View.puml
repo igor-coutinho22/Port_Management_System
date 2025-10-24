@@ -1,0 +1,51 @@
+@startuml ResourceC4Views_Code
+title C4 Level 4 - Code/Class Diagram (Simplified)
+skinparam classAttributeIconSize 0
+
+class Resource {
+    +string Id
+    +string Description
+    +ResourceType Type
+    +int OperationalCapacity
+    +ResourceAvailabilityStatus Status
+    +int SetupTime
+}
+
+class ResourceDTO {
+    +string Id
+    +string Description
+    +ResourceType ResourceType
+    +ResourceAvailabilityStatus Status
+}
+
+class ResourcesController {
+    +GetResources()
+    +GetResource(id)
+    +PostResource(dto)
+    +PatchActivate(id)
+    +PatchDeactivate(id)
+}
+
+class ResourceService {
+    +RegisterResourceAsync(resource)
+    +UpdateResourceAsync(resource)
+    +ActivateAsync(id)
+    +DeactivateAsync(id)
+    +PutInMaintenanceAsync(id)
+    +EndMaintenanceAsync(id)
+}
+
+class IResourceRepository
+class ResourceRepository {
+    +AddAsync(resource)
+    +GetByIdAsync(id)
+    +GetAllAsync()
+    +UpdateAvailabilityAsync(id, status)
+}
+
+ResourcesController --> ResourceService
+ResourceService --> IResourceRepository
+IResourceRepository <|.. ResourceRepository
+ResourceService --> Resource
+ResourceService --> ResourceDTO
+@enduml
