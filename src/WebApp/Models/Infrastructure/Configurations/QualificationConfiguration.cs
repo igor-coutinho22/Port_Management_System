@@ -8,7 +8,7 @@ namespace WebApp.Models.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Qualification> builder)
         {
-            builder.HasKey(q => q.Id);
+            builder.HasKey(q => q.Code);
 
             builder.Property(q => q.Code)
                 .IsRequired()
