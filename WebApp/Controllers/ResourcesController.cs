@@ -4,6 +4,7 @@ using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Resources.Enums;
 using WebApp.Models.Domain.Resources.Interfaces;
 using WebApp.Models.Domain.Qualifications;
+using WebApp.Models.Application.Mappers;
 
 namespace PortApi.Controllers
 {
@@ -44,18 +45,18 @@ namespace PortApi.Controllers
             if (status.HasValue)
                 resources = resources.Where(r => r.Status == status.Value).ToList();
 
-            return Ok(resources.Select(ResourceToDTO));
+            return Ok(resources.Select(ResourceMapper.ToDTO));
         }
 
         // GET: api/resources/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<ResourceDTO>> GetResource(string id)
+        public async Task<ActionResult<ResourceDTO>> GetResourceById(string id)
         {
             var resource = await _resourceService.GetResourceByIdAsync(id);
             if (resource == null)
                 return NotFound();
 
-            return Ok(ResourceToDTO(resource));
+            return Ok(ResourceMapper.ToDTO(resource));
         }
 
         // POST: api/resources
@@ -64,18 +65,11 @@ namespace PortApi.Controllers
         {
             var qualifications = resourceDTO.QualificationRequirements ?? new HashSet<Qualification>();
 
-            await _resourceService.RegisterResourceAsync(
-                id: resourceDTO.Id!,
-                description: resourceDTO.Description!,
-                type: resourceDTO.ResourceType,
-                operationalCapacity: resourceDTO.OperationalCapacity,
-                status: resourceDTO.Status,
-                setupTime: resourceDTO.SetupTime,
-                qualifications: qualifications
-            );
+            var resource = ResourceMapper.ToDomain(resourceDTO);
+            await _resourceService.RegisterResourceAsync(resource);
 
             var created = await _resourceService.GetResourceByIdAsync(resourceDTO.Id!);
-            return CreatedAtAction(nameof(GetResource), new { id = created!.Id }, ResourceToDTO(created));
+            return CreatedAtAction(nameof(GetResourceById), new { id = created!.Id }, ResourceMapper.ToDTO(created));
         }
 
         // PUT: api/resources/{id}
@@ -86,14 +80,11 @@ namespace PortApi.Controllers
             if (resource == null)
                 return NotFound();
 
-            // Update properties directly
-            resource.Description = resourceDTO.Description;
-            resource.OperationalCapacity = resourceDTO.OperationalCapacity;
-            resource.SetupTime = resourceDTO.SetupTime;
-            resource.Status = resourceDTO.Status;
-            resource.ResourceType = resourceDTO.ResourceType;
 
-            await _resourceService.UpdateAvailabilityAsync(id, resourceDTO.Status);
+            var updated = ResourceMapper.ToDomain(resourceDTO);
+            updated.Id = id;
+
+            await _resourceService.UpdateResourceAsync(updated);
             return NoContent();
         }
 
@@ -105,7 +96,7 @@ namespace PortApi.Controllers
             {
                 await _resourceService.ActivateAsync(id);
                 var updated = await _resourceService.GetResourceByIdAsync(id);
-                return Ok(ResourceToDTO(updated!));
+                return Ok(ResourceMapper.ToDTO(updated!));
             }
             catch (InvalidOperationException ex)
             {
@@ -121,7 +112,7 @@ namespace PortApi.Controllers
             {
                 await _resourceService.DeactivateAsync(id);
                 var updated = await _resourceService.GetResourceByIdAsync(id);
-                return Ok(ResourceToDTO(updated!));
+                return Ok(ResourceMapper.ToDTO(updated!));
             }
             catch (InvalidOperationException ex)
             {
@@ -137,7 +128,7 @@ namespace PortApi.Controllers
             {
                 await _resourceService.PutInMaintenanceAsync(id);
                 var updated = await _resourceService.GetResourceByIdAsync(id);
-                return Ok(ResourceToDTO(updated!));
+                return Ok(ResourceMapper.ToDTO(updated!));
             }
             catch (InvalidOperationException ex)
             {
@@ -153,7 +144,7 @@ namespace PortApi.Controllers
             {
                 await _resourceService.EndMaintenanceAsync(id);
                 var updated = await _resourceService.GetResourceByIdAsync(id);
-                return Ok(ResourceToDTO(updated!));
+                return Ok(ResourceMapper.ToDTO(updated!));
             }
             catch (InvalidOperationException ex)
             {
@@ -173,16 +164,5 @@ namespace PortApi.Controllers
             await _resourceService.DeleteAsync(id);
             return NoContent();
         }
-
-        private static ResourceDTO ResourceToDTO(Resource resource) => new ResourceDTO
-        {
-            Id = resource.Id!,
-            Description = resource.Description!,
-            ResourceType = resource.ResourceType,
-            OperationalCapacity = resource.OperationalCapacity,
-            Status = resource.Status,
-            SetupTime = resource.SetupTime,
-            QualificationRequirements = resource.qualificationRequirements
-        };
     }
 }

@@ -16,6 +16,7 @@ namespace WebApp.Models.Domain.Resources.Interfaces
         Task AddResourceAsync(Resource resource);
         Task<Resource?> GetByIdAsync(string id);
         Task<Resource?> GetByDescriptionAsync(string description);
+        Task UpdateAsync(Resource resource);
         Task<List<Resource>> GetAllAsync();
         Task<List<Resource>> GetByTypeAsync(ResourceType type);
         Task<List<Resource>> GetByStatusAsync(ResourceAvailabilityStatus status);

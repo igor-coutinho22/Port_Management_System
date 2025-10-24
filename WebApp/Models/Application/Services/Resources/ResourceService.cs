@@ -36,7 +36,7 @@ namespace WebApp.Models.Application.Services.Resources
                 qualifications
             );
 
-            _resourceRepo.AddResource(resource);
+            _resourceRepo.AddResourceAsync(resource);
         }
 
         public Resource? GetResourceById(string id) =>
@@ -53,6 +53,25 @@ namespace WebApp.Models.Application.Services.Resources
 
         public List<Resource> GetResourcesByStatus(ResourceAvailabilityStatus status) =>
             _resourceRepo.GetByStatus(status);
+
+        public async Task UpdateResourceAsync(Resource resource)
+        {
+            if (resource == null)
+                throw new ArgumentNullException(nameof(resource));
+
+            var existing = await _resourceRepo.GetByIdAsync(resource.Id!);
+            if (existing == null)
+                throw new KeyNotFoundException($"Resource with ID '{resource.Id}' not found.");
+
+            existing.Description = resource.Description;
+            existing.OperationalCapacity = resource.OperationalCapacity;
+            existing.SetupTime = resource.SetupTime;
+            existing.Status = resource.Status;
+            existing.ResourceType = resource.ResourceType;
+            existing.qualificationRequirements = resource.qualificationRequirements;
+
+            await _resourceRepo.UpdateAsync(existing);
+        }
 
         public void UpdateAvailability(string id, ResourceAvailabilityStatus newStatus)
         {
@@ -141,6 +160,19 @@ namespace WebApp.Models.Application.Services.Resources
 
             await _resourceRepo.AddResourceAsync(resource);
         }
+
+        public async Task RegisterResourceAsync(Resource resource)
+        {
+            if (resource == null)
+                throw new ArgumentNullException(nameof(resource));
+
+            var existing = await _resourceRepo.GetByIdAsync(resource.Id!);
+            if (existing != null)
+                throw new ArgumentException($"A resource with ID '{resource.Id}' already exists.");
+
+            await _resourceRepo.AddResourceAsync(resource);
+        }
+
 
         public async Task<Resource?> GetResourceByIdAsync(string id) =>
             await _resourceRepo.GetByIdAsync(id);

@@ -79,6 +79,12 @@ namespace WebApp.Models.Infrastructure.Repositories.Resources
                 .Where(r => r.Status == status)
                 .ToListAsync();
 
+        public async Task UpdateAsync(Resource resource)
+        {
+            _context.Resources.Update(resource);
+            await _context.SaveChangesAsync();
+        }
+
         public void UpdateAvailability(string id, ResourceAvailabilityStatus newStatus)
         {
             var resource = _context.Resources.FirstOrDefault(r => r.Id == id);

@@ -23,11 +23,13 @@ namespace WebApp.Models.Domain.Resources.Interfaces
 
         // async methods
         Task RegisterResourceAsync(string id, string description, ResourceType type, int operationalCapacity, ResourceAvailabilityStatus status, int setupTime, HashSet<Qualification> qualifications);
+        Task RegisterResourceAsync(Resource resource);
         Task<Resource?> GetResourceByIdAsync(string id);
         Task<Resource?> GetResourceByDescriptionAsync(string description);
         Task<List<Resource>> GetAllResourcesAsync();
         Task<List<Resource>> GetResourcesByTypeAsync(ResourceType type);
         Task<List<Resource>> GetResourcesByStatusAsync(ResourceAvailabilityStatus status);
+        Task UpdateResourceAsync(Resource resource);
         Task UpdateAvailabilityAsync(string id, ResourceAvailabilityStatus newStatus);
         Task ActivateAsync(string id);
         Task DeactivateAsync(string id);
