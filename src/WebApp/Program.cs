@@ -15,6 +15,9 @@ using WebApp.Models.Infrastructure.Repositories.Resources;
 using WebApp.Models.Infrastructure.Repositories.VesselRepository;
 using WebApp.Seeding;
 using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
+using WebApp.Models.Domain.Qualifications.Interfaces;
+using WebApp.Models.Application.Services.Qualifications;
+using WebApp.Models.Infrastructure.Repositories.Qualifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
