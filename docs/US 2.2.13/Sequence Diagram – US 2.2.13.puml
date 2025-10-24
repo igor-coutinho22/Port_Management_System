@@ -1,56 +1,52 @@
 @startuml
-title US 2.2.13 – Register and Manage Qualifications
+title SSD - US 2.2.13: Register and Manage Qualifications
 
-actor "Logistics Operator" as User
+actor "Logistics Operator" as Operator
+boundary "API Layer\nQualificationsController" as API
+control "Application Layer\nQualificationService" as Service
+entity "Infrastructure Layer\nQualificationRepository" as Repo
+database "Database\nPortManagementContext" as DB
 
-' === Layers ===
-participant "QualificationController" as Controller
-participant "QualificationService" as Service
-participant "QualificationRepository" as Repository
-participant "PortManagementContext" as DbContext
-entity "Qualification (Aggregate Root)" as Qualification
+== Register Qualification ==
+Operator -> API : POST /api/qualifications\n(QualificationDTO { Code, Name })
+API -> Service : RegisterQualificationAsync(code, name)
+Service -> Repo : GetByCodeAsync(code)
+Repo -> DB : SELECT * FROM Qualifications WHERE Code = code
+DB --> Repo : Qualification not found
+Service -> Repo : AddAsync(new Qualification(code, name))
+Repo -> DB : INSERT INTO Qualifications (Code, Name)
+DB --> Repo : Success
+Repo --> Service : Qualification added
+Service --> API : Success (QualificationDTO)
+API --> Operator : 201 Created + QualificationDTO
 
-' === Register a new Qualification ===
-User -> Controller : POST /api/qualification\n(QualificationDTO)
-Controller -> Service : RegisterQualification(QualificationDTO)
-Service -> Qualification : new Qualification(code, name)
-Service -> Repository : Add(Qualification)
-Repository -> DbContext : Add(Qualification)
-DbContext --> Repository : Qualification persisted
-Repository --> Service : Qualification saved
-Service --> Controller : QualificationDTO (Created)
-Controller --> User : 201 Created (Qualification info)
+== Retrieve Qualification ==
+Operator -> API : GET /api/qualifications/{code}
+API -> Service : GetByCodeAsync(code)
+Service -> Repo : GetByCodeAsync(code)
+Repo -> DB : SELECT * FROM Qualifications WHERE Code = code
+DB --> Repo : Qualification found
+Repo --> Service : Qualification
+Service --> API : QualificationDTO
+API --> Operator : 200 OK + QualificationDTO
 
-' === Update an existing Qualification ===
-User -> Controller : PUT /api/qualification/{id}
-Controller -> Service : UpdateQualification(id, updatedDTO)
-Service -> Repository : GetById(id)
-Repository -> DbContext : Find(Qualification)
-DbContext --> Repository : Qualification
-Repository --> Service : Qualification
-Service -> Qualification : Update(name)
-Service -> Repository : Update(Qualification)
-Repository -> DbContext : SaveChanges()
-Controller --> User : 200 OK (Qualification updated)
+== Update Qualification ==
+Operator -> API : PUT /api/qualifications/{code}\n(QualificationDTO)
+API -> Service : UpdateQualificationAsync(Qualification)
+Service -> Repo : UpdateAsync(Qualification)
+Repo -> DB : UPDATE Qualifications SET Name = ... WHERE Code = ...
+DB --> Repo : Success
+Repo --> Service : OK
+Service --> API : NoContent()
+API --> Operator : 204 No Content
 
-' === Search qualifications ===
-User -> Controller : GET /api/qualification?code=STS
-Controller -> Service : GetQualifications(filter)
-Service -> Repository : GetAll(filter)
-Repository -> DbContext : Query(Qualification)
-DbContext --> Repository : List<Qualification>
-Repository --> Service : List<Qualification>
-Service --> Controller : List<QualificationDTO>
-Controller --> User : 200 OK (List)
-
-' === Attempt to assign a non-existent qualification (validation example) ===
-User -> Controller : PUT /api/staff/{id}/qualifications/{qualificationId}
-Controller -> Service : AssignQualification(staffId, qualificationId)
-Service -> Repository : Exists(qualificationId)
-Repository -> DbContext : CheckExists(qualificationId)
-DbContext --> Repository : false
-Repository --> Service : false
-Service --> Controller : 400 Bad Request\n("Qualification not found")
-Controller --> User : Error Response
-
+== Delete Qualification ==
+Operator -> API : DELETE /api/qualifications/{code}
+API -> Service : DeleteAsync(code)
+Service -> Repo : DeleteAsync(code)
+Repo -> DB : DELETE FROM Qualifications WHERE Code = code
+DB --> Repo : Success
+Repo --> Service : OK
+Service --> API : NoContent()
+API --> Operator : 204 No Content
 @enduml

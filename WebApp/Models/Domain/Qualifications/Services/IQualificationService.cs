@@ -1,11 +1,17 @@
-using WebApp.Models.Application.DTOs;
-
-namespace WebApp.Models.Application.Services
+namespace WebApp.Models.Domain.Qualifications.Interfaces
 {
     public interface IQualificationService
     {
-        Task<QualificationDto> CreateAsync(string code, string name);
-        Task<QualificationDto> UpdateAsync(Guid id, string name);
-        Task<IEnumerable<QualificationDto>> SearchAsync(string? code, string? name);
+        void RegisterQualification(string code, string name);
+        void UpdateQualification(Qualification qualification);
+        Qualification? GetByCode(string code);
+        Qualification? GetByName(string name);
+        List<Qualification> GetAll();
+        Task RegisterQualificationAsync(string code, string name);
+        Task<Qualification?> GetByCodeAsync(string code);
+        Task<Qualification?> GetByNameAsync(string name);
+        Task<List<Qualification>> GetAllAsync();
+        Task UpdateQualificationAsync(Qualification qualification);
+        Task DeleteAsync(string code);
     }
 }

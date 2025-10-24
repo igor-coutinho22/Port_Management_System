@@ -1,25 +1,16 @@
-using WebApp.Models.Domain.Common;
-
 namespace WebApp.Models.Domain.Qualifications
 {
-    public class Qualification : BaseEntity
+    public class Qualification
     {
-        public string Code { get; private set; }
-        public string Name { get; private set; }
+        public string Code { get; set; } = default!;
+        public string Name { get; set; } = default!;
 
-        private Qualification() { } // Required by EF
+        protected Qualification() { }  // EF Core requirement
 
         public Qualification(string code, string name)
         {
-            Id = Guid.NewGuid();
             Code = code;
-            Name = name;
-        }
-
-        public void Update(string name)
-        {
             Name = name;
         }
     }
 }
-

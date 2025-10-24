@@ -1,51 +1,66 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
-using WebApp.Models.Application.Services;
+using WebApp.Models.Application.Mappers;
+using WebApp.Models.Domain.Qualifications;
+using WebApp.Models.Domain.Qualifications.Interfaces;
 
-namespace WebApp.Controllers
+namespace PortApi.Controllers
 {
     [Authorize]
-    [ApiController]
     [Route("api/[controller]")]
-    public class QualificationController : ControllerBase
+    [ApiController]
+    public class QualificationsController : ControllerBase
     {
-        private readonly IQualificationService _service;
+        private readonly IQualificationService _qualificationService;
 
-        public QualificationController(IQualificationService service)
+        public QualificationsController(IQualificationService qualificationService)
         {
-            _service = service;
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<QualificationDto>> Create([FromBody] QualificationDto dto)
-        {
-            var result = await _service.CreateAsync(dto.Code, dto.Name);
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<QualificationDto>> Update(Guid id, [FromBody] QualificationDto dto)
-        {
-            var result = await _service.UpdateAsync(id, dto.Name);
-            return Ok(result);
+            _qualificationService = qualificationService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<QualificationDto>>> Search([FromQuery] string? code, [FromQuery] string? name)
+        public async Task<ActionResult<IEnumerable<QualificationDTO>>> GetAll()
         {
-            var results = await _service.SearchAsync(code, name);
-            return Ok(results);
+            var qualifications = await _qualificationService.GetAllAsync();
+            return Ok(qualifications.Select(QualificationMapper.ToDTO));
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<QualificationDto>> GetById(Guid id)
+        [HttpGet("{code}")]
+        public async Task<ActionResult<QualificationDTO>> GetByCode(string code)
         {
-            var results = await _service.SearchAsync(null, null);
-            var qualification = results.FirstOrDefault(q => q.Id == id);
+            var qualification = await _qualificationService.GetByCodeAsync(code);
             if (qualification == null)
                 return NotFound();
-            return Ok(qualification);
+
+            return Ok(QualificationMapper.ToDTO(qualification));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<QualificationDTO>> Post(QualificationDTO dto)
+        {
+            await _qualificationService.RegisterQualificationAsync(dto.Code!, dto.Name!);
+            var created = await _qualificationService.GetByCodeAsync(dto.Code!);
+            return CreatedAtAction(nameof(GetByCode), new { code = dto.Code }, QualificationMapper.ToDTO(created!));
+        }
+
+        [HttpPut("{code}")]
+        public async Task<IActionResult> Put(string code, QualificationDTO dto)
+        {
+            var existing = await _qualificationService.GetByCodeAsync(code);
+            if (existing == null)
+                return NotFound();
+
+            existing.Name = dto.Name!;
+            await _qualificationService.UpdateQualificationAsync(existing);
+            return NoContent();
+        }
+
+        [HttpDelete("{code}")]
+        public async Task<IActionResult> Delete(string code)
+        {
+            await _qualificationService.DeleteAsync(code);
+            return NoContent();
         }
     }
 }
