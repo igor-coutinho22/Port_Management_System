@@ -18,6 +18,9 @@ using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
 using WebApp.Models.Domain.Qualifications.Interfaces;
 using WebApp.Models.Application.Services.Qualifications;
 using WebApp.Models.Infrastructure.Repositories.Qualifications;
+using WebApp.Models.Domain.Staff.Interfaces;
+using WebApp.Models.Infrastructure.Repositories.StaffRepository;
+using WebApp.Models.Application.Services.StaffService;
 
 var builder = WebApplication.CreateBuilder(args);
 
