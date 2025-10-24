@@ -4,15 +4,22 @@ namespace WebApp.Models.Domain.Staff
 {
     public class QualificationLink
     {
-        public Guid StaffId { get; private set; }
-        public Guid QualificationId { get; private set; }
+        public string StaffMecanographicNumber { get; set; } = default!;
+        public string QualificationCode { get; set; } = default!;
+        public Qualification Qualification { get; set; } = default!;
 
-        private QualificationLink() { }
+        public DateOnly? DateObtained { get; set; }
+        public DateOnly? ExpiryDate { get; set; }
 
-        public QualificationLink(Guid staffId, Guid qualificationId)
+        protected QualificationLink() { } // EF Core
+
+        public QualificationLink(string staffMecanographicNumber, string qualificationCode,
+                                 DateOnly? dateObtained = null, DateOnly? expiryDate = null)
         {
-            StaffId = staffId;
-            QualificationId = qualificationId;
+            StaffMecanographicNumber = staffMecanographicNumber;
+            QualificationCode = qualificationCode;
+            DateObtained = dateObtained;
+            ExpiryDate = expiryDate;
         }
     }
 }

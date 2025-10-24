@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
 using WebApp.Models.Domain.Staff;
-
-namespace WebApp.Models.Infrastructure.Repositories
+using WebApp.Models.Domain.Staff.Interfaces;
+namespace WebApp.Models.Infrastructure.Repositories.StaffRepository
 {
     public class StaffRepository : IStaffRepository
     {
@@ -13,36 +13,108 @@ namespace WebApp.Models.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Staff?> GetByIdAsync(Guid id)
-            => await _context.Staff
-                .Include(s => s.Qualifications)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-        public async Task<IEnumerable<Staff>> SearchAsync(string? name, string? status, string? qualificationCode)
-        {
-            var query = _context.Staff
-                .Include(s => s.Qualifications)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(name))
-                query = query.Where(s => s.ShortName.Contains(name));
-
-            if (!string.IsNullOrEmpty(status))
-                query = query.Where(s => s.Status.ToString() == status);
-
-            return await query.ToListAsync();
-        }
-
         public async Task AddAsync(Staff staff)
         {
             await _context.Staff.AddAsync(staff);
             await _context.SaveChangesAsync();
         }
 
+        public async Task<Staff?> GetByMecanographicNumberAsync(string mecanographicNumber)
+            => await _context.Staff
+                .Include(s => s.Qualifications)
+                .FirstOrDefaultAsync(s => s.MecanographicNumber == mecanographicNumber);
+
+        public async Task<List<Staff>> GetAllAsync()
+            => await _context.Staff
+                .Include(s => s.Qualifications)
+                .ToListAsync();
+
+        public async Task<List<Staff>> GetByStatusAsync(StaffStatus status)
+            => await _context.Staff
+                .Include(s => s.Qualifications)
+                .Where(s => s.Status == status)
+                .ToListAsync();
+
+        public async Task<List<Staff>> SearchAsync(string? name, StaffStatus? status, string? qualificationCode)
+        {
+            var query = _context.Staff.Include(s => s.Qualifications).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
+                query = query.Where(s => s.ShortName.Contains(name));
+
+            if (status.HasValue)
+                query = query.Where(s => s.Status == status.Value);
+
+            if (!string.IsNullOrWhiteSpace(qualificationCode))
+                query = query.Where(s => s.Qualifications.Any(q => q.Code == qualificationCode));
+
+            return await query.ToListAsync();
+        }
+
         public async Task UpdateAsync(Staff staff)
         {
             _context.Staff.Update(staff);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(string mecanographicNumber)
+        {
+            var staff = await _context.Staff.FirstOrDefaultAsync(s => s.MecanographicNumber == mecanographicNumber);
+            if (staff == null)
+                throw new KeyNotFoundException($"Staff '{mecanographicNumber}' not found.");
+
+            _context.Staff.Remove(staff);
+            await _context.SaveChangesAsync();
+        }
+
+        // Sync methods (optional)
+        public void Add(Staff staff)
+        {
+            _context.Staff.Add(staff);
+            _context.SaveChanges();
+        }
+
+        public Staff? GetByMecanographicNumber(string mecanographicNumber)
+            => _context.Staff
+                .Include(s => s.Qualifications)
+                .FirstOrDefault(s => s.MecanographicNumber == mecanographicNumber);
+
+        public List<Staff> GetAll()
+            => _context.Staff.Include(s => s.Qualifications).ToList();
+
+        public List<Staff> GetByStatus(StaffStatus status)
+            => _context.Staff.Include(s => s.Qualifications).Where(s => s.Status == status).ToList();
+
+        public List<Staff> Search(string? name, StaffStatus? status, string? qualificationCode)
+        {
+            var query = _context.Staff.Include(s => s.Qualifications).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
+                query = query.Where(s => s.ShortName.Contains(name));
+
+            if (status.HasValue)
+                query = query.Where(s => s.Status == status.Value);
+
+            if (!string.IsNullOrWhiteSpace(qualificationCode))
+                query = query.Where(s => s.Qualifications.Any(q => q.Code == qualificationCode));
+
+            return query.ToList();
+        }
+
+        public void Update(Staff staff)
+        {
+            _context.Staff.Update(staff);
+            _context.SaveChanges();
+        }
+
+        public void Delete(string mecanographicNumber)
+        {
+            var staff = _context.Staff.FirstOrDefault(s => s.MecanographicNumber == mecanographicNumber);
+            if (staff == null)
+                throw new KeyNotFoundException($"Staff '{mecanographicNumber}' not found.");
+
+            _context.Staff.Remove(staff);
+            _context.SaveChanges();
         }
     }
 }

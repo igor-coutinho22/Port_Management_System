@@ -1,59 +1,70 @@
 @startuml
-title US 2.2.11 – Register and Manage Staff
+title SSD - US 2.2.11: Register and Manage Staff Members
 
-actor "Logistics Operator" as User
+actor "Logistics Operator" as Operator
+boundary "API Layer\nStaffController" as API
+control "Application Layer\nStaffService" as Service
+entity "Infrastructure Layer\nStaffRepository" as Repo
+database "Database\nPortManagementContext" as DB
 
-' === Layers ===
-participant "StaffController" as Controller
-participant "StaffService" as Service
-participant "StaffRepository" as Repository
-participant "PortManagementContext" as DbContext
-entity "Staff (Aggregate Root)" as Staff
-entity "Qualification (Aggregate Root)" as Qualification
+== Register Staff ==
+Operator -> API : POST /api/staff\n(StaffDTO { MecanographicNumber, Name, Email, Phone, Status, Qualifications })
+API -> Service : RegisterStaffAsync(Staff)
+Service -> Repo : GetByMecanographicNumberAsync(mecNumber)
+Repo -> DB : SELECT * FROM Staff WHERE MecanographicNumber = mecNumber
+DB --> Repo : No existing record
+Service -> Repo : AddAsync(new Staff(...))
+Repo -> DB : INSERT INTO Staff (...)
+DB --> Repo : Success
+Repo --> Service : OK
+Service --> API : 201 Created + StaffDTO
+API --> Operator : Confirmation of staff registration
 
-' === Register new staff ===
-User -> Controller : POST /api/staff\n(StaffDTO)
-Controller -> Service : RegisterStaff(StaffDTO)
-Service -> Repository : CreateStaff(Staff)
-Repository -> DbContext : Add(Staff)
-DbContext --> Repository : Staff entity persisted
-Repository --> Service : Staff saved
-Service --> Controller : StaffDTO (Created)
-Controller --> User : 201 Created (Staff info)
+== Update Staff ==
+Operator -> API : PUT /api/staff/{mecNumber}\n(Updated StaffDTO)
+API -> Service : UpdateStaffAsync(Staff)
+Service -> Repo : GetByMecanographicNumberAsync(mecNumber)
+Repo -> DB : SELECT * FROM Staff WHERE MecanographicNumber = mecNumber
+DB --> Repo : Existing Staff
+Service -> Repo : UpdateAsync(Staff)
+Repo -> DB : UPDATE Staff SET ... WHERE MecanographicNumber = mecNumber
+DB --> Repo : Success
+Repo --> Service : OK
+Service --> API : 204 No Content
+API --> Operator : Staff successfully updated
 
-' === Retrieve staff list ===
-User -> Controller : GET /api/staff?filter=available
-Controller -> Service : GetAllStaff(filter)
-Service -> Repository : GetAll(filter)
-Repository -> DbContext : Query(Staff)
-DbContext --> Repository : List<Staff>
-Repository --> Service : List<Staff>
-Service --> Controller : List<StaffDTO>
-Controller --> User : 200 OK (List)
+== Activate/Deactivate Staff ==
+Operator -> API : PATCH /api/staff/{mecNumber}/activate
+API -> Service : ActivateAsync(mecNumber)
+Service -> Repo : GetByMecanographicNumberAsync(mecNumber)
+Repo -> DB : SELECT * FROM Staff WHERE MecanographicNumber = mecNumber
+DB --> Repo : Staff found
+Service -> Repo : UpdateStatusAsync(mecNumber, Available)
+Repo -> DB : UPDATE Staff SET Status = 'Available'
+DB --> Repo : Success
+Repo --> Service : OK
+Service --> API : 200 OK + Updated StaffDTO
+API --> Operator : Staff reactivated
 
-' === Deactivate staff ===
-User -> Controller : PUT /api/staff/{id}/deactivate
-Controller -> Service : DeactivateStaff(id)
-Service -> Repository : GetById(id)
-Repository -> DbContext : Find(Staff)
-DbContext --> Repository : Staff
-Repository --> Service : Staff
-Service -> Staff : Deactivate()
-Staff -> Staff : Set Status = Unavailable
-Service -> Repository : Update(Staff)
-Repository -> DbContext : SaveChanges()
-Service --> Controller : OK
-Controller --> User : 200 OK (Deactivated)
+Operator -> API : PATCH /api/staff/{mecNumber}/deactivate
+API -> Service : DeactivateAsync(mecNumber)
+Service -> Repo : GetByMecanographicNumberAsync(mecNumber)
+Repo -> DB : SELECT * FROM Staff WHERE MecanographicNumber = mecNumber
+DB --> Repo : Staff found
+Service -> Repo : UpdateStatusAsync(mecNumber, Unavailable)
+Repo -> DB : UPDATE Staff SET Status = 'Unavailable'
+DB --> Repo : Success
+Repo --> Service : OK
+Service --> API : 200 OK + Updated StaffDTO
+API --> Operator : Staff deactivated
 
-' === Staff-Qualification relation ===
-User -> Controller : PUT /api/staff/{id}/qualifications/{qualificationId}
-Controller -> Service : AssignQualification(staffId, qualificationId)
-Service -> Repository : GetById(staffId)
-Repository --> Service : Staff
-Service -> Qualification : Validate(qualificationId)
-Service -> Staff : AddQualification(qualificationId)
-Service -> Repository : Update(Staff)
-Repository -> DbContext : SaveChanges()
-Controller --> User : 200 OK (Qualification assigned)
-
+== Search Staff ==
+Operator -> API : GET /api/staff?name=John&status=Available
+API -> Service : GetFilteredAsync(name, status)
+Service -> Repo : QueryAsync(filters)
+Repo -> DB : SELECT * FROM Staff WHERE Name LIKE '%John%' AND Status = 'Available'
+DB --> Repo : Matching Staff list
+Repo --> Service : List<Staff>
+Service --> API : List<StaffDTO>
+API --> Operator : 200 OK + Filtered staff list
 @enduml

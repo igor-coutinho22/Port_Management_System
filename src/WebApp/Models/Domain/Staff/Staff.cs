@@ -1,46 +1,43 @@
-using WebApp.Models.Domain.Common;
 using WebApp.Models.Domain.Qualifications;
 
 namespace WebApp.Models.Domain.Staff
 {
-    public class Staff : BaseEntity
+    public class Staff
     {
-        public string MecanographicNumber { get; private set; }
-        public string ShortName { get; private set; }
-        public string Email { get; private set; }
-        public string Phone { get; private set; }
-        public StaffStatus Status { get; private set; }
+        public string MecanographicNumber { get; set; } = default!;
+        public string ShortName { get; set; } = default!;
+        public string Email { get; set; } = default!;
+        public string Phone { get; set; } = default!;
+        public StaffStatus Status { get; set; }
+        public string OperationalWindow { get; set; } = default!; // can be refined to a ValueObject later
+        public HashSet<Qualification> Qualifications { get; set; } = new();
 
-        public Schedule OperationalWindow { get; private set; }
+        protected Staff() { } // EF Core requirement
 
-        // Relação N:N com Qualification via tabela de junção
-        public ICollection<QualificationLink> Qualifications { get; private set; } = new List<QualificationLink>();
-
-        private Staff() { } // EF Core
-
-        public Staff(string mecanographicNumber, string shortName, string email, string phone, Schedule operationalWindow)
+        public Staff(string mecanographicNumber, string shortName, string email, string phone,
+                     StaffStatus status, string operationalWindow, HashSet<Qualification> qualifications)
         {
-            Id = Guid.NewGuid();
             MecanographicNumber = mecanographicNumber;
             ShortName = shortName;
             Email = email;
             Phone = phone;
-            Status = StaffStatus.Available;
+            Status = status;
             OperationalWindow = operationalWindow;
+            Qualifications = qualifications ?? new HashSet<Qualification>();
         }
 
-        public void AddQualification(Guid qualificationId)
+        public void Activate()
         {
-            if (!Qualifications.Any(q => q.QualificationId == qualificationId))
-                Qualifications.Add(new QualificationLink(Id, qualificationId));
+            if (Status == StaffStatus.Available)
+                throw new InvalidOperationException("Staff is already active.");
+            Status = StaffStatus.Available;
         }
 
-        public void ChangeStatus(StaffStatus newStatus)
+        public void Deactivate()
         {
-            Status = newStatus;
+            if (Status == StaffStatus.Unavailable)
+                throw new InvalidOperationException("Staff is already inactive.");
+            Status = StaffStatus.Unavailable;
         }
-
-        public void Deactivate() => Status = StaffStatus.Inactive;
-        public void Reactivate() => Status = StaffStatus.Available;
     }
 }

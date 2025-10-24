@@ -1,27 +1,36 @@
-using WebApp.Models.Domain.Common;
-
 namespace WebApp.Models.Domain.Staff
 {
-    public class Schedule : ValueObject
+    public class Schedule
     {
-        public string DaysOfWeek { get; private set; } // Ex: "Mon-Fri"
-        public TimeSpan StartTime { get; private set; }
-        public TimeSpan EndTime { get; private set; }
+        public TimeOnly StartTime { get; private set; }
+        public TimeOnly EndTime { get; private set; }
+        public string DaysOfWeek { get; private set; } = default!; 
 
-        private Schedule() { }
+        protected Schedule() { } // EF Core
 
-        public Schedule(string daysOfWeek, TimeSpan startTime, TimeSpan endTime)
+        public Schedule(TimeOnly startTime, TimeOnly endTime, string daysOfWeek)
         {
-            DaysOfWeek = daysOfWeek;
+            if (endTime <= startTime)
+                throw new ArgumentException("End time must be after start time.");
+
+            if (string.IsNullOrWhiteSpace(daysOfWeek))
+                throw new ArgumentException("DaysOfWeek cannot be empty.");
+
             StartTime = startTime;
             EndTime = endTime;
+            DaysOfWeek = daysOfWeek;
         }
 
-        protected override IEnumerable<object> GetEqualityComponents()
+        // For comparisons (value object equality)
+        public override bool Equals(object? obj)
         {
-            yield return DaysOfWeek;
-            yield return StartTime;
-            yield return EndTime;
+            if (obj is not Schedule other) return false;
+            return StartTime == other.StartTime
+                   && EndTime == other.EndTime
+                   && DaysOfWeek == other.DaysOfWeek;
         }
+
+        public override int GetHashCode() =>
+            HashCode.Combine(StartTime, EndTime, DaysOfWeek);
     }
 }

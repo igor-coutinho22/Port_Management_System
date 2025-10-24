@@ -1,69 +1,65 @@
-using WebApp.Models.Application.DTOs;
 using WebApp.Models.Domain.Staff;
-using WebApp.Models.Infrastructure.Repositories;
+using WebApp.Models.Domain.Staff.Interfaces;
+using WebApp.Models.Domain.Qualifications;
 
-namespace WebApp.Models.Application.Services
+namespace WebApp.Models.Application.Services.StaffService
 {
     public class StaffService : IStaffService
     {
-        private readonly IStaffRepository _staffRepository;
-        private readonly IQualificationRepository _qualificationRepository;
+        private readonly IStaffRepository _staffRepo;
 
-        public StaffService(IStaffRepository staffRepository, IQualificationRepository qualificationRepository)
+        public StaffService(IStaffRepository staffRepo)
         {
-            _staffRepository = staffRepository;
-            _qualificationRepository = qualificationRepository;
+            _staffRepo = staffRepo;
         }
 
-        public async Task<StaffDto> RegisterAsync(string mecanographicNumber, string shortName, string email, string phone, string daysOfWeek, TimeSpan start, TimeSpan end)
+        public async Task RegisterStaffAsync(string mecanographicNumber, string shortName, string email, string phone,
+            StaffStatus status, string operationalWindow, HashSet<Qualification> qualifications)
         {
-            var staff = new Staff(mecanographicNumber, shortName, email, phone, new Schedule(daysOfWeek, start, end));
-            await _staffRepository.AddAsync(staff);
-            return ToDto(staff);
+            var existing = await _staffRepo.GetByMecanographicNumberAsync(mecanographicNumber);
+            if (existing != null)
+                throw new ArgumentException($"Staff with mecanographic number '{mecanographicNumber}' already exists.");
+
+            var staff = new Staff(mecanographicNumber, shortName, email, phone, status, operationalWindow, qualifications);
+            await _staffRepo.AddAsync(staff);
         }
 
-        public async Task<IEnumerable<StaffDto>> SearchAsync(string? name, string? status)
+        public async Task<Staff?> GetByMecanographicNumberAsync(string mecanographicNumber)
+            => await _staffRepo.GetByMecanographicNumberAsync(mecanographicNumber);
+
+        public async Task<List<Staff>> GetAllAsync()
+            => await _staffRepo.GetAllAsync();
+
+        public async Task<List<Staff>> GetByStatusAsync(StaffStatus status)
+            => await _staffRepo.GetByStatusAsync(status);
+
+        public async Task<List<Staff>> SearchAsync(string? name, StaffStatus? status, string? qualificationCode)
+            => await _staffRepo.SearchAsync(name, status, qualificationCode);
+
+        public async Task UpdateAsync(Staff staff)
         {
-            var staffList = await _staffRepository.SearchAsync(name, status, null);
-            return staffList.Select(ToDto);
+            if (staff == null)
+                throw new ArgumentNullException(nameof(staff));
+
+            await _staffRepo.UpdateAsync(staff);
         }
 
-        public async Task ChangeStatusAsync(Guid id, string status)
+        public async Task ActivateAsync(string mecanographicNumber)
         {
-            var staff = await _staffRepository.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException("Staff not found.");
+            var staff = await _staffRepo.GetByMecanographicNumberAsync(mecanographicNumber)
+                ?? throw new KeyNotFoundException($"Staff '{mecanographicNumber}' not found.");
 
-            if (Enum.TryParse<StaffStatus>(status, true, out var newStatus))
-                staff.ChangeStatus(newStatus);
-            else
-                throw new ArgumentException("Invalid status.");
-
-            await _staffRepository.UpdateAsync(staff);
+            staff.Activate();
+            await _staffRepo.UpdateAsync(staff);
         }
 
-        public async Task AddQualificationAsync(Guid staffId, Guid qualificationId)
+        public async Task DeactivateAsync(string mecanographicNumber)
         {
-            var staff = await _staffRepository.GetByIdAsync(staffId)
-                ?? throw new KeyNotFoundException("Staff not found.");
+            var staff = await _staffRepo.GetByMecanographicNumberAsync(mecanographicNumber)
+                ?? throw new KeyNotFoundException($"Staff '{mecanographicNumber}' not found.");
 
-            var qualification = await _qualificationRepository.GetByIdAsync(qualificationId)
-                ?? throw new KeyNotFoundException("Qualification not found.");
-
-            staff.AddQualification(qualification.Id);
-            await _staffRepository.UpdateAsync(staff);
+            staff.Deactivate();
+            await _staffRepo.UpdateAsync(staff);
         }
-
-        private static StaffDto ToDto(Staff staff) =>
-            new(
-                staff.Id,
-                staff.MecanographicNumber,
-                staff.ShortName,
-                staff.Email,
-                staff.Phone,
-                staff.Status.ToString(),
-                staff.OperationalWindow.DaysOfWeek,
-                staff.OperationalWindow.StartTime.ToString(),
-                staff.OperationalWindow.EndTime.ToString()
-            );
     }
 }

@@ -1,14 +1,15 @@
+using WebApp.Models.Domain.Staff;
+using WebApp.Models.Domain.Qualifications;
 namespace WebApp.Models.Application.DTOs
 {
-    public record StaffDto(
-        Guid Id,
-        string MecanographicNumber,
-        string ShortName,
-        string Email,
-        string Phone,
-        string Status,
-        string DaysOfWeek,
-        string StartTime,
-        string EndTime
-    );
+    public class StaffDTO
+    {
+        public string? MecanographicNumber { get; set; }
+        public string? ShortName { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public StaffStatus Status { get; set; }
+        public string? OperationalWindow { get; set; }
+        public HashSet<Qualification>? Qualifications { get; set; }
+    }
 }
