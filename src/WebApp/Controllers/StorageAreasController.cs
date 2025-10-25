@@ -11,12 +11,12 @@ namespace WebApp.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class StorageAreaController : ControllerBase
+    public class StorageAreasController : ControllerBase
     {
         private readonly IStorageAreaService _service;
         private readonly IDockService _dockService;
 
-        public StorageAreaController(IStorageAreaService service, IDockService dockService)
+        public StorageAreasController(IStorageAreaService service, IDockService dockService)
         {
             _service = service;
             _dockService = dockService;
@@ -130,7 +130,7 @@ namespace WebApp.Controllers
             return Ok(sa);
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet()]
         public async Task<IActionResult> GetAll()
         {
             var list = await _service.GetAllStorageAreasAsync();

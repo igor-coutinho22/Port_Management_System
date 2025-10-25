@@ -9,12 +9,12 @@ namespace WebApp.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class VesselController : ControllerBase
+    public class VesselsController : ControllerBase
     {
         private readonly IVesselService _vesselService;
         private readonly IVesselTypeService _vesselTypeService;
 
-        public VesselController(IVesselService vesselService, IVesselTypeService vesselTypeService)
+        public VesselsController(IVesselService vesselService, IVesselTypeService vesselTypeService)
         {
             _vesselService = vesselService;
             _vesselTypeService = vesselTypeService;
@@ -98,7 +98,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Get all vessel types
         // ------------------------------------------------------------
-        [HttpGet("GetAll")]
+        [HttpGet()]
         public async Task<IActionResult> GetAllVesselsAsync()
         {
             var vessels = await _vesselService.GetAllVesselsAsync();

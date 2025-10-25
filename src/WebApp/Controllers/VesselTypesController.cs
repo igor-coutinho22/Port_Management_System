@@ -9,11 +9,11 @@ namespace WebApp.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class VesselTypeController : ControllerBase
+    public class VesselTypesController : ControllerBase
     {
         private readonly IVesselTypeService _vesselTypeService;
 
-        public VesselTypeController(IVesselTypeService vesselTypeService)
+        public VesselTypesController(IVesselTypeService vesselTypeService)
         {
             _vesselTypeService = vesselTypeService;
         }
@@ -73,7 +73,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Search by partial name and description
         // ------------------------------------------------------------
-        [HttpGet("searchByNameAndOrDescription")]
+        [HttpGet()]
         public async Task<IActionResult> SearchByNameAndOrDescription([FromQuery] string? name, [FromQuery] string? description)
         {
             IEnumerable<VesselType> results = await _vesselTypeService.GetAllVesselTypesAsync();
@@ -84,10 +84,7 @@ namespace WebApp.Controllers
             if (!string.IsNullOrWhiteSpace(description))
                 results = await _vesselTypeService.SearchVesselTypesByDescriptionAsync(description);
 
-            if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(description))
-                return NotFound($"Name and/or Description query parameters must be provided.");
-
-            return Ok(results.Select(MapToDto));
+           return Ok(results.Select(MapToDto));
         }
 
         // ------------------------------------------------------------

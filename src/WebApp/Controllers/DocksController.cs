@@ -6,11 +6,11 @@ namespace WebApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class DockController : ControllerBase
+    public class DocksController : ControllerBase
     {
         private readonly IDockService _service;
 
-        public DockController(IDockService service)
+        public DocksController(IDockService service)
         {
             _service = service;
         }

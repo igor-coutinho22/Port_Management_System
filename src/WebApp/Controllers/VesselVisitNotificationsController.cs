@@ -6,11 +6,11 @@ namespace WebApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class VesselVisitNotificationController : ControllerBase
+    public class VesselVisitNotificationsController : ControllerBase
     {
         private readonly IVesselVisitNotificationService _service;
 
-        public VesselVisitNotificationController(IVesselVisitNotificationService service)
+        public VesselVisitNotificationsController(IVesselVisitNotificationService service)
         {
             _service = service;
         }
