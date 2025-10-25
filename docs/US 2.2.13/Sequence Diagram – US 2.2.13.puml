@@ -122,7 +122,7 @@ Filters applied (if provided):
 end note
 
 Service --> Controller: Filtered List<Qualification>
-Controller --> Operator: 200 OK + JSON[List<QualificationDTO>]
+Controller --> Operator: 200 OK + List<QualificationDTO>
 deactivate Service
 deactivate Controller
 
