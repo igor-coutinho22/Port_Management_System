@@ -1,52 +1,129 @@
-@startuml
-title SSD - US 2.2.13: Register and Manage Qualifications
+@startuml Qualification_Management_SSD
+title Sequence Diagram – US 2.2.13 “Register and Manage Qualifications”
 
 actor "Logistics Operator" as Operator
-boundary "API Layer\nQualificationsController" as API
-control "Application Layer\nQualificationService" as Service
-entity "Infrastructure Layer\nQualificationRepository" as Repo
-database "Database\nPortManagementContext" as DB
+boundary "QualificationsController\n(API Layer)" as Controller
+control "QualificationService\n(Application Layer)" as Service
+entity "QualificationMapper\n(Data Mapper)" as Mapper
+entity "Qualification\n(Domain Entity)" as Qualification
+entity "IQualificationRepository /\nQualificationRepository\n(Persistence Layer)" as Repo
+database "Azure SQL Database\n(Infrastructure Layer)" as DB
 
-== Register Qualification ==
-Operator -> API : POST /api/qualifications\n(QualificationDTO { Code, Name })
-API -> Service : RegisterQualificationAsync(code, name)
-Service -> Repo : GetByCodeAsync(code)
-Repo -> DB : SELECT * FROM Qualifications WHERE Code = code
-DB --> Repo : Qualification not found
-Service -> Repo : AddAsync(new Qualification(code, name))
-Repo -> DB : INSERT INTO Qualifications (Code, Name)
-DB --> Repo : Success
-Repo --> Service : Qualification added
-Service --> API : Success (QualificationDTO)
-API --> Operator : 201 Created + QualificationDTO
+' ===========================
+' CONTEXT
+' ===========================
+note over Operator
+User Story 2.2.13 – Register and Manage Qualifications
 
-== Retrieve Qualification ==
-Operator -> API : GET /api/qualifications/{code}
-API -> Service : GetByCodeAsync(code)
-Service -> Repo : GetByCodeAsync(code)
-Repo -> DB : SELECT * FROM Qualifications WHERE Code = code
-DB --> Repo : Qualification found
-Repo --> Service : Qualification
-Service --> API : QualificationDTO
-API --> Operator : 200 OK + QualificationDTO
+"As a Logistics Operator, I want to register and manage
+qualifications (create, update), so that staff members and
+resources can be associated with the correct skills."
+end note
 
-== Update Qualification ==
-Operator -> API : PUT /api/qualifications/{code}\n(QualificationDTO)
-API -> Service : UpdateQualificationAsync(Qualification)
-Service -> Repo : UpdateAsync(Qualification)
-Repo -> DB : UPDATE Qualifications SET Name = ... WHERE Code = ...
-DB --> Repo : Success
-Repo --> Service : OK
-Service --> API : NoContent()
-API --> Operator : 204 No Content
+== CREATE QUALIFICATION ==
 
-== Delete Qualification ==
-Operator -> API : DELETE /api/qualifications/{code}
-API -> Service : DeleteAsync(code)
-Service -> Repo : DeleteAsync(code)
-Repo -> DB : DELETE FROM Qualifications WHERE Code = code
-DB --> Repo : Success
-Repo --> Service : OK
-Service --> API : NoContent()
-API --> Operator : 204 No Content
+Operator -> Controller: POST /api/qualifications (QualificationDTO)
+activate Controller
+
+Controller -> Mapper: ToDomain(dto)
+activate Mapper
+Mapper --> Controller: Qualification
+deactivate Mapper
+
+Controller -> Service: RegisterQualificationAsync(code, name)
+activate Service
+
+Service -> Repo: GetByCodeAsync(code)
+activate Repo
+Repo --> Service: null (no existing qualification)
+deactivate Repo
+
+note over Service
+Business Rules:
+- Code must be unique
+- Name must be descriptive and non-empty
+end note
+
+Service -> Repo: AddAsync(Qualification)
+activate Repo
+Repo -> DB: INSERT INTO Qualifications (Code, Name)
+activate DB
+DB --> Repo: OK
+deactivate DB
+Repo --> Service: Qualification persisted
+deactivate Repo
+
+Service --> Controller: Qualification created
+deactivate Service
+
+Controller --> Operator: 201 Created + QualificationDTO
+deactivate Controller
+
+== UPDATE QUALIFICATION ==
+
+Operator -> Controller: PUT /api/qualifications/{code} (QualificationDTO)
+activate Controller
+
+Controller -> Service: GetByCodeAsync(code)
+activate Service
+Service -> Repo: GetByCodeAsync(code)
+activate Repo
+Repo --> Service: Existing Qualification or null
+deactivate Repo
+
+alt Qualification Found
+    note over Service
+    Update the qualification name (if found)
+    and persist the changes.
+    end note
+
+    Controller -> Mapper: ToDomain(dto)
+    activate Mapper
+    Mapper --> Controller: Updated Qualification
+    deactivate Mapper
+
+    Controller -> Service: UpdateQualificationAsync(qualification)
+    Service -> Repo: UpdateAsync(qualification)
+    activate Repo
+    Repo -> DB: UPDATE Qualifications SET Name=...
+    DB --> Repo: OK
+    Repo --> Service: Updated
+    deactivate Repo
+
+    Service --> Controller: NoContent
+    Controller --> Operator: 204 No Content
+else Qualification Not Found
+    Service --> Controller: null
+    Controller --> Operator: 404 Not Found
+end
+deactivate Service
+deactivate Controller
+
+== SEARCH / FILTER QUALIFICATIONS ==
+
+Operator -> Controller: GET /api/qualifications?code=&name=
+activate Controller
+
+Controller -> Service: GetAllAsync()
+activate Service
+Service -> Repo: GetAllAsync()
+activate Repo
+Repo -> DB: SELECT * FROM Qualifications
+activate DB
+DB --> Repo: List<Qualification>
+deactivate DB
+Repo --> Service: List<Qualification>
+deactivate Repo
+
+note over Service
+Filters applied (if provided):
+- Filter by Code (exact or partial)
+- Filter by Name (case-insensitive)
+end note
+
+Service --> Controller: Filtered List<Qualification>
+Controller --> Operator: 200 OK + JSON[List<QualificationDTO>]
+deactivate Service
+deactivate Controller
+
 @enduml
