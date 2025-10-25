@@ -1,0 +1,139 @@
+@startuml Resource_Management_SSD
+title Sequence Diagram – US 2.2.12 “Register and Manage Physical Resources”
+
+' Participants – architectural layers
+actor "Logistics Operator" as Operator
+boundary "ResourcesController\n(API Layer)" as Controller
+control "ResourceService\n(Application Layer)" as Service
+entity "ResourceMapper\n(Data Mapper)" as Mapper
+entity "Resource\n(Domain Entity)" as Resource
+collections "IResourceRepository / ResourceRepository\n(Persistence)" as Repo
+database "Azure SQL Database\n(Infrastructure Layer)" as DB
+
+' Contextual Note
+note over Operator
+User Story 2.2.12
+--------------------------------
+"As a Logistics Operator, I want to
+register and manage physical resources
+(create, update, deactivate),
+so that they can be considered
+during planning and scheduling."
+end note
+
+== 1. Create Resource ==
+Operator -> Controller: POST /api/resources (ResourceDTO)
+activate Controller
+
+Controller -> Mapper: ToDomain(ResourceDTO)
+activate Mapper
+Mapper --> Controller: Resource (Domain Entity)
+deactivate Mapper
+
+Controller -> Service: RegisterResourceAsync(Resource)
+activate Service
+
+Service -> Repo: GetByIdAsync(Resource.Id)
+activate Repo
+Repo --> Service: null (no duplicate found)
+deactivate Repo
+
+note over Service
+Validation:
+- Ensure unique alphanumeric Code
+- Validate Description, Capacity, SetupTime
+- Verify Qualification requirements exist
+end note
+
+Service -> Repo: AddAsync(Resource)
+activate Repo
+Repo -> DB: INSERT INTO Resources(...)
+activate DB
+DB --> Repo: Success
+deactivate DB
+Repo --> Service: Resource persisted
+deactivate Repo
+
+Service --> Controller: Created Resource
+deactivate Service
+Controller --> Operator: 201 Created + ResourceDTO
+deactivate Controller
+
+== 2. Update Resource ==
+Operator -> Controller: PUT /api/resources/{id}
+activate Controller
+Controller -> Service: UpdateResourceAsync(Resource)
+activate Service
+
+Service -> Repo: GetByIdAsync(id)
+activate Repo
+Repo --> Service: Existing Resource
+deactivate Repo
+
+Service -> Resource: Apply new description, setupTime, capacity
+note over Resource
+Domain logic:
+- Validate new values
+- Keep previous version for audit
+end note
+Service -> Repo: SaveChangesAsync(Resource)
+activate Repo
+Repo -> DB: UPDATE Resources SET ...
+activate DB
+DB --> Repo: OK
+deactivate DB
+Repo --> Service: Updated Resource
+deactivate Repo
+Service --> Controller: 204 No Content
+Controller --> Operator: Confirmation (Resource updated)
+deactivate Controller
+deactivate Service
+
+== 3. Deactivate Resource ==
+Operator -> Controller: PATCH /api/resources/{id}/deactivate
+activate Controller
+Controller -> Service: DeactivateAsync(id)
+activate Service
+Service -> Repo: GetByIdAsync(id)
+activate Repo
+Repo --> Service: Resource found (Status=Active)
+deactivate Repo
+
+note over Service
+Business rule:
+Only Active or UnderMaintenance
+resources can be deactivated.
+end note
+
+Service -> Resource: Change status to Inactive
+Service -> Repo: UpdateAvailabilityAsync(id, Inactive)
+activate Repo
+Repo -> DB: UPDATE Resources SET Status='Inactive'
+activate DB
+DB --> Repo: OK
+deactivate DB
+Repo --> Service: Updated Resource
+deactivate Repo
+Service --> Controller: ResourceDTO (Inactive)
+Controller --> Operator: 200 OK (Resource Deactivated)
+deactivate Controller
+deactivate Service
+
+== 4. Search & Filter ==
+Operator -> Controller: GET /api/resources?status=Active&type=Truck
+activate Controller
+Controller -> Service: GetAllResourcesAsync()
+activate Service
+Service -> Repo: GetAllAsync()
+activate Repo
+Repo -> DB: SELECT * FROM Resources
+activate DB
+DB --> Repo: List<Resource>
+deactivate DB
+Repo --> Service: Resources
+Service -> Controller: Filtered Resources (by status, type)
+Controller --> Operator: 200 OK + JSON[List<ResourceDTO>]
+deactivate Controller
+deactivate Service
+
+@enduml
