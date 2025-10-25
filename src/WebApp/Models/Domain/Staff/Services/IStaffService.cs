@@ -5,16 +5,22 @@ namespace WebApp.Models.Domain.Staff.Interfaces
 {
     public interface IStaffService
     {
-        Task RegisterStaffAsync(string mecanographicNumber, string shortName, string email, string phone,
-            StaffStatus status, string operationalWindow, HashSet<Qualification> qualifications);
+        Task RegisterStaffAsync(
+            string mecanographicNumber,
+            string shortName,
+            string email,
+            string phone,
+            StaffStatus status,
+            string operationalWindow);
 
         Task<Staff?> GetByMecanographicNumberAsync(string mecanographicNumber);
         Task<List<Staff>> GetAllAsync();
         Task<List<Staff>> GetByStatusAsync(StaffStatus status);
         Task<List<Staff>> SearchAsync(string? name, StaffStatus? status, string? qualificationCode);
-
         Task UpdateAsync(Staff staff);
         Task ActivateAsync(string mecanographicNumber);
         Task DeactivateAsync(string mecanographicNumber);
+        Task AddQualificationToStaffAsync(string staffNumber, Qualification qualification, DateOnly? dateObtained = null, DateOnly? expiryDate = null);
+        Task RemoveQualificationFromStaffAsync(string staffNumber, string qualificationCode);
     }
 }

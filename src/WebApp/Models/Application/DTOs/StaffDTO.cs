@@ -10,6 +10,6 @@ namespace WebApp.Models.Application.DTOs
         public string? Phone { get; set; }
         public StaffStatus Status { get; set; }
         public string? OperationalWindow { get; set; }
-        public HashSet<Qualification>? Qualifications { get; set; }
+        public ICollection<QualificationDTO>? Qualifications { get; set; }
     }
 }

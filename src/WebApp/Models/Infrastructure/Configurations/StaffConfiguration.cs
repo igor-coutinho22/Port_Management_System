@@ -8,11 +8,7 @@ namespace WebApp.Models.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Staff> builder)
         {
-            builder.HasKey(s => s.Id);
-
-            builder.Property(s => s.MecanographicNumber)
-                .IsRequired()
-                .HasMaxLength(20);
+            builder.HasKey(s => s.MecanographicNumber);
 
             builder.Property(s => s.ShortName)
                 .IsRequired()
@@ -29,12 +25,7 @@ namespace WebApp.Models.Infrastructure.Configurations
                 .HasConversion<string>()
                 .IsRequired();
 
-            builder.OwnsOne(s => s.OperationalWindow);
-
-            builder.HasMany(s => s.Qualifications)
-                .WithOne()
-                .HasForeignKey(q => q.StaffId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(s => s.OperationalWindow).IsRequired();
         }
     }
 }

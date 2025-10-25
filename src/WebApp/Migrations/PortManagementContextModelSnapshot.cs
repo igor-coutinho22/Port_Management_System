@@ -289,12 +289,7 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Domain.Qualifications.Qualification", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Code")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -306,10 +301,7 @@ namespace WebApp.Migrations
                     b.Property<string>("ResourceId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
+                    b.HasKey("Code");
 
                     b.HasIndex("ResourceId");
 
@@ -343,34 +335,38 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.QualificationLink", b =>
                 {
-                    b.Property<Guid>("StaffId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("StaffMecanographicNumber")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("QualificationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("QualificationCode")
+                        .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("StaffId", "QualificationId");
+                    b.Property<DateOnly?>("DateObtained")
+                        .HasColumnType("date");
 
-                    b.HasIndex("QualificationId");
+                    b.Property<DateOnly?>("ExpiryDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("StaffMecanographicNumber", "QualificationCode");
+
+                    b.HasIndex("QualificationCode");
 
                     b.ToTable("QualificationLinks");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.Staff", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("MecanographicNumber")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("MecanographicNumber")
+                    b.Property<string>("OperationalWindow")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
                         .IsRequired()
@@ -386,7 +382,7 @@ namespace WebApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("MecanographicNumber");
 
                     b.ToTable("Staff");
                 });
@@ -805,46 +801,21 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.QualificationLink", b =>
                 {
-                    b.HasOne("WebApp.Models.Domain.Qualifications.Qualification", null)
-                        .WithMany()
-                        .HasForeignKey("QualificationId")
+                    b.HasOne("WebApp.Models.Domain.Qualifications.Qualification", "Qualification")
+                        .WithMany("QualificationLinks")
+                        .HasForeignKey("QualificationCode")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WebApp.Models.Domain.Staff.Staff", null)
-                        .WithMany("Qualifications")
-                        .HasForeignKey("StaffId")
+                    b.HasOne("WebApp.Models.Domain.Staff.Staff", "Staff")
+                        .WithMany("QualificationLinks")
+                        .HasForeignKey("StaffMecanographicNumber")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
 
-            modelBuilder.Entity("WebApp.Models.Domain.Staff.Staff", b =>
-                {
-                    b.OwnsOne("WebApp.Models.Domain.Staff.Schedule", "OperationalWindow", b1 =>
-                        {
-                            b1.Property<Guid>("StaffId")
-                                .HasColumnType("uniqueidentifier");
+                    b.Navigation("Qualification");
 
-                            b1.Property<string>("DaysOfWeek")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<TimeSpan>("EndTime")
-                                .HasColumnType("time");
-
-                            b1.Property<TimeSpan>("StartTime")
-                                .HasColumnType("time");
-
-                            b1.HasKey("StaffId");
-
-                            b1.ToTable("Staff");
-
-                            b1.WithOwner()
-                                .HasForeignKey("StaffId");
-                        });
-
-                    b.Navigation("OperationalWindow")
-                        .IsRequired();
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.DockStorageAreaInfo", b =>
@@ -907,6 +878,11 @@ namespace WebApp.Migrations
                     b.Navigation("Representatives");
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.Qualifications.Qualification", b =>
+                {
+                    b.Navigation("QualificationLinks");
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Resources.Resource", b =>
                 {
                     b.Navigation("qualificationRequirements");
@@ -914,7 +890,7 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.Staff", b =>
                 {
-                    b.Navigation("Qualifications");
+                    b.Navigation("QualificationLinks");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.StorageArea", b =>

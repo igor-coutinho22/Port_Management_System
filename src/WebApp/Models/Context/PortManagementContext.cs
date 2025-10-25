@@ -53,24 +53,7 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new CrewMemberConfiguration());
             modelBuilder.ApplyConfiguration(new DockStorageAreaInfoConfiguration());
             modelBuilder.ApplyConfiguration(new DockConfiguration());
-
-
-
-            // Qualification link (many-to-many)
-            modelBuilder.Entity<QualificationLink>()
-                .HasKey(q => new { q.StaffId, q.QualificationId });
-
-            modelBuilder.Entity<QualificationLink>()
-                .HasOne<Staff>()
-                .WithMany(s => s.Qualifications)
-                .HasForeignKey(q => q.StaffId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<QualificationLink>()
-                .HasOne<Qualification>()
-                .WithMany()
-                .HasForeignKey(q => q.QualificationId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.ApplyConfiguration(new QualificationLinkConfiguration());
 
             // Storage area hierarchy
             modelBuilder.Entity<StorageArea>(builder =>

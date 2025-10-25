@@ -3,6 +3,7 @@ using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Mappers;
 using WebApp.Models.Domain.Staff;
 using WebApp.Models.Domain.Staff.Interfaces;
+using WebApp.Models.Domain.Qualifications;
 
 namespace PortApi.Controllers
 {
@@ -46,12 +47,13 @@ namespace PortApi.Controllers
                 dto.Email!,
                 dto.Phone!,
                 dto.Status,
-                dto.OperationalWindow!,
-                dto.Qualifications ?? new HashSet<WebApp.Models.Domain.Qualifications.Qualification>()
+                dto.OperationalWindow!
             );
 
             var created = await _staffService.GetByMecanographicNumberAsync(dto.MecanographicNumber!);
-            return CreatedAtAction(nameof(GetByMecNumber), new { mecNumber = dto.MecanographicNumber }, StaffMapper.ToDTO(created!));
+            return CreatedAtAction(nameof(GetByMecNumber),
+                new { mecNumber = dto.MecanographicNumber },
+                StaffMapper.ToDTO(created!));
         }
 
         [HttpPut("{mecNumber}")]
@@ -80,6 +82,28 @@ namespace PortApi.Controllers
             await _staffService.DeactivateAsync(mecNumber);
             var updated = await _staffService.GetByMecanographicNumberAsync(mecNumber);
             return Ok(StaffMapper.ToDTO(updated!));
+        }
+
+        [HttpPost("{mecNumber}/qualifications")]
+        public async Task<IActionResult> AddQualification(
+            string mecNumber,
+            [FromBody] QualificationDTO dto)
+        {
+            var qualification = new Qualification(dto.Code, dto.Name);
+            await _staffService.AddQualificationToStaffAsync(
+                mecNumber,
+                qualification,
+                dto.DateObtained,
+                dto.ExpiryDate
+            );
+            return NoContent();
+        }
+
+        [HttpDelete("{mecNumber}/qualifications/{qualificationCode}")]
+        public async Task<IActionResult> RemoveQualification(string mecNumber, string qualificationCode)
+        {
+            await _staffService.RemoveQualificationFromStaffAsync(mecNumber, qualificationCode);
+            return NoContent();
         }
     }
 }

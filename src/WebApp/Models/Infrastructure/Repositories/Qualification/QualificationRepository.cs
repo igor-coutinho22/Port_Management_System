@@ -20,40 +20,19 @@ namespace WebApp.Models.Infrastructure.Repositories.Qualifications
             _context.SaveChanges();
         }
 
-        public async Task AddAsync(Qualification qualification)
-        {
-            await _context.Qualifications.AddAsync(qualification);
-            await _context.SaveChangesAsync();
-        }
-
         public Qualification? GetByCode(string code) =>
             _context.Qualifications.FirstOrDefault(q => q.Code == code);
-
-        public async Task<Qualification?> GetByCodeAsync(string code) =>
-            await _context.Qualifications.FirstOrDefaultAsync(q => q.Code == code);
 
         public Qualification? GetByName(string name) =>
             _context.Qualifications.FirstOrDefault(q => q.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-        public async Task<Qualification?> GetByNameAsync(string name) =>
-            await _context.Qualifications.FirstOrDefaultAsync(q => q.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
         public List<Qualification> GetAll() =>
             _context.Qualifications.ToList();
-
-        public async Task<List<Qualification>> GetAllAsync() =>
-            await _context.Qualifications.ToListAsync();
 
         public void Update(Qualification qualification)
         {
             _context.Qualifications.Update(qualification);
             _context.SaveChanges();
-        }
-
-        public async Task UpdateAsync(Qualification qualification)
-        {
-            _context.Qualifications.Update(qualification);
-            await _context.SaveChangesAsync();
         }
 
         public void Delete(string code)
@@ -64,6 +43,36 @@ namespace WebApp.Models.Infrastructure.Repositories.Qualifications
 
             _context.Qualifications.Remove(qualification);
             _context.SaveChanges();
+        }
+
+        public async Task AddAsync(Qualification qualification)
+        {
+            await _context.Qualifications.AddAsync(qualification);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Qualification?> GetByCodeAsync(string code) =>
+            await _context.Qualifications
+                .Include(q => q.QualificationLinks)
+                .ThenInclude(link => link.Staff)
+                .FirstOrDefaultAsync(q => q.Code == code);
+
+        public async Task<Qualification?> GetByNameAsync(string name) =>
+            await _context.Qualifications
+                .Include(q => q.QualificationLinks)
+                .ThenInclude(link => link.Staff)
+                .FirstOrDefaultAsync(q => q.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+        public async Task<List<Qualification>> GetAllAsync() =>
+            await _context.Qualifications
+                .Include(q => q.QualificationLinks)
+                .ThenInclude(link => link.Staff)
+                .ToListAsync();
+
+        public async Task UpdateAsync(Qualification qualification)
+        {
+            _context.Qualifications.Update(qualification);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(string code)

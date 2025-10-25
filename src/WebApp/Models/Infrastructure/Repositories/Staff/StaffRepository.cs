@@ -13,7 +13,7 @@ namespace WebApp.Models.Infrastructure.Repositories.StaffRepository
             _context = context;
         }
 
-        public async Task AddAsync(Staff staff)
+         public async Task AddAsync(Staff staff)
         {
             await _context.Staff.AddAsync(staff);
             await _context.SaveChangesAsync();
@@ -21,23 +21,29 @@ namespace WebApp.Models.Infrastructure.Repositories.StaffRepository
 
         public async Task<Staff?> GetByMecanographicNumberAsync(string mecanographicNumber)
             => await _context.Staff
-                .Include(s => s.Qualifications)
+                .Include(s => s.QualificationLinks)
+                    .ThenInclude(link => link.Qualification)
                 .FirstOrDefaultAsync(s => s.MecanographicNumber == mecanographicNumber);
 
         public async Task<List<Staff>> GetAllAsync()
             => await _context.Staff
-                .Include(s => s.Qualifications)
+                .Include(s => s.QualificationLinks)
+                    .ThenInclude(link => link.Qualification)
                 .ToListAsync();
 
         public async Task<List<Staff>> GetByStatusAsync(StaffStatus status)
             => await _context.Staff
-                .Include(s => s.Qualifications)
+                .Include(s => s.QualificationLinks)
+                    .ThenInclude(link => link.Qualification)
                 .Where(s => s.Status == status)
                 .ToListAsync();
 
         public async Task<List<Staff>> SearchAsync(string? name, StaffStatus? status, string? qualificationCode)
         {
-            var query = _context.Staff.Include(s => s.Qualifications).AsQueryable();
+            var query = _context.Staff
+                .Include(s => s.QualificationLinks)
+                    .ThenInclude(link => link.Qualification)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(name))
                 query = query.Where(s => s.ShortName.Contains(name));
@@ -46,7 +52,7 @@ namespace WebApp.Models.Infrastructure.Repositories.StaffRepository
                 query = query.Where(s => s.Status == status.Value);
 
             if (!string.IsNullOrWhiteSpace(qualificationCode))
-                query = query.Where(s => s.Qualifications.Any(q => q.Code == qualificationCode));
+                query = query.Where(s => s.QualificationLinks.Any(link => link.QualificationCode == qualificationCode));
 
             return await query.ToListAsync();
         }
@@ -67,7 +73,7 @@ namespace WebApp.Models.Infrastructure.Repositories.StaffRepository
             await _context.SaveChangesAsync();
         }
 
-        // Sync methods (optional)
+        // Sync methods
         public void Add(Staff staff)
         {
             _context.Staff.Add(staff);
@@ -76,18 +82,28 @@ namespace WebApp.Models.Infrastructure.Repositories.StaffRepository
 
         public Staff? GetByMecanographicNumber(string mecanographicNumber)
             => _context.Staff
-                .Include(s => s.Qualifications)
+                .Include(s => s.QualificationLinks)
+                .ThenInclude(link => link.Qualification)
                 .FirstOrDefault(s => s.MecanographicNumber == mecanographicNumber);
 
         public List<Staff> GetAll()
-            => _context.Staff.Include(s => s.Qualifications).ToList();
+            => _context.Staff
+                .Include(s => s.QualificationLinks)
+                .ThenInclude(link => link.Qualification)
+                .ToList();
 
         public List<Staff> GetByStatus(StaffStatus status)
-            => _context.Staff.Include(s => s.Qualifications).Where(s => s.Status == status).ToList();
-
+            => _context.Staff
+                .Include(s => s.QualificationLinks)
+                .ThenInclude(link => link.Qualification)
+                .Where(s => s.Status == status)
+                .ToList();
         public List<Staff> Search(string? name, StaffStatus? status, string? qualificationCode)
         {
-            var query = _context.Staff.Include(s => s.Qualifications).AsQueryable();
+            var query = _context.Staff
+                .Include(s => s.QualificationLinks)
+                .ThenInclude(link => link.Qualification)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(name))
                 query = query.Where(s => s.ShortName.Contains(name));
@@ -96,7 +112,7 @@ namespace WebApp.Models.Infrastructure.Repositories.StaffRepository
                 query = query.Where(s => s.Status == status.Value);
 
             if (!string.IsNullOrWhiteSpace(qualificationCode))
-                query = query.Where(s => s.Qualifications.Any(q => q.Code == qualificationCode));
+                query = query.Where(s => s.QualificationLinks.Any(link => link.QualificationCode == qualificationCode));
 
             return query.ToList();
         }

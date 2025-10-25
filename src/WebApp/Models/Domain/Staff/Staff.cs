@@ -9,13 +9,13 @@ namespace WebApp.Models.Domain.Staff
         public string Email { get; set; } = default!;
         public string Phone { get; set; } = default!;
         public StaffStatus Status { get; set; }
-        public string OperationalWindow { get; set; } = default!; // can be refined to a ValueObject later
-        public HashSet<Qualification> Qualifications { get; set; } = new();
+        public string OperationalWindow { get; set; } = default!; 
+        public ICollection<QualificationLink> QualificationLinks { get; set; } = new List<QualificationLink>();
 
         protected Staff() { } // EF Core requirement
 
         public Staff(string mecanographicNumber, string shortName, string email, string phone,
-                     StaffStatus status, string operationalWindow, HashSet<Qualification> qualifications)
+                     StaffStatus status, string operationalWindow)
         {
             MecanographicNumber = mecanographicNumber;
             ShortName = shortName;
@@ -23,7 +23,6 @@ namespace WebApp.Models.Domain.Staff
             Phone = phone;
             Status = status;
             OperationalWindow = operationalWindow;
-            Qualifications = qualifications ?? new HashSet<Qualification>();
         }
 
         public void Activate()
