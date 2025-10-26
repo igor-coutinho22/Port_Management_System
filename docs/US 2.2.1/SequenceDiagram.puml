@@ -25,16 +25,22 @@ activate Service
 Service -> Repo : GetVesselTypeByNameAsync(name)
 activate Repo
 Repo -> Db : Query (WHERE Name == name)
+activate Db
 Db --> Repo : null (not found)
+deactivate Db
 Repo --> Service : null
 deactivate Repo
 
 Service -> Repo : AddVesselTypeAsync(vesselType)
 activate Repo
 Repo -> Db : AddAsync(vesselType)
+activate Db
 Db --> Repo : vesselType added
+deactivate Db
 Repo -> Db : SaveChangesAsync()
+activate Db
 Db --> Repo : persisted
+deactivate Db
 Repo --> Service : success
 deactivate Repo
 
@@ -46,7 +52,9 @@ activate Service
 Service -> Repo : GetVesselTypeByNameAsync(name)
 activate Repo
 Repo -> Db : Query (WHERE Name == name)
+activate Db
 Db --> Repo : VesselType entity
+deactivate Db
 Repo --> Service : VesselType
 deactivate Repo
 Service --> Controller : VesselType
@@ -70,7 +78,9 @@ activate Service
 Service -> Repo : GetVesselTypeByNameAsync(currentName)
 activate Repo
 Repo -> Db : Query (WHERE Name == currentName)
+activate Db
 Db --> Repo : existing VesselType
+deactivate Db
 Repo --> Service : VesselType
 deactivate Repo
 Service --> Controller : VesselType (found)
@@ -87,15 +97,19 @@ activate Service
 Service -> Repo : GetVesselTypeByNameAsync(name)
 activate Repo
 Repo -> Db : Query (WHERE Name == name)
+activate Db
 Db --> Repo : existing VesselType
+deactivate Db
 Repo --> Service : existing VesselType
 deactivate Repo
 
 Service -> Repo : UpdateVesselTypeAsync(existingVesselType)
 activate Repo
 Repo -> Db : Update(entity)
+activate Db
 Db -> Db : SaveChangesAsync()
 Db --> Repo : success
+deactivate Db
 Repo --> Service : success
 deactivate Repo
 
