@@ -21,6 +21,8 @@ using WebApp.Models.Infrastructure.Repositories.Qualifications;
 using WebApp.Models.Domain.Staff.Interfaces;
 using WebApp.Models.Infrastructure.Repositories.StaffRepository;
 using WebApp.Models.Application.Services.StaffService;
+using WebApp.Models.Domain.VesselVisits;
+using WebApp.Models.Domain.VesselVisits.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,7 +97,8 @@ builder.Services.AddScoped<IRepresentativeRepository, RepresentativeRepository>(
 builder.Services.AddScoped<IRepresentativeService, RepresentativeService>();
 builder.Services.AddScoped<IDockRepository, DockRepository>();
 builder.Services.AddScoped<IDockService, DockService>();
-
+builder.Services.AddScoped<IVesselVisitNotificationRepository, VesselVisitNotificationRepository>();
+builder.Services.AddScoped<IVesselVisitNotificationService, VesselVisitNotificationService>();
 
 var app = builder.Build();
 
