@@ -26,13 +26,13 @@ namespace WebApp.Controllers
         public async Task<ActionResult<OrganizationDto>> GetById(Guid id)
             => Ok(await _service.GetAsync(id));
 
-        // NOVO: GET /api/organizations?name=&taxNumber=
+        //  GET /api/organizations?name=&taxNumber=
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrganizationDto>>> List(
             [FromQuery] string? name, [FromQuery] string? taxNumber)
             => Ok(await _service.ListAsync(name, taxNumber));
 
-        // NOVO: PUT /api/organizations/{id}
+        //  PUT /api/organizations/{id}
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<OrganizationDto>> Update(Guid id, [FromBody] UpdateOrganizationRequest req)
             => Ok(await _service.UpdateAsync(id, req));
