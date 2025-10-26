@@ -1,36 +1,73 @@
 @startuml
-title SSD - Create and Submit Vessel Visit Notification
+title Sequence Diagram – US 2.2.8 “Create and Submit Vessel Visit Notification”
 
 actor "Shipping Agent Representative" as Agent
-boundary "VesselVisitNotificationController" as Controller
-control "VesselVisitNotificationService" as Service
-entity "VesselVisitNotificationRepository" as Repository
-database "PortManagementContext (EF Core)" as DB
+boundary "VesselVisitNotificationController\n(API Layer)" as Controller
+control "VesselVisitNotificationService\n(Application Layer)" as Service
+entity "VesselVisitNotificationRepository\n(Domain/Infrastructure)" as Repository
+database "PortManagementContext (EF Core)\n(Infrastructure Layer)" as DB
+
+note over Agent
+User Story 2.2.8 – Create and Submit Vessel Visit Notification
+
+"As a Shipping Agent Representative, I want to create and
+submit a vessel visit notification, so that berthing and
+(un)loading operations are scheduled in time."
+end note
 
 == Create Vessel Visit Notification ==
-Agent -> Controller : POST /api/vesselvisitnotification\n(VesselVisitNotificationDTO)
-Controller -> Service : CreateAsync(dto)
-Service -> Repository : AddAsync(VesselVisitNotification)
-Repository -> DB : INSERT VesselVisitNotification
-DB --> Repository : Confirmation
-Repository --> Service : VesselVisitNotification
-Service --> Controller : VesselVisitNotificationDTO
-Controller --> Agent : 201 Created (VesselVisitNotificationDTO)
 
- == Later: Submit Visit Notification ==
+Agent -> Controller : POST /api/vesselvisitnotification\n(VesselVisitNotificationDTO)
+activate Controller
+Controller -> Service : CreateAsync(dto)
+activate Service
+
+note over Service
+Validation Rules:
+- VesselId and DockId must exist.
+- Purpose determines if Cargo Manifests are required.
+- Status initially set to "In Progress".
+end note
+
+Service -> Repository : AddAsync(VesselVisitNotification)
+activate Repository
+Repository -> DB : INSERT INTO VesselVisitNotifications (...)
+DB --> Repository : OK
+Repository --> Service : VesselVisitNotification persisted
+deactivate Repository
+Service --> Controller : VesselVisitNotificationDTO
+deactivate Service
+Controller --> Agent : 201 Created (VesselVisitNotificationDTO)
+deactivate Controller
+
+== Submit Vessel Visit Notification ==
 
 Agent -> Controller : PUT /api/vesselvisitnotification/{id}/submit
+activate Controller
 Controller -> Service : SubmitAsync(id)
+activate Service
 Service -> Repository : GetByIdAsync(id)
+activate Repository
 Repository -> DB : SELECT * FROM VesselVisitNotifications WHERE Id = id
-DB --> Repository : VesselVisitNotification
+DB --> Repository : VesselVisitNotification (Status = InProgress)
 Repository --> Service : VesselVisitNotification
+deactivate Repository
+
+note over Service
+Business Rules:
+- Only "In Progress" notifications can be submitted.
+- Commercial visits must include at least one Cargo Manifest.
+- Maintenance visits may omit manifests.
+end note
+
 Service -> Service : MarkAsSubmitted()
 Service -> Repository : UpdateAsync(VesselVisitNotification)
+activate Repository
 Repository -> DB : UPDATE VesselVisitNotifications SET Status='Submitted'
 DB --> Repository : OK
-Repository --> Service : Confirmation
+deactivate Repository
 Service --> Controller : Success
+deactivate Service
 Controller --> Agent : 204 No Content
-
+deactivate Controller
 @enduml
