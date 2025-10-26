@@ -13,32 +13,62 @@ namespace WebApp.Models.Application.Services
             _storageAreaRepo = storageAreaRepo;
         }
 
-        public async Task AddContainerYardAsync(string name, int maxCapacityTeu, int currentOccupancyTeu, ICollection<Dock> docksServed)
+        public async Task AddContainerYardAsync(ContainerYard yard)
         {
-            var yard = new ContainerYard(name, maxCapacityTeu, currentOccupancyTeu, docksServed);
+            if (yard == null)
+                throw new ArgumentNullException(nameof(yard));
+
+            var existingYard = await GetStorageAreaByIdAsync(yard.Id) as ContainerYard;
+            if (existingYard != null)
+                throw new ArgumentException("A container yard with the same ID already exists.", nameof(yard.Id));
+            
             await _storageAreaRepo.AddStorageAreaAsync(yard);
         }
 
-        public async Task AddWarehouseAsync(string name, int maxCapacityTeu, int currentOccupancyTeu, string specializedCargoType)
+        public async Task AddWarehouseAsync(Warehouse warehouse)
         {
-            var warehouse = new Warehouse(name, maxCapacityTeu, currentOccupancyTeu, specializedCargoType);
+            if (warehouse == null)
+                throw new ArgumentNullException(nameof(warehouse));
+
+            var existingWarehouse = await GetStorageAreaByIdAsync(warehouse.Id) as Warehouse;
+            if (existingWarehouse != null)
+                throw new ArgumentException("A warehouse with the same ID already exists.", nameof(warehouse.Id));
+            
             await _storageAreaRepo.AddStorageAreaAsync(warehouse);
         }
-        
-        public async Task UpdateContainerYardAsync(int id, string name, int maxCapacityTeu, int currentOccupancyTeu, ICollection<Dock> docksServed)
+
+        public async Task UpdateContainerYardAsync(ContainerYard yard)
         {
-            var yard = await GetStorageAreaByIdAsync(id) as ContainerYard;
             if (yard == null)
+                throw new ArgumentNullException(nameof(yard));
+
+            var existingYard = await GetStorageAreaByIdAsync(yard.Id) as ContainerYard;
+            if (existingYard == null)
                 throw new ArgumentException("Storage area not found or is not a container yard.");
-            await _storageAreaRepo.UpdateContainerYardAsync(yard, name, maxCapacityTeu, currentOccupancyTeu, docksServed);
+
+            existingYard.Name = yard.Name;
+            existingYard.ChangeMaxCapacity(yard.MaxCapacityTeu);
+            existingYard.UpdateCurrentOccupancy(yard.CurrentOccupancyTeu);
+            existingYard.DocksServed = yard.DocksServed;
+
+            await _storageAreaRepo.UpdateContainerYardAsync(existingYard);
         }
 
-        public async Task UpdateWarehouseAsync(int id, string name, int maxCapacityTeu, int currentOccupancyTeu, string specializedCargoType)
+        public async Task UpdateWarehouseAsync(Warehouse warehouse)
         {
-            var warehouse = await GetStorageAreaByIdAsync(id) as Warehouse;
             if (warehouse == null)
+                throw new ArgumentNullException(nameof(warehouse));
+
+            var existingWarehouse = await GetStorageAreaByIdAsync(warehouse.Id) as Warehouse;
+            if (existingWarehouse == null)
                 throw new ArgumentException("Storage area not found or is not a warehouse.");
-            await _storageAreaRepo.UpdateWarehouseAsync(warehouse, name, maxCapacityTeu, currentOccupancyTeu, specializedCargoType);
+
+            existingWarehouse.Name = warehouse.Name;
+            existingWarehouse.ChangeMaxCapacity(warehouse.MaxCapacityTeu);
+            existingWarehouse.UpdateCurrentOccupancy(warehouse.CurrentOccupancyTeu);
+            existingWarehouse.UpdateCargoType(warehouse.SpecializedCargoType!);
+
+            await _storageAreaRepo.UpdateWarehouseAsync(existingWarehouse);
         }
 
         public Task<StorageArea?> GetStorageAreaByNameAsync(string name) => _storageAreaRepo.GetByNameAsync(name);
@@ -47,19 +77,72 @@ namespace WebApp.Models.Application.Services
 
         public Task<List<StorageArea>> GetAllStorageAreasAsync() => _storageAreaRepo.GetAllAsync();
 
-        public Task AddConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds)
-            => _storageAreaRepo.AddConnectionAsync(storageAreaId, dockId, distanceMeters, travelSeconds);
+        public async Task AddConnectionAsync(DockStorageAreaConnection connection)
+        {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
 
-        public Task UpdateConnectionAsync(int storageAreaId, Guid dockId, double distanceMeters, int travelSeconds)
-            => _storageAreaRepo.UpdateConnectionAsync(storageAreaId, dockId, distanceMeters, travelSeconds);
+            if (connection.DistanceMeters < 0)
+                throw new ArgumentException("Distance cannot be negative.", nameof(connection.DistanceMeters));
 
-        public Task<bool> RemoveConnectionAsync(int storageAreaId, Guid dockId)
-            => _storageAreaRepo.RemoveConnectionAsync(storageAreaId, dockId);
+            if (connection.TravelSeconds < 0)
+                throw new ArgumentException("Travel time cannot be negative.", nameof(connection.TravelSeconds));
 
-        public Task<List<DockStorageAreaInfo>> GetConnectionsForStorageAreaAsync(int storageAreaId)
+            var storageArea = await GetStorageAreaByIdAsync(connection.StorageAreaId);
+            if (storageArea == null)
+                throw new ArgumentException("Storage area not found.", nameof(connection.StorageAreaId));
+
+            storageArea.AddDockConnection(connection);
+            await _storageAreaRepo.AddConnectionAsync(connection);
+        }
+
+
+        public Task UpdateConnectionAsync(DockStorageAreaConnection connection)
+        {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (connection.DistanceMeters < 0)
+                throw new ArgumentException("Distance cannot be negative.", nameof(connection.DistanceMeters));
+
+            if (connection.TravelSeconds < 0)
+                throw new ArgumentException("Travel time cannot be negative.", nameof(connection.TravelSeconds));
+
+            var storageArea = GetStorageAreaByIdAsync(connection.StorageAreaId).Result;
+            if (storageArea == null)
+                throw new ArgumentException("Storage area not found.", nameof(connection.StorageAreaId));
+
+            storageArea.UpdateDockConnection(connection);
+            return _storageAreaRepo.UpdateConnectionAsync(connection);
+        }
+        
+        public Task RemoveConnectionAsync(int storageAreaId, Guid dockId)
+        {
+            var connectionToDelete = GetConnectionAsync(storageAreaId, dockId).Result;
+            if (connectionToDelete == null)
+                throw new ArgumentException("Connection to this dock does not exist.", nameof(dockId));
+
+            var storageArea = GetStorageAreaByIdAsync(storageAreaId).Result;
+            if (storageArea == null)
+                throw new ArgumentException("Storage area not found.", nameof(storageAreaId));
+
+            storageArea.RemoveDockConnection(connectionToDelete);
+            return _storageAreaRepo.RemoveConnectionAsync(connectionToDelete);
+        }
+
+        public Task<DockStorageAreaConnection?> GetConnectionAsync(int storageAreaId, Guid dockId)
+            => _storageAreaRepo.GetConnectionAsync(storageAreaId, dockId);
+
+        public Task<List<DockStorageAreaConnection>> GetConnectionsForStorageAreaAsync(int storageAreaId)
             => _storageAreaRepo.GetConnectionsForStorageAreaAsync(storageAreaId);
 
         public Task DeleteStorageAreaAsync(int storageAreaId)
-            => _storageAreaRepo.DeleteStorageAreaAsync(storageAreaId);
+        {
+            var storageAreaToDelete = GetStorageAreaByIdAsync(storageAreaId).Result;
+            if (storageAreaToDelete == null)
+                throw new ArgumentException("Storage area not found.", nameof(storageAreaId));
+
+            return _storageAreaRepo.DeleteStorageAreaAsync(storageAreaToDelete);
+        }
     }
 }
