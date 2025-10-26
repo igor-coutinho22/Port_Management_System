@@ -39,6 +39,23 @@ namespace WebApp.Models.Domain.Vessels.VesselType
             // For ORM or serialization purposes
         }
 
+        /// Creates a VesselType for updates without adding to static registry.
+        /// Use this method when you need a VesselType object for existing entities.
+        public static VesselType CreateForUpdate(string name, string description, int maxBays, int maxRows, int maxTiers)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Vessel type name cannot be empty.", nameof(name));
+
+            return new VesselType
+            {
+                Name = name,
+                Description = description,
+                MaxBays = maxBays,
+                MaxRows = maxRows,
+                MaxTiers = maxTiers
+            };
+        }
+
         // Return all vessel types
         public static IEnumerable<VesselType> GetAllTypes() => _allTypes;
 

@@ -7,9 +7,8 @@ namespace WebApp.Models.Application.Services
 {
     public interface IVesselService
     {
-        Task RegisterVesselDTOAsync(VesselDTO dto);
-        Task RegisterVesselAsync(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength);
-        Task UpdateVesselAsync(string imo, string newIMO, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength);
+        Task RegisterVesselAsync(Vessel vessel);
+        Task UpdateVesselAsync(Vessel vessel);
         Task<Vessel?> GetVesselByIMOAsync(string imo);
         Task<List<Vessel>> GetVesselByNameAsync(string name);
         Task<List<Vessel>> GetVesselsByOperatorAsync(string operatorName);

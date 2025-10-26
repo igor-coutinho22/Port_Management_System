@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
-using WebApp.Models.Domain.Vessel;
 using WebApp.Models.Application.Services;
+using WebApp.Models.Application.Mappers;
+using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Controllers
 {
@@ -24,12 +25,19 @@ namespace WebApp.Controllers
         // Register a new vessel
         // ------------------------------------------------------------
         [HttpPost()]
-        public async Task<IActionResult> RegisterVesselAsync([FromBody] VesselDTO dto)
+        public async Task<IActionResult> RegisterVesselAsync([FromBody] VesselDTO dto, [FromQuery] string vesselTypeName)
         {
             try
             {
-                await _vesselService.RegisterVesselDTOAsync(dto);
-                return CreatedAtRoute("GetByIMO", new { imo = dto.IMO }, dto);
+                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(vesselTypeName);
+                if (vesselType == null)
+                    return NotFound($"Vessel type '{vesselTypeName}' not found.");
+
+                var vessel = VesselMapper.MapToDomain(dto, vesselType!);
+                await _vesselService.RegisterVesselAsync(vessel);
+
+                var created = await _vesselService.GetVesselByIMOAsync(dto.IMO!);
+                return CreatedAtRoute("GetByIMO", new { imo = created!.IMO }, VesselMapper.MapToDto(created));
             }
             catch (ArgumentException ex)
             {
@@ -45,13 +53,13 @@ namespace WebApp.Controllers
         {
             try
             {
-                await _vesselService.UpdateVesselAsync(imo, dto.IMO, dto.VesselName, dto.OperatorName, await _vesselTypeService.GetVesselTypeByNameAsync(dto.VesselType) ?? throw new ArgumentException($"Vessel type '{dto.VesselType}' not recognized."), dto.Bays, dto.Rows, dto.Tiers, dto.RequiredCraneCount, dto.RequiredDockLength);
+                var vessel = await _vesselService.GetVesselByIMOAsync(imo);
+                if (vessel == null)
+                    return NotFound($"Vessel with IMO {imo} not found.");
 
-                var updated = await _vesselService.GetVesselByIMOAsync(imo);
-                if (updated == null)
-                    return NotFound();
-
-                return Ok(MapToDto(updated));
+                var updatedVessel = VesselMapper.MapToDomain(dto, vessel.VesselType!);
+                await _vesselService.UpdateVesselAsync(updatedVessel);
+                return CreatedAtRoute("GetByIMO", new { imo = updatedVessel.IMO }, VesselMapper.MapToDto(updatedVessel));
             }
             catch (ArgumentException ex)
             {
@@ -62,15 +70,15 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Get by IMO
         // ------------------------------------------------------------
-    [HttpGet("getByIMO/{imo}", Name = "GetByIMO")]
-    public async Task<IActionResult> GetByIMOAsync(string imo)
-        {
-            var vessel = await _vesselService.GetVesselByIMOAsync(imo);
-            if (vessel == null)
-                return NotFound($"Vessel with IMO {imo} not found.");
+        [HttpGet("getByIMO/{imo}", Name = "GetByIMO")]
+        public async Task<IActionResult> GetByIMOAsync(string imo)
+            {
+                var vessel = await _vesselService.GetVesselByIMOAsync(imo);
+                if (vessel == null)
+                    return NotFound($"Vessel with IMO {imo} not found.");
 
-            return Ok(MapToDto(vessel));
-        }
+                return Ok(VesselMapper.MapToDto(vessel));
+            }
 
         // ------------------------------------------------------------
         // Search by name or operator
@@ -92,7 +100,7 @@ namespace WebApp.Controllers
             if (results.Count == 0)
                 return NotFound("No vessels found matching the search criteria.");
 
-            return Ok(results.Select(MapToDto));
+            return Ok(results.Select(VesselMapper.MapToDto));
         }
 
         // ------------------------------------------------------------
@@ -105,19 +113,6 @@ namespace WebApp.Controllers
             
             return Ok(vessels);
         }
-
-        private static VesselDTO MapToDto(Vessel v) =>
-            new(
-                v.IMO,
-                v.VesselName,
-                v.OperatorName,
-                v.VesselType.Name,
-                v.RequiredCraneCount,
-                v.RequiredDockLength,
-                v.Bays,
-                v.Rows,
-                v.Tiers
-            );
 
         // ------------------------------------------------------------
         // Delete a vessel

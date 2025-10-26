@@ -1,10 +1,11 @@
 namespace WebApp.Models.Application.DTOs
 {
-    public record VesselTypeDTO(
-        string Name,
-        string Description,
-        int MaxBays,
-        int MaxRows,
-        int MaxTiers
-    );
+    public class VesselTypeDTO
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public int MaxBays { get; set; }
+        public int MaxRows { get; set; }
+        public int MaxTiers { get; set; }
+    }
 }
