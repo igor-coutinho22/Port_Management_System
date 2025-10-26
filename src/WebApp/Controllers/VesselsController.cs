@@ -13,25 +13,31 @@ namespace WebApp.Controllers
     public class VesselsController : ControllerBase
     {
         private readonly IVesselService _vesselService;
+        private readonly IVesselTypeService _vesselTypeService;
 
-        public VesselsController(IVesselService vesselService)
+        public VesselsController(IVesselService vesselService, IVesselTypeService vesselTypeService)
         {
             _vesselService = vesselService;
+            _vesselTypeService = vesselTypeService;
         }
 
         // ------------------------------------------------------------
         // Register a new vessel
         // ------------------------------------------------------------
         [HttpPost()]
-        public async Task<IActionResult> RegisterVesselAsync([FromBody] VesselDTO dto, [FromQuery] VesselType vesselType)
+        public async Task<IActionResult> RegisterVesselAsync([FromBody] VesselDTO dto, [FromQuery] string vesselTypeName)
         {
             try
             {
-                var vessel = VesselMapper.MapToDomain(dto, vesselType);
+                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(vesselTypeName);
+                if (vesselType == null)
+                    return NotFound($"Vessel type '{vesselTypeName}' not found.");
+
+                var vessel = VesselMapper.MapToDomain(dto, vesselType!);
                 await _vesselService.RegisterVesselAsync(vessel);
 
                 var created = await _vesselService.GetVesselByIMOAsync(dto.IMO!);
-                return CreatedAtRoute(nameof(GetByIMOAsync), new { imo = created!.IMO }, VesselMapper.MapToDto(created));
+                return CreatedAtRoute("GetByIMO", new { imo = created!.IMO }, VesselMapper.MapToDto(created));
             }
             catch (ArgumentException ex)
             {
@@ -49,11 +55,11 @@ namespace WebApp.Controllers
             {
                 var vessel = await _vesselService.GetVesselByIMOAsync(imo);
                 if (vessel == null)
-                    return NotFound();
+                    return NotFound($"Vessel with IMO {imo} not found.");
 
                 var updatedVessel = VesselMapper.MapToDomain(dto, vessel.VesselType!);
                 await _vesselService.UpdateVesselAsync(updatedVessel);
-                return NoContent();
+                return CreatedAtRoute("GetByIMO", new { imo = updatedVessel.IMO }, VesselMapper.MapToDto(updatedVessel));
             }
             catch (ArgumentException ex)
             {
