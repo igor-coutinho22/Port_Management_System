@@ -1,0 +1,202 @@
+@startuml US 2.2.3
+title **US 2.2.3 – Manage Docks (Register & Update)**
+
+actor "Port Authority Officer" as Officer
+participant "DocksController" as Controller
+participant "DockMapper" as Mapper
+participant "DockService" as DockService
+participant "DockRepository" as DockRepo
+participant "VesselTypeService" as VesselTypeService
+participant "VesselTypeRepository" as VesselTypeRepo
+database "PortManagementContext" as Db
+
+
+== Register Dock (POST /api/Docks) ==
+
+Officer -> Controller : POST /api/Docks\n(DockDto)
+activate Controller
+
+Controller -> Controller : Validate AllowedVesselTypes list
+
+loop For each vesselTypeName in dto.AllowedVesselTypes
+    Controller -> VesselTypeService : GetVesselTypeByNameAsync(vesselTypeName)
+    activate VesselTypeService
+    VesselTypeService -> VesselTypeRepo : GetVesselTypeByNameAsync(vesselTypeName)
+    activate VesselTypeRepo
+    VesselTypeRepo -> Db : Query (WHERE Name == vesselTypeName)
+    activate Db
+    Db --> VesselTypeRepo : VesselType entity
+    deactivate Db
+    VesselTypeRepo --> VesselTypeService : VesselType
+    deactivate VesselTypeRepo
+    VesselTypeService --> Controller : VesselType
+    deactivate VesselTypeService
+end
+
+Controller -> Mapper : MapToDomain(dto, vesselTypes)
+activate Mapper
+Mapper --> Controller : Dock
+deactivate Mapper
+
+Controller -> DockService : CreateAsync(dock)
+activate DockService
+
+DockService -> DockRepo : GetByNameAsync(dock.Name)
+activate DockRepo
+DockRepo -> Db : Query (WHERE Name == dock.Name)
+activate Db
+Db --> DockRepo : null
+deactivate Db
+DockRepo --> DockService : null
+deactivate DockRepo
+
+DockService -> DockRepo : GetByLocationAsync(dock.Location)
+activate DockRepo
+DockRepo -> Db : Query (WHERE Location == dock.Location)
+activate Db
+Db --> DockRepo : null
+deactivate Db
+DockRepo --> DockService : null
+deactivate DockRepo
+
+DockService -> DockRepo : GetByIdAsync(dock.Id)
+activate DockRepo
+DockRepo -> Db : Query (WHERE Id == dock.Id)
+activate Db
+Db --> DockRepo : null
+deactivate Db
+DockRepo --> DockService : null
+deactivate DockRepo
+
+DockService -> DockRepo : AddAsync(dock)
+activate DockRepo
+DockRepo -> Db : AddAsync(dock)
+activate Db
+Db --> DockRepo : Dock added
+deactivate Db
+DockRepo -> Db : SaveChangesAsync()
+activate Db
+Db --> DockRepo : persisted
+deactivate Db
+DockRepo --> DockService : success
+deactivate DockRepo
+
+DockService --> Controller : success
+deactivate DockService
+
+Controller -> DockService : GetByIdAsync(dock.Id)
+activate DockService
+DockService -> DockRepo : GetByIdAsync(id)
+activate DockRepo
+DockRepo -> Db : Query (WHERE Id == id)
+activate Db
+Db --> DockRepo : Dock entity (with AllowedVesselTypes)
+deactivate Db
+DockRepo --> DockService : Dock
+deactivate DockRepo
+DockService --> Controller : Dock
+deactivate DockService
+
+Controller -> Mapper : MapToDto(createdDock)
+activate Mapper
+Mapper --> Controller : DockDto
+deactivate Mapper
+
+Controller --> Officer : 201 Created (DockDto)
+deactivate Controller
+
+
+
+== Update Dock (PUT /api/Docks/{id}) ==
+
+Officer -> Controller : PUT /api/Docks/{id}\n(DockDto)
+activate Controller
+
+Controller -> DockService : GetByIdAsync(id)
+activate DockService
+DockService -> DockRepo : GetByIdAsync(id)
+activate DockRepo
+DockRepo -> Db : Query (WHERE Id == id)
+activate Db
+Db --> DockRepo : existing Dock
+deactivate Db
+DockRepo --> DockService : Dock
+deactivate DockRepo
+DockService --> Controller : Dock (found)
+deactivate DockService
+
+Controller -> Controller : Validate AllowedVesselTypes list
+
+loop For each vesselTypeName in dto.AllowedVesselTypes
+    Controller -> VesselTypeService : GetVesselTypeByNameAsync(vesselTypeName)
+    activate VesselTypeService
+    VesselTypeService -> VesselTypeRepo : GetVesselTypeByNameAsync(vesselTypeName)
+    activate VesselTypeRepo
+    VesselTypeRepo -> Db : Query (WHERE Name == vesselTypeName)
+    activate Db
+    Db --> VesselTypeRepo : VesselType entity
+    deactivate Db
+    VesselTypeRepo --> VesselTypeService : VesselType
+    deactivate VesselTypeRepo
+    VesselTypeService --> Controller : VesselType
+    deactivate VesselTypeService
+end
+
+Controller -> Mapper : UpdateFromDto(existingDock, dto, vesselTypes)
+activate Mapper
+Mapper --> Controller : updated Dock
+deactivate Mapper
+
+Controller -> DockService : UpdateAsync(existingDock)
+activate DockService
+
+DockService -> DockRepo : GetByIdAsync(dock.Id)
+activate DockRepo
+DockRepo -> Db : Query (WHERE Id == dock.Id)
+activate Db
+Db --> DockRepo : Dock found
+deactivate Db
+DockRepo --> DockService : Dock
+deactivate DockRepo
+
+DockService -> DockRepo : GetByNameAsync(dock.Name)
+activate DockRepo
+DockRepo -> Db : Query (WHERE Name == dock.Name)
+activate Db
+Db --> DockRepo : Dock or null
+deactivate Db
+DockRepo --> DockService : result
+deactivate DockRepo
+
+DockService -> DockRepo : GetByLocationAsync(dock.Location)
+activate DockRepo
+DockRepo -> Db : Query (WHERE Location == dock.Location)
+activate Db
+Db --> DockRepo : Dock or null
+deactivate Db
+DockRepo --> DockService : result
+deactivate DockRepo
+
+DockService -> DockRepo : UpdateAsync(existingDock)
+activate DockRepo
+DockRepo -> Db : Update(entity)
+activate Db
+Db -> Db : SaveChangesAsync()
+Db --> DockRepo : success
+deactivate Db
+DockRepo --> DockService : success
+deactivate DockRepo
+
+DockService --> Controller : success
+deactivate DockService
+
+Controller -> Mapper : MapToDto(existingDock)
+activate Mapper
+Mapper --> Controller : DockDto
+deactivate Mapper
+
+Controller --> Officer : 200 OK (DockDto)
+deactivate Controller
+
+
+@enduml
