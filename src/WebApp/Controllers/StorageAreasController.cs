@@ -34,18 +34,16 @@ namespace WebApp.Controllers
                 if (dto.DockIds == null || dto.DockIds.Count == 0)
                     return BadRequest("At least one dock ID is required.");
 
-                // Retrieve actual dock entities by their IDs in parallel
-                var dockTasks = dto.DockIds.Select(_dockService.GetByIdAsync).ToList();
-                var dockResults = await Task.WhenAll(dockTasks);
-
+                // Retrieve actual dock entities by their IDs sequentially to avoid DbContext concurrency issues
                 var docks = new List<Dock>();
-                for (int i = 0; i < dockResults.Length; i++)
+                foreach (var dockId in dto.DockIds)
                 {
-                    if (dockResults[i] == null)
+                    var dock = await _dockService.GetByIdAsync(dockId);
+                    if (dock == null)
                     {
-                        return BadRequest($"Dock with ID {dto.DockIds[i]} not found.");
+                        return BadRequest($"Dock with ID {dockId} not found.");
                     }
-                    docks.Add(dockResults[i]!);
+                    docks.Add(dock);
                 }
 
                 var yard = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as ContainerYard;
@@ -55,8 +53,8 @@ namespace WebApp.Controllers
                 yard = ContainerYardMapper.MapToDomain(dto, docks);
                 await _storageAreaService.AddContainerYardAsync(yard);
 
-                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name);
-                var resultDto = StorageAreaMapper.MapToDto(created!);
+                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as ContainerYard;
+                var resultDto = ContainerYardMapper.MapToDto(created!);
                 return CreatedAtAction(nameof(GetById), new { id = created!.Id }, resultDto);
             }
             catch (ArgumentException ex)
@@ -108,23 +106,21 @@ namespace WebApp.Controllers
                 if (dto.DockIds == null || dto.DockIds.Count == 0)
                     return BadRequest("At least one dock ID is required.");
 
-                // Retrieve actual dock entities by their IDs in parallel
-                var dockTasks = dto.DockIds.Select(_dockService.GetByIdAsync).ToList();
-                var dockResults = await Task.WhenAll(dockTasks);
-
+                // Retrieve actual dock entities by their IDs sequentially to avoid DbContext concurrency issues
                 var docks = new List<Dock>();
-                for (int i = 0; i < dockResults.Length; i++)
+                foreach (var dockId in dto.DockIds)
                 {
-                    if (dockResults[i] == null)
+                    var dock = await _dockService.GetByIdAsync(dockId);
+                    if (dock == null)
                     {
-                        return BadRequest($"Dock with ID {dto.DockIds[i]} not found.");
+                        return BadRequest($"Dock with ID {dockId} not found.");
                     }
-                    docks.Add(dockResults[i]!);
+                    docks.Add(dock);
                 }
 
-                var updatedYard = ContainerYardMapper.MapToDomain(dto, docks);
+                var updatedYard = ContainerYardMapper.MapToDomainForUpdate(id, dto, docks);
                 await _storageAreaService.UpdateContainerYardAsync(updatedYard);
-                return CreatedAtRoute(nameof(GetById), new { id = updatedYard.Id }, StorageAreaMapper.MapToDto(updatedYard));
+                return Ok(StorageAreaMapper.MapToDto(updatedYard));
             }
             catch (ArgumentException ex)
             {
@@ -147,9 +143,9 @@ namespace WebApp.Controllers
                 if (string.IsNullOrWhiteSpace(dto.SpecializedCargoType))
                     return BadRequest("Specialized cargo type is required.");
 
-                var updatedWarehouse = WarehouseMapper.MapToDomain(dto);
+                var updatedWarehouse = WarehouseMapper.MapToDomainForUpdate(id, dto);
                 await _storageAreaService.UpdateWarehouseAsync(updatedWarehouse);
-                return CreatedAtRoute(nameof(GetById), new { id = updatedWarehouse.Id }, StorageAreaMapper.MapToDto(updatedWarehouse));
+                return Ok(StorageAreaMapper.MapToDto(updatedWarehouse));
             }
             catch (ArgumentException ex)
             {
@@ -179,27 +175,42 @@ namespace WebApp.Controllers
         public async Task<IActionResult> GetAll()
         {
             var list = await _storageAreaService.GetAllStorageAreasAsync();
-            return Ok(list);
+            var dtoList = list.Select(sa => 
+            {
+                if (sa is ContainerYard yard)
+                    return (object)ContainerYardMapper.MapToDto(yard);
+                else if (sa is Warehouse warehouse)
+                    return (object)WarehouseMapper.MapToDto(warehouse);
+                else
+                    return (object)StorageAreaMapper.MapToDto(sa);
+            }).ToList();
+            return Ok(dtoList);
         }
 
         [HttpPost("{storageAreaId}/connections")]
-        public async Task<IActionResult> AddConnection([FromBody] DockStorageAreaConnectionDTO dto)
+        public async Task<IActionResult> AddConnection(int storageAreaId, [FromBody] DockStorageAreaConnectionDTO dto)
         {
             try
             {
-                var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(dto.StorageAreaId);
+                // Use the storageAreaId from the URL route parameter
+                var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
                 if (storageArea == null)
-                    return NotFound($"Storage area with ID {dto.StorageAreaId} not found.");
+                    return NotFound($"Storage area with ID {storageAreaId} not found.");
+
+                // Only ContainerYards can have dock connections
+                if (!(storageArea is ContainerYard))
+                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
 
                 var dock = await _dockService.GetByIdAsync(dto.DockId);
                 if (dock == null)
                     return NotFound($"Dock with ID {dto.DockId} not found.");
 
-                var connection = DockStorageAreaConnectionMapper.MapToDomain(dto);
+                // Use the new mapper method that takes the DTO and storageAreaId from route parameter
+                var connection = DockStorageAreaConnectionMapper.MapToDomain(dto, storageAreaId);
                 await _storageAreaService.AddConnectionAsync(connection);
 
-                var created = await _storageAreaService.GetConnectionAsync(dto.StorageAreaId, dto.DockId);
-                return CreatedAtAction(nameof(GetConnection), new { storageAreaId = created!.StorageAreaId, dockId = created.DockId }, DockStorageAreaConnectionMapper.MapToDto(created));
+                var created = await _storageAreaService.GetConnectionAsync(storageAreaId, dto.DockId);
+                return CreatedAtAction(nameof(GetConnection), new { storageAreaId, dockId = dto.DockId }, DockStorageAreaConnectionMapper.MapToDto(created!));
             }
             catch (ArgumentException ex)
             {
@@ -212,16 +223,23 @@ namespace WebApp.Controllers
         {
             try
             {
+                // Validate that the storage area is a ContainerYard
+                var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
+                if (storageArea == null)
+                    return NotFound($"Storage area with ID {storageAreaId} not found.");
+                
+                if (!(storageArea is ContainerYard))
+                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
+
                 var connection = await _storageAreaService.GetConnectionAsync(storageAreaId, dockId);
                 if (connection == null)
                     return NotFound($"Connection between storage area ID {storageAreaId} and dock ID {dockId} not found.");
 
-                if (storageAreaId != dto.StorageAreaId || dockId != dto.DockId)
-                    return BadRequest("Storage area ID and Dock ID in URL must match those in the body.");
+                if (dockId != dto.DockId)
+                    return BadRequest("Dock ID in URL must match the one in the body.");
 
-                var updatedConnection = DockStorageAreaConnectionMapper.MapToDomain(dto);
-                await _storageAreaService.UpdateConnectionAsync(updatedConnection);
-                return CreatedAtRoute(nameof(GetConnection), new { storageAreaId, dockId }, updatedConnection);
+                var updatedConnection = await _storageAreaService.UpdateConnectionFromDtoAsync(storageAreaId, dockId, dto);
+                return Ok(DockStorageAreaConnectionMapper.MapToDto(updatedConnection));
             }
             catch (ArgumentException ex)
             {
@@ -234,6 +252,14 @@ namespace WebApp.Controllers
         {
             try
             {
+                // Validate that the storage area is a ContainerYard
+                var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
+                if (storageArea == null)
+                    return NotFound($"Storage area with ID {storageAreaId} not found.");
+                
+                if (!(storageArea is ContainerYard))
+                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
+
                 await _storageAreaService.RemoveConnectionAsync(storageAreaId, dockId);
                 return NoContent();
             }
@@ -256,6 +282,14 @@ namespace WebApp.Controllers
         [HttpGet("{storageAreaId}/connections")]
         public async Task<IActionResult> GetConnections(int storageAreaId)
         {
+            // Validate that the storage area exists and is a ContainerYard
+            var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
+            if (storageArea == null)
+                return NotFound($"Storage area with ID {storageAreaId} not found.");
+            
+            if (!(storageArea is ContainerYard))
+                return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
+
             var list = await _storageAreaService.GetConnectionsForStorageAreaAsync(storageAreaId);
             return Ok(list);
         }

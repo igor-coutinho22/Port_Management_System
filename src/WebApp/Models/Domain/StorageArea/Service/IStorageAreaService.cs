@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.StorageArea;
+using WebApp.Models.Application.DTOs;
 
 namespace WebApp.Models.Application.Services
 {
@@ -20,7 +21,7 @@ namespace WebApp.Models.Application.Services
         
         // Connection CRUD
         Task AddConnectionAsync(DockStorageAreaConnection connection);
-        Task UpdateConnectionAsync(DockStorageAreaConnection connection);
+        Task<DockStorageAreaConnection> UpdateConnectionFromDtoAsync(int storageAreaId, Guid dockId, DockStorageAreaConnectionDTO dto);
         Task RemoveConnectionAsync(int storageAreaId, Guid dockId);
         Task<DockStorageAreaConnection?> GetConnectionAsync(int storageAreaId, Guid dockId);
         Task<List<DockStorageAreaConnection>> GetConnectionsForStorageAreaAsync(int storageAreaId);
