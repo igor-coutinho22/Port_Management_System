@@ -28,7 +28,7 @@ namespace WebApp.Models.Application.DTOs
         public string CitizenId { get; set; } = string.Empty;
         public string Nationality { get; set; } = string.Empty;
     }
-        public class VesselVisitNotificationFilterDTO
+    public class VesselVisitNotificationFilterDTO
     {
         public string? VesselIMO { get; set; }
         public string? Status { get; set; }

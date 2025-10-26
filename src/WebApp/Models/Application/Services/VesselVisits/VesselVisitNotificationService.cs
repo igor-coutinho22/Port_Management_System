@@ -192,10 +192,5 @@ namespace WebApp.Models.Application.Services
             existingVisit.UpdateCrew(vvn.Crew);
             await _repository.UpdateAsync(existingVisit);
         }
-
-        public Task<IEnumerable<VesselVisitNotificationDTO>> SearchAsync(VesselVisitNotificationDTO dto)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
