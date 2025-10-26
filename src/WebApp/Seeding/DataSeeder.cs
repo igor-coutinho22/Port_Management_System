@@ -1,4 +1,4 @@
-// File: WebApp/Seeding/DataSeeder.cs
+// File: WebApp/Seeding/DataSeeder.cs 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +10,8 @@ using WebApp.Models.Domain.Qualifications;
 using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Resources.Enums;
 using WebApp.Models.Domain.Users;
+using WebApp.Models.Domain.Staff;
+using WebApp.Models.Domain.VesselVisits;
 
 namespace WebApp.Seeding
 {
@@ -96,6 +98,7 @@ namespace WebApp.Seeding
             if (context.Database.IsRelational())
                 await context.Database.MigrateAsync();
 
+            // === QUALIFICATIONS ===
             if (!await context.Set<Qualification>().AnyAsync())
             {
                 var qualifications = new List<Qualification>
@@ -111,6 +114,7 @@ namespace WebApp.Seeding
                 logger.LogInformation("Seeded {Count} Qualifications.", qualifications.Count);
             }
 
+            // === RESOURCES ===
             if (!await context.Set<Resource>().AnyAsync())
             {
                 var allQualifications = await context.Set<Qualification>().ToListAsync();
@@ -142,6 +146,74 @@ namespace WebApp.Seeding
                 await context.AddRangeAsync(resources);
                 await context.SaveChangesAsync();
                 logger.LogInformation("Seeded {Count} Resources.", resources.Count);
+            }
+
+            // === STAFF ===
+            if (!await context.Set<Staff>().AnyAsync())
+            {
+                var qualifications = await context.Set<Qualification>().ToListAsync();
+
+                var staffMembers = new List<Staff>
+                {
+                    new("S001", "Alice", "alice@port.pt", "911111111",
+                        StaffStatus.Available, "06:00-14:00"),
+
+                    new("S002", "Bruno", "bruno@port.pt", "922222222",
+                        StaffStatus.Unavailable, "14:00-22:00"),
+
+                    new("S003", "Carla", "carla@port.pt", "933333333",
+                        StaffStatus.Available, "06:00-14:00")
+                };
+
+                await context.AddRangeAsync(staffMembers);
+                await context.SaveChangesAsync();
+
+                // Assign qualifications via QualificationLink
+                var qualificationLinks = new List<QualificationLink>
+                {
+                    new QualificationLink("S001", "Q1", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-2))),
+                    new QualificationLink("S002", "Q2", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-1))),
+                    new QualificationLink("S003", "Q3", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-3))),
+                    new QualificationLink("S003", "Q1", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-2)))
+                };
+
+                await context.AddRangeAsync(qualificationLinks);
+                await context.SaveChangesAsync();
+
+                logger.LogInformation("Seeded {Count} Staff Members and {Count2} Qualification Links.",
+                    staffMembers.Count, qualificationLinks.Count);
+            }
+
+
+
+
+            // === VESSEL VISIT NOTIFICATIONS ===
+            if (!await context.Set<VesselVisitNotification>().AnyAsync())
+            {
+                var vessel1 = Guid.NewGuid();
+                var vessel2 = Guid.NewGuid();
+                var dock1 = Guid.NewGuid();
+                var dock2 = Guid.NewGuid();
+
+                var visit1 = new VesselVisitNotification(vessel1, dock1, DateTime.UtcNow.AddDays(-1), VisitPurpose.Maintenance);
+                visit1.AddCrewMember("John Doe", "C123", "PT");
+
+                var visit2 = new VesselVisitNotification(vessel2, dock1, DateTime.UtcNow.AddDays(1), VisitPurpose.Commercial);
+                visit2.AddCrewMember("Maria Silva", "C456", "ES");
+                visit2.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
+
+                var visit3 = new VesselVisitNotification(Guid.NewGuid(), dock2, DateTime.UtcNow.AddDays(2), VisitPurpose.Commercial);
+                visit3.AddCrewMember("Carlos Mendes", "C789", "BR");
+                visit3.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
+
+                var visit4 = new VesselVisitNotification(Guid.NewGuid(), dock2, DateTime.UtcNow.AddDays(3), VisitPurpose.Commercial);
+                visit4.AddCrewMember("Eva Liu", "C999", "CN");
+                visit4.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
+                visit4.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
+
+                await context.AddRangeAsync(visit1, visit2, visit3, visit4);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Seeded {Count} Vessel Visit Notifications.", 4);
             }
         }
     }
