@@ -1,50 +1,81 @@
 @startuml
-title SSD - US 2.2.11: Register and Manage Staff Members
+title Sequence Diagram – US 2.2.11 “Register and Manage Staff Members”
 
 actor "Logistics Operator" as Operator
-boundary "API Layer\nStaffController" as API
-control "Application Layer\nStaffService" as Service
-entity "Infrastructure Layer\nStaffRepository" as Repo
-database "Database\nPortManagementContext" as DB
+boundary "StaffController\n(API Layer)" as API
+control "StaffService\n(Application Layer)" as Service
+entity "StaffRepository\n(Domain/Infrastructure)" as Repo
+database "PortManagementContext (EF Core)\n(Infrastructure Layer)" as DB
+
+note over Operator
+User Story 2.2.11 – Register and Manage Staff Members
+
+"As a Logistics Operator, I want to register, update,
+activate/deactivate, and search staff, so that port
+personnel are correctly assigned to operations."
+end note
 
 == Register Staff ==
-Operator -> API : POST /api/staff\n(StaffDTO { MecanographicNumber, Name, Email, Phone, Status, Qualifications })
+
+Operator -> API : POST /api/staff\n(StaffDTO)
+activate API
 API -> Service : RegisterStaffAsync(Staff)
+activate Service
 Service -> Repo : GetByMecanographicNumberAsync(mecNumber)
+activate Repo
 Repo -> DB : SELECT * FROM Staff WHERE MecanographicNumber = mecNumber
-DB --> Repo : No existing record
+DB --> Repo : null
+deactivate Repo
+
+note over Service
+Business Rules:
+- Mecanographic number must be unique.
+- Email must follow corporate domain rules.
+- Initial status defaults to "Unavailable".
+end note
+
 Service -> Repo : AddAsync(new Staff(...))
 Repo -> DB : INSERT INTO Staff (...)
 DB --> Repo : Success
-Repo --> Service : OK
+Repo --> Service : Staff persisted
 Service --> API : 201 Created + StaffDTO
-API --> Operator : Confirmation of staff registration
+deactivate Service
+API --> Operator : Staff successfully registered
+deactivate API
 
 == Update Staff ==
+
 Operator -> API : PUT /api/staff/{mecNumber}\n(Updated StaffDTO)
 API -> Service : UpdateStaffAsync(Staff)
 Service -> Repo : GetByMecanographicNumberAsync(mecNumber)
 Repo -> DB : SELECT * FROM Staff WHERE MecanographicNumber = mecNumber
-DB --> Repo : Existing Staff
+DB --> Repo : Existing record
+
+note over Service
+If staff found → update allowed fields (email, phone, qualifications).
+Otherwise → return 404 Not Found.
+end note
+
 Service -> Repo : UpdateAsync(Staff)
 Repo -> DB : UPDATE Staff SET ... WHERE MecanographicNumber = mecNumber
-DB --> Repo : Success
-Repo --> Service : OK
+DB --> Repo : OK
 Service --> API : 204 No Content
-API --> Operator : Staff successfully updated
+API --> Operator : Update confirmation
 
-== Activate/Deactivate Staff ==
+== Activate / Deactivate Staff ==
+
 Operator -> API : PATCH /api/staff/{mecNumber}/activate
 API -> Service : ActivateAsync(mecNumber)
 Service -> Repo : GetByMecanographicNumberAsync(mecNumber)
 Repo -> DB : SELECT * FROM Staff WHERE MecanographicNumber = mecNumber
 DB --> Repo : Staff found
 Service -> Repo : UpdateStatusAsync(mecNumber, Available)
-Repo -> DB : UPDATE Staff SET Status = 'Available'
-DB --> Repo : Success
-Repo --> Service : OK
-Service --> API : 200 OK + Updated StaffDTO
-API --> Operator : Staff reactivated
+Repo -> DB : UPDATE Staff SET Status='Available'
+Service --> API : 200 OK
+
+note over Service
+Only staff with status "Unavailable" can be reactivated.
+end note
 
 Operator -> API : PATCH /api/staff/{mecNumber}/deactivate
 API -> Service : DeactivateAsync(mecNumber)
@@ -52,19 +83,15 @@ Service -> Repo : GetByMecanographicNumberAsync(mecNumber)
 Repo -> DB : SELECT * FROM Staff WHERE MecanographicNumber = mecNumber
 DB --> Repo : Staff found
 Service -> Repo : UpdateStatusAsync(mecNumber, Unavailable)
-Repo -> DB : UPDATE Staff SET Status = 'Unavailable'
-DB --> Repo : Success
-Repo --> Service : OK
-Service --> API : 200 OK + Updated StaffDTO
-API --> Operator : Staff deactivated
+Repo -> DB : UPDATE Staff SET Status='Unavailable'
+Service --> API : 200 OK
 
 == Search Staff ==
 Operator -> API : GET /api/staff?name=John&status=Available
 API -> Service : GetFilteredAsync(name, status)
 Service -> Repo : QueryAsync(filters)
-Repo -> DB : SELECT * FROM Staff WHERE Name LIKE '%John%' AND Status = 'Available'
-DB --> Repo : Matching Staff list
-Repo --> Service : List<Staff>
+Repo -> DB : SELECT * FROM Staff WHERE Name LIKE '%John%' AND Status='Available'
+DB --> Repo : Matching staff list
 Service --> API : List<StaffDTO>
 API --> Operator : 200 OK + Filtered staff list
 @enduml

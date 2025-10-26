@@ -1,30 +1,84 @@
 @startuml
-title SSD - Approve/Reject Vessel Visit Notification
+title Sequence Diagram – US 2.2.7 “Approve or Reject Vessel Visit Notification”
 
 actor "Port Authority Officer" as Officer
-boundary "VesselVisitNotificationController" as Controller
-control "VesselVisitNotificationService" as Service
-entity "VesselVisitNotificationRepository" as Repository
-database "PortManagementContext" as DB
+boundary "VesselVisitNotificationController\n(API Layer)" as Controller
+control "VesselVisitNotificationService\n(Application Layer)" as Service
+entity "VesselVisitNotificationRepository\n(Domain/Infrastructure)" as Repository
+database "PortManagementContext (EF Core)\n(Infrastructure Layer)" as DB
+
+note over Officer
+User Story 2.2.7 – Approve or Reject Vessel Visit Notifications
+
+"As a Port Authority Officer, I want to approve or reject
+submitted vessel visit notifications, so that port operations
+are controlled and scheduled properly."
+end note
 
 == Approve Vessel Visit ==
+
 Officer -> Controller : PUT /api/vesselvisitnotification/{id}/approve\n?officerId=&dockId=
+activate Controller
 Controller -> Service : ApproveAsync(id, officerId, dockId)
+activate Service
+
 Service -> Repository : GetByIdAsync(id)
+activate Repository
 Repository -> DB : SELECT * FROM VesselVisitNotifications WHERE Id = id
-DB --> Repository : VesselVisitNotification
+activate DB
+DB --> Repository : VesselVisitNotification (Status = Submitted)
+deactivate DB
+Repository --> Service : VesselVisitNotification
+deactivate Repository
+
+note over Service
+Business Rules:
+- Visit must be in "Submitted" status.
+- Dock must be available.
+- Officer ID must be valid.
+end note
+
 Service -> Service : visit.Approve(officerId, dockId)
 Service -> Repository : UpdateAsync(visit)
-Repository -> DB : UPDATE VesselVisitNotifications SET Status='Approved'
+activate Repository
+Repository -> DB : UPDATE VesselVisitNotifications SET Status='Approved', DockId=dockId
+DB --> Repository : OK
+deactivate Repository
+Service --> Controller : Success
+deactivate Service
+
 Controller --> Officer : 204 No Content
+deactivate Controller
 
 == Reject Vessel Visit ==
+
 Officer -> Controller : PUT /api/vesselvisitnotification/{id}/reject\nBody: reason
+activate Controller
 Controller -> Service : RejectAsync(id, officerId, reason)
+activate Service
+
 Service -> Repository : GetByIdAsync(id)
+activate Repository
 Repository -> DB : SELECT * FROM VesselVisitNotifications WHERE Id = id
+DB --> Repository : VesselVisitNotification (Status = Submitted)
+Repository --> Service : VesselVisitNotification
+deactivate Repository
+
+note over Service
+Business Rules:
+- Rejection allowed only for "Submitted" visits.
+- Officer must provide a reason.
+- Rejected visits remain visible in history.
+end note
+
 Service -> Service : visit.Reject(officerId, reason)
 Service -> Repository : UpdateAsync(visit)
 Repository -> DB : UPDATE VesselVisitNotifications SET Status='Rejected'
+DB --> Repository : OK
+Repository --> Service : Confirmation
+Service --> Controller : Success
+deactivate Service
+
 Controller --> Officer : 204 No Content
+deactivate Controller
 @enduml
