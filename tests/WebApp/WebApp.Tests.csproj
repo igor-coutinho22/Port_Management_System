@@ -4,6 +4,14 @@
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <RootNamespace>WebApp.Tests</RootNamespace>
+
+    <!-- ativa null-safety para permitir usar `?` nos tipos -->
+    <Nullable>enable</Nullable>
+
+    <!-- usa a versão mais recente de C# (para records, pattern matching, etc.) -->
+    <LangVersion>latestMajor</LangVersion>
+
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
