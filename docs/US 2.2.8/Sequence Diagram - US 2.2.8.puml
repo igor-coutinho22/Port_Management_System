@@ -7,7 +7,7 @@ control "VesselVisitNotificationService" as Service
 entity "VesselVisitNotificationRepository" as Repository
 database "PortManagementContext (EF Core)" as DB
 
-' === Create Vessel Visit Notification ===
+== Create Vessel Visit Notification ==
 Agent -> Controller : POST /api/vesselvisitnotification\n(VesselVisitNotificationDTO)
 Controller -> Service : CreateAsync(dto)
 Service -> Repository : AddAsync(VesselVisitNotification)
@@ -17,7 +17,7 @@ Repository --> Service : VesselVisitNotification
 Service --> Controller : VesselVisitNotificationDTO
 Controller --> Agent : 201 Created (VesselVisitNotificationDTO)
 
-== Later: Submit Visit Notification ==
+ == Later: Submit Visit Notification ==
 
 Agent -> Controller : PUT /api/vesselvisitnotification/{id}/submit
 Controller -> Service : SubmitAsync(id)

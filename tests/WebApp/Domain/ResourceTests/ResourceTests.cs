@@ -2,6 +2,8 @@ using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Resources.Enums;
 using WebApp.Models.Domain.Qualifications;
 using FluentAssertions;
+using Xunit;
+using System.Collections.Generic;
 
 public class ResourceTests
 {

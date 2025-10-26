@@ -93,7 +93,8 @@ namespace WebApp.Seeding
             var context = scope.ServiceProvider.GetRequiredService<PortManagementContext>();
             var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DataSeeder");
 
-            await context.Database.MigrateAsync();
+            if (context.Database.IsRelational())
+                await context.Database.MigrateAsync();
 
             if (!await context.Set<Qualification>().AnyAsync())
             {

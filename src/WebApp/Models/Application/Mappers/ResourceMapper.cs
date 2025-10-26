@@ -1,6 +1,8 @@
 using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Resources.Enums;
 using WebApp.Models.Domain.Qualifications;
+using WebApp.Models.Application.DTOs;
+using WebApp.Models.Application.Mappers;
 
 namespace WebApp.Models.Application.Mappers
 {
@@ -20,7 +22,10 @@ namespace WebApp.Models.Application.Mappers
                 OperationalCapacity = resource.OperationalCapacity,
                 Status = resource.Status,
                 SetupTime = resource.SetupTime,
-                QualificationRequirements = resource.qualificationRequirements ?? new HashSet<Qualification>()
+                QualificationRequirements = resource.qualificationRequirements?
+                    .Select(QualificationMapper.ToDTO)
+                    .ToHashSet() 
+                    ?? new HashSet<QualificationDTO>()
             };
         }
 
@@ -37,7 +42,10 @@ namespace WebApp.Models.Application.Mappers
                 operationalCapacity: dto.OperationalCapacity,
                 status: dto.Status,
                 setupTime: dto.SetupTime,
-                qualifications: dto.QualificationRequirements ?? new HashSet<Qualification>()
+                qualifications: dto.QualificationRequirements?
+                    .Select(QualificationMapper.ToDomain)
+                    .ToHashSet() 
+                    ?? new HashSet<Qualification>()
             );
         }
     }
