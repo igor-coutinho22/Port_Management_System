@@ -22,13 +22,28 @@ namespace WebApp.Models.Application.Mappers
             };
         }
 
-        // Converts a VesselDTO back to the domain Vessel entity.
+        // Converts a VesselDTO back to the domain Vessel entity (for creation)
         public static VesselType MapToDomain(VesselTypeDTO dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
             return new VesselType(
+                name: dto.Name!,
+                description: dto.Description!,
+                maxBays: dto.MaxBays,
+                maxRows: dto.MaxRows,
+                maxTiers: dto.MaxTiers
+            );
+        }
+
+        // Converts a VesselDTO back to the domain Vessel entity (for updates)
+        public static VesselType MapToDomainForUpdate(VesselTypeDTO dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            return VesselType.CreateForUpdate(
                 name: dto.Name!,
                 description: dto.Description!,
                 maxBays: dto.MaxBays,
