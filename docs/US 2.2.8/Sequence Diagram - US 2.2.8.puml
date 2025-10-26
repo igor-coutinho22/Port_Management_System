@@ -1,0 +1,36 @@
+@startuml
+title SSD - Create and Submit Vessel Visit Notification
+
+actor "Shipping Agent Representative" as Agent
+boundary "VesselVisitNotificationController" as Controller
+control "VesselVisitNotificationService" as Service
+entity "VesselVisitNotificationRepository" as Repository
+database "PortManagementContext (EF Core)" as DB
+
+' === Create Vessel Visit Notification ===
+Agent -> Controller : POST /api/vesselvisitnotification\n(VesselVisitNotificationDTO)
+Controller -> Service : CreateAsync(dto)
+Service -> Repository : AddAsync(VesselVisitNotification)
+Repository -> DB : INSERT VesselVisitNotification
+DB --> Repository : Confirmation
+Repository --> Service : VesselVisitNotification
+Service --> Controller : VesselVisitNotificationDTO
+Controller --> Agent : 201 Created (VesselVisitNotificationDTO)
+
+== Later: Submit Visit Notification ==
+
+Agent -> Controller : PUT /api/vesselvisitnotification/{id}/submit
+Controller -> Service : SubmitAsync(id)
+Service -> Repository : GetByIdAsync(id)
+Repository -> DB : SELECT * FROM VesselVisitNotifications WHERE Id = id
+DB --> Repository : VesselVisitNotification
+Repository --> Service : VesselVisitNotification
+Service -> Service : MarkAsSubmitted()
+Service -> Repository : UpdateAsync(VesselVisitNotification)
+Repository -> DB : UPDATE VesselVisitNotifications SET Status='Submitted'
+DB --> Repository : OK
+Repository --> Service : Confirmation
+Service --> Controller : Success
+Controller --> Agent : 204 No Content
+
+@enduml
