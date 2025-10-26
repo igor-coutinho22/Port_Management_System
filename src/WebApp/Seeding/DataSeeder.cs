@@ -12,6 +12,8 @@ using WebApp.Models.Domain.Resources.Enums;
 using WebApp.Models.Domain.Users;
 using WebApp.Models.Domain.Staff;
 using WebApp.Models.Domain.VesselVisits;
+using WebApp.Models.Domain.Agents;
+using System.Collections.Generic; // for List<T>
 
 namespace WebApp.Seeding
 {
@@ -184,6 +186,75 @@ namespace WebApp.Seeding
                     staffMembers.Count, qualificationLinks.Count);
             }
 
+            // === ORGANIZATIONS & REPRESENTATIVES ===
+            if (!await context.Organizations.AnyAsync())
+            {
+                // Organization 1
+                var org1 = new ShippingAgentOrganization(
+                    legalName: "Atlantic Shipping SA",
+                    alternativeNames: "Atlantic; ASL",
+                    address: "Av. do Porto 100, 4050-123 Porto, PT",
+                    taxNumber: "PT-ATL-0001"
+                );
+
+                var rep1 = new Representative(
+                    org1.Id,
+                    name: "Ana Martins",
+                    citizenId: "CITPT001",
+                    nationality: "PRT",
+                    email: "ana.martins@atlantic.com",
+                    phone: "+351912345678"
+                );
+
+                var rep2 = new Representative(
+                    org1.Id,
+                    name: "Miguel Sousa",
+                    citizenId: "CITPT002",
+                    nationality: "PRT",
+                    email: "miguel.sousa@atlantic.com",
+                    phone: "+351913000111"
+                );
+
+                org1.AddRepresentative(rep1);
+                org1.AddRepresentative(rep2);
+
+                // Organization 2
+                var org2 = new ShippingAgentOrganization(
+                    legalName: "BlueOcean Logistics GmbH",
+                    alternativeNames: "BlueOcean; BOL",
+                    address: "Hafenstrasse 12, 20457 Hamburg, DE",
+                    taxNumber: "DE-BO-2025"
+                );
+
+                var rep3 = new Representative(
+                    org2.Id,
+                    name: "Jonas Weber",
+                    citizenId: "DEID2025X",
+                    nationality: "DEU",
+                    email: "jonas.weber@blueocean.de",
+                    phone: "+49401234567"
+                );
+
+                var rep4 = new Representative(
+                    org2.Id,
+                    name: "Laura Klein",
+                    citizenId: "DEID2025Y",
+                    nationality: "DEU",
+                    email: "laura.klein@blueocean.de",
+                    phone: "+49407654321"
+                );
+
+                org2.AddRepresentative(rep3);
+                org2.AddRepresentative(rep4);
+
+                // Guardar no contexto
+                await context.Organizations.AddRangeAsync(org1, org2);
+                await context.Representatives.AddRangeAsync(rep1, rep2, rep3, rep4);
+                await context.SaveChangesAsync();
+
+                logger.LogInformation("Seeded {Count} Organizations and {Count2} Representatives.",
+                    2, 4);
+            }
 
 
 
@@ -195,7 +266,7 @@ namespace WebApp.Seeding
                 var vesselIMO2 = "2345678";
                 var vesselIMO3 = "3456789";
                 var vesselIMO4 = "4567890";
-                
+
                 var dock1 = Guid.NewGuid();
                 var dock2 = Guid.NewGuid();
 
@@ -219,6 +290,8 @@ namespace WebApp.Seeding
                 await context.SaveChangesAsync();
                 logger.LogInformation("Seeded {Count} Vessel Visit Notifications.", 4);
             }
+
+
         }
     }
 }
