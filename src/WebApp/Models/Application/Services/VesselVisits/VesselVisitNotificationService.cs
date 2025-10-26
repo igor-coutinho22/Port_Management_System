@@ -1,15 +1,10 @@
+using WebApp.Models.Application.DTOs;
+using WebApp.Models.Application.Mappers;
 using WebApp.Models.Domain.VesselVisits;
-using WebApp.Models.Infrastructure.Repositories;
+using WebApp.Models.Domain.VesselVisits.Services;
 
 namespace WebApp.Models.Application.Services
 {
-    public interface IVesselVisitNotificationService
-    {
-        Task<VesselVisitNotification?> GetByIdAsync(Guid id);
-        Task<VesselVisitNotification> CreateAsync(VesselVisitNotification notification);
-        Task SubmitAsync(Guid id);
-    }
-
     public class VesselVisitNotificationService : IVesselVisitNotificationService
     {
         private readonly IVesselVisitNotificationRepository _repository;
@@ -19,25 +14,64 @@ namespace WebApp.Models.Application.Services
             _repository = repository;
         }
 
-        public async Task<VesselVisitNotification?> GetByIdAsync(Guid id) // 👈 implementação
+        public async Task<IEnumerable<VesselVisitNotificationDTO>> GetAllAsync()
         {
-            return await _repository.GetByIdAsync(id);
+            var visits = await _repository.GetAllAsync();
+            return visits.Select(VesselVisitNotificationMapper.ToDTO);
         }
 
-        public async Task<VesselVisitNotification> CreateAsync(VesselVisitNotification notification)
+        public async Task<VesselVisitNotificationDTO?> GetByIdAsync(Guid id)
         {
-            await _repository.AddAsync(notification);
-            return notification;
+            var visit = await _repository.GetByIdAsync(id);
+            return visit is null ? null : VesselVisitNotificationMapper.ToDTO(visit);
+        }
+
+        public async Task<VesselVisitNotificationDTO> CreateAsync(VesselVisitNotificationDTO dto)
+        {
+            // Convert DTO → Domain Entity
+            var entity = VesselVisitNotificationMapper.ToEntity(dto);
+
+            // Enforce rule: Commercial visits need manifests
+            if (entity.Purpose == VisitPurpose.Commercial &&
+                entity.LoadingManifest == null &&
+                entity.UnloadingManifest == null)
+            {
+                throw new InvalidOperationException(
+                    "Commercial visits must include at least one cargo manifest."
+                );
+            }
+
+            await _repository.AddAsync(entity);
+            return VesselVisitNotificationMapper.ToDTO(entity);
         }
 
         public async Task SubmitAsync(Guid id)
         {
-            var notification = await _repository.GetByIdAsync(id);
-            if (notification == null)
-                throw new KeyNotFoundException("Vessel Visit Notification not found.");
+            var notification = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
 
             notification.MarkAsSubmitted();
             await _repository.UpdateAsync(notification);
         }
+
+        public async Task ApproveAsync(Guid id, Guid officerId, Guid dockId)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.Approve(officerId, dockId);
+            await _repository.UpdateAsync(visit);
+        }
+
+        public async Task RejectAsync(Guid id, Guid officerId, string reason)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.Reject(officerId, reason);
+            await _repository.UpdateAsync(visit);
+        }
+
+
     }
 }

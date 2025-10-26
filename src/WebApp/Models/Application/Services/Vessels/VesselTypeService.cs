@@ -23,26 +23,35 @@ namespace WebApp.Models.Application.Services.VesselTypeService
 
         public Task<List<VesselType>> SearchVesselTypesByDescriptionAsync(string keyword) => _vesselTypeRepo.SearchVesselTypeByDescriptionAsync(keyword);
 
-        public async Task AddVesselTypeAsync(string name, string description, int maxBays, int maxRows, int maxTiers)
+        public async Task AddVesselTypeAsync(VesselType vesselType)
         {
-            var vesselType = new VesselType(name, description, maxBays, maxRows, maxTiers);
+            if (vesselType == null)
+                throw new ArgumentNullException(nameof(vesselType));
+            
+            var existingVesselType = await _vesselTypeRepo.GetVesselTypeByNameAsync(vesselType.Name);
+            if (existingVesselType != null)
+                throw new ArgumentException($"A vessel type with name '{vesselType.Name}' already exists.", nameof(vesselType.Name));
+            
             await _vesselTypeRepo.AddVesselTypeAsync(vesselType);
         }
 
-        public async Task UpdateVesselTypeAsync(string currentName, string newName, string description, int maxBays, int maxRows, int maxTiers)
+        public async Task UpdateVesselTypeAsync(VesselType vesselType)
         {
-            var vesselTypeToUpdate = await GetVesselTypeByNameAsync(currentName);
-            if (vesselTypeToUpdate == null)
-                throw new ArgumentException($"Vessel type '{currentName}' not found.");
+            if (vesselType == null)
+                throw new ArgumentNullException(nameof(vesselType));
 
-            if (vesselTypeToUpdate.Name != newName)
-                throw new ArgumentException("Changing vessel type name is not allowed.", nameof(newName));
-            vesselTypeToUpdate.Description = description;
-            vesselTypeToUpdate.UpdateMaxBays(maxBays);
-            vesselTypeToUpdate.UpdateMaxRows(maxRows);
-            vesselTypeToUpdate.UpdateMaxTiers(maxTiers);
+            var existingVesselType = await GetVesselTypeByNameAsync(vesselType.Name);
+            if (existingVesselType == null)
+                throw new ArgumentException("Vessel type not found.", nameof(vesselType.Name));
 
-            await _vesselTypeRepo.UpdateVesselTypeAsync(vesselTypeToUpdate);
+            if (existingVesselType.Name != vesselType.Name)
+                throw new ArgumentException("Changing vessel type name is not allowed.", nameof(vesselType.Name));
+            existingVesselType.Description = vesselType.Description;
+            existingVesselType.UpdateMaxBays(vesselType.MaxBays);
+            existingVesselType.UpdateMaxRows(vesselType.MaxRows);
+            existingVesselType.UpdateMaxTiers(vesselType.MaxTiers);
+
+            await _vesselTypeRepo.UpdateVesselTypeAsync(existingVesselType);
         }
 
         public async Task DeleteVesselTypeAsync(string name)

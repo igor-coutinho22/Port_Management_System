@@ -1,14 +1,14 @@
 namespace WebApp.Models.Application.DTOs
 {
-    public record VesselDTO(
-        string IMO,
-        string VesselName,
-        string OperatorName,
-        string VesselType,
-        int RequiredCraneCount,
-        double RequiredDockLength,
-        int Bays,
-        int Rows,
-        int Tiers
-    );
+    public class VesselDTO
+    {
+        public string? IMO { get; set; }
+        public string? VesselName { get; set; }
+        public string? OperatorName { get; set; }
+        public int RequiredCraneCount { get; set; }
+        public double RequiredDockLength { get; set; }
+        public int Bays { get; set; }
+        public int Rows { get; set; }
+        public int Tiers { get; set; }
+    }
 }

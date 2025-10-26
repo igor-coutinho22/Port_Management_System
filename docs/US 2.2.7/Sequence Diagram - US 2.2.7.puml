@@ -1,0 +1,30 @@
+@startuml
+title SSD - Approve/Reject Vessel Visit Notification
+
+actor "Port Authority Officer" as Officer
+boundary "VesselVisitNotificationController" as Controller
+control "VesselVisitNotificationService" as Service
+entity "VesselVisitNotificationRepository" as Repository
+database "PortManagementContext" as DB
+
+== Approve Vessel Visit ==
+Officer -> Controller : PUT /api/vesselvisitnotification/{id}/approve\n?officerId=&dockId=
+Controller -> Service : ApproveAsync(id, officerId, dockId)
+Service -> Repository : GetByIdAsync(id)
+Repository -> DB : SELECT * FROM VesselVisitNotifications WHERE Id = id
+DB --> Repository : VesselVisitNotification
+Service -> Service : visit.Approve(officerId, dockId)
+Service -> Repository : UpdateAsync(visit)
+Repository -> DB : UPDATE VesselVisitNotifications SET Status='Approved'
+Controller --> Officer : 204 No Content
+
+== Reject Vessel Visit ==
+Officer -> Controller : PUT /api/vesselvisitnotification/{id}/reject\nBody: reason
+Controller -> Service : RejectAsync(id, officerId, reason)
+Service -> Repository : GetByIdAsync(id)
+Repository -> DB : SELECT * FROM VesselVisitNotifications WHERE Id = id
+Service -> Service : visit.Reject(officerId, reason)
+Service -> Repository : UpdateAsync(visit)
+Repository -> DB : UPDATE VesselVisitNotifications SET Status='Rejected'
+Controller --> Officer : 204 No Content
+@enduml

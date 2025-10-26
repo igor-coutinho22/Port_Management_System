@@ -4,9 +4,9 @@ using WebApp.Models.Domain.StorageArea;
 
 namespace WebApp.Models.Infrastructure.Configurations
 {
-    public class DockStorageAreaInfoConfiguration : IEntityTypeConfiguration<DockStorageAreaInfo>
+    public class DockStorageAreaConnectionConfiguration : IEntityTypeConfiguration<DockStorageAreaConnection>
     {
-        public void Configure(EntityTypeBuilder<DockStorageAreaInfo> builder)
+        public void Configure(EntityTypeBuilder<DockStorageAreaConnection> builder)
         {
             builder.HasKey(d => d.Id);
 
