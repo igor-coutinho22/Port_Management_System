@@ -1,0 +1,145 @@
+@startuml Storage_Area_Management_SSD
+title Sequence Diagram – US 2.2.4 “Register and update storage areas, so that (un)loading and storage operations can be assigned to the correct locations.”
+
+actor "Logistics Operator" as Operator
+boundary "StorageAreaController\n(API Layer)" as Controller
+control "StorageAreaService\n(Application Layer)" as Service
+entity "StorageAreaRepository\n(Persistence Layer)" as Repo
+entity "StorageArea / Warehouse / ContainerYard\n(Domain Layer)" as Domain
+database "PortManagementContext\n(Infrastructure Layer)" as DB
+
+' ===========================
+' CONTEXT
+' ===========================
+note over Operator
+User Story 2.2.4 – Register and Manage Storage Areas
+
+"As a Port Authority Officer, I want to register and update
+ storage areas, so that (un)loading and storage operations
+  can be assigned to the correct locations."
+end note
+
+== CREATE STORAGE AREA (Warehouse or Container Yard) ==
+
+Operator -> Controller: POST /api/storageareas\n(StorageAreaDTO)
+activate Controller
+
+Controller -> Service: RegisterStorageAreaAsync(dto)
+activate Service
+
+Service -> Domain: new Warehouse(...) or new ContainerYard(...)
+activate Domain
+Domain --> Service: Validated Domain Entity
+deactivate Domain
+
+note over Service
+Business Rules:
+- Name cannot be empty
+- MaxCapacity ≥ CurrentOccupancy
+- SpecializedCargoType required for Warehouse
+- For ContainerYard: may include YardType (e.g., Reefer, Dry)
+end note
+
+Service -> Repo: AddAsync(StorageArea)
+activate Repo
+Repo -> DB: INSERT INTO StorageAreas (...)
+activate DB
+DB --> Repo: OK
+deactivate DB
+Repo --> Service: StorageArea persisted
+deactivate Repo
+
+Service --> Controller: Created StorageAreaDTO
+deactivate Service
+
+Controller --> Operator: 201 Created + StorageAreaDTO
+deactivate Controller
+
+
+== UPDATE STORAGE AREA ==
+
+Operator -> Controller: PUT /api/storageareas/{id}\n(StorageAreaDTO)
+activate Controller
+
+Controller -> Service: UpdateStorageAreaAsync(id, dto)
+activate Service
+
+Service -> Repo: GetByIdAsync(id)
+activate Repo
+Repo -> DB: SELECT * FROM StorageAreas WHERE Id = {id}
+DB --> Repo: Existing StorageArea
+Repo --> Service: Existing StorageArea
+deactivate Repo
+
+alt StorageArea Found
+    Service -> Domain: Update properties (e.g., MaxCapacity, Occupancy, CargoType)
+    activate Domain
+    Domain --> Service: Updated Entity
+    deactivate Domain
+
+    Service -> Repo: UpdateAsync(StorageArea)
+    activate Repo
+    Repo -> DB: UPDATE StorageAreas SET ...
+    DB --> Repo: OK
+    Repo --> Service: Updated
+    deactivate Repo
+
+    Service --> Controller: NoContent
+    Controller --> Operator: 204 No Content
+else Not Found
+    Service --> Controller: null
+    Controller --> Operator: 404 Not Found
+end
+deactivate Service
+deactivate Controller
+
+
+== LINK STORAGE AREA TO DOCK ==
+
+Operator -> Controller: POST /api/storageareas/{id}/link-dock\n(DockConnectionDTO)
+activate Controller
+Controller -> Service: LinkToDockAsync(storageAreaId, dockId, distance, travelTime)
+activate Service
+
+Service -> Repo: GetByIdAsync(storageAreaId)
+activate Repo
+Repo -> DB: SELECT * FROM StorageAreas WHERE Id = storageAreaId
+DB --> Repo: StorageArea
+Repo --> Service: StorageArea
+deactivate Repo
+
+Service -> Domain: AddDockConnection(new DockStorageAreaConnection(...))
+activate Domain
+Domain --> Service: Connection added
+deactivate Domain
+
+Service -> Repo: UpdateAsync(StorageArea)
+activate Repo
+Repo -> DB: UPDATE StorageAreas SET DockConnections=...
+DB --> Repo: OK
+Repo --> Service: Updated
+deactivate Repo
+
+Service --> Controller: 200 OK + Updated StorageAreaDTO
+Controller --> Operator: Storage Area linked to Dock successfully
+deactivate Service
+deactivate Controller
+
+
+== REMOVE STORAGE AREA ==
+Operator -> Controller: DELETE /api/storageareas/{id}
+activate Controller
+Controller -> Service: DeleteAsync(id)
+activate Service
+Service -> Repo: DeleteAsync(id)
+activate Repo
+Repo -> DB: DELETE FROM StorageAreas WHERE Id = {id}
+DB --> Repo: OK
+Repo --> Service: Deleted
+deactivate Repo
+Service --> Controller: NoContent
+Controller --> Operator: 204 No Content (Storage Area removed)
+deactivate Service
+deactivate Controller
+
+@enduml
