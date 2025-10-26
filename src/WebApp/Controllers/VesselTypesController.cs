@@ -51,10 +51,12 @@ namespace WebApp.Controllers
                 var existing = await _vesselTypeService.GetVesselTypeByNameAsync(currentName);
                 if (existing == null)
                     return NotFound($"Vessel type '{currentName}' not found.");
-                
-                var updatedVesselType = VesselTypeMapper.MapToDomain(dto);
+
+                // Use the update-specific mapper that doesn't add to static registry
+                var updatedVesselType = VesselTypeMapper.MapToDomainForUpdate(dto);
+
                 await _vesselTypeService.UpdateVesselTypeAsync(updatedVesselType);
-                return NoContent();
+                return CreatedAtAction(nameof(GetByName), new { name = updatedVesselType.Name }, VesselTypeMapper.MapToDto(updatedVesselType));
             }
             catch (ArgumentException ex)
             {
@@ -81,13 +83,19 @@ namespace WebApp.Controllers
         [HttpGet()]
         public async Task<IActionResult> SearchByNameAndOrDescription([FromQuery] string? name, [FromQuery] string? description)
         {
-            IEnumerable<VesselType> results = await _vesselTypeService.GetAllVesselTypesAsync();
+            var results = await _vesselTypeService.GetAllVesselTypesAsync();
 
             if (!string.IsNullOrWhiteSpace(name))
                 results = await _vesselTypeService.SearchVesselTypesByNameAsync(name);
 
             if (!string.IsNullOrWhiteSpace(description))
                 results = await _vesselTypeService.SearchVesselTypesByDescriptionAsync(description);
+
+            if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(description))
+                return BadRequest("At least one search parameter (name or description) must be provided.");
+
+            if (results.Count == 0)
+                return NotFound("No vesselTypes found matching the search criteria.");
 
            return Ok(results.Select(VesselTypeMapper.MapToDto));
         }
