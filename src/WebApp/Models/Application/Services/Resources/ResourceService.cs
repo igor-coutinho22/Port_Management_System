@@ -126,7 +126,7 @@ namespace WebApp.Models.Application.Services.Resources
 
         public async Task EndMaintenanceAsync(string id)
         {
-            var resource = await _resourceRepo.GetByIdAsync(id)
+            var resource = await GetResourceByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Resource '{id}' not found.");
 
             if (resource.Status != ResourceAvailabilityStatus.UnderMaintenance)
@@ -144,10 +144,14 @@ namespace WebApp.Models.Application.Services.Resources
             int setupTime,
             HashSet<Qualification> qualifications)
         {
+            
+            if (string.IsNullOrWhiteSpace(id))
+                throw new ArgumentException("Resource ID cannot be null or empty.");
+            
             var existing = await _resourceRepo.GetByIdAsync(id);
             if (existing != null)
                 throw new ArgumentException($"A resource with ID '{id}' already exists.");
-
+            
             var resource = new Resource(
                 id,
                 description,
@@ -165,6 +169,9 @@ namespace WebApp.Models.Application.Services.Resources
         {
             if (resource == null)
                 throw new ArgumentNullException(nameof(resource));
+
+            if (string.IsNullOrWhiteSpace(resource.Id))
+                throw new ArgumentException("Resource ID cannot be null or empty.");
 
             var existing = await _resourceRepo.GetByIdAsync(resource.Id!);
             if (existing != null)

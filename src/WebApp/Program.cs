@@ -24,6 +24,8 @@ using WebApp.Models.Application.Services.StaffService;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
 
+Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------- Database ----------
@@ -70,8 +72,7 @@ builder.Services.AddControllersWithViews().AddJsonOptions(options =>
     // Aldo accepts lower case
     options.JsonSerializerOptions.Converters.Add(
     new System.Text.Json.Serialization.JsonStringEnumConverter(
-        System.Text.Json.JsonNamingPolicy.CamelCase,
-        allowIntegerValues: false
+        System.Text.Json.JsonNamingPolicy.CamelCase
     ));
 
 });;
@@ -108,10 +109,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var db = services.GetRequiredService<PortManagementContext>();
-        db.Database.Migrate();
-
-        await WebApp.Seeding.DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
-        await WebApp.Seeding.DataSeeder.SeedDomainDataAsync(services);
+        if (db.Database.IsRelational())
+            db.Database.Migrate();
+        await DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
+        await DataSeeder.SeedDomainDataAsync(services);
     }
     catch (Exception ex)
     {
@@ -127,7 +128,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 app.UseRouting();
 
@@ -143,3 +147,6 @@ app.MapGet("/", context =>
 });
 
 app.Run();
+
+
+public partial class Program { }

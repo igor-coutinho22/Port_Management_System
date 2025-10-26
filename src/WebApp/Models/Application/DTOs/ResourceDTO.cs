@@ -1,3 +1,4 @@
+using WebApp.Models.Application.DTOs;
 using WebApp.Models.Domain.Qualifications;
 using WebApp.Models.Domain.Resources.Enums;
 
@@ -11,5 +12,5 @@ public class ResourceDTO
     public int OperationalCapacity { get; set; }
     public ResourceAvailabilityStatus Status { get; set; }
     public int SetupTime { get; set; }
-    public HashSet<Qualification>? QualificationRequirements { get; set; }
+    public HashSet<QualificationDTO>? QualificationRequirements { get; set; }
 }

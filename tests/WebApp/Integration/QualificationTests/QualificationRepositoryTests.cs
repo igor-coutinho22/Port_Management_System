@@ -3,6 +3,8 @@ using WebApp.Models.Context;
 using WebApp.Models.Domain.Qualifications;
 using WebApp.Models.Infrastructure.Repositories.Qualifications;
 using FluentAssertions;
+using Xunit;
+using System.Threading.Tasks;
 
 public class QualificationRepositoryTests
 {
