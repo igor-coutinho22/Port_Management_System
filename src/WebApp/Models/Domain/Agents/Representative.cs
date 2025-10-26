@@ -32,6 +32,7 @@ namespace WebApp.Models.Domain.Agents
             Phone = ValidatePhone(phone);
         }
 
+        /// Atualiza todos os campos de um representante.
         public void Update(string name, string citizenId, string nationality, string email, string phone)
         {
             Name = ValidateName(name);
@@ -56,7 +57,6 @@ namespace WebApp.Models.Domain.Agents
         {
             if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("CitizenId is required.", nameof(value));
             var v = value.Trim().ToUpperInvariant();
-            // alfanumérico 3–64 (config EF permite até 64)
             if (v.Length is < 3 or > 64) throw new ArgumentException("CitizenId must be 3–64 characters.", nameof(value));
             if (!Regex.IsMatch(v, @"^[A-Z0-9]+$"))
                 throw new ArgumentException("CitizenId must be alphanumeric only.", nameof(value));
@@ -77,7 +77,6 @@ namespace WebApp.Models.Domain.Agents
             if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Email is required.", nameof(value));
             var v = value.Trim();
             if (v.Length > 200) throw new ArgumentException("Email must be at most 200 characters.", nameof(value));
-            // Usa MailAddress para validação básica
             try { _ = new MailAddress(v); }
             catch { throw new ArgumentException("Email is not valid.", nameof(value)); }
             return v;
@@ -88,7 +87,7 @@ namespace WebApp.Models.Domain.Agents
             if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Phone is required.", nameof(value));
             var v = value.Trim();
             if (v.Length > 32) throw new ArgumentException("Phone must be at most 32 characters.", nameof(value));
-            // E.164 (mín 6 dígitos úteis para não ser demasiado restritivo)
+            // E.164 (6–15 dígitos para evitar falsos negativos)
             if (!Regex.IsMatch(v, @"^\+?[0-9]{6,15}$"))
                 throw new ArgumentException("Phone must follow E.164 format (e.g., +351912345678).", nameof(value));
             return v;
