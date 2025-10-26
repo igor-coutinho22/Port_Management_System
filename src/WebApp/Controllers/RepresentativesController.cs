@@ -30,5 +30,11 @@ namespace WebApp.Controllers
         [HttpGet("organizations/{orgId:guid}/representatives")]
         public async Task<ActionResult<IEnumerable<RepresentativeDto>>> List(Guid orgId, [FromQuery] bool? active)
             => Ok(await _svc.ListAsync(orgId, active));
+
+        [HttpGet("representatives")]
+        public async Task<ActionResult<IEnumerable<RepresentativeDto>>> ListAll(
+            [FromQuery] Guid? orgId, [FromQuery] bool? active)
+            => Ok(await _svc.ListAllAsync(orgId, active));
+
     }
 }

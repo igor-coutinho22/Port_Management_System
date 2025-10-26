@@ -7,5 +7,8 @@ namespace WebApp.Models.Infrastructure.Repositories
         Task<ShippingAgentOrganization?> GetByIdAsync(Guid id);
         Task<ShippingAgentOrganization?> GetByTaxNumberAsync(string taxNumber);
         Task AddAsync(ShippingAgentOrganization org);
+
+        Task<IEnumerable<ShippingAgentOrganization>> ListAsync(string? name, string? taxNumber);
+        Task UpdateAsync(ShippingAgentOrganization org);
     }
 }

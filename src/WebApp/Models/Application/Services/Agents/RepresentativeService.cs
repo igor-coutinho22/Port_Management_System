@@ -23,7 +23,7 @@ namespace WebApp.Models.Application.Services
         public async Task<RepresentativeDto> UpdateAsync(Guid repId, UpdateRepresentativeRequest req)
         {
             var rep = await _repRepo.GetByIdAsync(repId) ?? throw new KeyNotFoundException("Representative not found.");
-            rep.Update(req.Name, req.CitizenId, req.Nationality, req.Email, req.Phone);
+            rep.UpdateProfile(req.Name, req.CitizenId, req.Nationality, req.Email, req.Phone);
             await _repRepo.UpdateAsync(rep);
             return Map(rep);
         }
@@ -39,6 +39,12 @@ namespace WebApp.Models.Application.Services
         {
             _ = await _orgRepo.GetByIdAsync(orgId) ?? throw new KeyNotFoundException("Organization not found.");
             var reps = await _repRepo.ListByOrganizationAsync(orgId, active);
+            return reps.Select(Map);
+        }
+
+        public async Task<IEnumerable<RepresentativeDto>> ListAllAsync(Guid? orgId, bool? active)
+        {
+            var reps = await _repRepo.ListAllAsync(orgId, active);
             return reps.Select(Map);
         }
 

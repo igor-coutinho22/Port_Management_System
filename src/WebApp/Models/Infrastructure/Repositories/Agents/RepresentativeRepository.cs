@@ -16,7 +16,19 @@ namespace WebApp.Models.Infrastructure.Repositories
         {
             var q = _ctx.Representatives.AsQueryable().Where(r => r.OrganizationId == orgId);
             if (active.HasValue) q = q.Where(r => r.IsActive == active.Value);
-            return await q.ToListAsync();
+            return await q.OrderBy(r => r.Name).ToListAsync();
+        }
+
+        //  lista global (com filtros opcionais)
+        public async Task<IEnumerable<Representative>> ListAllAsync(Guid? orgId, bool? active)
+        {
+            var q = _ctx.Representatives.AsQueryable();
+            if (orgId.HasValue && orgId.Value != Guid.Empty)
+                q = q.Where(r => r.OrganizationId == orgId.Value);
+            if (active.HasValue)
+                q = q.Where(r => r.IsActive == active.Value);
+
+            return await q.OrderBy(r => r.Name).ToListAsync();
         }
 
         public async Task AddAsync(Representative rep)

@@ -8,6 +8,6 @@ namespace WebApp.Models.Application.Services
         Task<RepresentativeDto> UpdateAsync(Guid repId, UpdateRepresentativeRequest req);
         Task SetActiveAsync(Guid repId, bool isActive);
         Task<IEnumerable<RepresentativeDto>> ListAsync(Guid orgId, bool? active);
+        Task<IEnumerable<RepresentativeDto>> ListAllAsync(Guid? orgId, bool? active);
     }
 }
-    
