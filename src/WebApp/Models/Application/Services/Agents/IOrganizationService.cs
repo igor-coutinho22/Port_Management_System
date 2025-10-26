@@ -6,5 +6,8 @@ namespace WebApp.Models.Application.Services
     {
         Task<OrganizationDto> CreateAsync(CreateOrganizationRequest req);
         Task<OrganizationDto> GetAsync(Guid id);
+
+        Task<IEnumerable<OrganizationDto>> ListAsync(string? name, string? taxNumber);
+        Task<OrganizationDto> UpdateAsync(Guid id, UpdateOrganizationRequest req);
     }
 }

@@ -23,6 +23,9 @@ namespace WebApp.Models.Domain.Agents
             TaxNumber = ValidateTaxNumber(taxNumber);
         }
 
+        /// <summary>
+        /// Mantido para compatibilidade interna.
+        /// </summary>
         public void Update(string legalName, string? alternativeNames, string address, string taxNumber)
         {
             LegalName = ValidateLegalName(legalName);
@@ -31,9 +34,15 @@ namespace WebApp.Models.Domain.Agents
             TaxNumber = ValidateTaxNumber(taxNumber);
         }
 
+        /// <summary>
+        /// Novo: usado pelos services (mantém a assinatura pedida).
+        /// </summary>
+        public void UpdateProfile(string legalName, string? alternativeNames, string address, string taxNumber)
+            => Update(legalName, alternativeNames, address, taxNumber);
 
-        /// Adiciona um representante garantindo unicidade por (Email, CitizenId) dentro da organização
-        /// e coerência do OrganizationId.
+        /// <summary>
+        /// Adiciona um representante garantindo unicidade por Email e CitizenId na organização.
+        /// </summary>
         public void AddRepresentative(Representative rep)
         {
             if (rep is null) throw new ArgumentNullException(nameof(rep));
@@ -49,7 +58,9 @@ namespace WebApp.Models.Domain.Agents
             Representatives.Add(rep);
         }
 
-        /// Atualiza campos do representante e volta a verificar unicidade de Email e CitizenId.
+        /// <summary>
+        /// Atualiza campos de um representante e volta a verificar unicidade de Email e CitizenId.
+        /// </summary>
         public void UpdateRepresentative(
             Guid representativeId,
             string name,
@@ -70,10 +81,9 @@ namespace WebApp.Models.Domain.Agents
                                          r.CitizenId.Equals(citizenId.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"Another representative already uses citizen ID '{citizenId}' in this organization.");
 
-            rep.Update(name, citizenId, nationality, email, phone);
+            rep.UpdateProfile(name, citizenId, nationality, email, phone);
         }
 
-        /// Desativa um representante. Não permite ficar sem representantes ativos.
         public void DeactivateRepresentative(Guid representativeId)
         {
             var rep = Representatives.FirstOrDefault(r => r.Id == representativeId)
@@ -87,7 +97,6 @@ namespace WebApp.Models.Domain.Agents
             rep.SetActive(false);
         }
 
-        /// Reativa um representante (sem regras extra além de validações já existentes).
         public void ActivateRepresentative(Guid representativeId)
         {
             var rep = Representatives.FirstOrDefault(r => r.Id == representativeId)
@@ -95,7 +104,6 @@ namespace WebApp.Models.Domain.Agents
             rep.SetActive(true);
         }
 
-        /// Remove um representante da coleção. Impede remover o último ativo.
         public void RemoveRepresentative(Guid representativeId)
         {
             var rep = Representatives.FirstOrDefault(r => r.Id == representativeId)
@@ -107,8 +115,7 @@ namespace WebApp.Models.Domain.Agents
             Representatives.Remove(rep);
         }
 
-        /// Verifica se existe pelo menos 1 representante (ou 1 ativo, conforme o ponto onde é invocado).
-        /// Útil para fluxos de criação/edição no serviço.
+        /// <summary>Verifica se existe pelo menos um representante (ou um ativo).</summary>
         public void EnsureHasAtLeastOneRepresentative(bool mustBeActive = false)
         {
             var count = mustBeActive ? Representatives.Count(r => r.IsActive) : Representatives.Count;

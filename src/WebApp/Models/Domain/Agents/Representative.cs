@@ -10,10 +10,10 @@ namespace WebApp.Models.Domain.Agents
         public ShippingAgentOrganization Organization { get; private set; } = default!;
         public string Name { get; private set; } = default!;
         public string CitizenId { get; private set; } = default!;
-        /// ISO 3166-1 alpha-3 (3 letras, p.ex. PRT, ESP, FRA).
+        /// <summary>ISO 3166-1 alpha-3 (ex.: PRT, ESP, FRA).</summary>
         public string Nationality { get; private set; } = default!;
         public string Email { get; private set; } = default!;
-        /// Telefone em formato E.164 (e.g. +351912345678)
+        /// <summary>Telefone em formato E.164 (ex.: +351912345678).</summary>
         public string Phone { get; private set; } = default!;
         public bool IsActive { get; private set; } = true;
 
@@ -22,7 +22,8 @@ namespace WebApp.Models.Domain.Agents
         public Representative(Guid organizationId, string name, string citizenId, string nationality, string email, string phone)
         {
             Id = Guid.NewGuid();
-            OrganizationId = organizationId != Guid.Empty ? organizationId
+            OrganizationId = organizationId != Guid.Empty
+                ? organizationId
                 : throw new ArgumentException("OrganizationId is required.", nameof(organizationId));
 
             Name = ValidateName(name);
@@ -32,7 +33,7 @@ namespace WebApp.Models.Domain.Agents
             Phone = ValidatePhone(phone);
         }
 
-        /// Atualiza todos os campos de um representante.
+        /// <summary>Método original mantido.</summary>
         public void Update(string name, string citizenId, string nationality, string email, string phone)
         {
             Name = ValidateName(name);
@@ -41,6 +42,12 @@ namespace WebApp.Models.Domain.Agents
             Email = ValidateEmail(email);
             Phone = ValidatePhone(phone);
         }
+
+        /// <summary>
+        /// Novo: assinatura pedida pelos services. Encaminha para <see cref="Update"/>.
+        /// </summary>
+        public void UpdateProfile(string name, string citizenId, string nationality, string email, string phone)
+            => Update(name, citizenId, nationality, email, phone);
 
         public void SetActive(bool active) => IsActive = active;
 
@@ -87,7 +94,7 @@ namespace WebApp.Models.Domain.Agents
             if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Phone is required.", nameof(value));
             var v = value.Trim();
             if (v.Length > 32) throw new ArgumentException("Phone must be at most 32 characters.", nameof(value));
-            // E.164 (6–15 dígitos para evitar falsos negativos)
+            // E.164 (6–15 dígitos)
             if (!Regex.IsMatch(v, @"^\+?[0-9]{6,15}$"))
                 throw new ArgumentException("Phone must follow E.164 format (e.g., +351912345678).", nameof(value));
             return v;
