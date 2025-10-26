@@ -21,6 +21,25 @@ namespace WebApp.Models.Domain.StorageArea
             SpecializedCargoType = specializedCargoType;
         }
 
+        /// <summary>
+        /// Creates a Warehouse for updates without generating a new ID.
+        /// Use this method when you need a Warehouse object for existing entities.
+        /// </summary>
+        public static Warehouse CreateForUpdate(int id, string name, int maxCapacityTeu, int currentOccupancyTeu, string specializedCargoType)
+        {
+            var warehouse = new Warehouse
+            {
+                Name = name,
+                MaxCapacityTeu = maxCapacityTeu,
+                CurrentOccupancyTeu = currentOccupancyTeu,
+                SpecializedCargoType = specializedCargoType
+            };
+            
+            // Set the ID directly to avoid generating a new one
+            warehouse.Id = id;
+            return warehouse;
+        }
+
         public override string GetUsageDescription()
         {
             return $"Warehouse for cargo requiring additional handling/inspection ({SpecializedCargoType}).";
