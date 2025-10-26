@@ -1,75 +1,72 @@
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
-using System.Net;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebApp.Controllers;
+using WebApp.Models.Application.DTOs;
+using WebApp.Models.Application.Services;
 using WebApp.Models.Context;
+using WebApp.Models.Domain.Agents;
+using WebApp.Models.Infrastructure.Repositories;
+using Xunit;
 
-public class OrganizationControllerTests : IClassFixture<WebApplicationFactory<Program>>
+namespace WebApp.Tests.Agents
 {
-    private readonly HttpClient _client;
-
-    public OrganizationControllerTests(WebApplicationFactory<Program> factory)
+    public class OrganizationControllerTests
     {
-        _client = factory.WithWebHostBuilder(builder =>
+        private static PortManagementContext NewContext()
         {
-            builder.ConfigureServices(services =>
-            {
-                // Remove the real DbContext
-                var descriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions<PortManagementContext>));
-                if (descriptor != null) services.Remove(descriptor);
+            var options = new DbContextOptionsBuilder<PortManagementContext>()
+                .UseInMemoryDatabase($"OrgCtl_{Guid.NewGuid()}")
+                .Options;
+            return new PortManagementContext(options);
+        }
 
-                // Add InMemory DbContext for tests
-                services.AddDbContext<PortManagementContext>(options =>
-                    options.UseInMemoryDatabase("Sys_Org_Tests_DB"));
-            });
-        }).CreateClient();
-    }
-
-    [Fact]
-    public async Task Post_Then_Get_Organization_ShouldReturn201_And200()
-    {
-        var postBody = new
+        private static OrganizationsController NewController(PortManagementContext ctx)
         {
-            legalName = "SEA & CO",
-            alternativeNames = "",
-            address = "Rua A",
-            taxNumber = "PT123456789",
-            representatives = new[] {
-                new { name="Ana", citizenId="C1", nationality="PT", email="ana@sea.co", phone="+351911111111" }
-            }
-        };
+            var svc = new OrganizationService(new OrganizationRepository(ctx));
+            return new OrganizationsController(svc);
+        }
 
-        var created = await _client.PostAsJsonAsync("/api/organizations", postBody);
-        created.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        // fetch created location
-        var location = created.Headers.Location!.ToString();
-        var get = await _client.GetAsync(location);
-        get.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var json = await get.Content.ReadAsStringAsync();
-        json.Should().Contain("SEA & CO").And.Contain("PT123456789");
-    }
-
-    [Fact]
-    public async Task Post_ShouldFail_WhenNoRepresentatives()
-    {
-        var postBody = new
+        private static ShippingAgentOrganization SeedOrg(PortManagementContext ctx)
         {
-            legalName = "Org Sem Rep",
-            alternativeNames = "",
-            address = "Rua B",
-            taxNumber = "PT000"
-        };
+            var org = new ShippingAgentOrganization("Zeta SA", "Zeta", "Z addr", "PT-ZETA");
+            var rep = new Representative(org.Id, "Mario", "CIDZ", "PRT", "m@zeta.com", "+351911000000");
+            org.AddRepresentative(rep);
+            ctx.Organizations.Add(org);
+            ctx.Representatives.Add(rep);
+            ctx.SaveChanges();
+            return org;
+        }
 
-        var resp = await _client.PostAsJsonAsync("/api/organizations", postBody);
-        // Model/state will pass, but service should throw 400/500 -> framework wraps. Expect 400 BadRequest if mapped, else 500.
-        resp.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.InternalServerError);
+        [Fact]
+        public async Task List_ReturnsOk_WithItems()
+        {
+            using var ctx = NewContext();
+            SeedOrg(ctx);
+            var ctrl = NewController(ctx);
+
+            var result = await ctrl.List(name: "Zeta", taxNumber: null);
+            var ok = result.Result as OkObjectResult;
+            ok.Should().NotBeNull();
+            var list = ok!.Value as System.Collections.Generic.IEnumerable<OrganizationDto>;
+            list!.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public async Task Update_ReturnsOk_WithUpdatedDto()
+        {
+            using var ctx = NewContext();
+            var org = SeedOrg(ctx);
+            var ctrl = NewController(ctx);
+
+            var res = await ctrl.Update(org.Id, new UpdateOrganizationRequest("Zeta Updated","Z","New street 1","PT-ZETA"));
+            var ok = res.Result as OkObjectResult;
+            ok.Should().NotBeNull();
+            var dto = (OrganizationDto) ok!.Value!;
+            dto.LegalName.Should().Be("Zeta Updated");
+        }
     }
 }

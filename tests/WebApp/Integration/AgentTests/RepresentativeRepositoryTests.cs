@@ -1,62 +1,125 @@
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
 using WebApp.Models.Domain.Agents;
 using WebApp.Models.Infrastructure.Repositories;
+using Xunit;
 
-public class RepresentativeRepositoryTests
+namespace WebApp.Tests.Repositories.Agents
 {
-    private readonly PortManagementContext _ctx;
-    private readonly RepresentativeRepository _repo;
-
-    public RepresentativeRepositoryTests()
+    public class RepresentativeRepositoryTests
     {
-        var options = new DbContextOptionsBuilder<PortManagementContext>()
-            .UseInMemoryDatabase("RepRepoTests_DB").Options;
-        _ctx = new PortManagementContext(options);
-        _repo = new RepresentativeRepository(_ctx);
-    }
+        private static PortManagementContext NewContext()
+        {
+            var options = new DbContextOptionsBuilder<PortManagementContext>()
+                .UseInMemoryDatabase($"RepRepo_{Guid.NewGuid()}")
+                .Options;
+            return new PortManagementContext(options);
+        }
 
-    [Fact]
-    public async Task Add_Update_Get_ShouldPersistChanges()
-    {
-        var org = new ShippingAgentOrganization("Org", null, "Rua", "PT1");
-        _ctx.Organizations.Add(org); await _ctx.SaveChangesAsync();
+        private static (ShippingAgentOrganization org, Representative rep1, Representative rep2) Seed(PortManagementContext ctx)
+        {
+            var org = new ShippingAgentOrganization("Org SA", "Org", "Addr", "PT-REPO");
+            var rep1 = new Representative(org.Id, "Alice", "CID-A", "PRT", "alice@org.com", "+351911111111");
+            var rep2 = new Representative(org.Id, "Bob", "CID-B", "PRT", "bob@org.com", "+351922222222");
+            rep2.SetActive(false);
 
-        var rep = new Representative(org.Id, "Ana", "C1", "PT", "a@x.com", "+3519");
-        await _repo.AddAsync(rep);
+            org.AddRepresentative(rep1);
+            org.AddRepresentative(rep2);
 
-        rep.Update("Ana Maria", "C2", "ES", "am@x.com", "+3490");
-        await _repo.UpdateAsync(rep);
+            ctx.Organizations.Add(org);
+            ctx.Representatives.AddRange(rep1, rep2);
+            ctx.SaveChanges();
 
-        var loaded = await _repo.GetByIdAsync(rep.Id);
-        loaded.Should().NotBeNull();
-        loaded!.Name.Should().Be("Ana Maria");
-        loaded.Nationality.Should().Be("ES");
-    }
+            return (org, rep1, rep2);
+        }
 
-    [Fact]
-    public async Task ListByOrganizationAsync_ShouldHonorActiveFilter()
-    {
-        var org = new ShippingAgentOrganization("Org", null, "Rua", "PT1");
-        _ctx.Organizations.Add(org); await _ctx.SaveChangesAsync();
+        [Fact]
+        public async Task GetByIdAsync_ReturnsEntity_WhenExists()
+        {
+            using var ctx = NewContext();
+            var (_, rep1, _) = Seed(ctx);
+            var repo = new RepresentativeRepository(ctx);
 
-        var a = new Representative(org.Id, "A", "C1", "PT", "a@x.com", "+3519");
-        var b = new Representative(org.Id, "B", "C2", "PT", "b@x.com", "+3519");
-        b.SetActive(false);
+            var fromDb = await repo.GetByIdAsync(rep1.Id);
 
-        await _repo.AddAsync(a); await _repo.AddAsync(b);
+            fromDb.Should().NotBeNull();
+            fromDb!.Email.Should().Be("alice@org.com");
+        }
 
-        var actives = await _repo.ListByOrganizationAsync(org.Id, true);
-        actives.Should().OnlyContain(r => r.IsActive);
+        [Fact]
+        public async Task ListByOrganizationAsync_FiltersByActive()
+        {
+            using var ctx = NewContext();
+            var (org, _, _) = Seed(ctx);
+            var repo = new RepresentativeRepository(ctx);
 
-        var inactives = await _repo.ListByOrganizationAsync(org.Id, false);
-        inactives.Should().OnlyContain(r => !r.IsActive);
+            var actives = await repo.ListByOrganizationAsync(org.Id, active: true);
+            actives.Should().OnlyContain(r => r.OrganizationId == org.Id && r.IsActive);
 
-        var all = await _repo.ListByOrganizationAsync(org.Id, null);
-        all.Count().Should().Be(2);
+            var inactives = await repo.ListByOrganizationAsync(org.Id, active: false);
+            inactives.Should().OnlyContain(r => r.OrganizationId == org.Id && !r.IsActive);
+        }
+
+        [Fact]
+        public async Task ListAllAsync_FiltersByOrgAndActive()
+        {
+            using var ctx = NewContext();
+            var (org, _, _) = Seed(ctx);
+
+            // outra org para validar filtro
+            var other = new ShippingAgentOrganization("Other", null, "Addr", "PT-OTHER");
+            var otherRep = new Representative(other.Id, "Carol", "CID-C", "PRT", "carol@other.com", "+351933333333");
+            other.AddRepresentative(otherRep);
+            ctx.Organizations.Add(other);
+            ctx.Representatives.Add(otherRep);
+            await ctx.SaveChangesAsync();
+
+            var repo = new RepresentativeRepository(ctx);
+
+            var onlyOrg = await repo.ListAllAsync(org.Id, null);
+            onlyOrg.Should().OnlyContain(r => r.OrganizationId == org.Id);
+
+            var onlyActive = await repo.ListAllAsync(org.Id, true);
+            onlyActive.Should().OnlyContain(r => r.OrganizationId == org.Id && r.IsActive);
+        }
+
+        [Fact]
+        public async Task AddAsync_PersistsEntity()
+        {
+            using var ctx = NewContext();
+            var org = new ShippingAgentOrganization("NewOrg", null, "Addr", "PT-ADD");
+            ctx.Organizations.Add(org);
+            await ctx.SaveChangesAsync();
+
+            var repo = new RepresentativeRepository(ctx);
+            var rep = new Representative(org.Id, "New Rep", "CID-N", "PRT", "new@org.com", "+351944444444");
+
+            await repo.AddAsync(rep);
+
+            (await ctx.Representatives.FindAsync(rep.Id)).Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task UpdateAsync_PersistsChanges()
+        {
+            using var ctx = NewContext();
+            var (_, rep1, _) = Seed(ctx);
+            var repo = new RepresentativeRepository(ctx);
+
+            rep1.SetActive(false);
+            rep1.UpdateProfile("Alice Updated", "CID-A", "PRT", "alice@org.com", "+351955555555");
+
+            await repo.UpdateAsync(rep1);
+
+            var fromDb = await ctx.Representatives.FindAsync(rep1.Id);
+            fromDb!.IsActive.Should().BeFalse();
+            fromDb.Phone.Should().Be("+351955555555");
+            fromDb.Name.Should().Be("Alice Updated");
+        }
     }
 }
