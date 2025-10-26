@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Services;
+using WebApp.Models.Application.Mappers;
+using WebApp.Models.Domain.Vessel;
 
 namespace WebApp.Controllers
 {
@@ -26,10 +28,13 @@ namespace WebApp.Controllers
         {
             try
             {
-                await _vesselTypeService.AddVesselTypeAsync(dto.Name, dto.Description, dto.MaxBays, dto.MaxRows, dto.MaxTiers);
-                return CreatedAtAction(nameof(GetByName), new { name = dto.Name }, dto);
+                var vesselType = VesselTypeMapper.MapToDomain(dto);
+                await _vesselTypeService.AddVesselTypeAsync(vesselType);
+
+                var created = await _vesselTypeService.GetVesselTypeByNameAsync(dto.Name!);
+                return CreatedAtAction(nameof(GetByName), new { name = created!.Name }, VesselTypeMapper.MapToDto(created));
             }
-            catch (InvalidOperationException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -41,21 +46,21 @@ namespace WebApp.Controllers
         [HttpPut("{currentName}")]
         public async Task<IActionResult> UpdateVesselType(string currentName, [FromBody] VesselTypeDTO dto)
         {
-            var existing = await _vesselTypeService.GetVesselTypeByNameAsync(currentName);
-            if (existing == null)
-                return NotFound($"Vessel type '{currentName}' not found.");
-
             try
             {
-                await _vesselTypeService.UpdateVesselTypeAsync(currentName, dto.Name, dto.Description, dto.MaxBays, dto.MaxRows, dto.MaxTiers);
-                var updated = await _vesselTypeService.GetVesselTypeByNameAsync(dto.Name);
-                return Ok(MapToDto(updated!));
+                var existing = await _vesselTypeService.GetVesselTypeByNameAsync(currentName);
+                if (existing == null)
+                    return NotFound($"Vessel type '{currentName}' not found.");
+                
+                var updatedVesselType = VesselTypeMapper.MapToDomain(dto);
+                await _vesselTypeService.UpdateVesselTypeAsync(updatedVesselType);
+                return NoContent();
             }
-            catch (InvalidOperationException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
-        }
+            }
 
         // ------------------------------------------------------------
         // Get by exact name
@@ -67,7 +72,7 @@ namespace WebApp.Controllers
             if (vesselType == null)
                 return NotFound($"Vessel type '{name}' not found.");
 
-            return Ok(MapToDto(vesselType));
+            return Ok(VesselTypeMapper.MapToDto(vesselType));
         }
 
         // ------------------------------------------------------------
@@ -84,7 +89,7 @@ namespace WebApp.Controllers
             if (!string.IsNullOrWhiteSpace(description))
                 results = await _vesselTypeService.SearchVesselTypesByDescriptionAsync(description);
 
-           return Ok(results.Select(MapToDto));
+           return Ok(results.Select(VesselTypeMapper.MapToDto));
         }
 
         // ------------------------------------------------------------
@@ -94,12 +99,8 @@ namespace WebApp.Controllers
         public async Task<IActionResult> GetAll()
         {
             var vesselTypes = await _vesselTypeService.GetAllVesselTypesAsync();
-            return Ok(vesselTypes.Select(MapToDto));
+            return Ok(vesselTypes.Select(VesselTypeMapper.MapToDto));
         }
-
-        private static VesselTypeDTO MapToDto(VesselType vt) =>
-            new VesselTypeDTO(vt.Name, vt.Description, vt.MaxBays, vt.MaxRows, vt.MaxTiers);
-
         // ------------------------------------------------------------
         // Delete a vessel type
         // ------------------------------------------------------------
@@ -111,7 +112,7 @@ namespace WebApp.Controllers
                 await _vesselTypeService.DeleteVesselTypeAsync(name);
                 return NoContent();
             }
-            catch (InvalidOperationException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
