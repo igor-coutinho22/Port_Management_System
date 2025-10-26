@@ -5,7 +5,7 @@ namespace WebApp.Models.Application.DTOs
     public class VesselVisitNotificationDTO
     {
         public Guid Id { get; set; }
-        public string? VesselId { get; set; }
+        public string? VesselIMO { get; set; }
         public Guid DockId { get; set; }
         public DateTime VisitDate { get; set; }
         public string Status { get; set; } = string.Empty;
@@ -28,8 +28,7 @@ namespace WebApp.Models.Application.DTOs
         public string CitizenId { get; set; } = string.Empty;
         public string Nationality { get; set; } = string.Empty;
     }
-
-    public class VesselVisitNotificationFilterDTO
+        public class VesselVisitNotificationFilterDTO
     {
         public string? VesselIMO { get; set; }
         public string? Status { get; set; }

@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using WebApp.Models.Domain.Vessel;
+
 namespace WebApp.Models.Domain.VesselVisits
 {
     public enum VisitPurpose
@@ -9,22 +14,27 @@ namespace WebApp.Models.Domain.VesselVisits
     public class VesselVisitNotification
     {
         public Guid Id { get; private set; }
-        public string? VesselIMO { get; protected set; }
-        public DateTime VisitDate { get; protected set; }
-        public Guid DockId { get; protected set; }
-        public VesselVisitStatus Status { get; protected set; }
-        public VisitPurpose Purpose { get; protected set; }
+        public string VesselIMO { get; private set; } = default!;
+        public Vessel.Vessel Vessel { get; private set; } = default!;
+
+        public DateTime VisitDate { get; private set; }
+        public Guid DockId { get; private set; }
+        public VesselVisitStatus Status { get; private set; }
+        public VisitPurpose Purpose { get; private set; }
 
         // Each VVN may have 0, 1, or 2 manifests
-        public CargoManifest? LoadingManifest { get; protected set; }
-        public CargoManifest? UnloadingManifest { get; protected set; }
+        public CargoManifest? LoadingManifest { get; private set; }
+        public CargoManifest? UnloadingManifest { get; private set; }
 
-        public List<CrewMember> Crew { get; protected set; } = new();
+        public List<CrewMember> Crew { get; private set; } = new();
 
         private VesselVisitNotification() { }
 
         public VesselVisitNotification(string vesselIMO, Guid dockId, DateTime visitDate, VisitPurpose purpose)
         {
+            if (string.IsNullOrWhiteSpace(vesselIMO) || !WebApp.Models.Domain.Vessel.Vessel.IsValidIMO(vesselIMO))
+                throw new ArgumentException("Invalid IMO.", nameof(vesselIMO));
+
             Id = Guid.NewGuid();
             VesselIMO = vesselIMO;
             DockId = dockId;
@@ -64,7 +74,7 @@ namespace WebApp.Models.Domain.VesselVisits
         {
             if (Status != VesselVisitStatus.InProgress)
                 throw new InvalidOperationException("Only 'InProgress' visits can be submitted.");
-            // For commercial visits, at least one manifest must exist.
+
             if (Purpose == VisitPurpose.Commercial &&
                 LoadingManifest == null && UnloadingManifest == null)
             {
@@ -75,7 +85,7 @@ namespace WebApp.Models.Domain.VesselVisits
 
             Status = VesselVisitStatus.Submitted;
         }
-    
+
         public void Approve(Guid officerId, Guid dockId)
         {
             if (Status != VesselVisitStatus.Submitted)
@@ -90,8 +100,9 @@ namespace WebApp.Models.Domain.VesselVisits
             DockId = dockId;
             Status = VesselVisitStatus.Approved;
 
-        LogDecision(officerId, DecisionOutcome.Approved, "Approved with valid crew data and dock assigned.");
+            LogDecision(officerId, DecisionOutcome.Approved, "Approved with valid crew data and dock assigned.");
         }
+
         public void Reject(Guid officerId, string reason)
         {
             if (Status != VesselVisitStatus.Submitted)
@@ -111,72 +122,77 @@ namespace WebApp.Models.Domain.VesselVisits
             DecisionLogs.Add(new DecisionLog(officerId, outcome, details));
         }
 
-
         public List<DecisionLog> DecisionLogs { get; private set; } = new();
-
-        public void UpdateVisitDate(DateTime newDate)
-        {
-            if (Status != VesselVisitStatus.InProgress)
-                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
-
-            if (newDate < DateTime.UtcNow)
-                throw new ArgumentException("Visit date cannot be in the past.", nameof(newDate));
-
-            VisitDate = newDate;
-        }
 
         public void UpdateVesselIMO(string newIMO)
         {
-            if (Status != VesselVisitStatus.InProgress)
-                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
-
-            if (string.IsNullOrWhiteSpace(newIMO))
-                throw new ArgumentException("Vessel IMO cannot be empty.", nameof(newIMO));
+            EnsureInProgress();
+            if (string.IsNullOrWhiteSpace(newIMO) || !WebApp.Models.Domain.Vessel.Vessel.IsValidIMO(newIMO))
+                throw new ArgumentException("Invalid IMO.", nameof(newIMO));
 
             VesselIMO = newIMO;
         }
 
         public void UpdatePurpose(VisitPurpose newPurpose)
         {
-            if (Status != VesselVisitStatus.InProgress)
-                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
-
+            EnsureInProgress();
             Purpose = newPurpose;
         }
 
         public void UpdateDockId(Guid newDockId)
         {
-            if (Status != VesselVisitStatus.InProgress)
-                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
-
-            if (newDockId == Guid.Empty)
-                throw new ArgumentException("Dock ID cannot be empty.", nameof(newDockId));
-
+            EnsureInProgress();
             DockId = newDockId;
         }
 
-        public void UpdateLoadingManifest(CargoManifest? newManifest)
+        public void UpdateVisitDate(DateTime newDate)
         {
-            if (Status != VesselVisitStatus.InProgress)
-                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
-
-            LoadingManifest = newManifest;
+            EnsureInProgress();
+            VisitDate = newDate;
         }
 
-        public void UpdateUnloadingManifest(CargoManifest? newManifest)
+        public void UpdateLoadingManifest(CargoManifest? manifest)
         {
-            if (Status != VesselVisitStatus.InProgress)
-                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+            EnsureInProgress();
 
-            UnloadingManifest = newManifest;
+            if (manifest == null)
+            {
+                LoadingManifest = null;
+                return;
+            }
+
+            if (manifest.Type != CargoManifestType.Loading)
+                throw new InvalidOperationException("Loading manifest must be of type 'Loading'.");
+
+            LoadingManifest = manifest;
         }
 
-        public void UpdateCrew(List<CrewMember> newCrew)
+        public void UpdateUnloadingManifest(CargoManifest? manifest)
+        {
+            EnsureInProgress();
+
+            if (manifest == null)
+            {
+                UnloadingManifest = null;
+                return;
+            }
+
+            if (manifest.Type != CargoManifestType.Unloading)
+                throw new InvalidOperationException("Unloading manifest must be of type 'Unloading'.");
+
+            UnloadingManifest = manifest;
+        }
+
+        public void UpdateCrew(IEnumerable<CrewMember> crew)
+        {
+            EnsureInProgress();
+            Crew = crew?.ToList() ?? new List<CrewMember>();
+        }
+
+        private void EnsureInProgress()
         {
             if (Status != VesselVisitStatus.InProgress)
                 throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
-
-            Crew = newCrew ?? new List<CrewMember>();
         }
     }
 }
