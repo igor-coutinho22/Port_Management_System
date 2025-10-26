@@ -15,9 +15,9 @@ namespace WebApp.Models.Domain.StorageArea
         public int MaxCapacityTeu { get; protected set; }
         public int CurrentOccupancyTeu { get; protected set; }
 
-    // Persistent navigation collection for connections to docks (stored in DB)
-    // Each entry is a DockStorageAreaInfo row that links this StorageArea with a DockId
-    public virtual ICollection<DockStorageAreaInfo> DockConnections { get; protected set; } = new List<DockStorageAreaInfo>();
+        // Persistent navigation collection for connections to docks (stored in DB)
+        // Each entry is a DockStorageAreaConnection row that links this StorageArea with a DockId
+        public virtual ICollection<DockStorageAreaConnection> DockConnections { get; protected set; } = new List<DockStorageAreaConnection>();
 
         // EF Core needs a parameterless constructor (can be protected)
         protected StorageArea() { }
@@ -65,50 +65,40 @@ namespace WebApp.Models.Domain.StorageArea
             CurrentOccupancyTeu = newOccupancyTeu;
         }
 
+        public void AddDockConnection(DockStorageAreaConnection connection)
+        {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (DockConnections.Any(dc => dc.DockId == connection.DockId))
+                throw new InvalidOperationException("Connection to this dock already exists.");
+
+            DockConnections.Add(connection);
+        }
+
+        public void UpdateDockConnection(DockStorageAreaConnection connection)
+        {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            var existingConnection = DockConnections.FirstOrDefault(dc => dc.DockId == connection.DockId);
+            if (existingConnection == null)
+                throw new InvalidOperationException("Connection to this dock does not exist.");
+
+            existingConnection.DistanceMeters = connection.DistanceMeters;
+            existingConnection.TravelSeconds = connection.TravelSeconds;
+        }
+
+        public void RemoveDockConnection(DockStorageAreaConnection connection)
+        {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (!DockConnections.Remove(connection))
+                throw new InvalidOperationException("Connection to this dock does not exist.");
+        }
+
         // Method for registering/updating
         public abstract string GetUsageDescription();
-
-        /// <summary>
-        /// Get the connection info for a given dock id, or null if none exists.
-        /// This reads from the persistent navigation collection <see cref="DockConnections"/>.
-        /// </summary>
-        public DockStorageAreaInfo? GetInfoForDock(Guid dockId)
-        {
-            return DockConnections?.FirstOrDefault(c => c.DockId == dockId);
-        }
-
-        /// <summary>
-        /// Add or update a connection entry in the in-memory navigation collection.
-        /// Repository code should persist the change (SaveChangesAsync) afterwards.
-        /// </summary>
-        public void SetInfoForDock(Guid dockId, DockStorageAreaInfo info)
-        {
-            if (info == null) throw new ArgumentNullException(nameof(info));
-
-            var conn = DockConnections.FirstOrDefault(c => c.DockId == dockId);
-            if (conn != null)
-            {
-                conn.DistanceMeters = info.DistanceMeters;
-                conn.TravelSeconds = info.TravelSeconds;
-            }
-            else
-            {
-                // ensure FK fields are set
-                info.StorageAreaId = this.Id;
-                info.DockId = dockId;
-                DockConnections.Add(info);
-            }
-        }
-
-        /// <summary>
-        /// Remove any connection associated with the dock id from the navigation collection.
-        /// Repository should persist the removal.
-        /// </summary>
-        public bool RemoveInfoForDock(Guid dockId)
-        {
-            var conn = DockConnections.FirstOrDefault(c => c.DockId == dockId);
-            if (conn == null) return false;
-            return DockConnections.Remove(conn);
-        }
     }
 }
