@@ -10,7 +10,7 @@ namespace WebApp.Models.Application.Mappers
             return new VesselVisitNotificationDTO
             {
                 Id = entity.Id,
-                VesselId = entity.VesselIMO,
+                VesselIMO = entity.VesselIMO,
                 DockId = entity.DockId,
                 VisitDate = entity.VisitDate,
                 Status = entity.Status.ToString(),
@@ -41,7 +41,7 @@ namespace WebApp.Models.Application.Mappers
         public static VesselVisitNotification ToEntity(VesselVisitNotificationDTO dto)
         {
             var entity = new VesselVisitNotification(
-                dto.VesselId!,
+                dto.VesselIMO!,
                 dto.DockId,
                 dto.VisitDate,
                 Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true)
@@ -59,12 +59,26 @@ namespace WebApp.Models.Application.Mappers
                 var manifest = new CargoManifest(CargoManifestType.Unloading);
                 entity.AddUnloadingManifest(manifest);
             }
-
-            // Add crew
             foreach (var member in dto.Crew)
                 entity.AddCrewMember(member.Name, member.CitizenId, member.Nationality);
 
             return entity;
+        }
+        public static VesselVisitNotificationFilterDTO ToFilterDTO(
+            string? vesselIMO, 
+            string? status, 
+            DateTime? fromDate, 
+            DateTime? toDate, 
+            string? representative)
+        {
+            return new VesselVisitNotificationFilterDTO
+            {
+                VesselIMO = vesselIMO,
+                Status = status,
+                FromDate = fromDate,
+                ToDate = toDate,
+                Representative = representative
+            };
         }
     }
 }

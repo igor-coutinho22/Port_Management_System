@@ -1,0 +1,147 @@
+@startuml US 2.2.2
+title **US 2.2.2 – Manage Vessel Records (Register & Update)**
+
+' ===========================================================
+' ACTORS AND PARTICIPANTS
+' ===========================================================
+actor "Port Authority Officer" as Officer
+participant "VesselsController" as Controller
+participant "VesselMapper" as Mapper
+participant "VesselService" as VesselService
+participant "VesselTypeService" as VesselTypeService
+participant "VesselRepository" as VesselRepo
+participant "VesselTypeRepository" as VesselTypeRepo
+database "PortManagementContext" as Db
+
+
+== Register Vessel (POST /api/Vessels?vesselTypeName={type}) ==
+
+Officer -> Controller : POST /api/Vessels\n(VesselDTO, vesselTypeName)
+activate Controller
+
+Controller -> VesselTypeService : GetVesselTypeByNameAsync(vesselTypeName)
+activate VesselTypeService
+VesselTypeService -> VesselTypeRepo : GetVesselTypeByNameAsync(vesselTypeName)
+activate VesselTypeRepo
+VesselTypeRepo -> Db : Query (WHERE Name == vesselTypeName)
+activate Db
+Db --> VesselTypeRepo : VesselType entity
+deactivate Db
+VesselTypeRepo --> VesselTypeService : VesselType
+deactivate VesselTypeRepo
+VesselTypeService --> Controller : VesselType
+deactivate VesselTypeService
+
+Controller -> Mapper : MapToDomain(dto, vesselType)
+activate Mapper
+Mapper --> Controller : Vessel
+deactivate Mapper
+
+Controller -> VesselService : RegisterVesselAsync(vessel)
+activate VesselService
+
+VesselService -> VesselRepo : GetByIMOAsync(vessel.IMO)
+activate VesselRepo
+VesselRepo -> Db : Query (WHERE IMO == vessel.IMO)
+activate Db
+Db --> VesselRepo : null (not found)
+deactivate Db
+VesselRepo --> VesselService : null
+deactivate VesselRepo
+
+VesselService -> VesselRepo : AddVesselAsync(vessel)
+activate VesselRepo
+VesselRepo -> Db : AddAsync(vessel)
+activate Db
+Db --> VesselRepo : Vessel added
+deactivate Db
+VesselRepo -> Db : SaveChangesAsync()
+activate Db
+Db --> VesselRepo : persisted
+deactivate Db
+VesselRepo --> VesselService : success
+deactivate VesselRepo
+VesselService --> Controller : success
+deactivate VesselService
+
+Controller -> VesselService : GetVesselByIMOAsync(dto.IMO)
+activate VesselService
+VesselService -> VesselRepo : GetByIMOAsync(IMO)
+activate VesselRepo
+VesselRepo -> Db : Query (WHERE IMO == IMO)
+activate Db
+Db --> VesselRepo : Vessel entity with VesselType
+deactivate Db
+VesselRepo --> VesselService : Vessel
+deactivate VesselRepo
+VesselService --> Controller : Vessel
+deactivate VesselService
+
+Controller -> Mapper : MapToDto(vessel)
+activate Mapper
+Mapper --> Controller : VesselDTO
+deactivate Mapper
+
+Controller --> Officer : 201 Created (VesselDTO)
+deactivate Controller
+
+
+
+== Update Vessel (PUT /api/Vessels/{imo}) ==
+
+Officer -> Controller : PUT /api/Vessels/{imo}\n(VesselDTO)
+activate Controller
+
+Controller -> VesselService : GetVesselByIMOAsync(imo)
+activate VesselService
+VesselService -> VesselRepo : GetByIMOAsync(imo)
+activate VesselRepo
+VesselRepo -> Db : Query (WHERE IMO == imo)
+activate Db
+Db --> VesselRepo : existing Vessel
+deactivate Db
+VesselRepo --> VesselService : Vessel
+deactivate VesselRepo
+VesselService --> Controller : Vessel
+deactivate VesselService
+
+Controller -> Mapper : MapToDomain(dto, vessel.VesselType)
+activate Mapper
+Mapper --> Controller : updated Vessel
+deactivate Mapper
+
+Controller -> VesselService : UpdateVesselAsync(updatedVessel)
+activate VesselService
+
+VesselService -> VesselRepo : GetByIMOAsync(updatedVessel.IMO)
+activate VesselRepo
+VesselRepo -> Db : Query (WHERE IMO == IMO)
+activate Db
+Db --> VesselRepo : existing Vessel
+deactivate Db
+VesselRepo --> VesselService : Vessel
+deactivate VesselRepo
+
+VesselService -> VesselRepo : UpdateVesselAsync(existingVessel)
+activate VesselRepo
+VesselRepo -> Db : Update(entity)
+activate Db
+Db -> Db : SaveChangesAsync()
+Db --> VesselRepo : success
+deactivate Db
+VesselRepo --> VesselService : success
+deactivate VesselRepo
+
+VesselService --> Controller : success
+deactivate VesselService
+
+Controller -> Mapper : MapToDto(updatedVessel)
+activate Mapper
+Mapper --> Controller : VesselDTO
+deactivate Mapper
+
+Controller --> Officer : 201 Created (VesselDTO)
+deactivate Controller
+
+
+@enduml
