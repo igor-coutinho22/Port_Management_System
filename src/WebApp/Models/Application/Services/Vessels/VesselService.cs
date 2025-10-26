@@ -17,40 +17,39 @@ namespace WebApp.Models.Application.Services.VesselService
             _vesselTypeService = vesselTypeService;
         }
 
-        public async Task RegisterVesselAsync(string imo, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
+        public async Task RegisterVesselAsync(Vessel vessel)
         {
-            var vessel = new Vessel(imo, name, operatorName, vesselType, bays, rows, tiers, requiredCraneCount, requiredDockLength);
+            if (vessel == null)
+                throw new ArgumentNullException(nameof(vessel));
+            
+            var existingVessel = await _vesselRepo.GetByIMOAsync(vessel.IMO);
+            if (existingVessel != null)
+                throw new ArgumentException($"A vessel with IMO '{vessel.IMO}' already exists.", nameof(vessel.IMO));
+            
             await _vesselRepo.AddVesselAsync(vessel);
         }
 
-        public async Task RegisterVesselDTOAsync(VesselDTO dto)
+        public async Task UpdateVesselAsync(Vessel vessel)
         {
-            // Resolve vessel type by name
-            var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(dto.VesselType);
-            if (vesselType == null)
-                throw new ArgumentException($"Vessel type '{dto.VesselType}' not recognized.");
-
-            await RegisterVesselAsync(dto.IMO, dto.VesselName, dto.OperatorName, vesselType, dto.Bays, dto.Rows, dto.Tiers, dto.RequiredCraneCount, dto.RequiredDockLength);
-        }
-
-        public async Task UpdateVesselAsync(string imo, string newIMO, string name, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
-        {
-            var vessel = await _vesselRepo.GetByIMOAsync(imo);
             if (vessel == null)
-                throw new ArgumentException("Vessel not found.", nameof(imo));
+                throw new ArgumentNullException(nameof(vessel));
 
-            if (vessel.IMO != newIMO)
-                throw new ArgumentException("Changing IMO number is not allowed.", nameof(newIMO));
-            vessel.VesselName = name;
-            vessel.OperatorName = operatorName;
-            vessel.VesselType = vesselType;
-            vessel.UpdateBays(bays);
-            vessel.UpdateRows(rows);
-            vessel.UpdateTiers(tiers);
-            vessel.RequiredCraneCount = requiredCraneCount;
-            vessel.RequiredDockLength = requiredDockLength;
+            var existingVessel = await GetVesselByIMOAsync(vessel.IMO);
+            if (existingVessel == null)
+                throw new ArgumentException("Vessel not found.", nameof(vessel.IMO));
 
-            await _vesselRepo.UpdateVesselAsync(vessel);
+            if (existingVessel.IMO != vessel.IMO)
+                throw new ArgumentException("Changing vessel IMO is not allowed.", nameof(vessel.IMO));
+            existingVessel.VesselName = vessel.VesselName;
+            existingVessel.OperatorName = vessel.OperatorName;
+            existingVessel.VesselType = vessel.VesselType;
+            existingVessel.UpdateBays(vessel.Bays);
+            existingVessel.UpdateRows(vessel.Rows);
+            existingVessel.UpdateTiers(vessel.Tiers);
+            existingVessel.RequiredCraneCount = vessel.RequiredCraneCount;
+            existingVessel.RequiredDockLength = vessel.RequiredDockLength;
+
+            await _vesselRepo.UpdateVesselAsync(existingVessel);
         }
 
         public Task<Vessel?> GetVesselByIMOAsync(string imo) => _vesselRepo.GetByIMOAsync(imo);
