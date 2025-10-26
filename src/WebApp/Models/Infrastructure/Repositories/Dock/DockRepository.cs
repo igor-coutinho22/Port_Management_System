@@ -16,10 +16,23 @@ namespace WebApp.Models.Infrastructure.Repositories
 
         public async Task<Dock?> GetByIdAsync(Guid id)
         {
-            return await _context.StorageAreas
-                .OfType<Dock>()
+            return await _context.Docks
                 .Include(d => d.AllowedVesselTypes)
                 .FirstOrDefaultAsync(d => d.Id == id);
+        }
+
+        public async Task<Dock?> GetByNameAsync(string name)
+        {
+            return await _context.Docks
+                .Include(d => d.AllowedVesselTypes)
+                .FirstOrDefaultAsync(d => d.Name == name);
+        }
+
+        public async Task<Dock?> GetByLocationAsync(string location)
+        {
+            return await _context.Docks
+                .Include(d => d.AllowedVesselTypes)
+                .FirstOrDefaultAsync(d => d.Location == location);
         }
 
         public async Task AddAsync(Dock dock)
@@ -34,20 +47,39 @@ namespace WebApp.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Dock>> SearchAsync(string? name, string? location, string? vesselTypeName)
+        public async Task<List<Dock>> SearchByVesselTypeAsync(string vesselTypeName)
         {
-            var query = _context.StorageAreas.OfType<Dock>().Include(d => d.AllowedVesselTypes).AsQueryable();
+            return await _context.Docks
+                .Include(d => d.AllowedVesselTypes)
+                .Where(d => d.AllowedVesselTypes.Any(vt => vt.Name.Contains(vesselTypeName)))
+                .ToListAsync();
+        }
 
-            if (!string.IsNullOrEmpty(name))
-                query = query.Where(d => d.Name.Contains(name));
+        public async Task<List<Dock>> SearchByLocationAsync(string location)
+        {
+            return await _context.Docks
+                .Where(d => d.Location.Contains(location))
+                .ToListAsync();
+        }
 
-            if (!string.IsNullOrEmpty(location))
-                query = query.Where(d => d.Location.Contains(location));
+        public async Task<List<Dock>> SearchByNameAsync(string name)
+        {
+            return await _context.Docks
+                .Where(d => d.Name.Contains(name))
+                .ToListAsync();
+        }
 
-            if (vesselTypeName != null)
-                query = query.Where(d => d.AllowedVesselTypes.Any(vt => vt.Name == vesselTypeName));
+        public async Task<List<Dock>> GetAllAsync()
+        {
+            return await _context.Docks
+                .Include(d => d.AllowedVesselTypes)
+                .ToListAsync();
+        }
 
-            return await query.ToListAsync();
+        public async Task DeleteAsync(Dock dock)
+        {
+            _context.Docks.Remove(dock);
+            await _context.SaveChangesAsync();
         }
     }
 }
