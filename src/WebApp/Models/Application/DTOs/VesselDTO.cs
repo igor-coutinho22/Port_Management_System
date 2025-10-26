@@ -5,7 +5,6 @@ namespace WebApp.Models.Application.DTOs
         public string? IMO { get; set; }
         public string? VesselName { get; set; }
         public string? OperatorName { get; set; }
-        public string? VesselTypeName { get; set; }
         public int RequiredCraneCount { get; set; }
         public double RequiredDockLength { get; set; }
         public int Bays { get; set; }
