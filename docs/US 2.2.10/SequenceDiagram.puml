@@ -1,0 +1,88 @@
+@startuml US 2.2.10
+title **US 2.2.10 – View Vessel Visit Notification Status**
+
+actor "Shipping Agent Representative" as Rep
+participant "VesselVisitNotificationController" as Controller
+participant "VesselVisitNotificationService" as Service
+participant "VesselVisitNotificationRepository" as Repo
+database "PortManagementContext" as Db
+
+
+
+== Get All Vessel Visit Notifications (GET /api/vesselvisitnotification) ==
+
+Rep -> Controller : GET /api/vesselvisitnotification
+activate Controller
+
+Controller -> Service : GetAllAsync()
+activate Service
+
+Service -> Repo : GetAllAsync()
+activate Repo
+Repo -> Db : SELECT * FROM VesselVisitNotifications\nINCLUDE LoadingManifest, UnloadingManifest, Crew
+activate Db
+Db --> Repo : List<VesselVisitNotification>
+deactivate Db
+Repo --> Service : visits
+deactivate Repo
+
+Service -> Service : Map each to DTO
+Service --> Controller : IEnumerable<VesselVisitNotificationDTO>
+deactivate Service
+
+Controller --> Rep : 200 OK (List of Visit Notifications)
+deactivate Controller
+
+
+== Search Vessel Visit Notifications (GET /api/vesselvisitnotification/search) ==
+
+Rep -> Controller : GET /api/vesselvisitnotification/search\n?vesselIMO=&status=&fromDate=&toDate=&representative=
+activate Controller
+
+Controller -> Service : SearchAsync(filter)
+activate Service
+
+Service -> Repo : GetAllAsync()
+activate Repo
+Repo -> Db : SELECT * FROM VesselVisitNotifications
+activate Db
+Db --> Repo : All visit records
+deactivate Db
+Repo --> Service : List<VesselVisitNotification>
+deactivate Repo
+
+Service -> Service : Apply in-memory filters\n(vesselIMO, status, date range, representative)
+Service --> Controller : Filtered IEnumerable<VesselVisitNotificationDTO>
+deactivate Service
+
+Controller --> Rep : 200 OK (Filtered results)
+deactivate Controller
+
+
+
+== Get Visit Notification by ID (GET /api/vesselvisitnotification/{id}) ==
+
+Rep -> Controller : GET /api/vesselvisitnotification/{id}
+activate Controller
+
+Controller -> Service : GetByIdAsync(id)
+activate Service
+
+Service -> Repo : GetByIdAsync(id)
+activate Repo
+Repo -> Db : SELECT * FROM VesselVisitNotifications\nWHERE Id = id
+activate Db
+Db --> Repo : VesselVisitNotification entity
+deactivate Db
+Repo --> Service : VesselVisitNotification
+deactivate Repo
+
+Service -> Service : Map to DTO
+Service --> Controller : VesselVisitNotificationDTO
+deactivate Service
+
+Controller --> Rep : 200 OK (Visit Notification DTO)
+deactivate Controller
+
+
+@enduml
