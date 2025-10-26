@@ -5,7 +5,7 @@ namespace WebApp.Models.Application.DTOs
     public class VesselVisitNotificationDTO
     {
         public Guid Id { get; set; }
-        public Guid VesselId { get; set; }
+        public string? VesselId { get; set; }
         public Guid DockId { get; set; }
         public DateTime VisitDate { get; set; }
         public string Status { get; set; } = string.Empty;

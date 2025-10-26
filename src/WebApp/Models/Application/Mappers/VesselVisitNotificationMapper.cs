@@ -41,7 +41,7 @@ namespace WebApp.Models.Application.Mappers
         public static VesselVisitNotification ToEntity(VesselVisitNotificationDTO dto)
         {
             var entity = new VesselVisitNotification(
-                dto.VesselId,
+                dto.VesselId!,
                 dto.DockId,
                 dto.VisitDate,
                 Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true)

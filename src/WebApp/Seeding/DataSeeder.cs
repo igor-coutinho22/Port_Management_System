@@ -190,23 +190,27 @@ namespace WebApp.Seeding
             // === VESSEL VISIT NOTIFICATIONS ===
             if (!await context.Set<VesselVisitNotification>().AnyAsync())
             {
-                var vessel1 = Guid.NewGuid();
-                var vessel2 = Guid.NewGuid();
+                // Use realistic IMO numbers (7 digits)
+                var vesselIMO1 = "1234567";
+                var vesselIMO2 = "2345678";
+                var vesselIMO3 = "3456789";
+                var vesselIMO4 = "4567890";
+                
                 var dock1 = Guid.NewGuid();
                 var dock2 = Guid.NewGuid();
 
-                var visit1 = new VesselVisitNotification(vessel1, dock1, DateTime.UtcNow.AddDays(-1), VisitPurpose.Maintenance);
+                var visit1 = new VesselVisitNotification(vesselIMO1, dock1, DateTime.UtcNow.AddDays(-1), VisitPurpose.Maintenance);
                 visit1.AddCrewMember("John Doe", "C123", "PT");
 
-                var visit2 = new VesselVisitNotification(vessel2, dock1, DateTime.UtcNow.AddDays(1), VisitPurpose.Commercial);
+                var visit2 = new VesselVisitNotification(vesselIMO2, dock1, DateTime.UtcNow.AddDays(1), VisitPurpose.Commercial);
                 visit2.AddCrewMember("Maria Silva", "C456", "ES");
                 visit2.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
 
-                var visit3 = new VesselVisitNotification(Guid.NewGuid(), dock2, DateTime.UtcNow.AddDays(2), VisitPurpose.Commercial);
+                var visit3 = new VesselVisitNotification(vesselIMO3, dock2, DateTime.UtcNow.AddDays(2), VisitPurpose.Commercial);
                 visit3.AddCrewMember("Carlos Mendes", "C789", "BR");
                 visit3.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
 
-                var visit4 = new VesselVisitNotification(Guid.NewGuid(), dock2, DateTime.UtcNow.AddDays(3), VisitPurpose.Commercial);
+                var visit4 = new VesselVisitNotification(vesselIMO4, dock2, DateTime.UtcNow.AddDays(3), VisitPurpose.Commercial);
                 visit4.AddCrewMember("Eva Liu", "C999", "CN");
                 visit4.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
                 visit4.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
