@@ -1,5 +1,11 @@
 namespace WebApp.Models.Domain.VesselVisits
 {
+    public enum VisitPurpose
+    {
+        Commercial,
+        Maintenance
+    }
+
     public class VesselVisitNotification
     {
         public Guid Id { get; private set; }
@@ -7,6 +13,7 @@ namespace WebApp.Models.Domain.VesselVisits
         public DateTime VisitDate { get; private set; }
         public Guid DockId { get; private set; }
         public VesselVisitStatus Status { get; private set; }
+        public VisitPurpose Purpose { get; private set; }
 
         // Each VVN may have 0, 1, or 2 manifests
         public CargoManifest? LoadingManifest { get; private set; }
@@ -16,12 +23,13 @@ namespace WebApp.Models.Domain.VesselVisits
 
         private VesselVisitNotification() { }
 
-        public VesselVisitNotification(Guid vesselId, Guid dockId, DateTime visitDate)
+        public VesselVisitNotification(Guid vesselId, Guid dockId, DateTime visitDate, VisitPurpose purpose)
         {
             Id = Guid.NewGuid();
             VesselId = vesselId;
             DockId = dockId;
             VisitDate = visitDate;
+            Purpose = purpose;
             Status = VesselVisitStatus.InProgress;
         }
 
@@ -56,13 +64,13 @@ namespace WebApp.Models.Domain.VesselVisits
         {
             if (Status != VesselVisitStatus.InProgress)
                 throw new InvalidOperationException("Only 'InProgress' visits can be submitted.");
-
-            // ✅ Allow visits with zero or up to two manifests.
-            // But at least validate that existing manifests are valid objects.
-            if (LoadingManifest == null && UnloadingManifest == null)
+            // For commercial visits, at least one manifest must exist.
+            if (Purpose == VisitPurpose.Commercial &&
+                LoadingManifest == null && UnloadingManifest == null)
             {
-                // Optional rule: could require manifests for commercial visits,
-                // but allow null for maintenance-type visits.
+                throw new InvalidOperationException(
+                    "Commercial visits must include at least one cargo manifest."
+                );
             }
 
             Status = VesselVisitStatus.Submitted;
