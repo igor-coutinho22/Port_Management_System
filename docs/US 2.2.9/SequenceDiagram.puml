@@ -1,0 +1,156 @@
+@startuml US 2.2.9
+title **US 2.2.9 – Manage Representative (Change / Complete Vessel Visit Notification)**
+
+
+actor "Shipping Agent Representative" as Rep
+participant "RepresentativesController" as Controller
+participant "RepresentativeService" as Service
+participant "RepresentativeRepository" as Repo
+participant "OrganizationRepository" as OrgRepo
+database "PortManagementContext" as Db
+
+
+
+== Update Representative (PUT /api/representatives/{id}) ==
+
+Rep -> Controller : PUT /api/representatives/{id}\n(UpdateRepresentativeRequest)
+activate Controller
+
+Controller -> Service : UpdateAsync(id, request)
+activate Service
+
+Service -> Repo : GetByIdAsync(id)
+activate Repo
+Repo -> Db : Query (WHERE Id == id)
+activate Db
+Db --> Repo : Representative entity
+deactivate Db
+Repo --> Service : Representative
+deactivate Repo
+
+
+
+Service -> Repo : UpdateAsync(rep)
+activate Repo
+Repo -> Db : Update(rep)
+activate Db
+Db -> Db : SaveChangesAsync()
+Db --> Repo : persisted
+deactivate Db
+Repo --> Service : success
+deactivate Repo
+
+Service --> Controller : RepresentativeDto
+deactivate Service
+
+Controller --> Rep : 200 OK (RepresentativeDto)
+deactivate Controller
+
+
+== Deactivate Representative (PUT /api/representatives/{id}/deactivate) ==
+
+Rep -> Controller : PUT /api/representatives/{id}/deactivate
+activate Controller
+
+Controller -> Service : SetActiveAsync(id, false)
+activate Service
+
+Service -> Repo : GetByIdAsync(id)
+activate Repo
+Repo -> Db : Query (WHERE Id == id)
+activate Db
+Db --> Repo : Representative entity
+deactivate Db
+Repo --> Service : Representative
+deactivate Repo
+Service -> Repo : UpdateAsync(rep)
+activate Repo
+Repo -> Db : Update(rep)
+activate Db
+Db -> Db : SaveChangesAsync()
+Db --> Repo : success
+deactivate Db
+Repo --> Service : success
+deactivate Repo
+
+Service --> Controller : NoContent
+deactivate Service
+
+Controller --> Rep : 204 No Content
+deactivate Controller
+
+
+
+== Activate Representative (PUT /api/representatives/{id}/activate) ==
+
+Rep -> Controller : PUT /api/representatives/{id}/activate
+activate Controller
+
+Controller -> Service : SetActiveAsync(id, true)
+activate Service
+
+Service -> Repo : GetByIdAsync(id)
+activate Repo
+Repo -> Db : Query (WHERE Id == id)
+activate Db
+Db --> Repo : Representative entity
+deactivate Db
+Repo --> Service : Representative
+deactivate Repo
+
+
+Service -> Repo : UpdateAsync(rep)
+activate Repo
+Repo -> Db : Update(rep)
+activate Db
+Db -> Db : SaveChangesAsync()
+Db --> Repo : success
+deactivate Db
+Repo --> Service : success
+deactivate Repo
+
+Service --> Controller : NoContent
+deactivate Service
+
+Controller --> Rep : 204 No Content
+deactivate Controller
+
+
+
+== Create Representative (POST /api/organizations/{orgId}/representatives) ==
+
+Rep -> Controller : POST /api/organizations/{orgId}/representatives\n(CreateRepresentativeRequest)
+activate Controller
+
+Controller -> Service : CreateAsync(orgId, request)
+activate Service
+
+Service -> OrgRepo : GetByIdAsync(orgId)
+activate OrgRepo
+OrgRepo -> Db : Query (WHERE Id == orgId)
+activate Db
+Db --> OrgRepo : ShippingAgentOrganization entity
+deactivate Db
+OrgRepo --> Service : Organization
+deactivate OrgRepo
+
+Service -> Repo : AddAsync(rep)
+activate Repo
+Repo -> Db : AddAsync(rep)
+activate Db
+Db --> Repo : Representative added
+deactivate Db
+Repo -> Db : SaveChangesAsync()
+activate Db
+Db --> Repo : persisted
+deactivate Db
+Repo --> Service : success
+deactivate Repo
+
+Service --> Controller : RepresentativeDto
+deactivate Service
+
+Controller --> Rep : 201 Created (RepresentativeDto)
+deactivate Controller
+
+@enduml
