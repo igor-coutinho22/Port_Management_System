@@ -25,6 +25,71 @@ namespace WebApp.Models.Application.Services
             return visits.Select(VesselVisitNotificationMapper.ToDTO);
         }
 
+        public async Task<IEnumerable<VesselVisitNotificationDTO>> SearchAsync(VesselVisitNotificationFilterDTO filter)
+        {
+            // Validate that at least one filter parameter is provided
+            bool hasAnyFilter = !string.IsNullOrEmpty(filter.VesselIMO) ||
+                               !string.IsNullOrEmpty(filter.Status) ||
+                               filter.FromDate.HasValue ||
+                               filter.ToDate.HasValue ||
+                               !string.IsNullOrEmpty(filter.Representative);
+
+            if (!hasAnyFilter)
+            {
+                throw new InvalidOperationException("At least one search parameter must be provided.");
+            }
+
+            var visits = await _repository.GetAllAsync();
+            
+            // Apply filters
+            var filteredVisits = visits.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filter.VesselIMO))
+                filteredVisits = filteredVisits.Where(v => v.VesselIMO == filter.VesselIMO);
+
+            if (!string.IsNullOrEmpty(filter.Status))
+                filteredVisits = filteredVisits.Where(v => v.Status.ToString().Equals(filter.Status, StringComparison.OrdinalIgnoreCase));
+
+            if (filter.FromDate.HasValue)
+                filteredVisits = filteredVisits.Where(v => v.VisitDate >= filter.FromDate.Value);
+
+            if (filter.ToDate.HasValue)
+                filteredVisits = filteredVisits.Where(v => v.VisitDate <= filter.ToDate.Value);
+
+            var result = filteredVisits.ToList();
+            
+            // Check if no results found and provide meaningful message
+            if (!result.Any())
+            {
+                var filterDescription = BuildFilterDescription(filter);
+                throw new InvalidOperationException($"No vessel visit notifications found with the specified criteria: {filterDescription}");
+            }
+
+            return result.Select(VesselVisitNotificationMapper.ToDTO);
+        }
+
+        private static string BuildFilterDescription(VesselVisitNotificationFilterDTO filter)
+        {
+            var criteria = new List<string>();
+            
+            if (!string.IsNullOrEmpty(filter.VesselIMO))
+                criteria.Add($"Vessel IMO: {filter.VesselIMO}");
+            
+            if (!string.IsNullOrEmpty(filter.Status))
+                criteria.Add($"Status: {filter.Status}");
+            
+            if (filter.FromDate.HasValue)
+                criteria.Add($"From Date: {filter.FromDate.Value:yyyy-MM-dd}");
+            
+            if (filter.ToDate.HasValue)
+                criteria.Add($"To Date: {filter.ToDate.Value:yyyy-MM-dd}");
+            
+            if (!string.IsNullOrEmpty(filter.Representative))
+                criteria.Add($"Representative: {filter.Representative}");
+            
+            return string.Join(", ", criteria);
+        }
+
         public async Task<VesselVisitNotificationDTO?> GetByIdAsync(Guid id)
         {
             var visit = await _repository.GetByIdAsync(id);

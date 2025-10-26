@@ -29,6 +29,30 @@ namespace WebApp.Controllers
             return Ok(visits);
         }
 
+        // GET: api/vesselvisitnotification/search
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<VesselVisitNotificationDTO>>> SearchAsync(
+            [FromQuery] string? vesselIMO,
+            [FromQuery] string? status,
+            [FromQuery] DateTime? fromDate,
+            [FromQuery] DateTime? toDate,
+            [FromQuery] string? representative)
+        {
+            try
+            {
+                var filter = VesselVisitNotificationMapper.ToFilterDTO(
+                    vesselIMO, status, fromDate, toDate, representative);
+
+                var visits = await _service.SearchAsync(filter);
+                return Ok(visits);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while searching Vessel Visit Notifications.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
         // GET: api/vesselvisitnotification/{id}
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<VesselVisitNotificationDTO>> GetByIdAsync(Guid id)

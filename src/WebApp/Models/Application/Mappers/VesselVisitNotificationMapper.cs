@@ -66,5 +66,22 @@ namespace WebApp.Models.Application.Mappers
 
             return entity;
         }
+
+        public static VesselVisitNotificationFilterDTO ToFilterDTO(
+            string? vesselIMO, 
+            string? status, 
+            DateTime? fromDate, 
+            DateTime? toDate, 
+            string? representative)
+        {
+            return new VesselVisitNotificationFilterDTO
+            {
+                VesselIMO = vesselIMO,
+                Status = status,
+                FromDate = fromDate,
+                ToDate = toDate,
+                Representative = representative
+            };
+        }
     }
 }
