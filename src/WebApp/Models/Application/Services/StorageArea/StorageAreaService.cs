@@ -1,6 +1,8 @@
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.StorageArea;
 using WebApp.Models.Infrastructure.Repositories;
+using WebApp.Models.Application.DTOs;
+using WebApp.Models.Application.Mappers;
 
 namespace WebApp.Models.Application.Services
 {
@@ -23,6 +25,13 @@ namespace WebApp.Models.Application.Services
                 throw new ArgumentException("A container yard with the same ID already exists.", nameof(yard.Id));
             
             await _storageAreaRepo.AddStorageAreaAsync(yard);
+            
+            // After saving, create DockConnections from DocksServed if there are any docks
+            if (yard.DocksServed.Any())
+            {
+                yard.CreateConnectionsFromDocksServed();
+                await _storageAreaRepo.UpdateContainerYardAsync(yard);
+            }
         }
 
         public async Task AddWarehouseAsync(Warehouse warehouse)
@@ -97,23 +106,29 @@ namespace WebApp.Models.Application.Services
         }
 
 
-        public Task UpdateConnectionAsync(DockStorageAreaConnection connection)
+        public async Task<DockStorageAreaConnection> UpdateConnectionFromDtoAsync(int storageAreaId, Guid dockId, DockStorageAreaConnectionDTO dto)
         {
-            if (connection == null)
-                throw new ArgumentNullException(nameof(connection));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
 
-            if (connection.DistanceMeters < 0)
-                throw new ArgumentException("Distance cannot be negative.", nameof(connection.DistanceMeters));
+            // Get the existing connection
+            var existingConnection = await GetConnectionAsync(storageAreaId, dockId);
+            if (existingConnection == null)
+                throw new ArgumentException($"Connection between storage area {storageAreaId} and dock {dockId} not found.");
 
-            if (connection.TravelSeconds < 0)
-                throw new ArgumentException("Travel time cannot be negative.", nameof(connection.TravelSeconds));
+            // Validate the DTO values
+            if (dto.DistanceMeters < 0)
+                throw new ArgumentException("Distance cannot be negative.", nameof(dto.DistanceMeters));
+            if (dto.TravelSeconds < 0)
+                throw new ArgumentException("Travel time cannot be negative.", nameof(dto.TravelSeconds));
 
-            var storageArea = GetStorageAreaByIdAsync(connection.StorageAreaId).Result;
-            if (storageArea == null)
-                throw new ArgumentException("Storage area not found.", nameof(connection.StorageAreaId));
+            // Update the existing entity using mapper
+            DockStorageAreaConnectionMapper.UpdateFromDto(existingConnection, dto);
 
-            storageArea.UpdateDockConnection(connection);
-            return _storageAreaRepo.UpdateConnectionAsync(connection);
+            // Update through repository
+            await _storageAreaRepo.UpdateConnectionAsync(existingConnection);
+            
+            return existingConnection;
         }
         
         public Task RemoveConnectionAsync(int storageAreaId, Guid dockId)

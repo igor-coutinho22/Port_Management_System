@@ -7,10 +7,16 @@ namespace WebApp.Models.Application.Services
 {
     public interface IDockService
     {
-        Task<Dock> CreateAsync(DockDto dto);
+        Task CreateAsync(Dock dock);
         Task<Dock?> GetByIdAsync(Guid id);
-        Task<IEnumerable<Dock>> SearchAsync(string? name, string? location, string? vesselTypeName);
-        Task UpdateAsync(Guid id, DockDto dto);
+        Task<Dock?> GetByNameAsync(string name);
+        Task<Dock?> GetByLocationAsync(string location);
+        Task<List<Dock>> SearchByVesselTypeAsync(string vesselTypeName);
+        Task<List<Dock>> SearchByLocationAsync(string location);
+        Task<List<Dock>> SearchByNameAsync(string name);
+        Task UpdateAsync(Dock dock);
+        Task DeleteAsync(Guid id);
+        Task<List<Dock>> GetAllAsync();
     }
 
 }

@@ -13,7 +13,9 @@ namespace WebApp.Models.Application.Mappers
 
             return new WarehouseDto
             {
+                Id = warehouse.Id,
                 Name = warehouse.Name,
+                Type = warehouse.Type,
                 MaxCapacityTeu = warehouse.MaxCapacityTeu,
                 CurrentOccupancyTeu = warehouse.CurrentOccupancyTeu,
                 SpecializedCargoType = warehouse.SpecializedCargoType
@@ -27,6 +29,20 @@ namespace WebApp.Models.Application.Mappers
 
             return new Warehouse
             (
+                name: dto.Name!,
+                maxCapacityTeu: dto.MaxCapacityTeu,
+                currentOccupancyTeu: dto.CurrentOccupancyTeu,
+                specializedCargoType: dto.SpecializedCargoType!
+            );
+        }
+
+        public static Warehouse MapToDomainForUpdate(int id, WarehouseDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            return Warehouse.CreateForUpdate(
+                id: id,
                 name: dto.Name!,
                 maxCapacityTeu: dto.MaxCapacityTeu,
                 currentOccupancyTeu: dto.CurrentOccupancyTeu,

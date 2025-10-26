@@ -13,6 +13,7 @@ namespace WebApp.Models.Application.Mappers
 
             return new StorageAreaDTO
             {
+                Id = storageArea.Id,
                 Name = storageArea.Name,
                 Type = storageArea.Type,
                 MaxCapacityTeu = storageArea.MaxCapacityTeu,

@@ -8,6 +8,14 @@ namespace WebApp.Models.Application.DTOs
         IEnumerable<CreateRepresentativeRequest> Representatives
     );
 
+    // NOVO: request para update
+    public record UpdateOrganizationRequest(
+        string LegalName,
+        string AlternativeNames,
+        string Address,
+        string TaxNumber
+    );
+
     public record OrganizationDto(
         Guid Id,
         string LegalName,
@@ -15,5 +23,4 @@ namespace WebApp.Models.Application.DTOs
         string Address,
         string TaxNumber
     );
-
 }

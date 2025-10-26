@@ -13,10 +13,12 @@ namespace WebApp.Models.Application.Mappers
 
             return new ContainerYardDto
             {
+                Id = containerYard.Id,
                 Name = containerYard.Name,
+                Type = containerYard.Type,
                 MaxCapacityTeu = containerYard.MaxCapacityTeu,
                 CurrentOccupancyTeu = containerYard.CurrentOccupancyTeu,
-                DockIds = containerYard.DocksServed.Select(d => d.Id).ToList()
+                DockIds = containerYard.DockConnections.Select(dc => dc.DockId).ToList()
             };
         }
 
@@ -27,6 +29,20 @@ namespace WebApp.Models.Application.Mappers
 
             return new ContainerYard
             (
+                name: dto.Name!,
+                maxCapacityTeu: dto.MaxCapacityTeu,
+                currentOccupancyTeu: dto.CurrentOccupancyTeu,
+                docksServed: docks
+            );
+        }
+
+        public static ContainerYard MapToDomainForUpdate(int id, ContainerYardDto dto, ICollection<Dock> docks)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            return ContainerYard.CreateForUpdate(
+                id: id,
                 name: dto.Name!,
                 maxCapacityTeu: dto.MaxCapacityTeu,
                 currentOccupancyTeu: dto.CurrentOccupancyTeu,

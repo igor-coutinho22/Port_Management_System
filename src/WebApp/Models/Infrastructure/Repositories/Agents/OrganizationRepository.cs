@@ -20,5 +20,26 @@ namespace WebApp.Models.Infrastructure.Repositories
             await _context.Organizations.AddAsync(org);
             await _context.SaveChangesAsync();
         }
+
+        // listar com filtros
+        public async Task<IEnumerable<ShippingAgentOrganization>> ListAsync(string? name, string? taxNumber)
+        {
+            var q = _context.Organizations.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
+                q = q.Where(o => o.LegalName.Contains(name) || o.AlternativeNames.Contains(name));
+
+            if (!string.IsNullOrWhiteSpace(taxNumber))
+                q = q.Where(o => o.TaxNumber.Contains(taxNumber));
+
+            return await q.OrderBy(o => o.LegalName).ToListAsync();
+        }
+
+        // update
+        public async Task UpdateAsync(ShippingAgentOrganization org)
+        {
+            _context.Organizations.Update(org);
+            await _context.SaveChangesAsync();
+        }
     }
 }
