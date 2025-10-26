@@ -87,5 +87,44 @@ namespace WebApp.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
+        // PUT: api/vesselvisitnotification/{id}/approve
+        [HttpPut("{id:guid}/approve")]
+        public async Task<IActionResult> ApproveAsync(Guid id, [FromQuery] Guid officerId, [FromQuery] Guid dockId)
+        {
+            try
+            {
+                await _service.ApproveAsync(id, officerId, dockId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // PUT: api/vesselvisitnotification/{id}/reject
+        [HttpPut("{id:guid}/reject")]
+        public async Task<IActionResult> RejectAsync(Guid id, [FromQuery] Guid officerId, [FromBody] string reason)
+        {
+            try
+            {
+                await _service.RejectAsync(id, officerId, reason);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

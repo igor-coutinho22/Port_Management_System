@@ -53,5 +53,25 @@ namespace WebApp.Models.Application.Services
             notification.MarkAsSubmitted();
             await _repository.UpdateAsync(notification);
         }
+
+        public async Task ApproveAsync(Guid id, Guid officerId, Guid dockId)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.Approve(officerId, dockId);
+            await _repository.UpdateAsync(visit);
+        }
+
+        public async Task RejectAsync(Guid id, Guid officerId, string reason)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.Reject(officerId, reason);
+            await _repository.UpdateAsync(visit);
+        }
+
+
     }
 }

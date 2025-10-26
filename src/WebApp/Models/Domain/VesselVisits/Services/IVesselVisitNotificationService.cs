@@ -8,5 +8,8 @@ namespace WebApp.Models.Domain.VesselVisits.Services
         Task<VesselVisitNotificationDTO?> GetByIdAsync(Guid id);
         Task<VesselVisitNotificationDTO> CreateAsync(VesselVisitNotificationDTO dto);
         Task SubmitAsync(Guid id);
+        Task ApproveAsync(Guid id, Guid officerId, Guid dockId);
+        Task RejectAsync(Guid id, Guid officerId, string reason);
+
     }
 }
