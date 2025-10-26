@@ -10,7 +10,7 @@ namespace WebApp.Models.Application.Mappers
             return new VesselVisitNotificationDTO
             {
                 Id = entity.Id,
-                VesselId = entity.VesselId,
+                VesselId = entity.VesselIMO,
                 DockId = entity.DockId,
                 VisitDate = entity.VisitDate,
                 Status = entity.Status.ToString(),

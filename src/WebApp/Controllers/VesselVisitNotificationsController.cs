@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
+using WebApp.Models.Application.Mappers;
 using WebApp.Models.Application.Services;
 using WebApp.Models.Domain.VesselVisits.Services;
 
@@ -125,6 +126,39 @@ namespace WebApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        
+        [HttpPut("{id:guid}/updateWhileInProgress")]
+        public async Task<IActionResult> UpdateWhileInProgress(Guid id, [FromBody] VesselVisitNotificationDTO dto)
+        {
+            if (dto == null)
+                return BadRequest("Request body cannot be empty.");
 
+            try
+            {
+                var existing = await _service.GetByIdAsync(id);
+                if (existing == null)
+                    return NotFound("Vessel Visit Notification not found.");
+
+                var updated = VesselVisitNotificationMapper.ToEntity(dto);
+                await _service.UpdateAsync(id, updated);
+                
+                // Return the updated entity
+                var result = await _service.GetByIdAsync(id);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while updating Vessel Visit Notification.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
     }
 }

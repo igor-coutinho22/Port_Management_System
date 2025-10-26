@@ -19,7 +19,7 @@ namespace WebApp.Models.Infrastructure.Configurations.VesselVisits
                    .IsRequired()
                    .HasConversion<string>();
 
-            builder.Property(v => v.VesselId).IsRequired();
+            builder.Property(v => v.VesselIMO).IsRequired();
             builder.Property(v => v.DockId).IsRequired();
 
             // Relationships — 1:1 optional with CargoManifests

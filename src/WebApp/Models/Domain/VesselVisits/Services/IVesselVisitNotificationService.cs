@@ -7,6 +7,7 @@ namespace WebApp.Models.Domain.VesselVisits.Services
         Task<IEnumerable<VesselVisitNotificationDTO>> GetAllAsync();
         Task<VesselVisitNotificationDTO?> GetByIdAsync(Guid id);
         Task<VesselVisitNotificationDTO> CreateAsync(VesselVisitNotificationDTO dto);
+        Task UpdateAsync(Guid id, VesselVisitNotification vvn);
         Task SubmitAsync(Guid id);
         Task ApproveAsync(Guid id, Guid officerId, Guid dockId);
         Task RejectAsync(Guid id, Guid officerId, string reason);

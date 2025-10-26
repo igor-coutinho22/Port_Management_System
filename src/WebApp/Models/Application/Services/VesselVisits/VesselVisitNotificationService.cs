@@ -2,16 +2,21 @@ using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Mappers;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
+using WebApp.Models.Infrastructure.Repositories;
 
 namespace WebApp.Models.Application.Services
 {
     public class VesselVisitNotificationService : IVesselVisitNotificationService
     {
         private readonly IVesselVisitNotificationRepository _repository;
+        private readonly IVesselRepository _vesselRepository;
+        private readonly IDockRepository _dockRepository;
 
-        public VesselVisitNotificationService(IVesselVisitNotificationRepository repository)
+        public VesselVisitNotificationService(IVesselVisitNotificationRepository repository, IVesselRepository vesselRepository, IDockRepository dockRepository)
         {
             _repository = repository;
+            _vesselRepository = vesselRepository;
+            _dockRepository = dockRepository;
         }
 
         public async Task<IEnumerable<VesselVisitNotificationDTO>> GetAllAsync()
@@ -72,6 +77,39 @@ namespace WebApp.Models.Application.Services
             await _repository.UpdateAsync(visit);
         }
 
+        public async Task UpdateAsync(Guid id, VesselVisitNotification vvn)
+        {
+            var existingVisit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
 
+            // Only allow updates if the visit is InProgress
+            if (existingVisit.Status != VesselVisitStatus.InProgress)
+            {
+                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+            }
+
+            var vessel = await _vesselRepository.GetByIMOAsync(vvn.VesselIMO!);
+            if (vessel == null)
+            {
+                throw new InvalidOperationException("Vessel not found.");
+            }
+
+            var dock = await _dockRepository.GetByIdAsync(vvn.DockId);
+            if (dock == null)
+            {
+                throw new InvalidOperationException("Dock not found.");
+            }
+
+            // Update fields
+            existingVisit.UpdateVesselIMO(vvn.VesselIMO!);
+            existingVisit.UpdatePurpose(vvn.Purpose);
+            existingVisit.UpdateDockId(vvn.DockId);
+            existingVisit.UpdateVisitDate(vvn.VisitDate);
+            existingVisit.UpdateLoadingManifest(vvn.LoadingManifest);
+            existingVisit.UpdateUnloadingManifest(vvn.UnloadingManifest);
+            existingVisit.UpdateCrew(vvn.Crew);
+
+            await _repository.UpdateAsync(existingVisit);
+        }
     }
 }

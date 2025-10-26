@@ -14,7 +14,7 @@ public class VesselVisitNotificationTests
 
         var vvn = new VesselVisitNotification(vesselId, dockId, visitDate, VisitPurpose.Maintenance);
 
-        vvn.VesselId.Should().Be(vesselId);
+        vvn.VesselIMO.Should().Be(vesselId);
         vvn.DockId.Should().Be(dockId);
         vvn.VisitDate.Should().Be(visitDate);
         vvn.Purpose.Should().Be(VisitPurpose.Maintenance);
