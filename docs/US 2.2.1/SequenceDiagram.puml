@@ -1,0 +1,114 @@
+@startuml US 2.2.1
+title **US 2.2.1 – Manage Vessel Types (Create & Update)**
+
+
+actor "Port Authority Officer" as Officer
+participant "VesselTypesController" as Controller
+participant "VesselTypeMapper" as Mapper
+participant "VesselTypeService" as Service
+participant "VesselTypeRepository" as Repo
+database "PortManagementContext" as Db
+
+== Create Vessel Type (POST /api/VesselTypes) ==
+
+Officer -> Controller : POST /api/VesselTypes\n(VesselTypeDTO)
+activate Controller
+
+Controller -> Mapper : MapToDomain(dto)
+activate Mapper
+Mapper --> Controller : VesselType
+deactivate Mapper
+
+Controller -> Service : AddVesselTypeAsync(vesselType)
+activate Service
+
+Service -> Repo : GetVesselTypeByNameAsync(name)
+activate Repo
+Repo -> Db : Query (WHERE Name == name)
+Db --> Repo : null (not found)
+Repo --> Service : null
+deactivate Repo
+
+Service -> Repo : AddVesselTypeAsync(vesselType)
+activate Repo
+Repo -> Db : AddAsync(vesselType)
+Db --> Repo : vesselType added
+Repo -> Db : SaveChangesAsync()
+Db --> Repo : persisted
+Repo --> Service : success
+deactivate Repo
+
+Service --> Controller : success
+deactivate Service
+
+Controller -> Service : GetVesselTypeByNameAsync(dto.Name)
+activate Service
+Service -> Repo : GetVesselTypeByNameAsync(name)
+activate Repo
+Repo -> Db : Query (WHERE Name == name)
+Db --> Repo : VesselType entity
+Repo --> Service : VesselType
+deactivate Repo
+Service --> Controller : VesselType
+deactivate Service
+
+Controller -> Mapper : MapToDto(vesselType)
+activate Mapper
+Mapper --> Controller : VesselTypeDTO
+deactivate Mapper
+
+Controller --> Officer : 201 Created\n(VesselTypeDTO)
+deactivate Controller
+
+== Update Vessel Type (PUT /api/VesselTypes/{currentName}) ==
+
+Officer -> Controller : PUT /api/VesselTypes/{currentName}\n(VesselTypeDTO)
+activate Controller
+
+Controller -> Service : GetVesselTypeByNameAsync(currentName)
+activate Service
+Service -> Repo : GetVesselTypeByNameAsync(currentName)
+activate Repo
+Repo -> Db : Query (WHERE Name == currentName)
+Db --> Repo : existing VesselType
+Repo --> Service : VesselType
+deactivate Repo
+Service --> Controller : VesselType (found)
+deactivate Service
+
+Controller -> Mapper : MapToDomainForUpdate(dto)
+activate Mapper
+Mapper --> Controller : updated VesselType
+deactivate Mapper
+
+Controller -> Service : UpdateVesselTypeAsync(updatedVesselType)
+activate Service
+
+Service -> Repo : GetVesselTypeByNameAsync(name)
+activate Repo
+Repo -> Db : Query (WHERE Name == name)
+Db --> Repo : existing VesselType
+Repo --> Service : existing VesselType
+deactivate Repo
+
+Service -> Repo : UpdateVesselTypeAsync(existingVesselType)
+activate Repo
+Repo -> Db : Update(entity)
+Db -> Db : SaveChangesAsync()
+Db --> Repo : success
+Repo --> Service : success
+deactivate Repo
+
+Service --> Controller : success
+deactivate Service
+
+Controller -> Mapper : MapToDto(updatedVesselType)
+activate Mapper
+Mapper --> Controller : VesselTypeDTO
+deactivate Mapper
+
+Controller --> Officer : 201 Created\n(VesselTypeDTO)
+deactivate Controller
+
+
+@enduml
