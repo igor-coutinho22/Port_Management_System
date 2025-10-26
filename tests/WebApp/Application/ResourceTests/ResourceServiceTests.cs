@@ -1,13 +1,13 @@
 using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Resources.Enums;
-using WebApp.Models.Domain.Resources.Interfaces;
 using WebApp.Models.Application.Services.Resources;
-using WebApp.Models.Domain.Qualifications;
+using WebApp.Models.Domain.Resources.Interfaces;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit;
 
 public class ResourceServiceTests
 {
@@ -92,7 +92,7 @@ public class ResourceServiceTests
 
         var act = async () => await _service.PutInMaintenanceAsync("R004");
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("A resource with status Inactive cannot be set to maintenance");
+            .WithMessage("A resource with status 'inactive' cannot be set for maintenance.");
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class ResourceServiceTests
 
         var act = async () => await _service.EndMaintenanceAsync("R006");
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("A resource with status Inactive cannot end maintenance");
+            .WithMessage("A resource with status 'inactive' cannot end maintenance.");
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class ResourceServiceTests
 
         var act = async () => await _service.ActivateAsync("R008");
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("A resource with status Active cannot be activated");
+            .WithMessage("A resource with status 'active' cannot be activated.");
     }
 
     [Fact]
@@ -185,56 +185,81 @@ public class ResourceServiceTests
     //
     private class StubResourceRepository : IResourceRepository
     {
-        private readonly Dictionary<string, Resource> _resources = new();
+        private readonly List<Resource> _resources = new();
 
-        public Task<Resource?> GetByIdAsync(string id)
+        public void AddResource(Resource resource)
         {
-            _resources.TryGetValue(id, out var resource);
-            return Task.FromResult(resource);
+            _resources.Add(resource);
         }
-
-        public Task<Resource?> GetByDescriptionAsync(string description)
-        {
-            var resource = _resources.Values.FirstOrDefault(r =>
-                r.Description != null && r.Description.Equals(description, StringComparison.OrdinalIgnoreCase));
-            return Task.FromResult(resource);
-        }
-
-        public Task<List<Resource>> GetAllAsync() =>
-            Task.FromResult(_resources.Values.ToList());
 
         public Task AddResourceAsync(Resource resource)
         {
-            if (string.IsNullOrWhiteSpace(resource.Id))
-                throw new ArgumentException("Resource ID cannot be null or empty.");
-
-            _resources[resource.Id!] = resource;
+            _resources.Add(resource);
             return Task.CompletedTask;
         }
 
+        public Resource? GetById(string id)
+            => _resources.FirstOrDefault(r => r.Id == id);
+
+        public Task<Resource?> GetByIdAsync(string id)
+            => Task.FromResult(_resources.FirstOrDefault(r => r.Id == id));
+
+        public Resource? GetByDescription(string description)
+            => _resources.FirstOrDefault(r => r.Description == description);
+
+        public Task<Resource?> GetByDescriptionAsync(string description)
+            => Task.FromResult(_resources.FirstOrDefault(r => r.Description == description));
+
+        public List<Resource> GetAll()
+            => _resources.ToList();
+
+        public Task<List<Resource>> GetAllAsync()
+            => Task.FromResult(_resources.ToList());
+
+        public List<Resource> GetByType(ResourceType type)
+            => _resources.Where(r => r.ResourceType == type).ToList();
+
         public Task<List<Resource>> GetByTypeAsync(ResourceType type)
-        {
-            var result = _resources.Values.Where(r => r.ResourceType == type).ToList();
-            return Task.FromResult(result);
-        }
+            => Task.FromResult(_resources.Where(r => r.ResourceType == type).ToList());
+
+        public List<Resource> GetByStatus(ResourceAvailabilityStatus status)
+            => _resources.Where(r => r.Status == status).ToList();
 
         public Task<List<Resource>> GetByStatusAsync(ResourceAvailabilityStatus status)
+            => Task.FromResult(_resources.Where(r => r.Status == status).ToList());
+
+        public void UpdateAvailability(string id, ResourceAvailabilityStatus newStatus)
         {
-            var result = _resources.Values.Where(r => r.Status == status).ToList();
-            return Task.FromResult(result);
+            var res = _resources.FirstOrDefault(r => r.Id == id);
+            if (res != null) res.Status = newStatus;
         }
 
         public Task UpdateAvailabilityAsync(string id, ResourceAvailabilityStatus newStatus)
         {
-            if (_resources.TryGetValue(id, out var resource))
-                resource.Status = newStatus;
+            UpdateAvailability(id, newStatus);
             return Task.CompletedTask;
         }
 
+        public Task UpdateAsync(Resource resource)
+        {
+            var existing = _resources.FirstOrDefault(r => r.Id == resource.Id);
+            if (existing != null)
+            {
+                existing.Description = resource.Description;
+                existing.ResourceType = resource.ResourceType;
+                existing.Status = resource.Status;
+                existing.OperationalCapacity = resource.OperationalCapacity;
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateResourceAsync(Resource resource) => UpdateAsync(resource);
+
         public Task DeleteAsync(string id)
         {
-            _resources.Remove(id);
+            _resources.RemoveAll(r => r.Id == id);
             return Task.CompletedTask;
         }
     }
+
 }

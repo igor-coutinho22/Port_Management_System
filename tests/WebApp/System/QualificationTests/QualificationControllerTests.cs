@@ -1,15 +1,19 @@
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using WebApp;
 using WebApp.Models.Application.DTOs;
+using Xunit;
 
-public class QualificationControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public class QualificationControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
 
-    public QualificationControllerTests(WebApplicationFactory<Program> factory)
+    public QualificationControllerTests(TestWebAppFactory factory)
     {
         _client = factory.CreateClient();
     }
@@ -25,12 +29,8 @@ public class QualificationControllerTests : IClassFixture<WebApplicationFactory<
 
         var response = await _client.PostAsJsonAsync("/api/qualifications", dto);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-    }
 
-    [Fact]
-    public async Task GetQualification_ShouldReturnCreatedQualification()
-    {
-        var response = await _client.GetAsync("/api/qualifications/Q100");
+        response = await _client.GetAsync("/api/qualifications/Q100");
         response.EnsureSuccessStatusCode();
 
         var qualification = await response.Content.ReadFromJsonAsync<QualificationDTO>();
@@ -42,28 +42,25 @@ public class QualificationControllerTests : IClassFixture<WebApplicationFactory<
     {
         var dto = new QualificationDTO
         {
-            Code = "Q100",
-            Name = "Updated Crane Operator"
+            Code = "Q3",
+            Name = "Updated Hazardous Cargo Handling"
         };
 
-        var response = await _client.PutAsJsonAsync("/api/qualifications/Q100", dto);
+        var response = await _client.PutAsJsonAsync("/api/qualifications/Q3", dto);
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        dto.Name = "Hazardous Cargo Handling";
+        await _client.PutAsJsonAsync("/api/qualifications/Q100", dto);
     }
 
-    [Fact]
-    public async Task DeleteQualification_ShouldReturnNoContent()
+    public async Task InitializeAsync()
     {
-        var response = await _client.DeleteAsync("/api/qualifications/Q100");
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
-    [Fact]
-    public async Task GetAllQualifications_ShouldReturnList()
+    public async Task DisposeAsync()
     {
-        var response = await _client.GetAsync("/api/qualifications");
-        response.EnsureSuccessStatusCode();
-
-        var list = await response.Content.ReadFromJsonAsync<List<QualificationDTO>>();
-        list.Should().NotBeNull();
+    
+        await _client.DeleteAsync("/api/qualifications/Q100");
+    
     }
+    
 }

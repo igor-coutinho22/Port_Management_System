@@ -13,7 +13,12 @@ namespace WebApp.Models.Application.Services.Qualifications
         }
 
         public void RegisterQualification(string code, string name)
-        {
+        {   
+            if (string.IsNullOrWhiteSpace(code))
+                throw new ArgumentNullException(nameof(code));
+
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Name cannot be empty.", nameof(name));
             if (_qualificationRepository.GetByCode(code) != null)
                 throw new ArgumentException($"Qualification with code '{code}' already exists.");
 
@@ -40,11 +45,16 @@ namespace WebApp.Models.Application.Services.Qualifications
         }
 
         public async Task UpdateQualificationAsync(Qualification qualification)
-        {
+        {   
             if (qualification == null)
                 throw new ArgumentNullException(nameof(qualification));
 
-            await _qualificationRepository.UpdateAsync(qualification);
+            var existing = await _qualificationRepository.GetByCodeAsync(qualification.Code);
+            if (existing == null)
+                throw new KeyNotFoundException($"Qualification with code {qualification.Code} not found.");
+
+            existing.Name = qualification.Name;
+            await _qualificationRepository.UpdateAsync(existing);
         }
 
         public Qualification? GetByCode(string code) =>
@@ -56,16 +66,23 @@ namespace WebApp.Models.Application.Services.Qualifications
         public List<Qualification> GetAll() =>
             _qualificationRepository.GetAll();
 
-        public async Task<Qualification?> GetByCodeAsync(string code) =>
-            await _qualificationRepository.GetByCodeAsync(code);
-
-        public async Task<Qualification?> GetByNameAsync(string name) =>
-            await _qualificationRepository.GetByNameAsync(name);
+        public async Task<Qualification?> GetByCodeAsync(string code) {
+            return await _qualificationRepository.GetByCodeAsync(code);
+            
+        }
+        public async Task<Qualification?> GetByNameAsync(string name) {
+            return await _qualificationRepository.GetByNameAsync(name);
+        }
 
         public async Task<List<Qualification>> GetAllAsync() =>
             await _qualificationRepository.GetAllAsync();
 
-        public async Task DeleteAsync(string code) =>
-            await _qualificationRepository.DeleteAsync(code);
+        public async Task DeleteAsync(string code) {
+        var existing = await _qualificationRepository.GetByCodeAsync(code);
+        if (existing == null)
+            throw new KeyNotFoundException($"Qualification with code {code} not found.");
+
+        await _qualificationRepository.DeleteAsync(existing);
+    }
     }
 }

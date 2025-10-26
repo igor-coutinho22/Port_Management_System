@@ -4,6 +4,8 @@ using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Resources.Enums;
 using WebApp.Models.Infrastructure.Repositories.Resources;
 using FluentAssertions;
+using Xunit;
+using System.Threading.Tasks;
 
 public class ResourceRepositoryTests
 {

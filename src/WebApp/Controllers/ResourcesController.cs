@@ -60,26 +60,31 @@ namespace PortApi.Controllers
         }
 
         // POST: api/resources
+        
         [HttpPost]
-        public async Task<ActionResult<ResourceDTO>> PostResource(ResourceDTO resourceDTO)
+        public async Task<ActionResult<ResourceDTO>> PostResource([FromBody] ResourceDTO resourceDTO)
         {
-            var qualifications = resourceDTO.QualificationRequirements ?? new HashSet<Qualification>();
+            try
+            {
+                var resource = ResourceMapper.ToDomain(resourceDTO);
+                await _resourceService.RegisterResourceAsync(resource);
 
-            var resource = ResourceMapper.ToDomain(resourceDTO);
-            await _resourceService.RegisterResourceAsync(resource);
-
-            var created = await _resourceService.GetResourceByIdAsync(resourceDTO.Id!);
-            return CreatedAtAction(nameof(GetResourceById), new { id = created!.Id }, ResourceMapper.ToDTO(created));
+                var created = await _resourceService.GetResourceByIdAsync(resource.Id!);
+                return CreatedAtAction(nameof(GetResourceById), new { id = created!.Id }, ResourceMapper.ToDTO(created));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // PUT: api/resources/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutResource(string id, ResourceDTO resourceDTO)
+        public async Task<IActionResult> PutResource(string id, [FromBody] ResourceDTO resourceDTO)
         {
             var resource = await _resourceService.GetResourceByIdAsync(id);
             if (resource == null)
                 return NotFound();
-
 
             var updated = ResourceMapper.ToDomain(resourceDTO);
             updated.Id = id;
@@ -88,7 +93,7 @@ namespace PortApi.Controllers
             return NoContent();
         }
 
-        // PATCH: api/resources/{id}/activate
+        // PATCH endpoints
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> ActivateResource(string id)
         {
@@ -104,7 +109,6 @@ namespace PortApi.Controllers
             }
         }
 
-        // PATCH: api/resources/{id}/deactivate
         [HttpPatch("{id}/deactivate")]
         public async Task<IActionResult> DeactivateResource(string id)
         {
@@ -120,7 +124,6 @@ namespace PortApi.Controllers
             }
         }
 
-        // PATCH: api/resources/{id}/maintenance/start
         [HttpPatch("{id}/maintenance/start")]
         public async Task<IActionResult> PutInMaintenance(string id)
         {
@@ -136,7 +139,6 @@ namespace PortApi.Controllers
             }
         }
 
-        // PATCH: api/resources/{id}/maintenance/end
         [HttpPatch("{id}/maintenance/end")]
         public async Task<IActionResult> EndMaintenance(string id)
         {
@@ -151,7 +153,6 @@ namespace PortApi.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
 
         // DELETE: api/resources/{id}
         [HttpDelete("{id}")]

@@ -1,44 +1,47 @@
-using Microsoft.AspNetCore.Mvc.Testing;
+
 using System.Net;
 using System.Net.Http.Json;
 using WebApp.Models.Domain.Resources.Enums;
 using FluentAssertions;
+using Xunit;
+using System.Net.Http;
+using System.Threading.Tasks;
+using WebApp.Models.Application.DTOs;
+using WebApp.Models.Domain.Qualifications;
+using WebApp.Models.Domain.Resources;
+using System.Collections.Generic;
+using System;
 
-public class ResourceControllerTests : IClassFixture<WebApplicationFactory<Program>>
+
+public class ResourceControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
+
 {
     private readonly HttpClient _client;
 
-    public ResourceControllerTests(WebApplicationFactory<Program> factory)
+    public ResourceControllerTests(TestWebAppFactory factory)
     {
-        _client = factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
-            {
-                // Uses InMemory DB instead of Azure
-                services.RemoveAll(typeof(DbContextOptions<WebApp.Models.Context.PortManagementContext>));
-                services.AddDbContext<WebApp.Models.Context.PortManagementContext>(options =>
-                    options.UseInMemoryDatabase("SystemResourceTests"));
-            });
-        }).CreateClient();
+        _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task Post_And_Get_Resource_ShouldWork()
     {
-        var dto = new
+
+        var dto = new ResourceDTO
         {
-            id = "R001",
-            description = "Crane #1",
-            resourceType = ResourceType.STSCrane,
-            operationalCapacity = 100,
-            status = ResourceAvailabilityStatus.Active,
-            setupTime = 15
+            Id = "R999",
+            Description = "Crane #1",
+            ResourceType = ResourceType.STSCrane,
+            OperationalCapacity = 100,
+            Status = ResourceAvailabilityStatus.Active,
+            SetupTime = 15,
+            QualificationRequirements = new HashSet<QualificationDTO>()
         };
 
         var postResponse = await _client.PostAsJsonAsync("/api/resources", dto);
         postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var getResponse = await _client.GetAsync("/api/resources/R001");
+        var getResponse = await _client.GetAsync("/api/resources/R999");
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await getResponse.Content.ReadAsStringAsync();
@@ -50,19 +53,29 @@ public class ResourceControllerTests : IClassFixture<WebApplicationFactory<Progr
     {
         var dto = new
         {
-            id = "R002",
-            description = "Truck #1",
-            resourceType = ResourceType.Truck,
-            operationalCapacity = 50,
-            status = ResourceAvailabilityStatus.Active,
-            setupTime = 5
+            Id = "R999",
+            Description = "Updated Crane #1",
+            ResourceType = ResourceType.STSCrane,
+            OperationalCapacity = 100,
+            Status = ResourceAvailabilityStatus.Active,
+            SetupTime = 15,
+            QualificationRequirements = new HashSet<QualificationDTO>()
         };
         await _client.PostAsJsonAsync("/api/resources", dto);
 
-        var response = await _client.PatchAsync("/api/resources/R002/deactivate", null);
+        var response = await _client.PatchAsync("/api/resources/R999/deactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var json = await (await _client.GetAsync("/api/resources/R002")).Content.ReadAsStringAsync();
-        json.Should().Contain("Inactive");
+        var json = await (await _client.GetAsync("/api/resources/R999")).Content.ReadAsStringAsync();
+        json.Should().Contain("inactive");
+    }
+    public async Task InitializeAsync()
+    {
+    }
+
+    public async Task DisposeAsync()
+    {
+        // Cleanup
+        await _client.DeleteAsync("/api/resources/R999");
     }
 }

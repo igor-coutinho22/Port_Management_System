@@ -1,5 +1,7 @@
 using WebApp.Models.Domain.Qualifications;
 using FluentAssertions;
+using Xunit;
+using System;
 
 public class QualificationTests
 {

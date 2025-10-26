@@ -14,5 +14,6 @@ namespace WebApp.Models.Domain.Qualifications.Interfaces
         Task<List<Qualification>> GetAllAsync();
         Task UpdateAsync(Qualification qualification);
         Task DeleteAsync(string code);
+        Task DeleteAsync(Qualification code);
     }
 }
