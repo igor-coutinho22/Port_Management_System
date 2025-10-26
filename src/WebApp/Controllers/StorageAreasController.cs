@@ -49,9 +49,10 @@ namespace WebApp.Controllers
                 }
 
                 var yard = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as ContainerYard;
-                if (yard == null)
-                    return BadRequest($"Container yard with name '{dto.Name}' does not exist.");
+                if (yard != null)
+                    return BadRequest($"Container yard with name '{dto.Name}' already exists.");
                 
+                yard = ContainerYardMapper.MapToDomain(dto, docks);
                 await _storageAreaService.AddContainerYardAsync(yard);
 
                 var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name);
@@ -76,8 +77,10 @@ namespace WebApp.Controllers
                     return BadRequest("Specialized cargo type is required.");
 
                 var warehouse = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as Warehouse;
-                if (warehouse == null)
-                    return BadRequest($"Warehouse with name '{dto.Name}' does not exist.");
+                if (warehouse != null)
+                    return BadRequest($"Warehouse with name '{dto.Name}' already exists.");
+
+                warehouse = WarehouseMapper.MapToDomain(dto);
                 await _storageAreaService.AddWarehouseAsync(warehouse);
 
                 var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name);
