@@ -9,24 +9,24 @@ namespace WebApp.Models.Domain.VesselVisits
     public class VesselVisitNotification
     {
         public Guid Id { get; private set; }
-        public Guid VesselId { get; private set; }
-        public DateTime VisitDate { get; private set; }
-        public Guid DockId { get; private set; }
-        public VesselVisitStatus Status { get; private set; }
-        public VisitPurpose Purpose { get; private set; }
+        public string? VesselIMO { get; protected set; }
+        public DateTime VisitDate { get; protected set; }
+        public Guid DockId { get; protected set; }
+        public VesselVisitStatus Status { get; protected set; }
+        public VisitPurpose Purpose { get; protected set; }
 
         // Each VVN may have 0, 1, or 2 manifests
-        public CargoManifest? LoadingManifest { get; private set; }
-        public CargoManifest? UnloadingManifest { get; private set; }
+        public CargoManifest? LoadingManifest { get; protected set; }
+        public CargoManifest? UnloadingManifest { get; protected set; }
 
-        public List<CrewMember> Crew { get; private set; } = new();
+        public List<CrewMember> Crew { get; protected set; } = new();
 
         private VesselVisitNotification() { }
 
-        public VesselVisitNotification(Guid vesselId, Guid dockId, DateTime visitDate, VisitPurpose purpose)
+        public VesselVisitNotification(string vesselIMO, Guid dockId, DateTime visitDate, VisitPurpose purpose)
         {
             Id = Guid.NewGuid();
-            VesselId = vesselId;
+            VesselIMO = vesselIMO;
             DockId = dockId;
             VisitDate = visitDate;
             Purpose = purpose;
@@ -113,5 +113,70 @@ namespace WebApp.Models.Domain.VesselVisits
 
 
         public List<DecisionLog> DecisionLogs { get; private set; } = new();
+
+        public void UpdateVisitDate(DateTime newDate)
+        {
+            if (Status != VesselVisitStatus.InProgress)
+                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+
+            if (newDate < DateTime.UtcNow)
+                throw new ArgumentException("Visit date cannot be in the past.", nameof(newDate));
+
+            VisitDate = newDate;
+        }
+
+        public void UpdateVesselIMO(string newIMO)
+        {
+            if (Status != VesselVisitStatus.InProgress)
+                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+
+            if (string.IsNullOrWhiteSpace(newIMO))
+                throw new ArgumentException("Vessel IMO cannot be empty.", nameof(newIMO));
+
+            VesselIMO = newIMO;
+        }
+
+        public void UpdatePurpose(VisitPurpose newPurpose)
+        {
+            if (Status != VesselVisitStatus.InProgress)
+                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+
+            Purpose = newPurpose;
+        }
+
+        public void UpdateDockId(Guid newDockId)
+        {
+            if (Status != VesselVisitStatus.InProgress)
+                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+
+            if (newDockId == Guid.Empty)
+                throw new ArgumentException("Dock ID cannot be empty.", nameof(newDockId));
+
+            DockId = newDockId;
+        }
+
+        public void UpdateLoadingManifest(CargoManifest? newManifest)
+        {
+            if (Status != VesselVisitStatus.InProgress)
+                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+
+            LoadingManifest = newManifest;
+        }
+
+        public void UpdateUnloadingManifest(CargoManifest? newManifest)
+        {
+            if (Status != VesselVisitStatus.InProgress)
+                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+
+            UnloadingManifest = newManifest;
+        }
+
+        public void UpdateCrew(List<CrewMember> newCrew)
+        {
+            if (Status != VesselVisitStatus.InProgress)
+                throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+
+            Crew = newCrew ?? new List<CrewMember>();
+        }
     }
 }
