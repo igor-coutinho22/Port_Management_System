@@ -80,7 +80,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Search by partial name and description
         // ------------------------------------------------------------
-        [HttpGet()]
+        [HttpGet("search")]
         public async Task<IActionResult> SearchByNameAndOrDescription([FromQuery] string? name, [FromQuery] string? description)
         {
             var results = await _vesselTypeService.GetAllVesselTypesAsync();
@@ -103,7 +103,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Get all vessel types
         // ------------------------------------------------------------
-        [HttpGet("GetAll")]
+        [HttpGet()]
         public async Task<IActionResult> GetAll()
         {
             var vesselTypes = await _vesselTypeService.GetAllVesselTypesAsync();
