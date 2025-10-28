@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.Vessels.VesselType;
@@ -15,14 +16,14 @@ public class DocksTests
     public void Constructor_ShouldInitialize_AllProperties()
     {
         // Arrange & Act
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Assert
         dock.Name.Should().Be("Main Dock");
         dock.Location.Should().Be("Pier 1");
-        dock.Length.Should().Be(100);
-        dock.Width.Should().Be(50);
-        dock.Depth.Should().Be(15);
+        dock.LengthMeters.Should().Be(100);
+        dock.DepthMeters.Should().Be(50);
+        dock.MaxDraftMeters.Should().Be(15);
         dock.AllowedVesselTypes.Should().NotBeNull();
         dock.AllowedVesselTypes.Should().BeEmpty();
         dock.Id.Should().NotBe(Guid.Empty);
@@ -32,7 +33,7 @@ public class DocksTests
     public void Constructor_ShouldThrow_WhenNameIsNull()
     {
         // Act & Assert
-        var act = () => new Dock(null!, "Pier 1", 100, 50, 15);
+        var act = () => new Dock(null!, "Pier 1", 100, 50, 15, new List<VesselType>());
         act.Should().Throw<ArgumentException>()
            .WithMessage("Name cannot be null or empty (Parameter 'name')");
     }
@@ -41,7 +42,7 @@ public class DocksTests
     public void Constructor_ShouldThrow_WhenNameIsEmpty()
     {
         // Act & Assert
-        var act = () => new Dock("", "Pier 1", 100, 50, 15);
+        var act = () => new Dock("", "Pier 1", 100, 50, 15, new List<VesselType>());
         act.Should().Throw<ArgumentException>()
            .WithMessage("Name cannot be null or empty (Parameter 'name')");
     }
@@ -50,7 +51,7 @@ public class DocksTests
     public void Constructor_ShouldThrow_WhenLocationIsNull()
     {
         // Act & Assert
-        var act = () => new Dock("Main Dock", null!, 100, 50, 15);
+        var act = () => new Dock("Main Dock", null!, 100, 50, 15, new List<VesselType>());
         act.Should().Throw<ArgumentException>()
            .WithMessage("Location cannot be null or empty (Parameter 'location')");
     }
@@ -59,34 +60,19 @@ public class DocksTests
     public void Constructor_ShouldThrow_WhenLocationIsEmpty()
     {
         // Act & Assert
-        var act = () => new Dock("Main Dock", "", 100, 50, 15);
+        var act = () => new Dock("Main Dock", "", 100, 50, 15, new List<VesselType>());
         act.Should().Throw<ArgumentException>()
            .WithMessage("Location cannot be null or empty (Parameter 'location')");
-    }
-
-    [Theory]
-    [InlineData(-1, 50, 15)]
-    [InlineData(0, 50, 15)]
-    [InlineData(100, -1, 15)]
-    [InlineData(100, 0, 15)]
-    [InlineData(100, 50, -1)]
-    [InlineData(100, 50, 0)]
-    public void Constructor_ShouldThrow_WhenDimensionsAreInvalid(double length, double width, double depth)
-    {
-        // Act & Assert
-        var act = () => new Dock("Main Dock", "Pier 1", length, width, depth);
-        act.Should().Throw<ArgumentException>()
-           .WithMessage("Dimensions must be positive values*");
     }
 
     [Fact]
     public void UpdateName_ShouldUpdate_WhenValidName()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Act
-        dock.UpdateName("Updated Dock");
+        dock.Name = "Updated Dock";
 
         // Assert
         dock.Name.Should().Be("Updated Dock");
@@ -96,10 +82,10 @@ public class DocksTests
     public void UpdateName_ShouldThrow_WhenNameIsNull()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Act & Assert
-        var act = () => dock.UpdateName(null!);
+        var act = () => dock.Name = null!;
         act.Should().Throw<ArgumentException>()
            .WithMessage("Name cannot be null or empty (Parameter 'name')");
     }
@@ -108,10 +94,10 @@ public class DocksTests
     public void UpdateLocation_ShouldUpdate_WhenValidLocation()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Act
-        dock.UpdateLocation("Pier 2");
+        dock.Location = "Pier 2";
 
         // Assert
         dock.Location.Should().Be("Pier 2");
@@ -121,10 +107,10 @@ public class DocksTests
     public void UpdateLocation_ShouldThrow_WhenLocationIsEmpty()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Act & Assert
-        var act = () => dock.UpdateLocation("");
+        var act = () => dock.Location = "";
         act.Should().Throw<ArgumentException>()
            .WithMessage("Location cannot be null or empty (Parameter 'location')");
     }
@@ -133,29 +119,60 @@ public class DocksTests
     public void UpdateDimensions_ShouldUpdate_WhenValidDimensions()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Act
-        dock.UpdateDimensions(120, 60, 18);
+        dock.UpdateLength(120);
+        dock.UpdateDepth(60);
+        dock.UpdateMaxDraft(18);
 
         // Assert
-        dock.Length.Should().Be(120);
-        dock.Width.Should().Be(60);
-        dock.Depth.Should().Be(18);
+        dock.LengthMeters.Should().Be(120);
+        dock.DepthMeters.Should().Be(60);
+        dock.MaxDraftMeters.Should().Be(18);
     }
 
     [Theory]
-    [InlineData(-1, 60, 18)]
-    [InlineData(120, -1, 18)]
-    [InlineData(120, 60, -1)]
-    [InlineData(0, 60, 18)]
-    public void UpdateDimensions_ShouldThrow_WhenDimensionsAreInvalid(double length, double width, double depth)
+    [InlineData(-1)]
+    [InlineData(120)]
+    [InlineData(0)]
+    public void UpdateLength_ShouldThrow_WhenLengthIsInvalid(double length)
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Act & Assert
-        var act = () => dock.UpdateDimensions(length, width, depth);
+        var act = () => dock.UpdateLength(length);
+        act.Should().Throw<ArgumentException>()
+           .WithMessage("Dimensions must be positive values*");
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(120)]
+    [InlineData(0)]
+    public void UpdateWidth_ShouldThrow_WhenDepthIsInvalid(double depth)
+    {
+        // Arrange
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
+
+        // Act & Assert
+        var act = () => dock.UpdateDepth(depth);
+        act.Should().Throw<ArgumentException>()
+           .WithMessage("Dimensions must be positive values*");
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(120)]
+    [InlineData(0)]
+    public void UpdateMaxDraft_ShouldThrow_WhenMaxDraftIsInvalid(double maxDraft)
+    {
+        // Arrange
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
+
+        // Act & Assert
+        var act = () => dock.UpdateMaxDraft(maxDraft);
         act.Should().Throw<ArgumentException>()
            .WithMessage("Dimensions must be positive values*");
     }
@@ -164,7 +181,7 @@ public class DocksTests
     public void AllowVesselType_ShouldAdd_WhenNotAlreadyAllowed()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
         var vesselType = CreateTestVesselType();
 
         // Act
@@ -179,7 +196,7 @@ public class DocksTests
     public void AllowVesselType_ShouldThrow_WhenVesselTypeIsNull()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Act & Assert
         var act = () => dock.AllowVesselType(null!);
@@ -191,7 +208,7 @@ public class DocksTests
     public void AllowVesselType_ShouldThrow_WhenVesselTypeAlreadyAllowed()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
         var vesselType = CreateTestVesselType();
         dock.AllowVesselType(vesselType);
 
@@ -205,12 +222,12 @@ public class DocksTests
     public void RemoveVesselType_ShouldRemove_WhenVesselTypeIsAllowed()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
         var vesselType = CreateTestVesselType();
         dock.AllowVesselType(vesselType);
 
         // Act
-        dock.RemoveVesselType(vesselType);
+        dock.RemoveVesselType(vesselType.Name);
 
         // Assert
         dock.AllowedVesselTypes.Should().NotContain(vesselType);
@@ -221,7 +238,7 @@ public class DocksTests
     public void RemoveVesselType_ShouldThrow_WhenVesselTypeIsNull()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
 
         // Act & Assert
         var act = () => dock.RemoveVesselType(null!);
@@ -233,11 +250,11 @@ public class DocksTests
     public void RemoveVesselType_ShouldThrow_WhenVesselTypeNotAllowed()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
         var vesselType = CreateTestVesselType();
 
         // Act & Assert
-        var act = () => dock.RemoveVesselType(vesselType);
+        var act = () => dock.RemoveVesselType(vesselType.Name);
         act.Should().Throw<InvalidOperationException>()
            .WithMessage("*vessel type*not allowed*");
     }
@@ -246,7 +263,7 @@ public class DocksTests
     public void AllowVesselType_ShouldAllowMultipleVesselTypes()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
         var vesselType1 = VesselType.CreateForUpdate("Container Ship", "Large container vessel", 20, 18, 8);
         var vesselType2 = VesselType.CreateForUpdate("Bulk Carrier", "Dry bulk vessel", 15, 12, 6);
 
@@ -264,7 +281,7 @@ public class DocksTests
     public void ToString_ShouldReturn_FormattedString()
     {
         // Arrange
-        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15);
+        var dock = new Dock("Main Dock", "Pier 1", 100, 50, 15, new List<VesselType>());
         var vesselType = CreateTestVesselType();
         dock.AllowVesselType(vesselType);
 

@@ -6,6 +6,7 @@ using FluentAssertions;
 using Xunit;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using WebApp.Models.Domain.Docks;
 
 public class StorageAreaRepositoryTests
 {
@@ -25,16 +26,16 @@ public class StorageAreaRepositoryTests
         var repo = new StorageAreaRepository(context);
 
         var yard = new ContainerYard
-        {
-            Id = 1,
-            Name = "Yard 01",
-            MaxCapacityTeu = 300,
-            CurrentOccupancyTeu = 100
-        };
+        (
+            name: "Yard 01",
+            maxCapacityTeu: 300,
+            currentOccupancyTeu: 100,
+            docksServed: new List<Dock>()
+        );
 
         await repo.AddStorageAreaAsync(yard);
 
-        var result = await context.StorageAreas.FirstOrDefaultAsync(s => s.Id == 1);
+        var result = await context.StorageAreas.FirstOrDefaultAsync(s => s.Name == "Yard 01");
 
         result.Should().NotBeNull();
         result!.Name.Should().Be("Yard 01");
@@ -48,17 +49,16 @@ public class StorageAreaRepositoryTests
         var repo = new StorageAreaRepository(context);
 
         var warehouse = new Warehouse
-        {
-            Id = 2,
-            Name = "Warehouse 01",
-            MaxCapacityTeu = 1000,
-            CurrentOccupancyTeu = 400,
-            SpecializedCargoType = "Perishable"
-        };
+        (
+            name: "Warehouse 01",
+            maxCapacityTeu: 1000,
+            currentOccupancyTeu: 400,
+            specializedCargoType: "Perishable"
+        );
 
         await repo.AddStorageAreaAsync(warehouse);
 
-        var result = await context.StorageAreas.FirstOrDefaultAsync(s => s.Id == 2);
+        var result = await context.StorageAreas.FirstOrDefaultAsync(s => s.Name == "Warehouse 01");
 
         result.Should().NotBeNull();
         result!.Name.Should().Be("Warehouse 01");
@@ -73,8 +73,8 @@ public class StorageAreaRepositoryTests
 
         var areas = new List<StorageArea>
         {
-            new ContainerYard { Id = 3, Name = "Yard A", MaxCapacityTeu = 100 },
-            new Warehouse { Id = 4, Name = "Warehouse A", MaxCapacityTeu = 200 }
+            new ContainerYard (name: "Yard A", maxCapacityTeu: 100, currentOccupancyTeu: 50, docksServed: new List<Dock>()),
+            new Warehouse (name: "Warehouse A", maxCapacityTeu: 200, currentOccupancyTeu: 100, specializedCargoType: "General")
         };
 
         await context.StorageAreas.AddRangeAsync(areas);
@@ -93,11 +93,11 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var warehouse = new Warehouse { Id = 5, Name = "Warehouse B", MaxCapacityTeu = 500 };
+        var warehouse = new Warehouse (name: "Warehouse B", maxCapacityTeu: 500, currentOccupancyTeu: 200, specializedCargoType: "General");
         await context.StorageAreas.AddAsync(warehouse);
         await context.SaveChangesAsync();
 
-        var result = await repo.SearchByIdAsync(5);
+        var result = await repo.SearchByIdAsync(warehouse.Id);
 
         result.Should().NotBeNull();
         result!.Name.Should().Be("Warehouse B");
@@ -109,7 +109,7 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var yard = new ContainerYard { Id = 6, Name = "FindMe", MaxCapacityTeu = 150 };
+        var yard = new ContainerYard (name: "FindMe", maxCapacityTeu: 150, currentOccupancyTeu: 75, docksServed: new List<Dock>());
         await context.StorageAreas.AddAsync(yard);
         await context.SaveChangesAsync();
 
@@ -125,7 +125,7 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var yard = new ContainerYard { Id = 7, Name = "Old Yard", MaxCapacityTeu = 200 };
+        var yard = new ContainerYard (name: "Old Yard", maxCapacityTeu: 200, currentOccupancyTeu: 100, docksServed: new List<Dock>());
         await context.StorageAreas.AddAsync(yard);
         await context.SaveChangesAsync();
 
@@ -133,7 +133,7 @@ public class StorageAreaRepositoryTests
         yard.ChangeMaxCapacity(400);
         await repo.UpdateContainerYardAsync(yard);
 
-        var updated = await context.StorageAreas.FirstAsync(s => s.Id == 7);
+        var updated = await context.StorageAreas.FirstAsync(s => s.Id == yard.Id);
         updated.Name.Should().Be("Updated Yard");
         updated.MaxCapacityTeu.Should().Be(400);
     }
@@ -144,7 +144,7 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var warehouse = new Warehouse { Id = 8, Name = "Old Warehouse", MaxCapacityTeu = 500, SpecializedCargoType = "General" };
+        var warehouse = new Warehouse (name: "Old Warehouse", maxCapacityTeu: 500, currentOccupancyTeu: 200, specializedCargoType: "General");
         await context.StorageAreas.AddAsync(warehouse);
         await context.SaveChangesAsync();
 
@@ -153,7 +153,7 @@ public class StorageAreaRepositoryTests
 
         await repo.UpdateWarehouseAsync(warehouse);
 
-        var updated = await context.StorageAreas.FirstAsync(s => s.Id == 8);
+        var updated = await context.StorageAreas.FirstAsync(s => s.Id == warehouse.Id);
         updated.Name.Should().Be("Updated Warehouse");
         (updated as Warehouse)!.SpecializedCargoType.Should().Be("Hazardous");
     }
@@ -164,13 +164,13 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var yard = new ContainerYard { Id = 9, Name = "ToDelete", MaxCapacityTeu = 200 };
+        var yard = new ContainerYard (name: "ToDelete", maxCapacityTeu: 200, currentOccupancyTeu: 100, docksServed: new List<Dock>());
         await context.StorageAreas.AddAsync(yard);
         await context.SaveChangesAsync();
 
         await repo.DeleteStorageAreaAsync(yard);
 
-        var exists = await context.StorageAreas.AnyAsync(s => s.Id == 9);
+        var exists = await context.StorageAreas.AnyAsync(s => s.Id == yard.Id);
         exists.Should().BeFalse();
     }
 }

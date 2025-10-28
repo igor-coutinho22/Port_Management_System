@@ -56,16 +56,25 @@ namespace WebApp.Models.Domain.Docks
 
         public void UpdateLength(double length)
         {
+            if (length <= 0)
+                throw new ArgumentException("Length must be a positive value.", nameof(length));
+
             LengthMeters = length;
         }
 
         public void UpdateDepth(double depth)
         {
+            if (depth <= 0)
+                throw new ArgumentException("Depth must be a positive value.", nameof(depth));
+
             DepthMeters = depth;
         }
 
         public void UpdateMaxDraft(double maxDraft)
         {
+            if (maxDraft <= 0)
+                throw new ArgumentException("Max draft must be a positive value.", nameof(maxDraft));
+
             MaxDraftMeters = maxDraft;
         }
     }

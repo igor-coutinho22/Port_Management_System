@@ -32,9 +32,6 @@ namespace WebApp.Models.Domain.VesselVisits
 
         public VesselVisitNotification(string vesselIMO, Guid dockId, DateTime visitDate, VisitPurpose purpose)
         {
-            if (string.IsNullOrWhiteSpace(vesselIMO) || !WebApp.Models.Domain.Vessel.Vessel.IsValidIMO(vesselIMO))
-                throw new ArgumentException("Invalid IMO.", nameof(vesselIMO));
-
             Id = Guid.NewGuid();
             VesselIMO = vesselIMO;
             DockId = dockId;

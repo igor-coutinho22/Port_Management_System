@@ -17,7 +17,7 @@ public class VesselRepositoryTest
     public VesselRepositoryTest()
     {
         var options = new DbContextOptionsBuilder<PortManagementContext>()
-            .UseInMemoryDatabase(databaseName: "VesselTestDB")
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
         _context = new PortManagementContext(options);
@@ -34,13 +34,13 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel = new Vessel("9074729", "MSC Vessel", "MSC Shipping", vesselType, 15, 12, 6, 4, 300.5);
+        var vessel = new Vessel("5363433", "MSC Vessel", "MSC Shipping", vesselType, 15, 12, 6, 4, 300.5);
 
         // Act
         await _repository.AddVesselAsync(vessel);
 
         // Assert
-        var result = await _repository.GetByIMOAsync("9074729");
+        var result = await _repository.GetByIMOAsync("5363433");
         result.Should().NotBeNull();
         result!.VesselName.Should().Be("MSC Vessel");
         result.OperatorName.Should().Be("MSC Shipping");
@@ -54,8 +54,8 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel1 = new Vessel("8542535", "First Vessel", "First Operator", vesselType, 10, 10, 5, 2, 200.0);
-        var vessel2 = new Vessel("8542535", "Second Vessel", "Second Operator", vesselType, 12, 8, 4, 3, 250.0);
+        var vessel1 = new Vessel("2575774", "First Vessel", "First Operator", vesselType, 10, 10, 5, 2, 200.0);
+        var vessel2 = new Vessel("2575774", "Second Vessel", "Second Operator", vesselType, 12, 8, 4, 3, 250.0);
 
         await _repository.AddVesselAsync(vessel1);
 
@@ -80,15 +80,15 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel = new Vessel("8541282", "Test Vessel", "Test Operator", vesselType, 8, 6, 4, 2, 180.0);
+        var vessel = new Vessel("8252427", "Test Vessel", "Test Operator", vesselType, 8, 6, 4, 2, 180.0);
         await _repository.AddVesselAsync(vessel);
 
         // Act
-        var result = await _repository.GetByIMOAsync("8541282");
+        var result = await _repository.GetByIMOAsync("8252427");
 
         // Assert
         result.Should().NotBeNull();
-        result!.IMO.Should().Be("8541282");
+        result!.IMO.Should().Be("8252427");
         result.VesselName.Should().Be("Test Vessel");
         result.VesselType.Should().NotBeNull();
     }
@@ -98,9 +98,9 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel1 = new Vessel("9123458", "MSC Container", "MSC Shipping", vesselType, 15, 12, 6, 4, 300.0);
-        var vessel2 = new Vessel("9234562", "MSC Cargo", "MSC Shipping", vesselType, 12, 10, 5, 3, 250.0);
-        var vessel3 = new Vessel("9345676", "COSCO Vessel", "COSCO", vesselType, 10, 8, 4, 2, 200.0);
+        var vessel1 = new Vessel("8151257", "MSC Container", "MSC Shipping", vesselType, 15, 12, 6, 4, 300.0);
+        var vessel2 = new Vessel("5183039", "MSC Cargo", "MSC Shipping", vesselType, 12, 10, 5, 3, 250.0);
+        var vessel3 = new Vessel("8900323", "COSCO Vessel", "COSCO", vesselType, 10, 8, 4, 2, 200.0);
 
         await _repository.AddVesselAsync(vessel1);
         await _repository.AddVesselAsync(vessel2);
@@ -121,7 +121,7 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel = new Vessel("9456780", "Maersk Line", "Maersk", vesselType, 18, 14, 7, 5, 350.0);
+        var vessel = new Vessel("0005139", "Maersk Line", "Maersk", vesselType, 18, 14, 7, 5, 350.0);
         await _repository.AddVesselAsync(vessel);
 
         // Act
@@ -136,9 +136,9 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel1 = new Vessel("9567894", "Hapag Container", "Hapag-Lloyd", vesselType, 16, 12, 6, 4, 320.0);
-        var vessel2 = new Vessel("9678908", "Hapag Express", "Hapag-Lloyd", vesselType, 14, 10, 5, 3, 280.0);
-        var vessel3 = new Vessel("9789012", "CMA Vessel", "CMA CGM", vesselType, 12, 8, 4, 2, 240.0);
+        var vessel1 = new Vessel("3617531", "Hapag Container", "Hapag-Lloyd", vesselType, 16, 12, 6, 4, 320.0);
+        var vessel2 = new Vessel("1647879", "Hapag Express", "Hapag-Lloyd", vesselType, 14, 10, 5, 3, 280.0);
+        var vessel3 = new Vessel("6583212", "CMA Vessel", "CMA CGM", vesselType, 12, 8, 4, 2, 240.0);
 
         await _repository.AddVesselAsync(vessel1);
         await _repository.AddVesselAsync(vessel2);
@@ -159,7 +159,7 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel = new Vessel("9890126", "OOCL Vessel", "OOCL", vesselType, 11, 9, 5, 3, 220.0);
+        var vessel = new Vessel("0743602", "OOCL Vessel", "OOCL", vesselType, 11, 9, 5, 3, 220.0);
         await _repository.AddVesselAsync(vessel);
 
         // Act
@@ -174,9 +174,9 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel1 = new Vessel("9012340", "Vessel One", "Operator One", vesselType, 10, 8, 4, 2, 200.0);
-        var vessel2 = new Vessel("9111118", "Vessel Two", "Operator Two", vesselType, 12, 10, 5, 3, 250.0);
-        var vessel3 = new Vessel("9222226", "Vessel Three", "Operator Three", vesselType, 14, 12, 6, 4, 300.0);
+        var vessel1 = new Vessel("8250003", "Vessel One", "Operator One", vesselType, 10, 8, 4, 2, 200.0);
+        var vessel2 = new Vessel("5711135", "Vessel Two", "Operator Two", vesselType, 12, 10, 5, 3, 250.0);
+        var vessel3 = new Vessel("8700008", "Vessel Three", "Operator Three", vesselType, 14, 12, 6, 4, 300.0);
 
         await _repository.AddVesselAsync(vessel1);
         await _repository.AddVesselAsync(vessel2);
@@ -197,7 +197,7 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel = new Vessel("9333334", "Original Name", "Original Operator", vesselType, 10, 8, 4, 2, 200.0);
+        var vessel = new Vessel("5489005", "Original Name", "Original Operator", vesselType, 10, 8, 4, 2, 200.0);
         await _repository.AddVesselAsync(vessel);
 
         // Act
@@ -207,7 +207,7 @@ public class VesselRepositoryTest
         await _repository.UpdateVesselAsync(vessel);
 
         // Assert
-        var updated = await _repository.GetByIMOAsync("9333334");
+        var updated = await _repository.GetByIMOAsync("5489005");
         updated.Should().NotBeNull();
         updated!.VesselName.Should().Be("Updated Name");
         updated.OperatorName.Should().Be("Updated Operator");
@@ -219,14 +219,14 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel = new Vessel("9444442", "Delete Me", "Delete Operator", vesselType, 8, 6, 3, 2, 150.0);
+        var vessel = new Vessel("7318901", "Delete Me", "Delete Operator", vesselType, 8, 6, 3, 2, 150.0);
         await _repository.AddVesselAsync(vessel);
 
         // Act
         await _repository.DeleteVesselAsync(vessel);
 
         // Assert
-        var result = await _repository.GetByIMOAsync("9444442");
+        var result = await _repository.GetByIMOAsync("7318901");
         result.Should().BeNull();
     }
 
@@ -235,11 +235,11 @@ public class VesselRepositoryTest
     {
         // Arrange
         var vesselType = CreateTestVesselType();
-        var vessel = new Vessel("9555550", "Type Test", "Type Operator", vesselType, 12, 10, 5, 3, 250.0);
+        var vessel = new Vessel("6798001", "Type Test", "Type Operator", vesselType, 12, 10, 5, 3, 250.0);
         await _repository.AddVesselAsync(vessel);
 
         // Act
-        var result = await _repository.GetByIMOAsync("9555550");
+        var result = await _repository.GetByIMOAsync("6798001");
 
         // Assert
         result.Should().NotBeNull();

@@ -215,7 +215,7 @@ public class VesselTypeServiceTests
         public Task<List<VesselType>> GetAllVesselTypesAsync()
             => Task.FromResult(_vesselTypes.ToList());
 
-        public Task<VesselType> GetVesselTypeByNameAsync(string name)
+        public Task<VesselType?> GetVesselTypeByNameAsync(string name)
             => Task.FromResult(_vesselTypes.FirstOrDefault(vt => vt.Name == name));
 
         public Task<List<VesselType>> SearchVesselTypeByNameAsync(string partialName)

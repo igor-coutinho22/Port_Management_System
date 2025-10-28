@@ -6,6 +6,12 @@ using WebApp.Models.Context;
 using FluentAssertions;
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Http;
+using Xunit;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 
 public class VesselVisitNotificationControllerTests : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -30,7 +36,7 @@ public class VesselVisitNotificationControllerTests : IClassFixture<WebApplicati
     {
         var dto = new VesselVisitNotificationDTO
         {
-            VesselId = Guid.NewGuid(),
+            VesselIMO = "1234567",
             DockId = Guid.NewGuid(),
             VisitDate = DateTime.UtcNow,
             Purpose = "Maintenance",
@@ -53,7 +59,7 @@ public class VesselVisitNotificationControllerTests : IClassFixture<WebApplicati
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var retrieved = await getResponse.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
-        retrieved!.VesselId.Should().Be(dto.VesselId);
+        retrieved!.VesselIMO.Should().Be(dto.VesselIMO);
     }
 
     [Fact]
@@ -61,7 +67,7 @@ public class VesselVisitNotificationControllerTests : IClassFixture<WebApplicati
     {
         var dto = new VesselVisitNotificationDTO
         {
-            VesselId = Guid.NewGuid(),
+            VesselIMO = "1234567",
             DockId = Guid.NewGuid(),
             VisitDate = DateTime.UtcNow,
             Purpose = "Maintenance"

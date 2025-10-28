@@ -13,6 +13,11 @@ using WebApp.Models.Domain.Users;
 using WebApp.Models.Domain.Staff;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.Agents;
+using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessel;
+using WebApp.Models.Domain.Docks;
+using WebApp.Models.Domain.StorageArea;
+using StorageAreaBase = WebApp.Models.Domain.StorageArea.StorageArea;
 using System.Collections.Generic; // for List<T>
 
 namespace WebApp.Seeding
@@ -256,6 +261,85 @@ namespace WebApp.Seeding
                     2, 4);
             }
 
+            // === VESSEL TYPES ===
+            if (!await context.Set<VesselType>().AnyAsync())
+            {
+                var vesselTypes = new List<VesselType>
+                {
+                    new("Container Ship", "Large container vessel for international shipping", 20, 18, 8),
+                    new("Bulk Carrier", "Vessel designed for transporting bulk cargo", 15, 12, 6),
+                    new("Tanker", "Vessel for liquid cargo transport", 18, 10, 4),
+                    new("RoRo Ship", "Roll-on/roll-off vessel for vehicles and trailers", 12, 15, 3)
+                };
+
+                await context.AddRangeAsync(vesselTypes);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Seeded {Count} Vessel Types.", vesselTypes.Count);
+            }
+
+            // === DOCKS ===
+            if (!await context.Set<Dock>().AnyAsync())
+            {
+                var vesselTypes = await context.Set<VesselType>().ToListAsync();
+
+                var docks = new List<Dock>
+                {
+                    new("Dock A", "North Terminal", 300.0, 15.0, 12.0, 
+                        new List<VesselType> { vesselTypes[0], vesselTypes[2] }), // Container Ship, Tanker
+                    
+                    new("Dock B", "South Terminal", 250.0, 12.0, 10.0, 
+                        new List<VesselType> { vesselTypes[1], vesselTypes[3] }), // Bulk Carrier, RoRo Ship
+                    
+                    new("Dock C", "East Terminal", 400.0, 18.0, 15.0, 
+                        new List<VesselType> { vesselTypes[0], vesselTypes[1], vesselTypes[2] }) // Multi-purpose
+                };
+
+                await context.AddRangeAsync(docks);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Seeded {Count} Docks.", docks.Count);
+            }
+
+            // === VESSELS ===
+            if (!await context.Set<Vessel>().AnyAsync())
+            {
+                var vesselTypes = await context.Set<VesselType>().ToListAsync();
+
+                var vessels = new List<Vessel>
+                {
+                    new("6268446", "Atlantic Carrier", "Atlantic Shipping SA", vesselTypes[0], 18, 16, 7, 4, 280.0),
+                    new("2221610", "Baltic Bulk", "Nordic Logistics", vesselTypes[1], 14, 10, 5, 2, 220.0),
+                    new("8666692", "Mediterranean Express", "BlueOcean Logistics GmbH", vesselTypes[0], 20, 18, 8, 6, 350.0),
+                    new("0260090", "Iberian Tanker", "Iberian Maritime", vesselTypes[2], 16, 8, 3, 3, 2001.0)
+                };
+
+                await context.AddRangeAsync(vessels);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Seeded {Count} Vessels.", vessels.Count);
+            }
+            
+            // === STORAGE AREAS ===
+            if (!await context.Set<StorageAreaBase>().AnyAsync())
+            {
+                var docks = await context.Set<Dock>().ToListAsync();
+
+                var storageAreas = new List<StorageAreaBase>
+                {
+                    // Warehouses
+                    new Warehouse("Warehouse North", 500, 150, "Perishable"),
+                    new Warehouse("Warehouse South", 300, 80, "Hazardous"),
+                    new Warehouse("Warehouse Central", 400, 200, "General"),
+
+                    // Container Yards
+                    new ContainerYard("Container Yard North", 1000, 350, new List<Dock> { docks[0] }),
+                    new ContainerYard("Container Yard South", 800, 200, new List<Dock> { docks[1] }),
+                    new ContainerYard("Container Yard Central", 1200, 600, new List<Dock> { docks[0], docks[2] })
+                };
+
+                await context.AddRangeAsync(storageAreas);
+                await context.SaveChangesAsync();
+                logger.LogInformation("Seeded {Count} Storage Areas (Warehouses and Container Yards).", storageAreas.Count);
+            }
+
 
 
             // === VESSEL VISIT NOTIFICATIONS ===
@@ -263,9 +347,9 @@ namespace WebApp.Seeding
             {
                 // Use realistic IMO numbers (7 digits)
                 var vesselIMO1 = "1234567";
-                var vesselIMO2 = "2345678";
-                var vesselIMO3 = "3456789";
-                var vesselIMO4 = "4567890";
+                var vesselIMO2 = "6798001";
+                var vesselIMO3 = "7318901";
+                var vesselIMO4 = "5489005";
 
                 var dock1 = Guid.NewGuid();
                 var dock2 = Guid.NewGuid();

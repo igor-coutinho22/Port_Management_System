@@ -4,6 +4,8 @@ using WebApp.Models.Context;
 using FluentAssertions;
 using Xunit;
 using System;
+using System.Collections.Generic;
+using WebApp.Models.Domain.Docks;
 
 public class StorageAreaTests
 {
@@ -11,14 +13,14 @@ public class StorageAreaTests
     public void ContainerYard_ShouldInitializeAllProperties()
     {
         var yard = new ContainerYard
-        {
-            Id = 1,
-            Name = "Main Yard",
-            MaxCapacityTeu = 500,
-            CurrentOccupancyTeu = 200
-        };
+        (
+            name: "Main Yard",
+            maxCapacityTeu: 500,
+            currentOccupancyTeu: 200,
+            docksServed: new List<Dock>()
+        );
 
-        yard.Id.Should().Be(1);
+        yard.Id.Should().Be(0);
         yard.Name.Should().Be("Main Yard");
         yard.MaxCapacityTeu.Should().Be(500);
         yard.CurrentOccupancyTeu.Should().Be(200);
@@ -28,7 +30,7 @@ public class StorageAreaTests
     [Fact]
     public void ContainerYard_ShouldAllowCapacityChange()
     {
-        var yard = new ContainerYard { Id = 2, Name = "Adjustable Yard", MaxCapacityTeu = 300 };
+        var yard = new ContainerYard (name: "Adjustable Yard", maxCapacityTeu: 300, currentOccupancyTeu: 100, docksServed: new List<Dock>());
         yard.ChangeMaxCapacity(400);
 
         yard.MaxCapacityTeu.Should().Be(400);
@@ -37,17 +39,17 @@ public class StorageAreaTests
     [Fact]
     public void ContainerYard_ShouldThrow_WhenNegativeCapacity()
     {
-        var yard = new ContainerYard { Id = 3, Name = "Invalid Yard", MaxCapacityTeu = 200 };
+        var yard = new ContainerYard (name: "Invalid Yard", maxCapacityTeu: 200, currentOccupancyTeu: 0, docksServed: new List<Dock>());
         var act = () => yard.ChangeMaxCapacity(-10);
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("*negative*");
+            .WithMessage("*cannot be less than current occupancy*");
     }
 
     [Fact]
     public void ContainerYard_ShouldUpdateOccupancy()
     {
-        var yard = new ContainerYard { Id = 4, Name = "Occupancy Yard", MaxCapacityTeu = 500 };
+        var yard = new ContainerYard (name: "Occupancy Yard", maxCapacityTeu: 500, currentOccupancyTeu: 0, docksServed: new List<Dock>());
         yard.UpdateCurrentOccupancy(150);
 
         yard.CurrentOccupancyTeu.Should().Be(150);
@@ -56,26 +58,24 @@ public class StorageAreaTests
     [Fact]
     public void ContainerYard_ShouldThrow_WhenOccupancyExceedsCapacity()
     {
-        var yard = new ContainerYard { Id = 5, Name = "Overflow Yard", MaxCapacityTeu = 100 };
+        var yard = new ContainerYard (name: "Overflow Yard", maxCapacityTeu: 100, currentOccupancyTeu: 0, docksServed: new List<Dock>());
         var act = () => yard.UpdateCurrentOccupancy(150);
 
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*exceeds maximum capacity*");
+        act.Should().Throw<ArgumentOutOfRangeException>()
+            .WithMessage("*must be between 0 and max capacity*");
     }
 
     [Fact]
     public void Warehouse_ShouldInitializeAllProperties()
     {
         var warehouse = new Warehouse
-        {
-            Id = 6,
-            Name = "Warehouse A",
-            MaxCapacityTeu = 1000,
-            CurrentOccupancyTeu = 400,
-            SpecializedCargoType = "General"
-        };
+        (
+            name: "Warehouse A",
+            maxCapacityTeu: 1000,
+            currentOccupancyTeu: 400,
+            specializedCargoType: "General"
+        );
 
-        warehouse.Id.Should().Be(6);
         warehouse.Name.Should().Be("Warehouse A");
         warehouse.MaxCapacityTeu.Should().Be(1000);
         warehouse.CurrentOccupancyTeu.Should().Be(400);
@@ -86,12 +86,12 @@ public class StorageAreaTests
     public void Warehouse_ShouldAllowUpdatingCargoType()
     {
         var warehouse = new Warehouse
-        {
-            Id = 7,
-            Name = "Warehouse B",
-            MaxCapacityTeu = 800,
-            SpecializedCargoType = "General"
-        };
+        (
+            name: "Warehouse B",
+            maxCapacityTeu: 800,
+            currentOccupancyTeu: 300,
+            specializedCargoType: "General"
+        );
 
         warehouse.UpdateCargoType("Hazardous");
 
@@ -102,12 +102,12 @@ public class StorageAreaTests
     public void Warehouse_ShouldAllowCapacityAndOccupancyUpdate()
     {
         var warehouse = new Warehouse
-        {
-            Id = 8,
-            Name = "Warehouse C",
-            MaxCapacityTeu = 600,
-            CurrentOccupancyTeu = 200
-        };
+        (
+            name: "Warehouse C",
+            maxCapacityTeu: 600,
+            currentOccupancyTeu: 200,
+            specializedCargoType: "General"
+        );
 
         warehouse.ChangeMaxCapacity(700);
         warehouse.UpdateCurrentOccupancy(300);
@@ -120,15 +120,16 @@ public class StorageAreaTests
     public void Warehouse_ShouldThrow_WhenOccupancyExceedsCapacity()
     {
         var warehouse = new Warehouse
-        {
-            Id = 9,
-            Name = "Small Warehouse",
-            MaxCapacityTeu = 100
-        };
+        (
+            name: "Small Warehouse",
+            maxCapacityTeu: 100,
+            currentOccupancyTeu: 50,
+            specializedCargoType: "General"
+        );
 
         var act = () => warehouse.UpdateCurrentOccupancy(200);
 
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*exceeds maximum capacity*");
+        act.Should().Throw<ArgumentOutOfRangeException>()
+            .WithMessage("*must be between 0 and max capacity*");
     }
 }
