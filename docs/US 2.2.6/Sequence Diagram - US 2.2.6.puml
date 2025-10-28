@@ -1,0 +1,147 @@
+@startuml
+title US 2.2.6 – Register & Manage Shipping Agent Representatives (Create, Update, Deactivate)
+
+actor "Port Authority Officer" as User
+
+' === Layers ===
+participant "RepresentativesController" as Controller
+participant "RepresentativeService" as Service
+participant "RepresentativeRepository" as RepRepository
+participant "OrganizationRepository" as OrgRepository
+participant "PortManagementContext" as DbContext
+entity "Representative (Entity)" as Representative
+entity "ShippingAgentOrganization (Aggregate Root)" as Organization
+
+' === CREATE representative (scope: one specific organization) ===
+User -> Controller : POST /api/organizations/{orgId}/representatives\n(CreateRepresentativeRequest)
+activate Controller
+Controller -> Service : CreateAsync(orgId, request)
+activate Service
+Service -> OrgRepository : GetByIdAsync(orgId)
+activate OrgRepository
+OrgRepository -> DbContext : Query Organization by Id
+DbContext --> OrgRepository : Organization | null
+OrgRepository --> Service : Organization | null
+deactivate OrgRepository
+
+alt Organization not found
+  Service --> Controller : 404 Not Found
+  Controller --> User : 404 Not Found
+  deactivate Service
+  deactivate Controller
+else Organization exists
+  Service -> Representative : new Representative(orgId, Name, CitizenId, Nationality, Email, Phone)
+  Service -> RepRepository : AddAsync(representative)
+  activate RepRepository
+  RepRepository -> DbContext : Add(Representative)
+  DbContext --> RepRepository : Saved
+  RepRepository --> Service : Representative
+  deactivate RepRepository
+  Service --> Controller : RepresentativeDto (Created)
+  deactivate Service
+  Controller --> User : 201 Created\nLocation: /api/representatives/{id}
+  deactivate Controller
+end
+
+' === UPDATE representative ===
+User -> Controller : PUT /api/representatives/{id}\n(UpdateRepresentativeRequest)
+activate Controller
+Controller -> Service : UpdateAsync(id, request)
+activate Service
+Service -> RepRepository : GetByIdAsync(id)
+activate RepRepository
+RepRepository -> DbContext : Query Representative by Id
+DbContext --> RepRepository : Representative | null
+RepRepository --> Service : Representative | null
+deactivate RepRepository
+
+alt Representative not found
+  Service --> Controller : 404 Not Found
+  Controller --> User : 404 Not Found
+  deactivate Service
+  deactivate Controller
+else Representative exists
+  Service -> Representative : Update(Name, CitizenId, Nationality, Email, Phone)
+  Service -> RepRepository : UpdateAsync(representative)
+  activate RepRepository
+  RepRepository -> DbContext : SaveChanges()
+  DbContext --> RepRepository : Saved
+  RepRepository --> Service : OK
+  deactivate RepRepository
+  Service --> Controller : RepresentativeDto
+  deactivate Service
+  Controller --> User : 200 OK (Updated)
+  deactivate Controller
+end
+
+' === DEACTIVATE / ACTIVATE representative (soft toggle) ===
+User -> Controller : PUT /api/representatives/{id}/deactivate
+activate Controller
+Controller -> Service : SetActiveAsync(id, false)
+activate Service
+Service -> RepRepository : GetByIdAsync(id)
+activate RepRepository
+RepRepository -> DbContext : Query Representative by Id
+DbContext --> RepRepository : Representative | null
+RepRepository --> Service : Representative | null
+deactivate RepRepository
+
+alt Representative not found
+  Service --> Controller : 404 Not Found
+  Controller --> User : 404 Not Found
+  deactivate Service
+  deactivate Controller
+else Representative exists
+  Service -> Representative : SetActive(false)
+  Service -> RepRepository : UpdateAsync(representative)
+  activate RepRepository
+  RepRepository -> DbContext : SaveChanges()
+  DbContext --> RepRepository : Saved
+  RepRepository --> Service : OK
+  deactivate RepRepository
+  Service --> Controller : No Content
+  deactivate Service
+  Controller --> User : 204 No Content (Deactivated)
+  deactivate Controller
+end
+
+' === (optional) Reactivate - symmetric flow ===
+User -> Controller : PUT /api/representatives/{id}/activate
+Controller -> Service : SetActiveAsync(id, true)
+... same as above ...
+Controller --> User : 204 No Content (Activated)
+
+' === LIST representatives by organization (with active filter) ===
+User -> Controller : GET /api/organizations/{orgId}/representatives?active={true|false|null}
+activate Controller
+Controller -> Service : ListAsync(orgId, active)
+activate Service
+Service -> OrgRepository : GetByIdAsync(orgId)
+OrgRepository -> DbContext : Query Organization by Id
+DbContext --> OrgRepository : Organization | null
+OrgRepository --> Service : Organization | null
+
+alt Organization not found
+  Service --> Controller : 404 Not Found
+  Controller --> User : 404 Not Found
+  deactivate Service
+  deactivate Controller
+else Organization exists
+  Service -> RepRepository : ListByOrganizationAsync(orgId, active)
+  RepRepository -> DbContext : Query Representatives (orgId, active)
+  DbContext --> RepRepository : IEnumerable<Representative>
+  RepRepository --> Service : IEnumerable<Representative>
+  Service --> Controller : IEnumerable<RepresentativeDto>
+  deactivate Service
+  Controller --> User : 200 OK (List)
+  deactivate Controller
+end
+
+' === Notes (Acceptance Criteria) ===   
+note right of Controller
+- Only one organization per representative.
+- Required fields: Name, CitizenId, Nationality, Email, Phone.
+- Deactivation preserves data (no delete).
+end note
+
+@enduml
