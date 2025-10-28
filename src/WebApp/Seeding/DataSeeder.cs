@@ -306,10 +306,10 @@ namespace WebApp.Seeding
 
                 var vessels = new List<Vessel>
                 {
-                    new("6268446", "Atlantic Carrier", "Atlantic Shipping SA", vesselTypes[0], 18, 16, 7, 4, 280.0),
-                    new("2221610", "Baltic Bulk", "Nordic Logistics", vesselTypes[1], 14, 10, 5, 2, 220.0),
-                    new("8666692", "Mediterranean Express", "BlueOcean Logistics GmbH", vesselTypes[0], 20, 18, 8, 6, 350.0),
-                    new("0260090", "Iberian Tanker", "Iberian Maritime", vesselTypes[2], 16, 8, 3, 3, 2001.0)
+                    new("6268446", "Atlantic Carrier", "Atlantic Shipping SA", vesselTypes[0], 12, 9, 2, 4, 280.0),
+                    new("2221610", "Baltic Bulk", "Nordic Logistics", vesselTypes[1], 9, 7, 1, 2, 220.0),
+                    new("8666692", "Mediterranean Express", "BlueOcean Logistics GmbH", vesselTypes[0], 8, 6, 3, 6, 350.0),
+                    new("0260090", "Iberian Tanker", "Iberian Maritime", vesselTypes[2], 4, 8, 3, 3, 2001.0)
                 };
 
                 await context.AddRangeAsync(vessels);

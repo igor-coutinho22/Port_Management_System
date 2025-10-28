@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251026120607_FixVesselAndVesselType")]
-    partial class FixVesselAndVesselType
+    [Migration("20251028111601_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -234,7 +234,6 @@ namespace WebApp.Migrations
                         .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("AlternativeNames")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LegalName")
@@ -390,7 +389,7 @@ namespace WebApp.Migrations
                     b.ToTable("Staff");
                 });
 
-            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.DockStorageAreaInfo", b =>
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.DockStorageAreaConnection", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -415,7 +414,7 @@ namespace WebApp.Migrations
                     b.HasIndex("StorageAreaId", "DockId")
                         .IsUnique();
 
-                    b.ToTable("DockStorageAreaInfos");
+                    b.ToTable("DockStorageAreaConnections");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.StorageArea", b =>
@@ -645,6 +644,35 @@ namespace WebApp.Migrations
                     b.ToTable("CrewMembers", (string)null);
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.DecisionLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("OfficerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Outcome")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("VesselVisitNotificationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VesselVisitNotificationId");
+
+                    b.ToTable("DecisionLog");
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -654,17 +682,23 @@ namespace WebApp.Migrations
                     b.Property<Guid>("DockId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Purpose")
+                        .HasColumnType("int");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("VesselId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("VesselIMO")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(7)");
 
                     b.Property<DateTime>("VisitDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("VesselIMO");
 
                     b.ToTable("VesselVisitNotifications", (string)null);
                 });
@@ -821,7 +855,7 @@ namespace WebApp.Migrations
                     b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.DockStorageAreaInfo", b =>
+            modelBuilder.Entity("WebApp.Models.Domain.StorageArea.DockStorageAreaConnection", b =>
                 {
                     b.HasOne("WebApp.Models.Domain.StorageArea.StorageArea", null)
                         .WithMany("DockConnections")
@@ -876,6 +910,24 @@ namespace WebApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.DecisionLog", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", null)
+                        .WithMany("DecisionLogs")
+                        .HasForeignKey("VesselVisitNotificationId");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.Vessel.Vessel", "Vessel")
+                        .WithMany()
+                        .HasForeignKey("VesselIMO")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vessel");
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Agents.ShippingAgentOrganization", b =>
                 {
                     b.Navigation("Representatives");
@@ -909,6 +961,8 @@ namespace WebApp.Migrations
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
                 {
                     b.Navigation("Crew");
+
+                    b.Navigation("DecisionLogs");
 
                     b.Navigation("LoadingManifest");
 

@@ -686,13 +686,16 @@ namespace WebApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("VesselId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("VesselIMO")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(7)");
 
                     b.Property<DateTime>("VisitDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("VesselIMO");
 
                     b.ToTable("VesselVisitNotifications", (string)null);
                 });
@@ -909,6 +912,17 @@ namespace WebApp.Migrations
                     b.HasOne("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", null)
                         .WithMany("DecisionLogs")
                         .HasForeignKey("VesselVisitNotificationId");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.Vessel.Vessel", "Vessel")
+                        .WithMany()
+                        .HasForeignKey("VesselIMO")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vessel");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Agents.ShippingAgentOrganization", b =>

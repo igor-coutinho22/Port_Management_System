@@ -57,7 +57,7 @@ namespace WebApp.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     LegalName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    AlternativeNames = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AlternativeNames = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
                     TaxNumber = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false)
                 },
@@ -129,21 +129,6 @@ namespace WebApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_VesselTypes", x => x.Name);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "VesselVisitNotifications",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VesselId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VisitDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DockId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VesselVisitNotifications", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -317,7 +302,7 @@ namespace WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DockStorageAreaInfos",
+                name: "DockStorageAreaConnections",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -329,9 +314,9 @@ namespace WebApp.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DockStorageAreaInfos", x => x.Id);
+                    table.PrimaryKey("PK_DockStorageAreaConnections", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DockStorageAreaInfos_StorageAreas_StorageAreaId",
+                        name: "FK_DockStorageAreaConnections_StorageAreas_StorageAreaId",
                         column: x => x.StorageAreaId,
                         principalTable: "StorageAreas",
                         principalColumn: "Id",
@@ -367,53 +352,6 @@ namespace WebApp.Migrations
                         column: x => x.VesselTypeName1,
                         principalTable: "VesselTypes",
                         principalColumn: "Name",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CargoManifests",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoadingManifestForId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UnloadingManifestForId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CargoManifests", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CargoManifests_VesselVisitNotifications_LoadingManifestForId",
-                        column: x => x.LoadingManifestForId,
-                        principalTable: "VesselVisitNotifications",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_CargoManifests_VesselVisitNotifications_UnloadingManifestForId",
-                        column: x => x.UnloadingManifestForId,
-                        principalTable: "VesselVisitNotifications",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CrewMembers",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CitizenId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Nationality = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    VesselVisitNotificationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CrewMembers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CrewMembers_VesselVisitNotifications_VesselVisitNotificationId",
-                        column: x => x.VesselVisitNotificationId,
-                        principalTable: "VesselVisitNotifications",
-                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -465,6 +403,96 @@ namespace WebApp.Migrations
                         principalTable: "VesselTypes",
                         principalColumn: "Name",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VesselVisitNotifications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    VesselIMO = table.Column<string>(type: "nvarchar(7)", nullable: false),
+                    VisitDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DockId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Purpose = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VesselVisitNotifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VesselVisitNotifications_Vessels_VesselIMO",
+                        column: x => x.VesselIMO,
+                        principalTable: "Vessels",
+                        principalColumn: "IMO",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CargoManifests",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LoadingManifestForId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UnloadingManifestForId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CargoManifests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CargoManifests_VesselVisitNotifications_LoadingManifestForId",
+                        column: x => x.LoadingManifestForId,
+                        principalTable: "VesselVisitNotifications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CargoManifests_VesselVisitNotifications_UnloadingManifestForId",
+                        column: x => x.UnloadingManifestForId,
+                        principalTable: "VesselVisitNotifications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CrewMembers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CitizenId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Nationality = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    VesselVisitNotificationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CrewMembers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CrewMembers_VesselVisitNotifications_VesselVisitNotificationId",
+                        column: x => x.VesselVisitNotificationId,
+                        principalTable: "VesselVisitNotifications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DecisionLog",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OfficerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Outcome = table.Column<int>(type: "int", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    VesselVisitNotificationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DecisionLog", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DecisionLog_VesselVisitNotifications_VesselVisitNotificationId",
+                        column: x => x.VesselVisitNotificationId,
+                        principalTable: "VesselVisitNotifications",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -549,13 +577,18 @@ namespace WebApp.Migrations
                 column: "VesselVisitNotificationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DecisionLog_VesselVisitNotificationId",
+                table: "DecisionLog",
+                column: "VesselVisitNotificationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Docks_ContainerYardId",
                 table: "Docks",
                 column: "ContainerYardId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DockStorageAreaInfos_StorageAreaId_DockId",
-                table: "DockStorageAreaInfos",
+                name: "IX_DockStorageAreaConnections_StorageAreaId_DockId",
+                table: "DockStorageAreaConnections",
                 columns: new[] { "StorageAreaId", "DockId" },
                 unique: true);
 
@@ -595,6 +628,11 @@ namespace WebApp.Migrations
                 name: "IX_Vessels_VesselTypeName1",
                 table: "Vessels",
                 column: "VesselTypeName1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VesselVisitNotifications_VesselIMO",
+                table: "VesselVisitNotifications",
+                column: "VesselIMO");
         }
 
         /// <inheritdoc />
@@ -622,7 +660,10 @@ namespace WebApp.Migrations
                 name: "CrewMembers");
 
             migrationBuilder.DropTable(
-                name: "DockStorageAreaInfos");
+                name: "DecisionLog");
+
+            migrationBuilder.DropTable(
+                name: "DockStorageAreaConnections");
 
             migrationBuilder.DropTable(
                 name: "DockVesselType");
@@ -632,9 +673,6 @@ namespace WebApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "Representatives");
-
-            migrationBuilder.DropTable(
-                name: "Vessels");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -658,9 +696,6 @@ namespace WebApp.Migrations
                 name: "Organizations");
 
             migrationBuilder.DropTable(
-                name: "VesselTypes");
-
-            migrationBuilder.DropTable(
                 name: "VesselVisitNotifications");
 
             migrationBuilder.DropTable(
@@ -668,6 +703,12 @@ namespace WebApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "Resources");
+
+            migrationBuilder.DropTable(
+                name: "Vessels");
+
+            migrationBuilder.DropTable(
+                name: "VesselTypes");
         }
     }
 }

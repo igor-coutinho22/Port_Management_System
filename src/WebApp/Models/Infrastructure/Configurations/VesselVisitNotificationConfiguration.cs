@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using WebApp.Models.Domain.Vessel;
 using WebApp.Models.Domain.VesselVisits;
 
 namespace WebApp.Models.Infrastructure.Configurations.VesselVisits
@@ -19,7 +20,8 @@ namespace WebApp.Models.Infrastructure.Configurations.VesselVisits
                    .IsRequired()
                    .HasConversion<string>();
 
-            builder.Property(v => v.VesselIMO).IsRequired();
+              builder.HasOne<Vessel>().WithOne().HasForeignKey(v => v.VesselIMO).
+                     builder.Property().IsRequired();
             builder.Property(v => v.DockId).IsRequired();
 
             // Relationships — 1:1 optional with CargoManifests
