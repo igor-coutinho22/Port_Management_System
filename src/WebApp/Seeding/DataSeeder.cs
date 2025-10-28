@@ -345,34 +345,46 @@ namespace WebApp.Seeding
             // === VESSEL VISIT NOTIFICATIONS ===
             if (!await context.Set<VesselVisitNotification>().AnyAsync())
             {
-                // Use realistic IMO numbers (7 digits)
-                var vesselIMO1 = "1234567";
-                var vesselIMO2 = "6798001";
-                var vesselIMO3 = "7318901";
-                var vesselIMO4 = "5489005";
+                // Get existing vessels and docks from the database
+                var vessels = await context.Set<Vessel>().ToListAsync();
+                var docks = await context.Set<Dock>().ToListAsync();
 
-                var dock1 = Guid.NewGuid();
-                var dock2 = Guid.NewGuid();
+                if (vessels.Count >= 4 && docks.Count >= 2)
+                {
+                    // Use actual IMO numbers from seeded vessels
+                    var vesselIMO1 = vessels[0].IMO; // "6268446"
+                    var vesselIMO2 = vessels[1].IMO; // "2221610"
+                    var vesselIMO3 = vessels[2].IMO; // "8666692"
+                    var vesselIMO4 = vessels[3].IMO; // "0260090"
 
-                var visit1 = new VesselVisitNotification(vesselIMO1, dock1, DateTime.UtcNow.AddDays(-1), VisitPurpose.Maintenance);
-                visit1.AddCrewMember("John Doe", "C123", "PT");
+                    // Use actual dock IDs from seeded docks
+                    var dock1 = docks[0].Id;
+                    var dock2 = docks[1].Id;
 
-                var visit2 = new VesselVisitNotification(vesselIMO2, dock1, DateTime.UtcNow.AddDays(1), VisitPurpose.Commercial);
-                visit2.AddCrewMember("Maria Silva", "C456", "ES");
-                visit2.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
+                    var visit1 = new VesselVisitNotification(vesselIMO1, dock1, DateTime.UtcNow.AddDays(-1), VisitPurpose.Maintenance);
+                    visit1.AddCrewMember("John Doe", "C123", "PT");
 
-                var visit3 = new VesselVisitNotification(vesselIMO3, dock2, DateTime.UtcNow.AddDays(2), VisitPurpose.Commercial);
-                visit3.AddCrewMember("Carlos Mendes", "C789", "BR");
-                visit3.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
+                    var visit2 = new VesselVisitNotification(vesselIMO2, dock1, DateTime.UtcNow.AddDays(1), VisitPurpose.Commercial);
+                    visit2.AddCrewMember("Maria Silva", "C456", "ES");
+                    visit2.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
 
-                var visit4 = new VesselVisitNotification(vesselIMO4, dock2, DateTime.UtcNow.AddDays(3), VisitPurpose.Commercial);
-                visit4.AddCrewMember("Eva Liu", "C999", "CN");
-                visit4.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
-                visit4.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
+                    var visit3 = new VesselVisitNotification(vesselIMO3, dock2, DateTime.UtcNow.AddDays(2), VisitPurpose.Commercial);
+                    visit3.AddCrewMember("Carlos Mendes", "C789", "BR");
+                    visit3.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
 
-                await context.AddRangeAsync(visit1, visit2, visit3, visit4);
-                await context.SaveChangesAsync();
-                logger.LogInformation("Seeded {Count} Vessel Visit Notifications.", 4);
+                    var visit4 = new VesselVisitNotification(vesselIMO4, dock2, DateTime.UtcNow.AddDays(3), VisitPurpose.Commercial);
+                    visit4.AddCrewMember("Eva Liu", "C999", "CN");
+                    visit4.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
+                    visit4.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
+
+                    await context.AddRangeAsync(visit1, visit2, visit3, visit4);
+                    await context.SaveChangesAsync();
+                    logger.LogInformation("Seeded {Count} Vessel Visit Notifications.", 4);
+                }
+                else
+                {
+                    logger.LogWarning("Cannot seed Vessel Visit Notifications: insufficient vessels ({VesselCount}) or docks ({DockCount}).", vessels.Count, docks.Count);
+                }
             }
 
 
