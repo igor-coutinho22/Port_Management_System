@@ -1,0 +1,881 @@
+@startuml DomainModel
+title Shipping Port Management System - Complete Domain Model
+
+' === DOMAIN LAYER ===
+package "Domain Layer" {
+
+  ' ---- STAFF AGGREGATE ----
+  package "Staff Aggregate" <<Aggregate>> {
+    class Staff <<AggregateRoot>> {
+      +MecanographicNumber : string <<PK>>
+      +ShortName : string
+      +Email : string
+      +Phone : string
+      +Status : StaffStatus
+      +OperationalWindow : string
+      +QualificationLinks : ICollection<QualificationLink>
+      --
+      +Activate() : void
+      +Deactivate() : void
+    }
+
+    enum StaffStatus {
+      Available
+      Unavailable
+    }
+
+    class QualificationLink <<Entity>> {
+      +StaffMecanographicNumber : string <<FK>>
+      +QualificationCode : string <<FK>>
+    }
+  }
+
+  ' ---- QUALIFICATION AGGREGATE ----
+  package "Qualification Aggregate" <<Aggregate>> {
+    class Qualification <<AggregateRoot>> {
+      +Code : string <<PK>>
+      +Name : string
+      +QualificationLinks : ICollection<QualificationLink>
+    }
+  }
+
+  ' ---- RESOURCE AGGREGATE ----
+  package "Resource Aggregate" <<Aggregate>> {
+    class Resource <<AggregateRoot>> {
+      +Id : string <<PK>>
+      +Description : string
+      +ResourceType : ResourceType
+      +OperationalCapacity : int
+      +Status : ResourceAvailabilityStatus
+      +SetupTime : int
+      +QualificationCodes : List<string> <<FK to Qualification>>
+    }
+
+    enum ResourceType {
+      STSCrane
+      YardCrane
+      Truck
+      Tractor
+    }
+
+    enum ResourceAvailabilityStatus {
+      Active
+      Maintenance
+      Inactive
+    }
+  }
+
+  ' ---- STORAGE AREA AGGREGATE ----
+  package "StorageArea Aggregate" <<Aggregate>> {
+    abstract class StorageArea <<AggregateRoot>> {
+      +Id : int <<PK>>
+      +Name : string
+      +Type : StorageAreaType
+      +MaxCapacityTeu : int
+      +CurrentOccupancyTeu : int
+      +DockConnections : ICollection<DockStorageAreaInfo>
+      --
+      +CanAddTeus(teusToAdd: int) : bool
+      +ChangeMaxCapacity(newMaxCapacityTeu: int) : void
+      +UpdateCurrentOccupancy(newOccupancyTeu: int) : void
+      +GetInfoForDock(dockId: Guid) : DockStorageAreaInfo
+      +SetInfoForDock(dockId: Guid, info: DockStorageAreaInfo) : void
+      +RemoveInfoForDock(dockId: Guid) : bool
+      {abstract} +GetUsageDescription() : string
+    }
+
+    class ContainerYard {
+      +DockIds : List<Guid> <<FK to Dock>>
+      --
+      +GetUsageDescription() : string
+    }
+
+    class Warehouse {
+      +SpecializedCargoType : string
+      --
+      +UpdateCargoType(newType: string) : void
+      +GetUsageDescription() : string
+    }
+
+    enum StorageAreaType {
+      ContainerYard
+      Warehouse
+    }
+
+    class DockStorageAreaInfo <<Entity>> {
+      +Id : int <<PK>>
+      +DockId : Guid <<FK>>
+      +StorageAreaId : int <<FK>>
+      +DistanceMeters : double
+      +TravelSeconds : int
+    }
+  }
+
+  ' ---- DOCK AGGREGATE ----
+  package "Dock Aggregate" <<Aggregate>> {
+    class Dock <<AggregateRoot>> {
+      +Id : Guid <<PK>>
+      +Name : string
+      +Location : string
+      +LengthMeters : double
+      +DepthMeters : double
+      +MaxDraftMeters : double
+      +AllowedVesselTypeNames : List<string> <<FK to VesselType>>
+      --
+      +Update(name: string, location: string, length: double, depth: double, maxDraft: double, allowedVesselTypes: List<VesselType>) : void
+      +AllowVesselType(vesselType: VesselType) : void
+      +DisallowVesselType(vesselType: VesselType) : void
+    }
+  }
+
+  ' ---- VESSEL AGGREGATE ----
+  package "Vessel Aggregate" <<Aggregate>> {
+    class Vessel <<AggregateRoot>> {
+      +IMO : string <<PK>>
+      +VesselName : string
+      +OperatorName : string
+      +VesselTypeName : string <<FK>>
+      +RequiredCraneCount : int
+      +RequiredDockLength : double
+      +Bays : int
+      +Rows : int
+      +Tiers : int
+      +CargoGrid : VesselGrid <<NotMapped>>
+      --
+      +IsValidIMO(imo: string) : bool <<static>>
+    }
+
+    class VesselGrid <<ValueObject>> {
+      +Containers : Container[,,]
+      +Bays : int
+      +Rows : int
+      +Tiers : int
+      --
+      +CanPlaceContainer(bay: int, row: int, tier: int) : bool
+      +PlaceContainer(container: Container, bay: int, row: int, tier: int) : void
+      +RemoveContainer(bay: int, row: int, tier: int) : Container
+    }
+
+    class Container <<ValueObject>> {
+      +Id : Guid
+      +Type : string
+      +Weight : double
+    }
+  }
+
+  ' ---- VESSEL TYPE AGGREGATE ----
+  package "Vessel Type Aggregate" <<Aggregate>> {
+    class VesselType <<AggregateRoot>> {
+      +Name : string <<PK>>
+      +Description : string
+      +MaxBays : int
+      +MaxRows : int
+      +MaxTiers : int
+      +MaxTEUCapacity : int <<computed>>
+      --
+      +CreateForUpdate(name: string, description: string, maxBays: int, maxRows: int, maxTiers: int) : VesselType <<static>>
+    }
+   }
+
+  ' ---- VESSEL VISIT NOTIFICATION AGGREGATE ----
+  package "Vessel Visit Notification Aggregate" <<Aggregate>> {
+    class VesselVisitNotification <<AggregateRoot>> {
+      +Id : Guid <<PK>>
+      +VesselIMO : string <<FK>>
+      +VisitDate : DateTime
+      +DockId : Guid <<FK>>
+      +Status : VesselVisitStatus
+      +Purpose : VisitPurpose
+      +LoadingManifest : CargoManifest
+      +UnloadingManifest : CargoManifest
+      +Crew : List<CrewMember>
+      +DecisionLogs : List<DecisionLog>
+      --
+      +AddLoadingManifest(manifest: CargoManifest) : void
+      +AddUnloadingManifest(manifest: CargoManifest) : void
+      +AddCrewMember(name: string, citizenId: string, nationality: string) : void
+      +MarkAsSubmitted() : void
+      +Approve(officerId: Guid, dockId: Guid) : void
+      +Reject(officerId: Guid, reason: string) : void
+      +UpdateVesselIMO(newIMO: string) : void
+      +UpdatePurpose(newPurpose: VisitPurpose) : void
+      +UpdateDockId(newDockId: Guid) : void
+      +UpdateVisitDate(newDate: DateTime) : void
+      +UpdateLoadingManifest(manifest: CargoManifest) : void
+      +UpdateUnloadingManifest(manifest: CargoManifest) : void
+      +UpdateCrew(crew: IEnumerable<CrewMember>) : void
+    }
+
+    enum VesselVisitStatus {
+      InProgress
+      Submitted
+      Approved
+      Rejected
+    }
+
+    enum VisitPurpose {
+      Commercial
+      Maintenance
+    }
+
+    class CargoManifest <<Entity>> {
+      +Id : Guid <<PK>>
+      +Type : CargoManifestType
+      +LoadingManifestForId : Guid <<FK>>
+      +UnloadingManifestForId : Guid <<FK>>
+    }
+
+    enum CargoManifestType {
+      Loading
+      Unloading
+    }
+
+    class DecisionLog <<Entity>> {
+      +Id : Guid <<PK>>
+      +OfficerId : Guid
+      +Outcome : DecisionOutcome
+      +Details : string
+      +Timestamp : DateTime
+    }
+
+    enum DecisionOutcome {
+      Approved
+      Rejected
+    }
+  }
+
+  ' ---- REPRESENTATIVE AGGREGATE ----
+  package "Representative Aggregate" <<Aggregate>> {
+    class Representative <<AggregateRoot>> {
+      +Id : Guid <<PK>>
+      +OrganizationId : Guid <<FK>>
+      +Name : string
+      +CitizenId : string
+      +Nationality : string
+      +Email : string
+      +Phone : string
+      +IsActive : bool
+      --
+      +Update(name: string, citizenId: string, nationality: string, email: string, phone: string) : void
+      +UpdateProfile(name: string, citizenId: string, nationality: string, email: string, phone: string) : void
+      +SetActive(isActive: bool) : void
+    }
+
+    class ShippingAgentOrganization <<Entity>> {
+          +Id : Guid <<PK>>
+          +LegalName : string
+          +AlternativeNames : string
+          +Address : string
+          +TaxNumber : string
+          --
+          +Update(legalName: string, alternativeNames: string, address: string, taxNumber: string) : void
+          +UpdateProfile(legalName: string, alternativeNames: string, address: string, taxNumber: string) : void
+        }
+  }
+
+  ' ---- USERS AGGREGATE ----
+  package "Users Aggregate" <<Aggregate>> {
+    class ApplicationUser <<AggregateRoot>> {
+      +Id : string <<PK>>
+      +UserName : string
+      +Email : string
+      +EmailConfirmed : bool
+      +FullName : string
+    }
+  }
+
+  ' ---- CREW AGGREGATE ----
+  package "Crew Aggregate" <<Aggregate>> {
+    class CrewMember <<Entity>> {
+      +Id : Guid <<PK>>
+      +Name : string
+      +CitizenId : string
+      +Nationality : string
+      +VesselVisitNotificationId : Guid <<FK>>
+    }
+  }
+}
+
+' === DOMAIN RELATIONSHIPS ===
+' Inheritance within aggregates
+ContainerYard --> StorageArea : is a
+Warehouse --> StorageArea : is a
+
+' Composition within aggregates (entities belong to aggregate root)
+StorageArea --> "1..*" DockStorageAreaInfo : contains
+Staff --> "0..*" QualificationLink : has
+Qualification --> "0..*" QualificationLink : linked to
+Vessel --> "1" VesselGrid : has
+VesselGrid --> "0..*" Container : contains
+VesselVisitNotification --> "0..2" CargoManifest : manifest
+VesselVisitNotification --> "1..*" CrewMember : has crew
+VesselVisitNotification --> "1..*" DecisionLog : has decisions
+
+' Enum connections to their classes
+Staff --> "1" StaffStatus : uses
+Resource --> "1" ResourceType : uses
+Resource --> "1" ResourceAvailabilityStatus : uses
+StorageArea --> "1" StorageAreaType : uses
+VesselVisitNotification --> "1" VesselVisitStatus : uses
+VesselVisitNotification --> "1" VisitPurpose : uses
+CargoManifest --> "1" CargoManifestType : uses
+DecisionLog --> "1" DecisionOutcome : uses
+
+' UNIDIRECTIONAL Cross-Aggregate References (Aggregate Root to Aggregate Root only)
+' Note: These are implemented as ID references, not object references
+Representative "1..*" --> "1" ShippingAgentOrganization : is part of
+Representative "1" --> "0..*" VesselVisitNotification : requests
+CrewMember "1" --> "1" ApplicationUser : is
+Vessel "0..*" --> "1" VesselType : VesselTypeName
+VesselVisitNotification "0..*" --> "1" Vessel : vesselIMO
+VesselVisitNotification "0..*" --> "1" Dock : dockId
+StorageArea "0..*" --> "0..*" Dock : dockIds (ContainerYard)
+Resource "0..*" --> "1..*" Qualification : qualificationCodes
+
+' === APPLICATION LAYER ===
+package "Application Layer" {
+  ' ---- SERVICE INTERFACES ----
+  interface IStaffService {
+    +CreateStaffAsync(dto: StaffDTO) : Task<Staff>
+    +UpdateStaffAsync(id: string, dto: StaffDTO) : Task<Staff>
+    +GetStaffByIdAsync(id: string) : Task<Staff>
+    +GetAllStaffAsync() : Task<List<Staff>>
+    +DeleteStaffAsync(id: string) : Task
+    +AddQualificationAsync(staffId: string, qualificationCode: string) : Task
+    +RemoveQualificationAsync(staffId: string, qualificationCode: string) : Task
+  }
+
+  interface IQualificationService {
+    +CreateQualificationAsync(dto: QualificationDTO) : Task<Qualification>
+    +UpdateQualificationAsync(code: string, dto: QualificationDTO) : Task<Qualification>
+    +GetQualificationByCodeAsync(code: string) : Task<Qualification>
+    +GetAllQualificationsAsync() : Task<List<Qualification>>
+    +DeleteQualificationAsync(code: string) : Task
+  }
+
+  interface IResourceService {
+    +CreateResourceAsync(dto: ResourceDTO) : Task<Resource>
+    +UpdateResourceAsync(id: string, dto: ResourceDTO) : Task<Resource>
+    +GetResourceByIdAsync(id: string) : Task<Resource>
+    +GetAllResourcesAsync() : Task<List<Resource>>
+    +DeleteResourceAsync(id: string) : Task
+  }
+
+  interface IStorageAreaService {
+    +AddContainerYardAsync(yard: ContainerYard) : Task
+    +AddWarehouseAsync(warehouse: Warehouse) : Task
+    +UpdateContainerYardAsync(yard: ContainerYard) : Task
+    +UpdateWarehouseAsync(warehouse: Warehouse) : Task
+    +GetStorageAreaByNameAsync(name: string) : Task<StorageArea>
+    +GetStorageAreaByIdAsync(id: int) : Task<StorageArea>
+    +GetAllStorageAreasAsync() : Task<List<StorageArea>>
+    +AddConnectionAsync(connection: DockStorageAreaInfo) : Task
+    +UpdateConnectionFromDtoAsync(storageAreaId: int, dockId: Guid, dto: DockStorageAreaConnectionDTO) : Task<DockStorageAreaInfo>
+    +RemoveConnectionAsync(storageAreaId: int, dockId: Guid) : Task
+    +GetConnectionAsync(storageAreaId: int, dockId: Guid) : Task<DockStorageAreaInfo>
+    +GetConnectionsForStorageAreaAsync(storageAreaId: int) : Task<List<DockStorageAreaInfo>>
+    +DeleteStorageAreaAsync(storageAreaId: int) : Task
+  }
+
+  interface IDockService {
+    +CreateDockAsync(dto: DockDTO) : Task<Dock>
+    +UpdateDockAsync(id: Guid, dto: DockDTO) : Task<Dock>
+    +GetByIdAsync(id: Guid) : Task<Dock>
+    +GetAllAsync() : Task<List<Dock>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  interface IVesselService {
+    +CreateVesselAsync(dto: VesselDTO) : Task<Vessel>
+    +UpdateVesselAsync(imo: string, dto: VesselDTO) : Task<Vessel>
+    +GetVesselByIMOAsync(imo: string) : Task<Vessel>
+    +GetAllVesselsAsync() : Task<List<Vessel>>
+    +DeleteVesselAsync(imo: string) : Task
+  }
+
+  interface IVesselTypeService {
+    +CreateVesselTypeAsync(dto: VesselTypeDTO) : Task<VesselType>
+    +UpdateVesselTypeAsync(name: string, dto: VesselTypeDTO) : Task<VesselType>
+    +GetVesselTypeByNameAsync(name: string) : Task<VesselType>
+    +GetAllVesselTypesAsync() : Task<List<VesselType>>
+    +DeleteVesselTypeAsync(name: string) : Task
+  }
+
+  interface IVesselVisitNotificationService {
+    +CreateNotificationAsync(dto: VesselVisitNotificationDTO) : Task<VesselVisitNotification>
+    +UpdateNotificationAsync(id: Guid, dto: VesselVisitNotificationDTO) : Task<VesselVisitNotification>
+    +GetNotificationByIdAsync(id: Guid) : Task<VesselVisitNotification>
+    +GetAllNotificationsAsync() : Task<List<VesselVisitNotification>>
+    +SubmitNotificationAsync(id: Guid) : Task
+    +ApproveNotificationAsync(id: Guid, officerId: Guid, dockId: Guid) : Task
+    +RejectNotificationAsync(id: Guid, officerId: Guid, reason: string) : Task
+    +DeleteNotificationAsync(id: Guid) : Task
+  }
+
+  interface IOrganizationService {
+    +CreateOrganizationAsync(dto: OrganizationDTO) : Task<ShippingAgentOrganization>
+    +UpdateOrganizationAsync(id: Guid, dto: OrganizationDTO) : Task<ShippingAgentOrganization>
+    +GetOrganizationByIdAsync(id: Guid) : Task<ShippingAgentOrganization>
+    +GetAllOrganizationsAsync() : Task<List<ShippingAgentOrganization>>
+    +DeleteOrganizationAsync(id: Guid) : Task
+  }
+
+  interface IRepresentativeService {
+    +CreateRepresentativeAsync(dto: RepresentativeDTO) : Task<Representative>
+    +UpdateRepresentativeAsync(id: Guid, dto: RepresentativeDTO) : Task<Representative>
+    +GetRepresentativeByIdAsync(id: Guid) : Task<Representative>
+    +GetAllRepresentativesAsync() : Task<List<Representative>>
+    +ActivateRepresentativeAsync(id: Guid) : Task
+    +DeactivateRepresentativeAsync(id: Guid) : Task
+    +DeleteRepresentativeAsync(id: Guid) : Task
+  }
+
+  ' ---- SERVICE IMPLEMENTATIONS ----
+  class StaffService {
+    +CreateStaffAsync(dto: StaffDTO) : Task<Staff>
+    +UpdateStaffAsync(id: string, dto: StaffDTO) : Task<Staff>
+    +GetStaffByIdAsync(id: string) : Task<Staff>
+    +GetAllStaffAsync() : Task<List<Staff>>
+    +DeleteStaffAsync(id: string) : Task
+    +AddQualificationAsync(staffId: string, qualificationCode: string) : Task
+    +RemoveQualificationAsync(staffId: string, qualificationCode: string) : Task
+  }
+
+  class QualificationService {
+    +CreateQualificationAsync(dto: QualificationDTO) : Task<Qualification>
+    +UpdateQualificationAsync(code: string, dto: QualificationDTO) : Task<Qualification>
+    +GetQualificationByCodeAsync(code: string) : Task<Qualification>
+    +GetAllQualificationsAsync() : Task<List<Qualification>>
+    +DeleteQualificationAsync(code: string) : Task
+  }
+
+  class ResourceService {
+    +CreateResourceAsync(dto: ResourceDTO) : Task<Resource>
+    +UpdateResourceAsync(id: string, dto: ResourceDTO) : Task<Resource>
+    +GetResourceByIdAsync(id: string) : Task<Resource>
+    +GetAllResourcesAsync() : Task<List<Resource>>
+    +DeleteResourceAsync(id: string) : Task
+  }
+
+  class StorageAreaService {
+    +AddContainerYardAsync(yard: ContainerYard) : Task
+    +AddWarehouseAsync(warehouse: Warehouse) : Task
+    +UpdateContainerYardAsync(yard: ContainerYard) : Task
+    +UpdateWarehouseAsync(warehouse: Warehouse) : Task
+    +GetStorageAreaByNameAsync(name: string) : Task<StorageArea>
+    +GetStorageAreaByIdAsync(id: int) : Task<StorageArea>
+    +GetAllStorageAreasAsync() : Task<List<StorageArea>>
+    +AddConnectionAsync(connection: DockStorageAreaInfo) : Task
+    +UpdateConnectionFromDtoAsync(storageAreaId: int, dockId: Guid, dto: DockStorageAreaConnectionDTO) : Task<DockStorageAreaInfo>
+    +RemoveConnectionAsync(storageAreaId: int, dockId: Guid) : Task
+    +GetConnectionAsync(storageAreaId: int, dockId: Guid) : Task<DockStorageAreaInfo>
+    +GetConnectionsForStorageAreaAsync(storageAreaId: int) : Task<List<DockStorageAreaInfo>>
+    +DeleteStorageAreaAsync(storageAreaId: int) : Task
+  }
+
+  class DockService {
+    +CreateDockAsync(dto: DockDTO) : Task<Dock>
+    +UpdateDockAsync(id: Guid, dto: DockDTO) : Task<Dock>
+    +GetByIdAsync(id: Guid) : Task<Dock>
+    +GetAllAsync() : Task<List<Dock>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  class VesselService {
+    +CreateVesselAsync(dto: VesselDTO) : Task<Vessel>
+    +UpdateVesselAsync(imo: string, dto: VesselDTO) : Task<Vessel>
+    +GetVesselByIMOAsync(imo: string) : Task<Vessel>
+    +GetAllVesselsAsync() : Task<List<Vessel>>
+    +DeleteVesselAsync(imo: string) : Task
+  }
+
+  class VesselTypeService {
+    +CreateVesselTypeAsync(dto: VesselTypeDTO) : Task<VesselType>
+    +UpdateVesselTypeAsync(name: string, dto: VesselTypeDTO) : Task<VesselType>
+    +GetVesselTypeByNameAsync(name: string) : Task<VesselType>
+    +GetAllVesselTypesAsync() : Task<List<VesselType>>
+    +DeleteVesselTypeAsync(name: string) : Task
+  }
+
+  class VesselVisitNotificationService {
+    +CreateNotificationAsync(dto: VesselVisitNotificationDTO) : Task<VesselVisitNotification>
+    +UpdateNotificationAsync(id: Guid, dto: VesselVisitNotificationDTO) : Task<VesselVisitNotification>
+    +GetNotificationByIdAsync(id: Guid) : Task<VesselVisitNotification>
+    +GetAllNotificationsAsync() : Task<List<VesselVisitNotification>>
+    +SubmitNotificationAsync(id: Guid) : Task
+    +ApproveNotificationAsync(id: Guid, officerId: Guid, dockId: Guid) : Task
+    +RejectNotificationAsync(id: Guid, officerId: Guid, reason: string) : Task
+    +DeleteNotificationAsync(id: Guid) : Task
+  }
+
+  class OrganizationService {
+    +CreateOrganizationAsync(dto: OrganizationDTO) : Task<ShippingAgentOrganization>
+    +UpdateOrganizationAsync(id: Guid, dto: OrganizationDTO) : Task<ShippingAgentOrganization>
+    +GetOrganizationByIdAsync(id: Guid) : Task<ShippingAgentOrganization>
+    +GetAllOrganizationsAsync() : Task<List<ShippingAgentOrganization>>
+    +DeleteOrganizationAsync(id: Guid) : Task
+  }
+
+  class RepresentativeService {
+    +CreateRepresentativeAsync(dto: RepresentativeDTO) : Task<Representative>
+    +UpdateRepresentativeAsync(id: Guid, dto: RepresentativeDTO) : Task<Representative>
+    +GetRepresentativeByIdAsync(id: Guid) : Task<Representative>
+    +GetAllRepresentativesAsync() : Task<List<Representative>>
+    +ActivateRepresentativeAsync(id: Guid) : Task
+    +DeactivateRepresentativeAsync(id: Guid) : Task
+    +DeleteRepresentativeAsync(id: Guid) : Task
+  }
+}
+
+' === INFRASTRUCTURE LAYER ===
+package "Infrastructure Layer" {
+  ' ---- REPOSITORY INTERFACES ----
+  interface IStaffRepository {
+    +AddAsync(staff: Staff) : Task
+    +UpdateAsync(staff: Staff) : Task
+    +GetByIdAsync(id: string) : Task<Staff>
+    +GetAllAsync() : Task<List<Staff>>
+    +DeleteAsync(id: string) : Task
+  }
+
+  interface IQualificationRepository {
+    +AddAsync(qualification: Qualification) : Task
+    +UpdateAsync(qualification: Qualification) : Task
+    +GetByCodeAsync(code: string) : Task<Qualification>
+    +GetAllAsync() : Task<List<Qualification>>
+    +DeleteAsync(code: string) : Task
+  }
+
+  interface IResourceRepository {
+    +AddAsync(resource: Resource) : Task
+    +UpdateAsync(resource: Resource) : Task
+    +GetByIdAsync(id: string) : Task<Resource>
+    +GetAllAsync() : Task<List<Resource>>
+    +DeleteAsync(id: string) : Task
+  }
+
+  interface IStorageAreaRepository {
+    +AddStorageAreaAsync(storageArea: StorageArea) : Task
+    +UpdateContainerYardAsync(yard: ContainerYard, name: string, maxCapacityTeu: int, currentOccupancyTeu: int, docksServed: ICollection<Dock>) : Task
+    +UpdateWarehouseAsync(warehouse: Warehouse, name: string, maxCapacityTeu: int, currentOccupancyTeu: int, specializedCargoType: string) : Task
+    +GetByNameAsync(name: string) : Task<StorageArea>
+    +SearchByIdAsync(id: int) : Task<StorageArea>
+    +GetAllAsync() : Task<List<StorageArea>>
+    +AddConnectionAsync(storageAreaId: int, dockId: Guid, distanceMeters: double, travelSeconds: int) : Task
+    +UpdateConnectionAsync(storageAreaId: int, dockId: Guid, distanceMeters: double, travelSeconds: int) : Task
+    +RemoveConnectionAsync(storageAreaId: int, dockId: Guid) : Task<bool>
+    +GetConnectionsForStorageAreaAsync(storageAreaId: int) : Task<List<DockStorageAreaInfo>>
+    +DeleteStorageAreaAsync(storageAreaId: int) : Task
+  }
+
+  interface IDockRepository {
+    +AddAsync(dock: Dock) : Task
+    +UpdateAsync(dock: Dock) : Task
+    +GetByIdAsync(id: Guid) : Task<Dock>
+    +GetAllAsync() : Task<List<Dock>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  interface IVesselRepository {
+    +AddAsync(vessel: Vessel) : Task
+    +UpdateAsync(vessel: Vessel) : Task
+    +GetByIMOAsync(imo: string) : Task<Vessel>
+    +GetAllAsync() : Task<List<Vessel>>
+    +DeleteAsync(imo: string) : Task
+  }
+
+  interface IVesselTypeRepository {
+    +AddAsync(vesselType: VesselType) : Task
+    +UpdateAsync(vesselType: VesselType) : Task
+    +GetByNameAsync(name: string) : Task<VesselType>
+    +GetAllAsync() : Task<List<VesselType>>
+    +DeleteAsync(name: string) : Task
+  }
+
+  interface IVesselVisitNotificationRepository {
+    +AddAsync(notification: VesselVisitNotification) : Task
+    +UpdateAsync(notification: VesselVisitNotification) : Task
+    +GetByIdAsync(id: Guid) : Task<VesselVisitNotification>
+    +GetAllAsync() : Task<List<VesselVisitNotification>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  interface IOrganizationRepository {
+    +AddAsync(organization: ShippingAgentOrganization) : Task
+    +UpdateAsync(organization: ShippingAgentOrganization) : Task
+    +GetByIdAsync(id: Guid) : Task<ShippingAgentOrganization>
+    +GetAllAsync() : Task<List<ShippingAgentOrganization>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  interface IRepresentativeRepository {
+    +AddAsync(representative: Representative) : Task
+    +UpdateAsync(representative: Representative) : Task
+    +GetByIdAsync(id: Guid) : Task<Representative>
+    +GetAllAsync() : Task<List<Representative>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  ' ---- REPOSITORY IMPLEMENTATIONS ----
+  class StaffRepository {
+    -_context : PortManagementContext
+    +AddAsync(staff: Staff) : Task
+    +UpdateAsync(staff: Staff) : Task
+    +GetByIdAsync(id: string) : Task<Staff>
+    +GetAllAsync() : Task<List<Staff>>
+    +DeleteAsync(id: string) : Task
+  }
+
+  class QualificationRepository {
+    -_context : PortManagementContext
+    +AddAsync(qualification: Qualification) : Task
+    +UpdateAsync(qualification: Qualification) : Task
+    +GetByCodeAsync(code: string) : Task<Qualification>
+    +GetAllAsync() : Task<List<Qualification>>
+    +DeleteAsync(code: string) : Task
+  }
+
+  class ResourceRepository {
+    -_context : PortManagementContext
+    +AddAsync(resource: Resource) : Task
+    +UpdateAsync(resource: Resource) : Task
+    +GetByIdAsync(id: string) : Task<Resource>
+    +GetAllAsync() : Task<List<Resource>>
+    +DeleteAsync(id: string) : Task
+  }
+
+  class StorageAreaRepository {
+    -_context : PortManagementContext
+    +AddStorageAreaAsync(storageArea: StorageArea) : Task
+    +UpdateContainerYardAsync(yard: ContainerYard, name: string, maxCapacityTeu: int, currentOccupancyTeu: int, docksServed: ICollection<Dock>) : Task
+    +UpdateWarehouseAsync(warehouse: Warehouse, name: string, maxCapacityTeu: int, currentOccupancyTeu: int, specializedCargoType: string) : Task
+    +GetByNameAsync(name: string) : Task<StorageArea>
+    +SearchByIdAsync(id: int) : Task<StorageArea>
+    +GetAllAsync() : Task<List<StorageArea>>
+    +AddConnectionAsync(storageAreaId: int, dockId: Guid, distanceMeters: double, travelSeconds: int) : Task
+    +UpdateConnectionAsync(storageAreaId: int, dockId: Guid, distanceMeters: double, travelSeconds: int) : Task
+    +RemoveConnectionAsync(storageAreaId: int, dockId: Guid) : Task<bool>
+    +GetConnectionsForStorageAreaAsync(storageAreaId: int) : Task<List<DockStorageAreaInfo>>
+    +DeleteStorageAreaAsync(storageAreaId: int) : Task
+  }
+
+  class DockRepository {
+    -_context : PortManagementContext
+    +AddAsync(dock: Dock) : Task
+    +UpdateAsync(dock: Dock) : Task
+    +GetByIdAsync(id: Guid) : Task<Dock>
+    +GetAllAsync() : Task<List<Dock>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  class VesselRepository {
+    -_context : PortManagementContext
+    +AddAsync(vessel: Vessel) : Task
+    +UpdateAsync(vessel: Vessel) : Task
+    +GetByIMOAsync(imo: string) : Task<Vessel>
+    +GetAllAsync() : Task<List<Vessel>>
+    +DeleteAsync(imo: string) : Task
+  }
+
+  class VesselTypeRepository {
+    -_context : PortManagementContext
+    +AddAsync(vesselType: VesselType) : Task
+    +UpdateAsync(vesselType: VesselType) : Task
+    +GetByNameAsync(name: string) : Task<VesselType>
+    +GetAllAsync() : Task<List<VesselType>>
+    +DeleteAsync(name: string) : Task
+  }
+
+  class VesselVisitNotificationRepository {
+    -_context : PortManagementContext
+    +AddAsync(notification: VesselVisitNotification) : Task
+    +UpdateAsync(notification: VesselVisitNotification) : Task
+    +GetByIdAsync(id: Guid) : Task<VesselVisitNotification>
+    +GetAllAsync() : Task<List<VesselVisitNotification>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  class OrganizationRepository {
+    -_context : PortManagementContext
+    +AddAsync(organization: ShippingAgentOrganization) : Task
+    +UpdateAsync(organization: ShippingAgentOrganization) : Task
+    +GetByIdAsync(id: Guid) : Task<ShippingAgentOrganization>
+    +GetAllAsync() : Task<List<ShippingAgentOrganization>>
+    +DeleteAsync(id: Guid) : Task
+  }
+
+  class RepresentativeRepository {
+    -_context : PortManagementContext
+    +AddAsync(representative: Representative) : Task
+    +UpdateAsync(representative: Representative) : Task
+    +GetByIdAsync(id: Guid) : Task<Representative>
+    +GetAllAsync() : Task<List<Representative>>
+    +DeleteAsync(id: Guid) : Task
+  }
+}
+
+' === API LAYER ===
+package "API Layer" {
+  ' ---- CONTROLLERS ----
+  class StaffController {
+    -_service : IStaffService
+    +AddStaff(dto: StaffDTO) : Task<IActionResult>
+    +UpdateStaff(id: string, dto: StaffDTO) : Task<IActionResult>
+    +GetStaff(id: string) : Task<IActionResult>
+    +GetAllStaff() : Task<IActionResult>
+    +DeleteStaff(id: string) : Task<IActionResult>
+    +AddQualification(staffId: string, qualificationCode: string) : Task<IActionResult>
+    +RemoveQualification(staffId: string, qualificationCode: string) : Task<IActionResult>
+  }
+
+  class QualificationsController {
+    -_service : IQualificationService
+    +AddQualification(dto: QualificationDTO) : Task<IActionResult>
+    +UpdateQualification(code: string, dto: QualificationDTO) : Task<IActionResult>
+    +GetQualification(code: string) : Task<IActionResult>
+    +GetAllQualifications() : Task<IActionResult>
+    +DeleteQualification(code: string) : Task<IActionResult>
+  }
+
+  class ResourcesController {
+    -_service : IResourceService
+    +AddResource(dto: ResourceDTO) : Task<IActionResult>
+    +UpdateResource(id: string, dto: ResourceDTO) : Task<IActionResult>
+    +GetResource(id: string) : Task<IActionResult>
+    +GetAllResources() : Task<IActionResult>
+    +DeleteResource(id: string) : Task<IActionResult>
+  }
+
+  class StorageAreasController {
+    -_storageAreaService : IStorageAreaService
+    -_dockService : IDockService
+    +AddContainerYard(dto: ContainerYardDto) : Task<IActionResult>
+    +AddWarehouse(dto: WarehouseDto) : Task<IActionResult>
+    +UpdateContainerYard(id: int, dto: ContainerYardDto) : Task<IActionResult>
+    +UpdateWarehouse(id: int, dto: WarehouseDto) : Task<IActionResult>
+    +GetByName(name: string) : Task<IActionResult>
+    +GetById(id: int) : Task<IActionResult>
+    +GetAll() : Task<IActionResult>
+    +AddConnection(storageAreaId: int, dto: DockStorageAreaConnectionDTO) : Task<IActionResult>
+    +UpdateConnection(storageAreaId: int, dockId: Guid, dto: DockStorageAreaConnectionDTO) : Task<IActionResult>
+    +DeleteConnection(storageAreaId: int, dockId: Guid) : Task<IActionResult>
+    +GetConnection(storageAreaId: int, dockId: Guid) : Task<IActionResult>
+    +GetConnections(storageAreaId: int) : Task<IActionResult>
+    +DeleteStorageArea(storageAreaId: int) : Task<IActionResult>
+  }
+
+  class DocksController {
+    -_service : IDockService
+    +AddDock(dto: DockDTO) : Task<IActionResult>
+    +UpdateDock(id: Guid, dto: DockDTO) : Task<IActionResult>
+    +GetDock(id: Guid) : Task<IActionResult>
+    +GetAllDocks() : Task<IActionResult>
+    +DeleteDock(id: Guid) : Task<IActionResult>
+  }
+
+  class VesselsController {
+    -_service : IVesselService
+    +AddVessel(dto: VesselDTO) : Task<IActionResult>
+    +UpdateVessel(imo: string, dto: VesselDTO) : Task<IActionResult>
+    +GetVessel(imo: string) : Task<IActionResult>
+    +GetAllVessels() : Task<IActionResult>
+    +DeleteVessel(imo: string) : Task<IActionResult>
+  }
+
+  class VesselTypesController {
+    -_service : IVesselTypeService
+    +AddVesselType(dto: VesselTypeDTO) : Task<IActionResult>
+    +UpdateVesselType(name: string, dto: VesselTypeDTO) : Task<IActionResult>
+    +GetVesselType(name: string) : Task<IActionResult>
+    +GetAllVesselTypes() : Task<IActionResult>
+    +DeleteVesselType(name: string) : Task<IActionResult>
+  }
+
+  class VesselVisitNotificationsController {
+    -_service : IVesselVisitNotificationService
+    +CreateNotification(dto: VesselVisitNotificationDTO) : Task<IActionResult>
+    +UpdateNotification(id: Guid, dto: VesselVisitNotificationDTO) : Task<IActionResult>
+    +GetNotification(id: Guid) : Task<IActionResult>
+    +GetAllNotifications() : Task<IActionResult>
+    +SubmitNotification(id: Guid) : Task<IActionResult>
+    +ApproveNotification(id: Guid, officerId: Guid, dockId: Guid) : Task<IActionResult>
+    +RejectNotification(id: Guid, officerId: Guid, reason: string) : Task<IActionResult>
+    +DeleteNotification(id: Guid) : Task<IActionResult>
+  }
+
+  class OrganizationsController {
+    -_service : IOrganizationService
+    +CreateOrganization(dto: OrganizationDTO) : Task<IActionResult>
+    +UpdateOrganization(id: Guid, dto: OrganizationDTO) : Task<IActionResult>
+    +GetOrganization(id: Guid) : Task<IActionResult>
+    +GetAllOrganizations() : Task<IActionResult>
+    +DeleteOrganization(id: Guid) : Task<IActionResult>
+  }
+
+  class RepresentativesController {
+    -_service : IRepresentativeService
+    +CreateRepresentative(dto: RepresentativeDTO) : Task<IActionResult>
+    +UpdateRepresentative(id: Guid, dto: RepresentativeDTO) : Task<IActionResult>
+    +GetRepresentative(id: Guid) : Task<IActionResult>
+    +GetAllRepresentatives() : Task<IActionResult>
+    +ActivateRepresentative(id: Guid) : Task<IActionResult>
+    +DeactivateRepresentative(id: Guid) : Task<IActionResult>
+    +DeleteRepresentative(id: Guid) : Task<IActionResult>
+  }
+}
+
+' === SERVICE-REPOSITORY RELATIONSHIPS ===
+StaffService --> IStaffRepository : uses
+QualificationService --> IQualificationRepository : uses
+ResourceService --> IResourceRepository : uses
+StorageAreaService --> IStorageAreaRepository : uses
+DockService --> IDockRepository : uses
+VesselService --> IVesselRepository : uses
+VesselTypeService --> IVesselTypeRepository : uses
+VesselVisitNotificationService --> IVesselVisitNotificationRepository : uses
+VesselVisitNotificationService --> IVesselTypeRepository : uses
+VesselVisitNotificationService --> IDockRepository : uses
+OrganizationService --> IOrganizationRepository : uses
+RepresentativeService --> IRepresentativeRepository : uses
+RepresentativeService --> IOrganizationRepository : uses
+
+' === SERVICE IMPLEMENTATIONS ===
+StaffService ..|> IStaffService : implements
+QualificationService ..|> IQualificationService : implements
+ResourceService ..|> IResourceService : implements
+StorageAreaService ..|> IStorageAreaService : implements
+DockService ..|> IDockService : implements
+VesselService ..|> IVesselService : implements
+VesselTypeService ..|> IVesselTypeService : implements
+VesselVisitNotificationService ..|> IVesselVisitNotificationService : implements
+OrganizationService ..|> IOrganizationService : implements
+RepresentativeService ..|> IRepresentativeService : implements
+
+' === REPOSITORY IMPLEMENTATIONS ===
+StaffRepository ..|> IStaffRepository : implements
+QualificationRepository ..|> IQualificationRepository : implements
+ResourceRepository ..|> IResourceRepository : implements
+StorageAreaRepository ..|> IStorageAreaRepository : implements
+DockRepository ..|> IDockRepository : implements
+VesselRepository ..|> IVesselRepository : implements
+VesselTypeRepository ..|> IVesselTypeRepository : implements
+VesselVisitNotificationRepository ..|> IVesselVisitNotificationRepository : implements
+OrganizationRepository ..|> IOrganizationRepository : implements
+RepresentativeRepository ..|> IRepresentativeRepository : implements
+
+' === CONTROLLER-SERVICE RELATIONSHIPS ===
+StaffController --> IStaffService : uses
+QualificationsController --> IQualificationService : uses
+ResourcesController --> IResourceService : uses
+StorageAreasController --> IStorageAreaService : uses
+StorageAreasController --> IDockService : uses
+DocksController --> IDockService : uses
+DocksController --> IVesselTypeService : uses
+VesselsController --> IVesselService : uses
+VesselsController --> IVesselTypeService : uses
+VesselTypesController --> IVesselTypeService : uses
+VesselVisitNotificationsController --> IVesselVisitNotificationService : uses
+OrganizationsController --> IOrganizationService : uses
+RepresentativesController --> IRepresentativeService : uses
+
+@enduml

@@ -1,5 +1,37 @@
 // Navigation Component - React
 const Navigation = ({ currentPage, onNavigate }) => {
+    const [isDarkMode, setIsDarkMode] = React.useState(false);
+
+    // Load saved theme preference
+    React.useEffect(() => {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        setIsDarkMode(prefersDark);
+        
+        // Apply theme to html element
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        
+        // Also add class to body for additional targeting
+        document.body.className = prefersDark ? 'dark-theme' : 'light-theme';
+        
+        console.log('Theme applied:', prefersDark ? 'dark' : 'light'); // Debug log
+    }, []);
+
+    const toggleTheme = () => {
+        const newTheme = !isDarkMode;
+        setIsDarkMode(newTheme);
+        const theme = newTheme ? 'dark' : 'light';
+        
+        // Apply theme to html element
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Also add class to body
+        document.body.className = newTheme ? 'dark-theme' : 'light-theme';
+        
+        localStorage.setItem('theme', theme);
+        
+        console.log('Theme toggled to:', theme); // Debug log
+    };
     const navItems = [
         { id: 'home', label: 'Home', icon: '🏠' },
         { id: '3d-view', label: '3D Port View', icon: '🏗️' },
@@ -33,6 +65,15 @@ const Navigation = ({ currentPage, onNavigate }) => {
                         ))}
                     </ul>
                 </nav>
+                <div className="header-actions">
+                    <div className="theme-switch" onClick={toggleTheme} title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+                        <div className={`theme-switch-track ${isDarkMode ? 'dark' : 'light'}`}>
+                            <div className={`theme-switch-thumb ${isDarkMode ? 'dark' : 'light'}`}>
+                                <span className="theme-icon">{isDarkMode ? '🌙' : '☀️'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
     );
