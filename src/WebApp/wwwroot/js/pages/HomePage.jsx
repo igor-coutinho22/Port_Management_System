@@ -40,18 +40,13 @@ const HomePage = () => {
 // Feature Card Sub-component
 const FeatureCard = ({ title, description, route }) => {
     return (
-        <div className="feature-card">
+        <div 
+            className="feature-card"
+            onClick={() => window.app.navigate(route)}
+            style={{ cursor: 'pointer' }}
+        >
             <h3>{title}</h3>
             <p>{description}</p>
-            <button 
-                className="btn"
-                onClick={() => window.app.navigate(route)}
-            >
-                {route === 'vessels' && 'View Vessels'}
-                {route === '3d-view' && 'Open 3D View'}
-                {route === 'resources' && 'View Resources'}
-                {route === 'api-docs' && 'View API Docs'}
-            </button>
         </div>
     );
 };

@@ -52,9 +52,6 @@ const ApiDocsPage = () => {
                     >
                         <h3>{endpoint.title}</h3>
                         <p>{endpoint.description}</p>
-                        <button className="btn">
-                            Open API
-                        </button>
                     </div>
                 ))}
             </div>
