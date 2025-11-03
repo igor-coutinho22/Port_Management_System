@@ -26,7 +26,7 @@ const VesselsPage = () => {
     const handleViewDetails = async (vesselImo) => {
         try {
             const vessel = await apiService.getVesselByImo(vesselImo);
-            alert(`Vessel Details:\n\nIMO: ${vessel.imo}\nName: ${vessel.vesselName}\nOperator: ${vessel.operatorName}\nType: ${vessel.vesselTypeName}`);
+            alert(`Vessel Details:\n\nIMO: ${vessel.IMO || vessel.imo}\nName: ${vessel.VesselName || vessel.vesselName}\nOperator: ${vessel.OperatorName || vessel.operatorName}\nType: ${vessel.VesselTypeName || vessel.vesselTypeName}`);
         } catch (error) {
             alert('Error loading vessel details: ' + error.message);
         }

@@ -91,7 +91,7 @@ class ApiService {
     }
 
     async getVesselByImo(imo) {
-        return this.get(`/vessels/${imo}`);
+        return this.get(`/vessels/getByIMO/${imo}`);
     }
 
     async createVessel(vesselData) {

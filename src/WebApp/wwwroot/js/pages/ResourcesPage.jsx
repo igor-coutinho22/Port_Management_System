@@ -81,7 +81,7 @@ const ResourcesPage = () => {
                                     <td>{resource.description || 'N/A'}</td>
                                     <td>{resource.resourceType || 'N/A'}</td>
                                     <td>
-                                        <span className="status-badge">
+                                        <span className={`status-badge status-${(resource.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
                                             {resource.status || 'N/A'}
                                         </span>
                                     </td>

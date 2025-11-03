@@ -17,6 +17,7 @@ namespace WebApp.Models.Application.Mappers
                 IMO = vessel.IMO,
                 VesselName = vessel.VesselName,
                 OperatorName = vessel.OperatorName,
+                VesselTypeName = vessel.VesselTypeName,
                 Bays = vessel.Bays,
                 RequiredDockLength = vessel.RequiredDockLength,
                 RequiredCraneCount = vessel.RequiredCraneCount,
