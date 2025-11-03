@@ -1,24 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Resource Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Port Management System</title>
+    <link rel="stylesheet" href="css/site.css">
+    <link rel="stylesheet" href="css/spa.css">
+    <link rel="stylesheet" href="css/react-components.css">
+    
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls for camera interaction -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-    <h1>Welcome to the Resource Management System</h1>
-    <ul>
-        <li><a href="/swagger">API Documentation (Swagger)</a></li>
-        <li><a href="/api/resources">Get All Resources</a></li>
-        <li><a href="/api/qualifications">Get All Qualifications</a></li>
-        <li><a href="/api/staff">Get All Staff</a></li>
-        <li><a href="/api/vessels">Get All Vessels</a></li>
-        <li><a href="/api/storageAreas">Get All StorageAreas</a></li>
-        <li><a href="/api/vesselTypes">Get All Vessel Types</a></li>
-        <li><a href="/api/vesselVisitNotification">Get All Vessel Visit Notifications</a></li>
-        <li><a href="/api/organizations">Get All Organizations</a></li>
-        <li><a href="/api/representatives">Get All Representatives</a></li>
+    <!-- React App Container -->
+    <div id="root">
+        <!-- React will render the entire SPA here -->
+    </div>
 
-        
-    </ul>
+    <!-- React Application - MODULAR STRUCTURE -->
+    <!-- Services Layer -->
+    <script src="js/services/api-service.js"></script>
+    
+    <!-- 3D Visualization Service -->
+    <script src="js/components/3d-visualization.js"></script>
+    
+    <!-- React Components (Reusable UI Components) -->
+    <script type="text/babel" src="js/components/Navigation.jsx"></script>
+    <script type="text/babel" src="js/components/ThreeDView.jsx"></script>
+    
+    <!-- React Pages (Route-specific Components) -->
+    <script type="text/babel" src="js/pages/HomePage.jsx"></script>
+    <script type="text/babel" src="js/pages/ResourcesPage.jsx"></script>
+    <script type="text/babel" src="js/pages/VesselsPage.jsx"></script>
+    <script type="text/babel" src="js/pages/ApiDocsPage.jsx"></script>
+    
+    <!-- Main Application -->
+    <script type="text/babel" src="js/App.jsx"></script>
 </body>
 </html>

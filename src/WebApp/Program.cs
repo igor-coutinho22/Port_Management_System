@@ -111,8 +111,10 @@ using (var scope = app.Services.CreateScope())
         var db = services.GetRequiredService<PortManagementContext>();
         if (db.Database.IsRelational())
             db.Database.Migrate();
-        await DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
-        await DataSeeder.SeedDomainDataAsync(services);
+        
+        // TEMPORARILY COMMENTED OUT FOR SPA TESTING - FIX BOOTSTRAP LATER
+        // await DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
+        // await DataSeeder.SeedDomainDataAsync(services);
     }
     catch (Exception ex)
     {
@@ -140,10 +142,23 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapRazorPages();
+
+// SPA Configuration - serve index.html for root and SPA routes
 app.MapGet("/", context =>
 {
     context.Response.Redirect("/index.html");
     return Task.CompletedTask;
+});
+
+// Fallback to index.html for SPA routing (for routes like /home, /vessels, etc.)
+app.MapFallback(async context =>
+{
+    // Only apply SPA fallback for non-API routes
+    if (!context.Request.Path.StartsWithSegments("/api"))
+    {
+        context.Response.ContentType = "text/html";
+        await context.Response.SendFileAsync(Path.Combine(app.Environment.WebRootPath, "index.html"));
+    }
 });
 
 app.Run();
