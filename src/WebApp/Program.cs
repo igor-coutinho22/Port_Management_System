@@ -113,8 +113,8 @@ using (var scope = app.Services.CreateScope())
             db.Database.Migrate();
         
         // TEMPORARILY COMMENTED OUT FOR SPA TESTING - FIX BOOTSTRAP LATER
-        // await DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
-        // await DataSeeder.SeedDomainDataAsync(services);
+        await DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
+        await DataSeeder.SeedDomainDataAsync(services);
     }
     catch (Exception ex)
     {
