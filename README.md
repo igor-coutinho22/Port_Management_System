@@ -1,8 +1,8 @@
-# Port Management System 🚢
+# Port Management System 
 
 A comprehensive port management system developed as part of the 5th semester integrated project (LAPR5) at ISEP. This system manages vessels, resources, docks, and operations in a modern port environment.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -15,7 +15,7 @@ A comprehensive port management system developed as part of the 5th semester int
 - [Contributing](#contributing)
 - [Team](#team)
 
-## 🎯 Overview
+## Overview
 
 The Port Management System is a modern web application designed to streamline port operations, including:
 - **Vessel Management**: Track vessel arrivals, departures, and specifications
@@ -23,31 +23,31 @@ The Port Management System is a modern web application designed to streamline po
 - **3D Visualization**: Interactive 3D view of port infrastructure
 - **Real-time Operations**: Manage docks, storage areas, and staff efficiently
 
-## ✨ Features
+## Features
 
 ### Core Functionality
-- 🚢 **Vessel Registration & Tracking**
-- 🏗️ **Resource & Equipment Management**
-- 📦 **Storage Area Organization**
-- 👥 **Staff & Qualifications Management**
-- 🏭 **Dock Operations**
-- 📊 **Vessel Visit Notifications**
+- **Vessel Registration & Tracking**
+- **Resource & Equipment Management**
+- **Storage Area Organization**
+- **Staff & Qualifications Management**
+- **Dock Operations**
+- **Vessel Visit Notifications**
 
 ### Technical Features
-- 🌐 **Single Page Application (SPA)** with React
-- 🔒 **Azure AD Authentication**
-- 📱 **Responsive Web Design**
-- 🎮 **Interactive 3D Port Visualization**
-- 🔄 **RESTful API Architecture**
-- ☁️ **Azure SQL Database**
+- **Single Page Application (SPA)** with React
+- **Microsoft Entra ID Authentication**
+- **Responsive Web Design**
+- **Interactive 3D Port Visualization**
+- **RESTful API Architecture**
+- **Azure SQL Database**
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Backend
 - **Framework**: ASP.NET Core 6.0
 - **Database**: Azure SQL Database
 - **ORM**: Entity Framework Core
-- **Authentication**: Azure AD / Identity
+- **Authentication**: Microsoft Entra ID
 - **API Documentation**: Swagger/OpenAPI
 
 ### Frontend
@@ -63,7 +63,7 @@ The Port Management System is a modern web application designed to streamline po
 - **Version Control**: Git
 - **IDE**: Visual Studio Code
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - .NET 6.0 SDK
@@ -108,7 +108,7 @@ The Port Management System is a modern web application designed to streamline po
 3. Check the API documentation for integration details
 4. Explore the 3D visualization for port layout
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 LEI-SEM5-PI-2025-26-3DD-02/
@@ -127,7 +127,7 @@ LEI-SEM5-PI-2025-26-3DD-02/
 └── README.md                 # This file
 ```
 
-## 📚 API Documentation
+## API Documentation
 
 The system provides a comprehensive RESTful API. Access the interactive documentation at:
 - **Swagger UI**: `/swagger`
@@ -141,7 +141,7 @@ The system provides a comprehensive RESTful API. Access the interactive document
 - `POST /api/vessels` - Register new vessel
 - And many more...
 
-## 📖 User Stories
+## User Stories
 
 This project implements multiple user stories organized by sprints:
 
@@ -152,13 +152,13 @@ This project implements multiple user stories organized by sprints:
 - Basic CRUD operations
 
 ### Sprint 2 (User Stories 3.1.1+)
-- **US 3.1.1**: SPA framework implementation ✅
+- **US 3.1.1**: SPA framework implementation 
 - Modern web interface
 - Enhanced user experience
 
 See the `/docs` folder for detailed user story documentation and sequence diagrams.
 
-## 🧪 Testing
+## Testing
 
 ### Running Tests
 ```bash
@@ -177,7 +177,7 @@ dotnet test --filter "ClassName.MethodName"
 - **Integration Tests**: Database and repository tests
 - **System Tests**: End-to-end API testing
 
-## 👥 Team
+## Team
 
 ### Development Team - Group 02 (3DD)
 
@@ -186,8 +186,8 @@ dotnet test --filter "ClassName.MethodName"
 | **Rafael Barbosa** | 1230544
 | **Igor Coutinho** | 1230543
 | **João Soares** | 1211064
-| **Miguel Pais** | 1231006
-| **Sofia Costa** | ... 
+| **Miguel Pais** | 1230851
+| **Sofia Costa** | 1231006
 
 ### Academic Context
 
@@ -200,13 +200,13 @@ dotnet test --filter "ClassName.MethodName"
 
 ---
 
-## 📄 License
+## License
 
 This project is developed for academic purposes as part of the LAPR5 course at ISEP.
 
 ---
 
-## 🔗 Links
+## Links
 
 - [Project Documentation](./docs/)
 - [Domain Model](./docs/domain_model/)
