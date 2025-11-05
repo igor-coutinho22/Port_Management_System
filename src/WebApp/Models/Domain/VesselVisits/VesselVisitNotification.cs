@@ -121,15 +121,6 @@ namespace WebApp.Models.Domain.VesselVisits
 
         public List<DecisionLog> DecisionLogs { get; private set; } = new();
 
-        public void UpdateVesselIMO(string newIMO)
-        {
-            EnsureInProgress();
-            if (string.IsNullOrWhiteSpace(newIMO) || !WebApp.Models.Domain.Vessel.Vessel.IsValidIMO(newIMO))
-                throw new ArgumentException("Invalid IMO.", nameof(newIMO));
-
-            VesselIMO = newIMO;
-        }
-
         public void UpdatePurpose(VisitPurpose newPurpose)
         {
             EnsureInProgress();

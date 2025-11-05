@@ -34,11 +34,12 @@ const Navigation = ({ currentPage, onNavigate }) => {
     };
     const navItems = [
         { id: 'home', label: 'Home', icon: '🏠' },
+        { id: 'management', label: 'Management', icon: '⚙️' },
         { id: '3d-view', label: '3D Port View', icon: '🏗️' },
-        { id: 'resources', label: 'Resources', icon: '📦' },
-        { id: 'vessels', label: 'Vessels', icon: '🚢' },
         { id: 'api-docs', label: 'API Docs', icon: '📚' }
     ];
+
+    console.log('Navigation component updated! New navItems:', navItems);
 
     return (
         <header className="header-bar">

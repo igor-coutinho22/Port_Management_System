@@ -29,9 +29,26 @@ const App = () => {
 
     // Render current page component
     const renderCurrentPage = () => {
+        console.log('Rendering page:', currentPage);
+        
         switch (currentPage) {
             case 'home':
                 return <HomePage />;
+            case 'management':
+                console.log('Loading Management page...');
+                console.log('ManagementPage type:', typeof ManagementPage);
+                console.log('Available components:', Object.keys(window).filter(key => key.includes('Page')));
+                if (typeof ManagementPage === 'undefined') {
+                    console.error('ManagementPage component not loaded!');
+                    return (
+                        <div className="page-section">
+                            <h2 className="page-title">Management (Loading Error)</h2>
+                            <p className="error">ManagementPage component not found. Check browser console for details.</p>
+                            <p><strong>Debug Info:</strong> Component type is {typeof ManagementPage}</p>
+                        </div>
+                    );
+                }
+                return <ManagementPage />;
             case 'resources':
                 return <ResourcesPage />;
             case 'vessels':
@@ -41,6 +58,7 @@ const App = () => {
             case 'api-docs':
                 return <ApiDocsPage />;
             default:
+                console.log('Unknown page, defaulting to home');
                 return <HomePage />;
         }
     };
@@ -136,10 +154,71 @@ const AppWithGlobalNav = () => {
         switch (currentPage) {
             case 'home':
                 return <HomePage />;
+            case 'management':
+                console.log('Loading Management page in AppWithGlobalNav...');
+                console.log('ManagementPage type:', typeof ManagementPage);
+                if (typeof ManagementPage === 'undefined') {
+                    console.error('ManagementPage component not loaded!');
+                    return (
+                        <div className="page-section">
+                            <h2 className="page-title">Management (Loading Error)</h2>
+                            <p className="error">ManagementPage component not found. Check browser console for details.</p>
+                        </div>
+                    );
+                }
+                return <ManagementPage />;
             case 'resources':
                 return <ResourcesPage />;
             case 'vessels':
                 return <VesselsPage />;
+            case 'vessel-types':
+                console.log('Loading VesselTypesPage, type:', typeof VesselTypesPage);
+                if (typeof VesselTypesPage === 'undefined') {
+                    return <div className="error">VesselTypesPage component not loaded</div>;
+                }
+                return <VesselTypesPage />;
+            case 'docks':
+                console.log('Loading DocksPage, type:', typeof DocksPage);
+                if (typeof DocksPage === 'undefined') {
+                    return <div className="error">DocksPage component not loaded</div>;
+                }
+                return <DocksPage />;
+            case 'storage-areas':
+                console.log('Loading StorageAreasPage, type:', typeof StorageAreasPage);
+                if (typeof StorageAreasPage === 'undefined') {
+                    return <div className="error">StorageAreasPage component not loaded</div>;
+                }
+                return <StorageAreasPage />;
+            case 'organizations':
+                console.log('Loading OrganizationsPage, type:', typeof OrganizationsPage);
+                if (typeof OrganizationsPage === 'undefined') {
+                    return <div className="error">OrganizationsPage component not loaded</div>;
+                }
+                return <OrganizationsPage />;
+            case 'representatives':
+                console.log('Loading RepresentativesPage, type:', typeof RepresentativesPage);
+                if (typeof RepresentativesPage === 'undefined') {
+                    return <div className="error">RepresentativesPage component not loaded</div>;
+                }
+                return <RepresentativesPage />;
+            case 'staff':
+                console.log('Loading StaffPage, type:', typeof StaffPage);
+                if (typeof StaffPage === 'undefined') {
+                    return <div className="error">StaffPage component not loaded</div>;
+                }
+                return <StaffPage />;
+            case 'vessel-visit-notifications':
+                console.log('Loading VesselVisitNotificationsPage, type:', typeof VesselVisitNotificationsPage);
+                if (typeof VesselVisitNotificationsPage === 'undefined') {
+                    return <div className="error">VesselVisitNotificationsPage component not loaded</div>;
+                }
+                return <VesselVisitNotificationsPage />;
+            case 'qualifications':
+                console.log('Loading QualificationsPage, type:', typeof QualificationsPage);
+                if (typeof QualificationsPage === 'undefined') {
+                    return <div className="error">QualificationsPage component not loaded</div>;
+                }
+                return <QualificationsPage />;
             case '3d-view':
                 return <ThreeDView key="3d-view" />; // Key forces remount
             case 'api-docs':

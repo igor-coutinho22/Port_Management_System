@@ -34,7 +34,8 @@ namespace WebApp.Tests.Agents
 
         private static ShippingAgentOrganization SeedOrg(PortManagementContext ctx, string tax = "PT123456789", string name = "Alpha SA")
         {
-            var org = new ShippingAgentOrganization(name, "Alpha; A SA", "Rua A, 1", tax);
+            var alternativeNames = name.Replace("Port", "").Replace("SA", "Inc"); // Generate unique alternative names
+            var org = new ShippingAgentOrganization(name, alternativeNames, "Rua A, 1", tax);
             var rep = new Representative(org.Id, "John Doe", "CIT123", "PRT", "john@alpha.com", "+351911111111");
             org.AddRepresentative(rep);
             ctx.Organizations.Add(org);
@@ -75,7 +76,7 @@ namespace WebApp.Tests.Agents
             var svc = NewService(ctx);
 
             var req = new CreateOrganizationRequest(
-                "NoReps SA", null, "Addr", "PT000111222",
+                "NoReps SA", "", "Addr", "PT000111222",
                 Representatives: Array.Empty<CreateRepresentativeRequest>());
 
             await FluentActions.Invoking(() => svc.CreateAsync(req))
@@ -91,7 +92,7 @@ namespace WebApp.Tests.Agents
             var svc = NewService(ctx);
 
             var req = new CreateOrganizationRequest(
-                "Other SA", null, "Addr", "PTDUP001",
+                "Other SA", "", "Addr", "PTDUP001",
                 new []{ new CreateRepresentativeRequest("Mary","X1","PRT","m@o.com","+351912000000") });
 
             await FluentActions.Invoking(() => svc.CreateAsync(req))

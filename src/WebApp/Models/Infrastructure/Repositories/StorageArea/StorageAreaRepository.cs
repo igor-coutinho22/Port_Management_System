@@ -106,5 +106,20 @@ namespace WebApp.Models.Infrastructure.Repositories
             _context.StorageAreas.Remove(storageArea);
             await _context.SaveChangesAsync();
         }
+
+        public async Task ClearContainerYardReferencesAsync(int containerYardId)
+        {
+            // Clear ContainerYardId foreign key references in docks table
+            var docksWithContainerYardReference = await _context.Docks
+                .Where(d => EF.Property<int?>(d, "ContainerYardId") == containerYardId)
+                .ToListAsync();
+
+            foreach (var dock in docksWithContainerYardReference)
+            {
+                _context.Entry(dock).Property("ContainerYardId").CurrentValue = null;
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

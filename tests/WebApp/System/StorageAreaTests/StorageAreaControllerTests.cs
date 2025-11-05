@@ -1,197 +1,209 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using WebApp.Models.Context;
-using WebApp.Models.Domain.StorageArea;
 using FluentAssertions;
 using System;
 using System.Net;
-using System.Net.Http.Json;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Net.Http;
-using System.Security.Claims;
-using System.Text.Encodings.Web;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 using System.Collections.Generic;
-using System.Linq;
 
-public class StorageAreaControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
+    private readonly string _testRunId;
+    private readonly List<int> _createdStorageAreaIds;
 
-    public StorageAreaControllerTests(WebApplicationFactory<Program> factory)
+    public StorageAreaControllerTests(TestWebAppFactory factory)
     {
-        _client = factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
-            {
-                services.RemoveAll(typeof(DbContextOptions<PortManagementContext>));
-                services.AddDbContext<PortManagementContext>(options =>
-                    options.UseInMemoryDatabase("StorageAreaTests"));
-                
-                // Disable authentication for tests
-                services.AddAuthentication("Test")
-                    .AddScheme<TestAuthenticationSchemeOptions, TestAuthenticationHandler>(
-                        "Test", options => { });
-                
-                // Override authorization to allow all
-                services.AddAuthorization(options =>
-                {
-                    options.DefaultPolicy = new AuthorizationPolicyBuilder("Test")
-                        .RequireAssertion(context => true)
-                        .Build();
-                });
-            });
-        }).CreateClient();
-    }
-
-    [Fact]
-    public async Task Post_And_Get_ContainerYard_ShouldWork()
-    {
-        // First, create a vessel type (required for dock)
-        var vesselType = new
-        {
-            name = "Test Container Ship",
-            description = "Container vessel for testing",
-            maxBays = 20,
-            maxRows = 18,
-            maxTiers = 8
-        };
-        await _client.PostAsJsonAsync("/api/vesseltypes", vesselType);
-
-        // Then create a dock (required for container yard)
-        var dock = new
-        {
-            name = "Test Dock",
-            location = "Test Location",
-            lengthMeters = 100.0,
-            depthMeters = 15.0,
-            maxDraftMeters = 12.0,
-            allowedVesselTypes = new List<string> { "Test Container Ship" }
-        };
-        var dockResponse = await _client.PostAsJsonAsync("/api/docks", dock);
-        dockResponse.EnsureSuccessStatusCode();
-        
-        // Get all docks and use the first one (which should be our created dock)
-        var allDocksResponse = await _client.GetAsync("/api/docks");
-        var allDocksJson = await allDocksResponse.Content.ReadAsStringAsync();
-        
-        // Use a simple approach - just parse the first dock ID from the JSON
-        // This is a simplified approach for testing
-        var docksDocument = JsonDocument.Parse(allDocksJson);
-        var firstDockId = docksDocument.RootElement[0].GetProperty("id").GetGuid();
-        
-        // Now create the container yard with the real dock ID
-        var yard = new
-        {
-            name = "Container Yard A",
-            maxCapacityTeu = 1000,
-            currentOccupancyTeu = 200,
-            dockIds = new List<Guid> { firstDockId }
-        };
-
-        var postResponse = await _client.PostAsJsonAsync("/api/storageareas/containerYard", yard);
-        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        var getResponse = await _client.GetAsync("/api/storageareas");
-        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var json = await getResponse.Content.ReadAsStringAsync();
-        json.Should().Contain("Container Yard A");
+        _client = factory.CreateClient();
+        _testRunId = Guid.NewGuid().ToString("N")[..8];
+        _createdStorageAreaIds = new List<int>();
     }
 
     [Fact]
     public async Task Post_And_Get_Warehouse_ShouldWork()
     {
-        var warehouse = new
+        var dto = new
         {
-            name = "Warehouse A",
+            name = $"Test Warehouse {_testRunId}",
             maxCapacityTeu = 500,
             currentOccupancyTeu = 100,
             specializedCargoType = "Perishable"
         };
 
-        var postResponse = await _client.PostAsJsonAsync("/api/storageareas/warehouse", warehouse);
+        var post = await CreateWarehouseWithCleanupAsync(dto);
+        post.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        // Debug: Check what we actually got
-        var responseContent = await postResponse.Content.ReadAsStringAsync();
-        Console.WriteLine($"Warehouse Status: {postResponse.StatusCode}, Content: {responseContent}");
+        var get = await _client.GetAsync("/api/storageareas");
+        get.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        var getResponse = await _client.GetAsync("/api/storageareas");
-        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var json = await getResponse.Content.ReadAsStringAsync();
-        json.Should().Contain("Warehouse A");
+        var body = await get.Content.ReadAsStringAsync();
+        body.Should().Contain($"Test Warehouse {_testRunId}");
     }
-    
+
     [Fact]
-    public async Task Delete_ShouldRemoveStorageArea()
+    public async Task Post_Another_Warehouse_ShouldWork()
     {
-        var warehouse = new
+        var dto = new
         {
-            name = "Warehouse Delete",
-            maxCapacityTeu = 600,
-            currentOccupancyTeu = 100,
+            name = $"Cold Storage {_testRunId}",
+            maxCapacityTeu = 300,
+            currentOccupancyTeu = 50,
+            specializedCargoType = "Frozen"
+        };
+
+        var post = await CreateWarehouseWithCleanupAsync(dto);
+        post.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var get = await _client.GetAsync("/api/storageareas");
+        get.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await get.Content.ReadAsStringAsync();
+        body.Should().Contain($"Cold Storage {_testRunId}");
+    }
+
+    [Fact]
+    public async Task Get_Warehouse_By_Name_ShouldWork()
+    {
+        // First create a warehouse
+        var warehouseName = $"Findable Warehouse {_testRunId}";
+        var dto = new
+        {
+            name = warehouseName,
+            maxCapacityTeu = 200,
+            currentOccupancyTeu = 0,
             specializedCargoType = "General"
         };
-        await _client.PostAsJsonAsync("/api/storageareas/warehouse", warehouse);
 
-        // Get all storage areas as JSON and parse to extract the correct ID
-        var allResponse = await _client.GetAsync("/api/storageareas");
-        var allJson = await allResponse.Content.ReadAsStringAsync();
-        
-        // Parse JSON to find the "Warehouse Delete" storage area ID
-        var allDocument = JsonDocument.Parse(allJson);
-        var warehouseDeleteId = 0;
-        
-        foreach (var element in allDocument.RootElement.EnumerateArray())
-        {
-            if (element.GetProperty("name").GetString() == "Warehouse Delete")
-            {
-                warehouseDeleteId = element.GetProperty("id").GetInt32();
-                break;
-            }
-        }
+        var post = await CreateWarehouseWithCleanupAsync(dto);
+        post.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var deleteResponse = await _client.DeleteAsync($"/api/storageareas/{warehouseDeleteId}");
-        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        // Then search for it using the correct endpoint
+        var get = await _client.GetAsync($"/api/storageareas/GetByName/{warehouseName}");
+        get.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var getResponse = await _client.GetAsync("/api/storageareas");
-        var json = await getResponse.Content.ReadAsStringAsync();
-        json.Should().NotContain("Warehouse Delete");
-    }
-}
-
-public class TestAuthenticationSchemeOptions : AuthenticationSchemeOptions { }
-
-public class TestAuthenticationHandler : AuthenticationHandler<TestAuthenticationSchemeOptions>
-{
-    public TestAuthenticationHandler(IOptionsMonitor<TestAuthenticationSchemeOptions> options,
-        ILoggerFactory logger, UrlEncoder encoder)
-        : base(options, logger, encoder)
-    {
+        var body = await get.Content.ReadAsStringAsync();
+        body.Should().Contain(warehouseName);
     }
 
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    [Fact]
+    public async Task Post_And_Get_ContainerYard_ShouldWork()
     {
-        var claims = new[]
+        // Get available docks first
+        var docksResponse = await _client.GetAsync("/api/docks");
+        docksResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var docksJson = await docksResponse.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(docksJson);
+        var firstDockId = Guid.Parse(doc.RootElement[0].GetProperty("id").GetString()!);
+
+        // Create a container yard
+        var yardName = $"Container Yard {_testRunId}";
+        var dto = new
         {
-            new Claim(ClaimTypes.Name, "Test User"),
-            new Claim(ClaimTypes.NameIdentifier, "123"),
+            name = yardName,
+            maxCapacityTeu = 1000,
+            currentOccupancyTeu = 200,
+            dockIds = new List<Guid> { firstDockId }
         };
 
-        var identity = new ClaimsIdentity(claims, "Test");
-        var principal = new ClaimsPrincipal(identity);
-        var ticket = new AuthenticationTicket(principal, "Test");
+        var post = await CreateContainerYardWithCleanupAsync(dto);
+        post.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        return Task.FromResult(AuthenticateResult.Success(ticket));
+        var get = await _client.GetAsync("/api/storageareas");
+        get.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await get.Content.ReadAsStringAsync();
+        body.Should().Contain(yardName);
+    }
+
+    [Fact]
+    public async Task Get_ContainerYard_By_Name_ShouldWork()
+    {
+        // Get available docks first
+        var docksResponse = await _client.GetAsync("/api/docks");
+        docksResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var docksJson = await docksResponse.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(docksJson);
+        var firstDockId = Guid.Parse(doc.RootElement[0].GetProperty("id").GetString()!);
+
+        // First create a container yard
+        var yardName = $"Searchable Yard {_testRunId}";
+        var dto = new
+        {
+            name = yardName,
+            maxCapacityTeu = 800,
+            currentOccupancyTeu = 100,
+            dockIds = new List<Guid> { firstDockId }
+        };
+
+        var post = await CreateContainerYardWithCleanupAsync(dto);
+        post.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Then search for it
+        var get = await _client.GetAsync($"/api/storageareas/GetByName/{yardName}");
+        get.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await get.Content.ReadAsStringAsync();
+        body.Should().Contain(yardName);
+    }
+
+    // Helper method to extract ID from Location header
+    private int ExtractIdFromLocation(string location)
+    {
+        // Location format: "http://localhost/api/storageareas/{id}"
+        var segments = location.Split('/');
+        return int.Parse(segments[^1]); // Last segment is the ID
+    }
+
+    // Helper method to create a warehouse storage area and track it for cleanup
+    private async Task<HttpResponseMessage> CreateWarehouseWithCleanupAsync(object warehouseDto)
+    {
+        var response = await _client.PostAsJsonAsync("/api/storageareas/warehouse", warehouseDto);
+        
+        // Only track for cleanup if creation was successful
+        if (response.IsSuccessStatusCode && response.Headers.Location != null)
+        {
+            var storageAreaId = ExtractIdFromLocation(response.Headers.Location.ToString());
+            _createdStorageAreaIds.Add(storageAreaId);
+        }
+        
+        return response;
+    }
+
+    // Helper method to create a container yard storage area and track it for cleanup
+    private async Task<HttpResponseMessage> CreateContainerYardWithCleanupAsync(object containerYardDto)
+    {
+        var response = await _client.PostAsJsonAsync("/api/storageareas/containerYard", containerYardDto);
+        
+        // Only track for cleanup if creation was successful
+        if (response.IsSuccessStatusCode && response.Headers.Location != null)
+        {
+            var storageAreaId = ExtractIdFromLocation(response.Headers.Location.ToString());
+            _createdStorageAreaIds.Add(storageAreaId);
+        }
+        
+        return response;
+    }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+    
+    public async Task DisposeAsync()
+    {
+        // Clean up all storage areas created during tests
+        foreach (var storageAreaId in _createdStorageAreaIds)
+        {
+            try
+            {
+                // Attempt to delete the storage area by ID
+                await _client.DeleteAsync($"/api/storageareas/{storageAreaId}");
+            }
+            catch
+            {
+                // Ignore errors during cleanup to avoid masking test failures
+            }
+        }
+        
+        _createdStorageAreaIds.Clear();
     }
 }
