@@ -23,11 +23,11 @@ const VesselTypesPage = () => {
         }
     };
 
-    const handleViewDetails = async (vesselTypeId) => {
+    const handleViewDetails = async (vesselTypeName) => {
         try {
-            const vesselType = vesselTypes.find(vt => vt.id === vesselTypeId);
+            const vesselType = vesselTypes.find(vt => vt.name === vesselTypeName);
             if (vesselType) {
-                alert(`Vessel Type Details:\n\nID: ${vesselType.id}\nName: ${vesselType.name}\nDescription: ${vesselType.description}\nMax Length: ${vesselType.maxLength || 'N/A'}\nMax Width: ${vesselType.maxWidth || 'N/A'}\nMax Draft: ${vesselType.maxDraft || 'N/A'}`);
+                alert(`Vessel Type Details:\n\nName: ${vesselType.name}\nDescription: ${vesselType.description || 'N/A'}\nMax Bays: ${vesselType.maxBays || 'N/A'}\nMax Rows: ${vesselType.maxRows || 'N/A'}\nMax Tiers: ${vesselType.maxTiers || 'N/A'}`);
             } else {
                 alert('Vessel type not found');
             }
@@ -70,28 +70,28 @@ const VesselTypesPage = () => {
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Name</th>
                                 <th>Description</th>
-                                <th>Max Length</th>
-                                <th>Max Width</th>
-                                <th>Max Draft</th>
+                                <th>Max Bays</th>
+                                <th>Max Rows</th>
+                                <th>Max Tiers</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {vesselTypes.map(vesselType => (
-                                <tr key={vesselType.id}>
-                                    <td>{vesselType.id || 'N/A'}</td>
+                            {vesselTypes.map((vesselType, index) => (
+                                <tr key={index}>
+                                    <td>{index + 1}</td>
                                     <td>{vesselType.name || 'N/A'}</td>
                                     <td>{vesselType.description || 'N/A'}</td>
-                                    <td>{vesselType.maxLength ? `${vesselType.maxLength}m` : 'N/A'}</td>
-                                    <td>{vesselType.maxWidth ? `${vesselType.maxWidth}m` : 'N/A'}</td>
-                                    <td>{vesselType.maxDraft ? `${vesselType.maxDraft}m` : 'N/A'}</td>
+                                    <td>{vesselType.maxBays || 'N/A'}</td>
+                                    <td>{vesselType.maxRows || 'N/A'}</td>
+                                    <td>{vesselType.maxTiers || 'N/A'}</td>
                                     <td>
                                         <button 
                                             className="btn-small"
-                                            onClick={() => handleViewDetails(vesselType.id)}
+                                            onClick={() => handleViewDetails(vesselType.name)}
                                         >
                                             View Details
                                         </button>

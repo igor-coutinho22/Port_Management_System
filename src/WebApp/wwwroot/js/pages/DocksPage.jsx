@@ -23,10 +23,15 @@ const DocksPage = () => {
         }
     };
 
-    const handleViewDetails = async (dockId) => {
+    const handleViewDetails = async (dockName) => {
         try {
-            const dockDetails = await apiService.getDockById(dockId);
-            alert(`Dock Details:\n\nID: ${dockDetails.id}\nName: ${dockDetails.name}\nDescription: ${dockDetails.description}\nCapacity: ${dockDetails.capacity || 'N/A'}\nLocation: ${dockDetails.location || 'N/A'}\nStatus: ${dockDetails.status || 'N/A'}`);
+            const dock = docks.find(d => d.name === dockName);
+            if (dock) {
+                const vesselTypes = dock.allowedVesselTypes ? dock.allowedVesselTypes.join(', ') : 'None specified';
+                alert(`Dock Details:\n\nName: ${dock.name}\nLocation: ${dock.location}\nLength: ${dock.lengthMeters}m\nDepth: ${dock.depthMeters}m\nMax Draft: ${dock.maxDraftMeters}m\nAllowed Vessel Types: ${vesselTypes}`);
+            } else {
+                alert('Dock not found');
+            }
         } catch (error) {
             alert('Error loading dock details: ' + error.message);
         }
@@ -66,32 +71,28 @@ const DocksPage = () => {
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Name</th>
-                                <th>Description</th>
-                                <th>Capacity</th>
                                 <th>Location</th>
-                                <th>Status</th>
+                                <th>Length (m)</th>
+                                <th>Depth (m)</th>
+                                <th>Max Draft (m)</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {docks.map(dock => (
-                                <tr key={dock.id}>
-                                    <td>{dock.id || 'N/A'}</td>
+                            {docks.map((dock, index) => (
+                                <tr key={index}>
+                                    <td>{index + 1}</td>
                                     <td>{dock.name || 'N/A'}</td>
-                                    <td>{dock.description || 'N/A'}</td>
-                                    <td>{dock.capacity || 'N/A'}</td>
                                     <td>{dock.location || 'N/A'}</td>
-                                    <td>
-                                        <span className={`status-badge status-${(dock.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
-                                            {dock.status || 'N/A'}
-                                        </span>
-                                    </td>
+                                    <td>{dock.lengthMeters ? dock.lengthMeters.toFixed(1) : 'N/A'}</td>
+                                    <td>{dock.depthMeters ? dock.depthMeters.toFixed(1) : 'N/A'}</td>
+                                    <td>{dock.maxDraftMeters ? dock.maxDraftMeters.toFixed(1) : 'N/A'}</td>
                                     <td>
                                         <button 
                                             className="btn-small"
-                                            onClick={() => handleViewDetails(dock.id)}
+                                            onClick={() => handleViewDetails(dock.name)}
                                         >
                                             View Details
                                         </button>

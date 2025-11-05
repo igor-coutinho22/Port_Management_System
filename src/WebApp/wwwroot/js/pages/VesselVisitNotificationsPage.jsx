@@ -25,8 +25,15 @@ const VesselVisitNotificationsPage = () => {
 
     const handleViewDetails = async (notificationId) => {
         try {
-            const notification = await apiService.getVesselVisitNotificationById(notificationId);
-            alert(`Notification Details:\n\nID: ${notification.id}\nVessel ID: ${notification.vesselId}\nExpected Arrival: ${notification.expectedArrivalTime}\nExpected Departure: ${notification.expectedDepartureTime}\nPurpose: ${notification.purpose}\nStatus: ${notification.status}`);
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification) {
+                const loadingManifest = notification.loadingManifest ? `Type: ${notification.loadingManifest.type}` : 'None';
+                const unloadingManifest = notification.unloadingManifest ? `Type: ${notification.unloadingManifest.type}` : 'None';
+                const crewInfo = notification.crew ? notification.crew.length + ' members' : 'No crew data';
+                alert(`Vessel Visit Notification Details:\n\nID: ${notification.id}\nVessel IMO: ${notification.vesselIMO}\nDock ID: ${notification.dockId}\nVisit Date: ${new Date(notification.visitDate).toLocaleDateString()}\nPurpose: ${notification.purpose}\nStatus: ${notification.status}\nLoading Manifest: ${loadingManifest}\nUnloading Manifest: ${unloadingManifest}\nCrew: ${crewInfo}`);
+            } else {
+                alert('Notification not found');
+            }
         } catch (error) {
             alert('Error loading notification details: ' + error.message);
         }
@@ -67,11 +74,12 @@ const VesselVisitNotificationsPage = () => {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Vessel ID</th>
-                                <th>Expected Arrival</th>
-                                <th>Expected Departure</th>
+                                <th>Vessel IMO</th>
+                                <th>Dock ID</th>
+                                <th>Visit Date</th>
                                 <th>Purpose</th>
                                 <th>Status</th>
+                                <th>Crew Size</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -79,15 +87,16 @@ const VesselVisitNotificationsPage = () => {
                             {notifications.map(notification => (
                                 <tr key={notification.id}>
                                     <td>{notification.id || 'N/A'}</td>
-                                    <td>{notification.vesselId || 'N/A'}</td>
-                                    <td>{notification.expectedArrivalTime ? new Date(notification.expectedArrivalTime).toLocaleString() : 'N/A'}</td>
-                                    <td>{notification.expectedDepartureTime ? new Date(notification.expectedDepartureTime).toLocaleString() : 'N/A'}</td>
+                                    <td>{notification.vesselIMO || 'N/A'}</td>
+                                    <td>{notification.dockId || 'N/A'}</td>
+                                    <td>{notification.visitDate ? new Date(notification.visitDate).toLocaleDateString() : 'N/A'}</td>
                                     <td>{notification.purpose || 'N/A'}</td>
                                     <td>
                                         <span className={`status-badge status-${(notification.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
                                             {notification.status || 'N/A'}
                                         </span>
                                     </td>
+                                    <td>{notification.crew ? notification.crew.length : 0}</td>
                                     <td>
                                         <button 
                                             className="btn-small"

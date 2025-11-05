@@ -83,5 +83,14 @@ namespace WebApp.Models.Application.Services.StaffService
                 await _staffRepo.UpdateAsync(staff);
             }
         }
+
+        public async Task DeleteAsync(string mecanographicNumber)
+        {
+            var staff = await _staffRepo.GetByMecanographicNumberAsync(mecanographicNumber);
+            if (staff == null)
+                return; // Staff doesn't exist, nothing to delete
+                
+            await _staffRepo.DeleteAsync(mecanographicNumber);
+        }
     }
 }

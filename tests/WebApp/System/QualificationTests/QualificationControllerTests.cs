@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -12,25 +13,36 @@ using Xunit;
 public class QualificationControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
+    private readonly List<string> _createdQualificationCodes = new();
+    private readonly string _testRunId;
 
     public QualificationControllerTests(TestWebAppFactory factory)
     {
         _client = factory.CreateClient();
+        _testRunId = Guid.NewGuid().ToString("N")[..8];
+    }
+
+    private async Task<string> CreateQualificationWithCleanupAsync(string code, string name)
+    {
+        var dto = new QualificationDTO
+        {
+            Code = code,
+            Name = name
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/qualifications", dto);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        
+        _createdQualificationCodes.Add(code);
+        return code;
     }
 
     [Fact]
     public async Task PostQualification_ShouldCreateQualification()
     {
-        var dto = new QualificationDTO
-        {
-            Code = "Q100",
-            Name = "STS Crane Operator"
-        };
+        var code = await CreateQualificationWithCleanupAsync($"Q100{_testRunId}", "STS Crane Operator");
 
-        var response = await _client.PostAsJsonAsync("/api/qualifications", dto);
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        response = await _client.GetAsync("/api/qualifications/Q100");
+        var response = await _client.GetAsync($"/api/qualifications/{code}");
         response.EnsureSuccessStatusCode();
 
         var qualification = await response.Content.ReadFromJsonAsync<QualificationDTO>();
@@ -40,27 +52,35 @@ public class QualificationControllerTests : IClassFixture<TestWebAppFactory>, IA
     [Fact]
     public async Task PutQualification_ShouldUpdateName()
     {
+        // Create the qualifications we'll be updating
+        var code1 = await CreateQualificationWithCleanupAsync($"Q3{_testRunId}", "Original Hazardous Cargo Handling");
+        var code2 = await CreateQualificationWithCleanupAsync($"Q200{_testRunId}", "Original STS Crane Operator");
+
+        // Update code1
         var dto = new QualificationDTO
         {
-            Code = "Q3",
+            Code = code1,
             Name = "Updated Hazardous Cargo Handling"
         };
 
-        var response = await _client.PutAsJsonAsync("/api/qualifications/Q3", dto);
+        var response = await _client.PutAsJsonAsync($"/api/qualifications/{code1}", dto);
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        dto.Name = "Hazardous Cargo Handling";
-        await _client.PutAsJsonAsync("/api/qualifications/Q100", dto);
+        
+        // Update code2 with different data
+        dto.Code = code2;
+        dto.Name = "Updated STS Crane Operator";
+        await _client.PutAsJsonAsync($"/api/qualifications/{code2}", dto);
     }
 
-    public async Task InitializeAsync()
-    {
-    }
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {
-    
-        await _client.DeleteAsync("/api/qualifications/Q100");
-    
+        // Clean up all created qualifications
+        foreach (var code in _createdQualificationCodes)
+        {
+            await _client.DeleteAsync($"/api/qualifications/{code}");
+        }
     }
     
 }

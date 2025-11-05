@@ -25,8 +25,12 @@ const RepresentativesPage = () => {
 
     const handleViewDetails = async (representativeId) => {
         try {
-            const representative = await apiService.getRepresentativeById(representativeId);
-            alert(`Representative Details:\n\nID: ${representative.id}\nName: ${representative.name}\nEmail: ${representative.email}\nPhone: ${representative.phone}\nOrganization: ${representative.organizationId}\nRole: ${representative.role}`);
+            const representative = representatives.find(r => r.id === representativeId);
+            if (representative) {
+                alert(`Representative Details:\n\nID: ${representative.id}\nName: ${representative.name}\nCitizen ID: ${representative.citizenId}\nNationality: ${representative.nationality}\nEmail: ${representative.email}\nPhone: ${representative.phone}\nOrganization ID: ${representative.organizationId}\nStatus: ${representative.isActive ? 'Active' : 'Inactive'}`);
+            } else {
+                alert('Representative not found');
+            }
         } catch (error) {
             alert('Error loading representative details: ' + error.message);
         }
@@ -68,10 +72,11 @@ const RepresentativesPage = () => {
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
+                                <th>Citizen ID</th>
+                                <th>Nationality</th>
                                 <th>Email</th>
                                 <th>Phone</th>
-                                <th>Organization ID</th>
-                                <th>Role</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -80,10 +85,15 @@ const RepresentativesPage = () => {
                                 <tr key={representative.id}>
                                     <td>{representative.id || 'N/A'}</td>
                                     <td>{representative.name || 'N/A'}</td>
+                                    <td>{representative.citizenId || 'N/A'}</td>
+                                    <td>{representative.nationality || 'N/A'}</td>
                                     <td>{representative.email || 'N/A'}</td>
                                     <td>{representative.phone || 'N/A'}</td>
-                                    <td>{representative.organizationId || 'N/A'}</td>
-                                    <td>{representative.role || 'N/A'}</td>
+                                    <td>
+                                        <span className={`status-badge status-${representative.isActive ? 'active' : 'inactive'}`}>
+                                            {representative.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
                                     <td>
                                         <button 
                                             className="btn-small"

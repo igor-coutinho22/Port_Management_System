@@ -105,5 +105,13 @@ namespace PortApi.Controllers
             await _staffService.RemoveQualificationFromStaffAsync(mecNumber, qualificationCode);
             return NoContent();
         }
+
+        // DELETE: api/staff/{mecNumber}
+        [HttpDelete("{mecNumber}")]
+        public async Task<IActionResult> Delete(string mecNumber)
+        {
+            await _staffService.DeleteAsync(mecNumber);
+            return NoContent();
+        }
     }
 }

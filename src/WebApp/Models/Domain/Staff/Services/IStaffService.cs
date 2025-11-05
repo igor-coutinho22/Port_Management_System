@@ -22,5 +22,6 @@ namespace WebApp.Models.Domain.Staff.Interfaces
         Task DeactivateAsync(string mecanographicNumber);
         Task AddQualificationToStaffAsync(string staffNumber, Qualification qualification, DateOnly? dateObtained = null, DateOnly? expiryDate = null);
         Task RemoveQualificationFromStaffAsync(string staffNumber, string qualificationCode);
+        Task DeleteAsync(string mecanographicNumber);
     }
 }

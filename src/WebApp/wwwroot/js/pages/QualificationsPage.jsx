@@ -23,10 +23,17 @@ const QualificationsPage = () => {
         }
     };
 
-    const handleViewDetails = async (qualificationId) => {
+    const handleViewDetails = async (qualificationCode) => {
         try {
-            const qualification = await apiService.getQualificationById(qualificationId);
-            alert(`Qualification Details:\n\nID: ${qualification.id}\nName: ${qualification.name}\nDescription: ${qualification.description}\nType: ${qualification.type}\nValidity Period: ${qualification.validityPeriod}\nCertifying Body: ${qualification.certifyingBody}`);
+            const qualification = qualifications.find(q => q.code === qualificationCode);
+            if (qualification) {
+                const obtainedDate = qualification.dateObtained ? new Date(qualification.dateObtained).toLocaleDateString() : 'Not specified';
+                const expiryDate = qualification.expiryDate ? new Date(qualification.expiryDate).toLocaleDateString() : 'No expiry';
+                const isValid = qualification.expiryDate ? new Date(qualification.expiryDate) > new Date() : true;
+                alert(`Qualification Details:\n\nCode: ${qualification.code}\nName: ${qualification.name}\nDate Obtained: ${obtainedDate}\nExpiry Date: ${expiryDate}\nStatus: ${isValid ? 'Valid' : 'Expired'}`);
+            } else {
+                alert('Qualification not found');
+            }
         } catch (error) {
             alert('Error loading qualification details: ' + error.message);
         }
@@ -66,28 +73,30 @@ const QualificationsPage = () => {
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Code</th>
                                 <th>Name</th>
-                                <th>Description</th>
-                                <th>Type</th>
-                                <th>Validity Period</th>
-                                <th>Certifying Body</th>
+                                <th>Date Obtained</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {qualifications.map(qualification => (
-                                <tr key={qualification.id}>
-                                    <td>{qualification.id || 'N/A'}</td>
+                            {qualifications.map((qualification, index) => (
+                                <tr key={index}>
+                                    <td>{qualification.code || 'N/A'}</td>
                                     <td>{qualification.name || 'N/A'}</td>
-                                    <td>{qualification.description || 'N/A'}</td>
-                                    <td>{qualification.type || 'N/A'}</td>
-                                    <td>{qualification.validityPeriod || 'N/A'}</td>
-                                    <td>{qualification.certifyingBody || 'N/A'}</td>
+                                    <td>{qualification.dateObtained ? new Date(qualification.dateObtained).toLocaleDateString() : 'N/A'}</td>
+                                    <td>{qualification.expiryDate ? new Date(qualification.expiryDate).toLocaleDateString() : 'N/A'}</td>
+                                    <td>
+                                        <span className={`status-badge ${qualification.expiryDate && new Date(qualification.expiryDate) > new Date() ? 'status-valid' : 'status-expired'}`}>
+                                            {qualification.expiryDate && new Date(qualification.expiryDate) > new Date() ? 'Valid' : 'Expired'}
+                                        </span>
+                                    </td>
                                     <td>
                                         <button 
                                             className="btn-small"
-                                            onClick={() => handleViewDetails(qualification.id)}
+                                            onClick={() => handleViewDetails(qualification.code)}
                                         >
                                             View Details
                                         </button>

@@ -25,8 +25,13 @@ const StorageAreasPage = () => {
 
     const handleViewDetails = async (storageAreaId) => {
         try {
-            const storageAreaDetails = await apiService.getStorageAreaById(storageAreaId);
-            alert(`Storage Area Details:\n\nID: ${storageAreaDetails.id}\nName: ${storageAreaDetails.name}\nDescription: ${storageAreaDetails.description}\nCapacity: ${storageAreaDetails.capacity || 'N/A'}\nArea: ${storageAreaDetails.area || 'N/A'} m²\nType: ${storageAreaDetails.type || 'N/A'}\nStatus: ${storageAreaDetails.status || 'N/A'}`);
+            const area = storageAreas.find(a => a.id === storageAreaId);
+            if (area) {
+                const utilizationPercent = area.maxCapacityTeu ? Math.round((area.currentOccupancyTeu / area.maxCapacityTeu) * 100) : 0;
+                alert(`Storage Area Details:\n\nID: ${area.id}\nName: ${area.name}\nType: ${area.type}\nMax Capacity: ${area.maxCapacityTeu} TEU\nCurrent Occupancy: ${area.currentOccupancyTeu} TEU\nUtilization: ${utilizationPercent}%`);
+            } else {
+                alert('Storage area not found');
+            }
         } catch (error) {
             alert('Error loading storage area details: ' + error.message);
         }
@@ -68,11 +73,10 @@ const StorageAreasPage = () => {
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-                                <th>Description</th>
                                 <th>Type</th>
-                                <th>Capacity</th>
-                                <th>Area (m²)</th>
-                                <th>Status</th>
+                                <th>Max Capacity (TEU)</th>
+                                <th>Current Occupancy (TEU)</th>
+                                <th>Utilization %</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -81,15 +85,10 @@ const StorageAreasPage = () => {
                                 <tr key={area.id}>
                                     <td>{area.id || 'N/A'}</td>
                                     <td>{area.name || 'N/A'}</td>
-                                    <td>{area.description || 'N/A'}</td>
                                     <td>{area.type || 'N/A'}</td>
-                                    <td>{area.capacity || 'N/A'}</td>
-                                    <td>{area.area ? `${area.area} m²` : 'N/A'}</td>
-                                    <td>
-                                        <span className={`status-badge status-${(area.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
-                                            {area.status || 'N/A'}
-                                        </span>
-                                    </td>
+                                    <td>{area.maxCapacityTeu || 'N/A'}</td>
+                                    <td>{area.currentOccupancyTeu || 'N/A'}</td>
+                                    <td>{area.maxCapacityTeu ? Math.round((area.currentOccupancyTeu / area.maxCapacityTeu) * 100) : 'N/A'}%</td>
                                     <td>
                                         <button 
                                             className="btn-small"

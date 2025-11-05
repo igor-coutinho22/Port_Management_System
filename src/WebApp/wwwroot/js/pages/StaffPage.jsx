@@ -23,10 +23,17 @@ const StaffPage = () => {
         }
     };
 
-    const handleViewDetails = async (staffId) => {
+    const handleViewDetails = async (mecanographicNumber) => {
         try {
-            const staffMember = await apiService.getStaffById(staffId);
-            alert(`Staff Details:\n\nID: ${staffMember.id}\nName: ${staffMember.name}\nEmail: ${staffMember.email}\nPhone: ${staffMember.phone}\nDepartment: ${staffMember.department}\nPosition: ${staffMember.position}\nStatus: ${staffMember.status}`);
+            const staffMember = staff.find(s => s.mecanographicNumber === mecanographicNumber);
+            if (staffMember) {
+                const qualifications = staffMember.qualifications ? 
+                    staffMember.qualifications.map(q => `${q.name} (${q.code})`).join(', ') : 
+                    'None';
+                alert(`Staff Details:\n\nMecanographic Number: ${staffMember.mecanographicNumber}\nName: ${staffMember.shortName}\nEmail: ${staffMember.email}\nPhone: ${staffMember.phone}\nStatus: ${staffMember.status}\nOperational Window: ${staffMember.operationalWindow}\nQualifications: ${qualifications}`);
+            } else {
+                alert('Staff member not found');
+            }
         } catch (error) {
             alert('Error loading staff details: ' + error.message);
         }
@@ -66,34 +73,34 @@ const StaffPage = () => {
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Mecanographic #</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
-                                <th>Department</th>
-                                <th>Position</th>
                                 <th>Status</th>
+                                <th>Operational Window</th>
+                                <th>Qualifications</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {staff.map(staffMember => (
-                                <tr key={staffMember.id}>
-                                    <td>{staffMember.id || 'N/A'}</td>
-                                    <td>{staffMember.name || 'N/A'}</td>
+                            {staff.map((staffMember, index) => (
+                                <tr key={index}>
+                                    <td>{staffMember.mecanographicNumber || 'N/A'}</td>
+                                    <td>{staffMember.shortName || 'N/A'}</td>
                                     <td>{staffMember.email || 'N/A'}</td>
                                     <td>{staffMember.phone || 'N/A'}</td>
-                                    <td>{staffMember.department || 'N/A'}</td>
-                                    <td>{staffMember.position || 'N/A'}</td>
                                     <td>
                                         <span className={`status-badge status-${(staffMember.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
                                             {staffMember.status || 'N/A'}
                                         </span>
                                     </td>
+                                    <td>{staffMember.operationalWindow || 'N/A'}</td>
+                                    <td>{staffMember.qualifications ? staffMember.qualifications.length : 0}</td>
                                     <td>
                                         <button 
                                             className="btn-small"
-                                            onClick={() => handleViewDetails(staffMember.id)}
+                                            onClick={() => handleViewDetails(staffMember.mecanographicNumber)}
                                         >
                                             View Details
                                         </button>

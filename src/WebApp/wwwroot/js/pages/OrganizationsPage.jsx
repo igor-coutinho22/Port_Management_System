@@ -25,8 +25,12 @@ const OrganizationsPage = () => {
 
     const handleViewDetails = async (organizationId) => {
         try {
-            const orgDetails = await apiService.getOrganizationById(organizationId);
-            alert(`Organization Details:\n\nID: ${orgDetails.id}\nName: ${orgDetails.name}\nDescription: ${orgDetails.description}\nEmail: ${orgDetails.email || 'N/A'}\nPhone: ${orgDetails.phone || 'N/A'}\nAddress: ${orgDetails.address || 'N/A'}\nType: ${orgDetails.type || 'N/A'}`);
+            const org = organizations.find(o => o.id === organizationId);
+            if (org) {
+                alert(`Organization Details:\n\nID: ${org.id}\nLegal Name: ${org.legalName}\nAlternative Names: ${org.alternativeNames || 'None'}\nAddress: ${org.address}\nTax Number: ${org.taxNumber}`);
+            } else {
+                alert('Organization not found');
+            }
         } catch (error) {
             alert('Error loading organization details: ' + error.message);
         }
@@ -67,12 +71,10 @@ const OrganizationsPage = () => {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Type</th>
-                                <th>Email</th>
-                                <th>Phone</th>
+                                <th>Legal Name</th>
+                                <th>Alternative Names</th>
                                 <th>Address</th>
+                                <th>Tax Number</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -80,12 +82,10 @@ const OrganizationsPage = () => {
                             {organizations.map(org => (
                                 <tr key={org.id}>
                                     <td>{org.id || 'N/A'}</td>
-                                    <td>{org.name || 'N/A'}</td>
-                                    <td>{org.description || 'N/A'}</td>
-                                    <td>{org.type || 'N/A'}</td>
-                                    <td>{org.email || 'N/A'}</td>
-                                    <td>{org.phone || 'N/A'}</td>
+                                    <td>{org.legalName || 'N/A'}</td>
+                                    <td>{org.alternativeNames || 'N/A'}</td>
                                     <td>{org.address || 'N/A'}</td>
+                                    <td>{org.taxNumber || 'N/A'}</td>
                                     <td>
                                         <button 
                                             className="btn-small"
