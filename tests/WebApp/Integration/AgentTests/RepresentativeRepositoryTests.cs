@@ -24,8 +24,8 @@ namespace WebApp.Tests.Repositories.Agents
         private static (ShippingAgentOrganization org, Representative rep1, Representative rep2) Seed(PortManagementContext ctx)
         {
             var org = new ShippingAgentOrganization("Org SA", "Org", "Addr", "PT-REPO");
-            var rep1 = new Representative(org.Id, "Alice", "CID-A", "PRT", "alice@org.com", "+351911111111");
-            var rep2 = new Representative(org.Id, "Bob", "CID-B", "PRT", "bob@org.com", "+351922222222");
+            var rep1 = new Representative(org.Id, "Alice", "CIDA123", "PRT", "alice@org.com", "+351911111111");
+            var rep2 = new Representative(org.Id, "Bob", "CIDB456", "PRT", "bob@org.com", "+351922222222");
             rep2.SetActive(false);
 
             org.AddRepresentative(rep1);
@@ -73,7 +73,7 @@ namespace WebApp.Tests.Repositories.Agents
 
             // outra org para validar filtro
             var other = new ShippingAgentOrganization("Other", null, "Addr", "PT-OTHER");
-            var otherRep = new Representative(other.Id, "Carol", "CID-C", "PRT", "carol@other.com", "+351933333333");
+            var otherRep = new Representative(other.Id, "Carol", "CIDC789", "PRT", "carol@other.com", "+351933333333");
             other.AddRepresentative(otherRep);
             ctx.Organizations.Add(other);
             ctx.Representatives.Add(otherRep);
@@ -97,7 +97,7 @@ namespace WebApp.Tests.Repositories.Agents
             await ctx.SaveChangesAsync();
 
             var repo = new RepresentativeRepository(ctx);
-            var rep = new Representative(org.Id, "New Rep", "CID-N", "PRT", "new@org.com", "+351944444444");
+            var rep = new Representative(org.Id, "New Rep", "CIDN999", "PRT", "new@org.com", "+351944444444");
 
             await repo.AddAsync(rep);
 
@@ -112,7 +112,7 @@ namespace WebApp.Tests.Repositories.Agents
             var repo = new RepresentativeRepository(ctx);
 
             rep1.SetActive(false);
-            rep1.UpdateProfile("Alice Updated", "CID-A", "PRT", "alice@org.com", "+351955555555");
+            rep1.UpdateProfile("Alice Updated", "CIDA123", "PRT", "alice@org.com", "+351955555555");
 
             await repo.UpdateAsync(rep1);
 

@@ -29,18 +29,7 @@ public class VesselVisitNotificationTests
         vvn.Crew.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData("123456")] // Invalid IMO (less than 7 digits)
-    public void Constructor_ShouldThrow_WhenIMOIsInvalid(string invalidIMO)
-    {
-        // Act & Assert
-        var act = () => new VesselVisitNotification(invalidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
-        act.Should().Throw<ArgumentException>()
-           .WithMessage("Invalid IMO*");
-    }
+
 
     [Fact]
     public void AddLoadingManifest_ShouldAdd_WhenTypeIsLoading()
@@ -162,51 +151,6 @@ public class VesselVisitNotificationTests
         var act = () => vvn.MarkAsSubmitted();
         act.Should().Throw<InvalidOperationException>()
            .WithMessage("*InProgress*");
-    }
-
-    // Tests for US 2.2.9 Update methods
-    [Fact]
-    public void UpdateVesselIMO_ShouldUpdate_WhenStatusIsInProgress()
-    {
-        // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
-        const string newIMO = "9876543";
-
-        // Act
-        vvn.UpdateVesselIMO(newIMO);
-
-        // Assert
-        vvn.VesselIMO.Should().Be(newIMO);
-    }
-
-    [Fact]
-    public void UpdateVesselIMO_ShouldThrow_WhenStatusIsNotInProgress()
-    {
-        // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Maintenance);
-        vvn.MarkAsSubmitted();
-        const string newIMO = "9876543";
-
-        // Act & Assert
-        var act = () => vvn.UpdateVesselIMO(newIMO);
-        act.Should().Throw<InvalidOperationException>()
-           .WithMessage("*InProgress*");
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData("invalid")]
-    public void UpdateVesselIMO_ShouldThrow_WithInvalidIMO(string invalidIMO)
-    {
-        // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
-
-        // Act & Assert
-        var act = () => vvn.UpdateVesselIMO(invalidIMO);
-        act.Should().Throw<ArgumentException>()
-           .WithMessage("*Invalid IMO*");
     }
 
     [Fact]

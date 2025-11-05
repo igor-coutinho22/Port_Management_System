@@ -27,17 +27,17 @@ namespace WebApp.Tests.Domain
         [Fact]
         public void Ctor_EmptyOrganizationId_Throws()
         {
-            Action act = () => new Representative(Guid.Empty, "John", "CIT", "PRT", "j@o.com", "+351911111111");
+            Action act = () => new Representative(Guid.Empty, "John", "CIT123", "PRT", "j@o.com", "+351911111111");
             act.Should().Throw<ArgumentException>().WithMessage("*OrganizationId*");
         }
 
         [Theory]
-        [InlineData("", "CIT", "PRT", "j@o.com", "+351911111111", "*Name is required*")]
+        [InlineData("", "CIT123", "PRT", "j@o.com", "+351911111111", "*Name is required*")]
         [InlineData("John", "", "PRT", "j@o.com", "+351911111111", "*CitizenId is required*")]
-        [InlineData("John", "CIT", "", "j@o.com", "+351911111111", "*Nationality is required*")]
-        [InlineData("John", "CIT", "PR", "j@o.com", "+351911111111", "*ISO 3166-1 alpha-3*")]
-        [InlineData("John", "CIT", "PRT", "bad-email", "+351911111111", "*Email is not valid*")]
-        [InlineData("John", "CIT", "PRT", "j@o.com", "abc", "*E.164*")]
+        [InlineData("John", "CIT123", "", "j@o.com", "+351911111111", "*Nationality is required*")]
+        [InlineData("John", "CIT123", "PR", "j@o.com", "+351911111111", "*ISO 3166-1 alpha-3*")]
+        [InlineData("John", "CIT123", "PRT", "bad-email", "+351911111111", "*Email is not valid*")]
+        [InlineData("John", "CIT123", "PRT", "j@o.com", "abc", "*E.164*")]
         public void Ctor_InvalidData_Throws(string name, string cid, string nat, string email, string phone, string msg)
         {
             Action act = () => new Representative(Guid.NewGuid(), name, cid, nat, email, phone);
@@ -47,9 +47,9 @@ namespace WebApp.Tests.Domain
         [Fact]
         public void UpdateProfile_ChangesFields_AndValidates()
         {
-            var rep = new Representative(Guid.NewGuid(), "Ana", "C1", "PRT", "ana@org.com", "+351911111111");
+            var rep = new Representative(Guid.NewGuid(), "Ana", "CID456", "PRT", "ana@org.com", "+351911111111");
 
-            rep.UpdateProfile("Ana Maria", "C1", "PRT", "ana.maria@org.com", "+351922222222");
+            rep.UpdateProfile("Ana Maria", "CID456", "PRT", "ana.maria@org.com", "+351922222222");
 
             rep.Name.Should().Be("Ana Maria");
             rep.Email.Should().Be("ana.maria@org.com");
@@ -59,7 +59,7 @@ namespace WebApp.Tests.Domain
         [Fact]
         public void SetActive_Toggles()
         {
-            var rep = new Representative(Guid.NewGuid(), "Bob", "C2", "PRT", "bob@org.com", "+351911111111");
+            var rep = new Representative(Guid.NewGuid(), "Bob", "CID789", "PRT", "bob@org.com", "+351911111111");
             rep.IsActive.Should().BeTrue();
 
             rep.SetActive(false);

@@ -189,6 +189,12 @@ public class StorageAreaServiceTests
             return Task.CompletedTask;
         }
 
+        public Task ClearContainerYardReferencesAsync(int storageAreaId)
+        {
+            // For testing purposes, this is a no-op since we don't have FK constraints in memory
+            return Task.CompletedTask;
+        }
+
         // Unused connection methods for now
         public Task AddConnectionAsync(DockStorageAreaConnection c) => Task.CompletedTask;
         public Task UpdateConnectionAsync(DockStorageAreaConnection c) => Task.CompletedTask;

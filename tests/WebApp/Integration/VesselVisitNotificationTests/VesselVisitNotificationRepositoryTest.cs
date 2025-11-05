@@ -209,11 +209,9 @@ public class VesselVisitNotificationRepositoryTest
         await _context.SaveChangesAsync();
 
         // Act - Test various update operations
-        const string newIMO = "9876531";
         var newDockId = Guid.NewGuid();
         var newDate = visitDate.AddDays(1);
 
-        vvn.UpdateVesselIMO(newIMO);
         vvn.UpdateDockId(newDockId);
         vvn.UpdateVisitDate(newDate);
         vvn.UpdatePurpose(VisitPurpose.Maintenance);
@@ -224,7 +222,7 @@ public class VesselVisitNotificationRepositoryTest
         // Assert
         var updated = await _repository.GetByIdAsync(vvn.Id);
         updated.Should().NotBeNull();
-        updated!.VesselIMO.Should().Be(newIMO);
+        updated!.VesselIMO.Should().Be(ValidIMO); // IMO should remain unchanged
         updated.DockId.Should().Be(newDockId);
         updated.VisitDate.Should().Be(newDate);
         updated.Purpose.Should().Be(VisitPurpose.Maintenance);
