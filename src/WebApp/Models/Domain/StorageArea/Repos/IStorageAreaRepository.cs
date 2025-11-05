@@ -22,5 +22,8 @@ namespace WebApp.Models.Infrastructure.Repositories
 
         // Delete a storage area (and related persistent connection rows)
         Task DeleteStorageAreaAsync(StorageArea storageArea);
+        
+        // Clear ContainerYardId references in docks table
+        Task ClearContainerYardReferencesAsync(int containerYardId);
     }
 }

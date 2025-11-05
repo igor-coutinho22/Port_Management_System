@@ -12,32 +12,44 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using WebApp.Models.Domain.Docks;
+using WebApp.Models.Domain.Vessel;
+using WebApp.Models.Domain.Vessels.VesselType;
 
-public class VesselVisitNotificationControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public class VesselVisitNotificationControllerTests : IClassFixture<TestWebAppFactory>
 {
     private readonly HttpClient _client;
+    private readonly TestWebAppFactory _factory;
 
-    public VesselVisitNotificationControllerTests(WebApplicationFactory<Program> factory)
+    public VesselVisitNotificationControllerTests(TestWebAppFactory factory)
     {
-        _client = factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
-            {
-                // Use in-memory DB instead of real one
-                services.RemoveAll(typeof(DbContextOptions<PortManagementContext>));
-                services.AddDbContext<PortManagementContext>(options =>
-                    options.UseInMemoryDatabase("VesselVisitNotificationTests"));
-            });
-        }).CreateClient();
+        _factory = factory;
+        _client = factory.CreateClient();
+    }
+
+    private async Task<(Guid dockId, string vesselIMO)> GetSeededTestDataAsync()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<PortManagementContext>();
+        
+        // Get existing seeded vessel and dock data
+        var vessel = await context.Set<Vessel>().FirstAsync();
+        var dock = await context.Set<Dock>().FirstAsync();
+        
+        return (dock.Id, vessel.IMO);
     }
 
     [Fact]
     public async Task Post_And_Get_VesselVisitNotification_ShouldWork()
     {
+        // Get existing data from seeded database
+        var (dockId, vesselIMO) = await GetSeededTestDataAsync();
+        
         var dto = new VesselVisitNotificationDTO
         {
-            VesselIMO = "1234567",
-            DockId = Guid.NewGuid(),
+            VesselIMO = vesselIMO,
+            DockId = dockId,
             VisitDate = DateTime.UtcNow,
             Purpose = "Maintenance",
             Crew = new List<CrewMemberDTO>
@@ -65,15 +77,19 @@ public class VesselVisitNotificationControllerTests : IClassFixture<WebApplicati
     [Fact]
     public async Task Put_Submit_ShouldChangeStatus()
     {
+        // Get existing seeded data
+        var (dockId, vesselIMO) = await GetSeededTestDataAsync();
+        
         var dto = new VesselVisitNotificationDTO
         {
-            VesselIMO = "1234567",
-            DockId = Guid.NewGuid(),
+            VesselIMO = vesselIMO,
+            DockId = dockId,
             VisitDate = DateTime.UtcNow,
             Purpose = "Maintenance"
         };
 
         var post = await _client.PostAsJsonAsync("/api/vesselvisitnotification", dto);
+        post.StatusCode.Should().Be(HttpStatusCode.Created); // Ensure the post succeeded first
         var created = await post.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
 
         // PUT /submit
