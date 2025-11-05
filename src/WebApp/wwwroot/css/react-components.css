@@ -225,8 +225,56 @@
     background: #f1c40f; /* Yellow */
 }
 
+/* Staff Status Colors - Using enum values and names */
+.status-badge.status-available,
+.status-badge.status-1 {
+    background: #27ae60 !important; /* Green - Available */
+}
+
+.status-badge.status-unavailable,
+.status-badge.status-2 {
+    background: #e74c3c !important; /* Red - Unavailable */
+}
+
+.status-badge.status-3 {
+    background: #95a5a6 !important; /* Gray - Inactive */
+}
+
+.status-badge.status-onleave,
+.status-badge.status-on-leave,
+.status-badge.status-4 {
+    background: #7f8c8d !important; /* Darker Gray - OnLeave */
+}
+
+.status-badge.status-training,
+.status-badge.status-5 {
+    background: #f1c40f !important; /* Yellow - Training */
+}
+
+/* Vessel Visit Status Colors - Using enum values and names */
+.status-badge.status-inprogress,
+.status-badge.status-in-progress,
+.status-badge.status-0 {
+    background: #ff8c00 !important; /* Orange - InProgress */
+}
+
+.status-badge.status-submitted,
+.status-badge.status-1 {
+    background: #f1c40f !important; /* Yellow - Submitted */
+}
+
+.status-badge.status-approved,
+.status-badge.status-2 {
+    background: #27ae60 !important; /* Green - Approved */
+}
+
+.status-badge.status-rejected,
+.status-badge.status-3 {
+    background: #e74c3c !important; /* Red - Rejected */
+}
+
 /* Fallback for unknown statuses */
-.status-badge:not([class*="status-active"]):not([class*="status-inactive"]):not([class*="status-under"]) {
+.status-badge:not([class*="status-active"]):not([class*="status-inactive"]):not([class*="status-under"]):not([class*="status-available"]):not([class*="status-unavailable"]):not([class*="status-training"]):not([class*="status-onleave"]):not([class*="status-inprogress"]):not([class*="status-submitted"]):not([class*="status-approved"]):not([class*="status-rejected"]):not([class*="status-0"]):not([class*="status-1"]):not([class*="status-2"]):not([class*="status-3"]):not([class*="status-4"]):not([class*="status-5"]) {
     background: #95a5a6; /* Gray */
 }
 

@@ -18,7 +18,8 @@ namespace WebApp.Models.Application.Mappers
                 Description = vesselType.Description,
                 MaxBays = vesselType.MaxBays,
                 MaxRows = vesselType.MaxRows,
-                MaxTiers = vesselType.MaxTiers
+                MaxTiers = vesselType.MaxTiers,
+                MaxTEUCapacity = vesselType.MaxTEUCapacity
             };
         }
 

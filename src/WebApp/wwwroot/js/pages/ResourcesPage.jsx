@@ -26,7 +26,21 @@ const ResourcesPage = () => {
     const handleViewDetails = async (resourceId) => {
         try {
             const resource = await apiService.getResourceById(resourceId);
-            alert(`Resource Details:\n\nID: ${resource.id}\nDescription: ${resource.description}\nType: ${resource.resourceType}\nStatus: ${resource.status}`);
+            
+            // Handle qualificationRequirements HashSet properly
+            let qualifications = 'None';
+            if (resource.qualificationRequirements && Array.isArray(resource.qualificationRequirements) && resource.qualificationRequirements.length > 0) {
+                qualifications = resource.qualificationRequirements
+                    .map(q => q.name || q.code || q)
+                    .join(', ');
+            } else if (resource.qualificationRequirements && typeof resource.qualificationRequirements === 'object') {
+                // In case it's an object with qualification details
+                qualifications = Object.values(resource.qualificationRequirements)
+                    .map(q => q.name || q.code || q)
+                    .join(', ');
+            }
+            
+            alert(`Resource Details:\n\nID: ${resource.id || 'N/A'}\nDescription: ${resource.description || 'N/A'}\nType: ${resource.resourceType || 'N/A'}\nStatus: ${resource.status || 'N/A'}\nCapacity: ${resource.operationalCapacity || 'N/A'}\nSetup Time: ${resource.setupTime || 'N/A'} minutes\nQualification Requirements: ${qualifications}`);
         } catch (error) {
             alert('Error loading resource details: ' + error.message);
         }

@@ -26,7 +26,7 @@ const VesselsPage = () => {
     const handleViewDetails = async (vesselImo) => {
         try {
             const vessel = await apiService.getVesselByImo(vesselImo);
-            alert(`Vessel Details:\n\nIMO: ${vessel.IMO || vessel.imo}\nName: ${vessel.VesselName || vessel.vesselName}\nOperator: ${vessel.OperatorName || vessel.operatorName}\nType: ${vessel.VesselTypeName || vessel.vesselTypeName}`);
+            alert(`Vessel Details:\n\nIMO: ${vessel.IMO || vessel.imo}\nName: ${vessel.VesselName || vessel.vesselName}\nOperator: ${vessel.OperatorName || vessel.operatorName}\nType: ${vessel.VesselTypeName || vessel.vesselTypeName}\nRequired crane count: ${vessel.RequiredCraneCount || vessel.requiredCraneCount}\nRequired dock length: ${vessel.RequiredDockLength || vessel.requiredDockLength}\nBays: ${vessel.Bays || vessel.bays}\nRows: ${vessel.Rows || vessel.rows}\nTiers: ${vessel.Tiers || vessel.tiers}`);
         } catch (error) {
             alert('Error loading vessel details: ' + error.message);
         }
@@ -70,7 +70,9 @@ const VesselsPage = () => {
                                 <th>Name</th>
                                 <th>Operator</th>
                                 <th>Type</th>
-                                <th>Dimensions</th>
+                                <th>Crane Count</th>
+                                <th>Dock Length (m)</th>
+                                <th>Dimensions (b/r/t)</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -81,6 +83,8 @@ const VesselsPage = () => {
                                     <td>{vessel.vesselName || 'N/A'}</td>
                                     <td>{vessel.operatorName || 'N/A'}</td>
                                     <td>{vessel.vesselTypeName || 'N/A'}</td>
+                                    <td>{vessel.requiredCraneCount || 'N/A'}</td>
+                                    <td>{vessel.requiredDockLength || 'N/A'}</td>
                                     <td>
                                         {(vessel.bays || 0)}×{(vessel.rows || 0)}×{(vessel.tiers || 0)}
                                     </td>

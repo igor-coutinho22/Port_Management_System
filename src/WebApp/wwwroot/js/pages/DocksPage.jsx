@@ -27,8 +27,20 @@ const DocksPage = () => {
         try {
             const dock = docks.find(d => d.name === dockName);
             if (dock) {
-                const vesselTypes = dock.allowedVesselTypes ? dock.allowedVesselTypes.join(', ') : 'None specified';
-                alert(`Dock Details:\n\nName: ${dock.name}\nLocation: ${dock.location}\nLength: ${dock.lengthMeters}m\nDepth: ${dock.depthMeters}m\nMax Draft: ${dock.maxDraftMeters}m\nAllowed Vessel Types: ${vesselTypes}`);
+                // Handle allowedVesselTypes collection properly
+                let vesselTypes = 'None specified';
+                if (dock.allowedVesselTypes && Array.isArray(dock.allowedVesselTypes) && dock.allowedVesselTypes.length > 0) {
+                    vesselTypes = dock.allowedVesselTypes
+                        .map(vt => vt.name || vt.vesselTypeName || vt)
+                        .join(', ');
+                } else if (dock.allowedVesselTypes && typeof dock.allowedVesselTypes === 'object') {
+                    // In case it's an object with vessel type details
+                    vesselTypes = Object.values(dock.allowedVesselTypes)
+                        .map(vt => vt.name || vt.vesselTypeName || vt)
+                        .join(', ');
+                }
+                
+                alert(`Dock Details:\n\nName: ${dock.name || 'N/A'}\nLocation: ${dock.location || 'N/A'}\nLength: ${dock.lengthMeters || 'N/A'}m\nDepth: ${dock.depthMeters || 'N/A'}m\nMax Draft: ${dock.maxDraftMeters || 'N/A'}m\nAllowed Vessel Types: ${vesselTypes}`);
             } else {
                 alert('Dock not found');
             }

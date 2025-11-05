@@ -27,7 +27,7 @@ const VesselTypesPage = () => {
         try {
             const vesselType = vesselTypes.find(vt => vt.name === vesselTypeName);
             if (vesselType) {
-                alert(`Vessel Type Details:\n\nName: ${vesselType.name}\nDescription: ${vesselType.description || 'N/A'}\nMax Bays: ${vesselType.maxBays || 'N/A'}\nMax Rows: ${vesselType.maxRows || 'N/A'}\nMax Tiers: ${vesselType.maxTiers || 'N/A'}`);
+                alert(`Vessel Type Details:\n\nName: ${vesselType.name}\nDescription: ${vesselType.description || 'N/A'}\nMax Bays: ${vesselType.maxBays || 'N/A'}\nMax Rows: ${vesselType.maxRows || 'N/A'}\nMax Tiers: ${vesselType.maxTiers || 'N/A'}\nMax TEU Capacity: ${vesselType.maxTEUCapacity || 'N/A'}`);
             } else {
                 alert('Vessel type not found');
             }
@@ -76,6 +76,7 @@ const VesselTypesPage = () => {
                                 <th>Max Bays</th>
                                 <th>Max Rows</th>
                                 <th>Max Tiers</th>
+                                <th>Max TEU Capacity</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -88,6 +89,7 @@ const VesselTypesPage = () => {
                                     <td>{vesselType.maxBays || 'N/A'}</td>
                                     <td>{vesselType.maxRows || 'N/A'}</td>
                                     <td>{vesselType.maxTiers || 'N/A'}</td>
+                                    <td>{vesselType.maxTEUCapacity || 'N/A'}</td>
                                     <td>
                                         <button 
                                             className="btn-small"

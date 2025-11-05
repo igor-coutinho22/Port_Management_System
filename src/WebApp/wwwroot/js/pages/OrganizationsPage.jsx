@@ -27,7 +27,20 @@ const OrganizationsPage = () => {
         try {
             const org = organizations.find(o => o.id === organizationId);
             if (org) {
-                alert(`Organization Details:\n\nID: ${org.id}\nLegal Name: ${org.legalName}\nAlternative Names: ${org.alternativeNames || 'None'}\nAddress: ${org.address}\nTax Number: ${org.taxNumber}`);
+                // Handle representatives collection properly
+                let representatives = 'None';
+                if (org.representatives && Array.isArray(org.representatives) && org.representatives.length > 0) {
+                    representatives = org.representatives
+                        .map(rep => rep.name || rep.fullName || rep.firstName + ' ' + rep.lastName || rep)
+                        .join(', ');
+                } else if (org.representatives && typeof org.representatives === 'object') {
+                    // In case it's an object with representative details
+                    representatives = Object.values(org.representatives)
+                        .map(rep => rep.name || rep.fullName || rep.firstName + ' ' + rep.lastName || rep)
+                        .join(', ');
+                }
+                
+                alert(`Organization Details:\n\nID: ${org.id || 'N/A'}\nLegal Name: ${org.legalName || 'N/A'}\nAlternative Names: ${org.alternativeNames || 'None'}\nAddress: ${org.address || 'N/A'}\nTax Number: ${org.taxNumber || 'N/A'}\nRepresentatives: ${representatives}`);
             } else {
                 alert('Organization not found');
             }

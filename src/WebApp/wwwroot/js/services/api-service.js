@@ -171,11 +171,11 @@ class ApiService {
 
     // Vessel Visit Notifications API
     async getVesselVisitNotifications() {
-        return this.get('/vesselVisitNotifications');
+        return this.get('/vesselvisitnotification');
     }
 
     async getVesselVisitNotificationById(id) {
-        return this.get(`/vesselVisitNotifications/${id}`);
+        return this.get(`/vesselvisitnotification/${id}`);
     }
 }
 
