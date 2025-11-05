@@ -919,7 +919,7 @@ namespace WebApp.Migrations
                     b.HasOne("WebApp.Models.Domain.Vessel.Vessel", "Vessel")
                         .WithMany()
                         .HasForeignKey("VesselIMO")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Vessel");

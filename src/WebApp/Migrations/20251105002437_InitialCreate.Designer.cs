@@ -12,7 +12,7 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251028111601_InitialCreate")]
+    [Migration("20251105002437_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -922,7 +922,7 @@ namespace WebApp.Migrations
                     b.HasOne("WebApp.Models.Domain.Vessel.Vessel", "Vessel")
                         .WithMany()
                         .HasForeignKey("VesselIMO")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Vessel");

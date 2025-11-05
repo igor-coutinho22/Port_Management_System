@@ -183,7 +183,8 @@ namespace WebApp.Models.Application.Services
             if (dock == null)
                 throw new InvalidOperationException("Dock not found.");
 
-            existingVisit.UpdateVesselIMO(vvn.VesselIMO!);
+            if (existingVisit.VesselIMO != vvn.VesselIMO)
+                throw new InvalidOperationException("Vessel IMO cannot be changed.");
             existingVisit.UpdatePurpose(vvn.Purpose);
             existingVisit.UpdateDockId(vvn.DockId);
             existingVisit.UpdateVisitDate(vvn.VisitDate);

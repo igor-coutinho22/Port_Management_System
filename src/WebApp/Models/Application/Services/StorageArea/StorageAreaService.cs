@@ -151,13 +151,26 @@ namespace WebApp.Models.Application.Services
         public Task<List<DockStorageAreaConnection>> GetConnectionsForStorageAreaAsync(int storageAreaId)
             => _storageAreaRepo.GetConnectionsForStorageAreaAsync(storageAreaId);
 
-        public Task DeleteStorageAreaAsync(int storageAreaId)
+        public async Task DeleteStorageAreaAsync(int storageAreaId)
         {
-            var storageAreaToDelete = GetStorageAreaByIdAsync(storageAreaId).Result;
+            var storageAreaToDelete = await GetStorageAreaByIdAsync(storageAreaId);
             if (storageAreaToDelete == null)
                 throw new ArgumentException("Storage area not found.", nameof(storageAreaId));
 
-            return _storageAreaRepo.DeleteStorageAreaAsync(storageAreaToDelete);
+            // If this is a container yard, clear dock ContainerYardId foreign key references first
+            if (storageAreaToDelete is ContainerYard)
+            {
+                await _storageAreaRepo.ClearContainerYardReferencesAsync(storageAreaId);
+            }
+
+            // Also clear any dock storage area connections
+            var connections = await GetConnectionsForStorageAreaAsync(storageAreaId);
+            foreach (var connection in connections)
+            {
+                await _storageAreaRepo.RemoveConnectionAsync(connection);
+            }
+
+            await _storageAreaRepo.DeleteStorageAreaAsync(storageAreaToDelete);
         }
     }
 }

@@ -424,7 +424,7 @@ namespace WebApp.Migrations
                         column: x => x.VesselIMO,
                         principalTable: "Vessels",
                         principalColumn: "IMO",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(

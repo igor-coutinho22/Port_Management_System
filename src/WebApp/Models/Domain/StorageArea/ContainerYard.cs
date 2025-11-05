@@ -70,6 +70,11 @@ namespace WebApp.Models.Domain.StorageArea
             }
         }
 
+        public void ClearDocksServed()
+        {
+            DocksServed.Clear();
+        }
+
         /// <summary>
         /// Creates DockConnections from the DocksServed collection. 
         /// Call this after the ContainerYard is saved and has a valid ID.

@@ -146,6 +146,37 @@ class ApiService {
     async getVesselTypes() {
         return this.get('/vesselTypes');
     }
+
+    async getVesselTypeById(id) {
+        return this.get(`/vesselTypes/${id}`);
+    }
+
+    // Representatives API
+    async getRepresentatives() {
+        return this.get('/representatives');
+    }
+
+    async getRepresentativeById(id) {
+        return this.get(`/representatives/${id}`);
+    }
+
+    // Qualifications API
+    async getQualifications() {
+        return this.get('/qualifications');
+    }
+
+    async getQualificationById(id) {
+        return this.get(`/qualifications/${id}`);
+    }
+
+    // Vessel Visit Notifications API
+    async getVesselVisitNotifications() {
+        return this.get('/vesselVisitNotifications');
+    }
+
+    async getVesselVisitNotificationById(id) {
+        return this.get(`/vesselVisitNotifications/${id}`);
+    }
 }
 
 // Create global API service instance

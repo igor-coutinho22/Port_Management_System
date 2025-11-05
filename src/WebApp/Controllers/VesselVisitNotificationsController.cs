@@ -75,7 +75,7 @@ namespace WebApp.Controllers
             try
             {
                 var created = await _service.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetByIdAsync), new { id = created.Id }, created);
+                return Created($"/api/vesselvisitnotification/{created.Id}", created);
             }
             catch (InvalidOperationException ex)
             {
