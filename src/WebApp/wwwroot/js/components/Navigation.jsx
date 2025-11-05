@@ -33,7 +33,6 @@ const Navigation = ({ currentPage, onNavigate }) => {
         console.log('Theme toggled to:', theme); // Debug log
     };
     const navItems = [
-        { id: 'home', label: 'Home', icon: '🏠' },
         { id: 'management', label: 'Management', icon: '⚙️' },
         { id: '3d-view', label: '3D Port View', icon: '🏗️' },
         { id: 'api-docs', label: 'API Docs', icon: '📚' }
@@ -44,7 +43,7 @@ const Navigation = ({ currentPage, onNavigate }) => {
     return (
         <header className="header-bar">
             <div className="header-content">
-                <div className="logo-section">
+                <div className="logo-section" onClick={() => onNavigate('home')} style={{ cursor: 'pointer' }}>
                     <h1>⚓ Port Management System</h1>
                 </div>
                 <nav className="primary-navigation">
