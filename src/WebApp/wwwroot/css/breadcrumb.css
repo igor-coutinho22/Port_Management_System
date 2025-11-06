@@ -1,0 +1,115 @@
+/* Breadcrumb Navigation Styles */
+.breadcrumb-nav {
+    background: var(--bg-secondary);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.breadcrumb-list {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.breadcrumb-link:hover {
+    background: var(--nav-hover);
+    color: var(--text-accent);
+    transform: translateY(-1px);
+}
+
+.breadcrumb-current {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-accent);
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+}
+
+.breadcrumb-icon {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.breadcrumb-separator {
+    color: var(--text-secondary);
+    opacity: 0.6;
+    font-size: 0.8rem;
+    user-select: none;
+}
+
+/* Responsive Breadcrumb */
+@media (max-width: 768px) {
+    .breadcrumb-nav {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .breadcrumb-label {
+        display: none; /* Hide text labels on mobile, keep icons */
+    }
+    
+    .breadcrumb-icon {
+        font-size: 1rem;
+    }
+    
+    .breadcrumb-list {
+        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .breadcrumb-nav {
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb-separator {
+        font-size: 0.7rem;
+    }
+}
+
+/* Animation for breadcrumb appearance */
+.breadcrumb-nav {
+    animation: slideInFromTop 0.3s ease-out;
+}
+
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -94,6 +94,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 const AppWithGlobalNav = () => {
     const [currentPage, setCurrentPage] = React.useState('home');
     const [isLoading, setIsLoading] = React.useState(false);
+    const [sidebarVisible, setSidebarVisible] = React.useState(false);
 
     const handleNavigate = (page) => {
         console.log(`Navigating to: ${page}`);
@@ -104,6 +105,16 @@ const AppWithGlobalNav = () => {
         // Small delay to show loading state
         setTimeout(() => setIsLoading(false), 100);
     };
+
+    const handleSidebarToggle = () => {
+        setSidebarVisible(!sidebarVisible);
+    };
+
+    // Check if current page needs sidebar
+    const isManagementSection = currentPage === 'management' || 
+        ['resources', 'vessels', 'vessel-types', 'docks', 'storage-areas', 
+         'organizations', 'representatives', 'staff', 'vessel-visit-notifications', 
+         'qualifications'].includes(currentPage);
 
     // Set global navigation function
     React.useEffect(() => {
@@ -236,9 +247,25 @@ const AppWithGlobalNav = () => {
                 onNavigate={handleNavigate} 
             />
             
-            <main className="main-content">
+            <ManagementSidebar 
+                currentPage={currentPage}
+                onNavigate={handleNavigate}
+                isVisible={sidebarVisible}
+                onToggle={handleSidebarToggle}
+            />
+            
+            <main className={`main-content ${isManagementSection && sidebarVisible ? 'with-sidebar' : ''}`}>
+                <Breadcrumb 
+                    currentPage={currentPage} 
+                    onNavigate={handleNavigate} 
+                />
                 {renderCurrentPage()}
             </main>
+            
+            <Footer 
+                currentPage={currentPage} 
+                onNavigate={handleNavigate} 
+            />
         </div>
     );
 };
