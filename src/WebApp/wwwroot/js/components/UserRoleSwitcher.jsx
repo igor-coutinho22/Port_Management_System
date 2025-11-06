@@ -1,33 +1,34 @@
 // User Role Switcher Component - Elegant toggle similar to theme switcher
 const UserRoleSwitcher = () => {
     const { currentUser, switchUser, availableUsers } = useUser();
+    const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = React.useState(false);
 
-    // Role display configuration
+    // Role display configuration (with translation keys)
     const roleConfig = {
         administrator: {
-            shortName: 'Admin',
+            shortName: t('roles.administrator', 'Administrator').split(' ')[0], // First word for short
             icon: '👑',
             color: '#ef4444', // Red
-            description: 'System Administrator'
+            description: t('roles.administrator', 'Administrator')
         },
         portAuthority: {
-            shortName: 'Officer',
+            shortName: t('roles.port_authority_officer', 'Port Authority Officer').split(' ')[0], // First word
             icon: '⚓',
             color: '#3b82f6', // Blue
-            description: 'Port Authority Officer'
+            description: t('roles.port_authority_officer', 'Port Authority Officer')
         },
         shippingAgent: {
-            shortName: 'Agent',
+            shortName: t('roles.shipping_agent_representative', 'Shipping Agent Representative').split(' ')[0], // First word
             icon: '🚢',
             color: '#10b981', // Green
-            description: 'Shipping Agent Representative'
+            description: t('roles.shipping_agent_representative', 'Shipping Agent Representative')
         },
         logisticsOperator: {
-            shortName: 'Operator',
+            shortName: t('roles.logistics_operator', 'Logistics Operator').split(' ')[0], // First word
             icon: '📦',
             color: '#f59e0b', // Amber
-            description: 'Logistics Operator'
+            description: t('roles.logistics_operator', 'Logistics Operator')
         }
     };
 
@@ -56,7 +57,7 @@ const UserRoleSwitcher = () => {
             <div 
                 className={`role-display ${isExpanded ? 'expanded' : ''}`}
                 onClick={() => setIsExpanded(!isExpanded)}
-                title={`Current role: ${currentRoleConfig.description}\nClick to switch roles (demo feature)`}
+                title={`${t('user.current_role', 'Current role')}: ${currentRoleConfig.description}\n${t('user.click_to_switch', 'Click to switch roles (demo feature)')}`}
             >
                 <div className="role-indicator">
                     <span 

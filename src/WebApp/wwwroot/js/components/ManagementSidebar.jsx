@@ -1,18 +1,19 @@
 // Management Sidebar Component - Quick Navigation within Management Section
 const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hamburgerMenuOpen }) => {
     const { canAccessMenu } = useUser();
+    const { t } = useTranslation();
     
     const allManagementEntities = [
-        { id: 'resources', title: 'Resources', icon: '📦', description: 'Equipment & facilities' },
-        { id: 'vessels', title: 'Vessels', icon: '🚢', description: 'Ships & tracking' },
-        { id: 'vessel-types', title: 'Vessel Types', icon: '🛳️', description: 'Ship categories' },
-        { id: 'docks', title: 'Docks', icon: '🏭', description: 'Berths & operations' },
-        { id: 'storage-areas', title: 'Storage Areas', icon: '🏪', description: 'Warehouses & yards' },
-        { id: 'organizations', title: 'Organizations', icon: '🏢', description: 'Companies & authorities' },
-        { id: 'representatives', title: 'Representatives', icon: '👨‍💼', description: 'Contacts & agents' },
-        { id: 'staff', title: 'Staff', icon: '👷‍♂️', description: 'Personnel & roles' },
-        { id: 'vessel-visit-notifications', title: 'Notifications', icon: '📋', description: 'Vessel schedules' },
-        { id: 'qualifications', title: 'Qualifications', icon: '🎓', description: 'Certifications' }
+        { id: 'resources', titleKey: 'entities.resources', icon: '📦', descKey: 'entities.resources_desc' },
+        { id: 'vessels', titleKey: 'entities.vessels', icon: '🚢', descKey: 'entities.vessels_desc' },
+        { id: 'vessel-types', titleKey: 'entities.vessel_types', icon: '🛳️', descKey: 'entities.vessel_types_desc' },
+        { id: 'docks', titleKey: 'entities.docks', icon: '🏭', descKey: 'entities.docks_desc' },
+        { id: 'storage-areas', titleKey: 'entities.storage_areas', icon: '🏪', descKey: 'entities.storage_areas_desc' },
+        { id: 'organizations', titleKey: 'entities.organizations', icon: '🏢', descKey: 'entities.organizations_desc' },
+        { id: 'representatives', titleKey: 'entities.representatives', icon: '👨‍💼', descKey: 'entities.representatives_desc' },
+        { id: 'staff', titleKey: 'entities.staff', icon: '👷‍♂️', descKey: 'entities.staff_desc' },
+        { id: 'vessel-visit-notifications', titleKey: 'entities.notifications', icon: '📋', descKey: 'entities.notifications_desc' },
+        { id: 'qualifications', titleKey: 'entities.qualifications', icon: '🎓', descKey: 'entities.qualifications_desc' }
     ];
 
     // Filter entities based on user permissions
@@ -33,8 +34,8 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
                 <button 
                     className={`sidebar-toggle ${isVisible ? 'active' : ''}`}
                     onClick={onToggle}
-                    title={isVisible ? 'Hide management menu' : 'Show management menu'}
-                    aria-label={isVisible ? 'Hide management menu' : 'Show management menu'}
+                    title={isVisible ? t('management.hide_menu', 'Hide management menu') : t('management.show_menu', 'Show management menu')}
+                    aria-label={isVisible ? t('management.hide_menu', 'Hide management menu') : t('management.show_menu', 'Show management menu')}
                 >
                     <span className="toggle-icon">
                         {isVisible ? '◀' : '▶'}
@@ -56,13 +57,13 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
                 <div className="sidebar-header">
                     <h3 className="sidebar-title">
                         <span className="sidebar-icon">⚙️</span>
-                        Management
+                        {t('management.title', 'Management')}
                     </h3>
                     <button 
                         className="sidebar-close" 
                         onClick={onToggle}
-                        title="Close menu"
-                        aria-label="Close management menu"
+                        title={t('management.close_menu', 'Close menu')}
+                        aria-label={t('management.close_menu', 'Close management menu')}
                     >
                         ✕
                     </button>
@@ -83,8 +84,8 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
                             >
                                 <span className="item-icon">🏠</span>
                                 <div className="item-content">
-                                    <span className="item-title">Overview</span>
-                                    <span className="item-desc">Management hub</span>
+                                    <span className="item-title">{t('management.overview', 'Overview')}</span>
+                                    <span className="item-desc">{t('management.overview_desc', 'Management hub')}</span>
                                 </div>
                             </button>
                         </li>
@@ -103,8 +104,8 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
                                 >
                                     <span className="item-icon">{entity.icon}</span>
                                     <div className="item-content">
-                                        <span className="item-title">{entity.title}</span>
-                                        <span className="item-desc">{entity.description}</span>
+                                        <span className="item-title">{t(entity.titleKey, entity.titleKey)}</span>
+                                        <span className="item-desc">{t(entity.descKey, entity.descKey)}</span>
                                     </div>
                                 </button>
                             </li>
@@ -120,11 +121,11 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
                             onNavigate('home');
                             onToggle();
                         }}
-                        title="Back to main menu"
+                        title={t('management.back_to_home', 'Back to Home')}
                     >
                         <span className="item-icon">🏠</span>
                         <div className="item-content">
-                            <span className="item-title">Back to Home</span>
+                            <span className="item-title">{t('management.back_to_home', 'Back to Home')}</span>
                         </div>
                     </button>
                 </div>

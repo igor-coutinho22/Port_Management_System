@@ -3,6 +3,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
     const [isDarkMode, setIsDarkMode] = React.useState(false);
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const { currentUser, canAccessMenu } = useUser();
+    const { t } = useTranslation();
 
     // Load saved theme preference
     React.useEffect(() => {
@@ -34,11 +35,11 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
         
         console.log('Theme toggled to:', theme); // Debug log
     };
-    // All possible navigation items
+    // All possible navigation items (labels will be translated when rendered)
     const allNavItems = [
-        { id: 'management', label: 'Management', icon: '⚙️' },
-        { id: '3d-view', label: '3D Port View', icon: '🏗️' },
-        { id: 'api-docs', label: 'API Docs', icon: '📚' }
+        { id: 'management', labelKey: 'nav.management', icon: '⚙️' },
+        { id: '3d-view', labelKey: 'nav.3d_view', icon: '🏗️' },
+        { id: 'api-docs', labelKey: 'nav.api_docs', icon: '📚' }
     ];
 
     // Filter navigation items based on user permissions
@@ -88,8 +89,8 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                     <button 
                         className={`hamburger-menu ${isMenuOpen ? 'active' : ''}`}
                         onClick={toggleMenu}
-                        title="Toggle navigation menu"
-                        aria-label="Toggle navigation menu"
+                        title={t('nav.toggle_menu', 'Toggle navigation menu')}
+                        aria-label={t('nav.toggle_menu', 'Toggle navigation menu')}
                     >
                         <span className="hamburger-line"></span>
                         <span className="hamburger-line"></span>
@@ -98,7 +99,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
 
                     {/* Logo/Home */}
                     <div className="logo-section" onClick={() => onNavigate('home')} style={{ cursor: 'pointer' }}>
-                        <h1>⚓ Port Management System</h1>
+                        <h1>⚓ {t('header.title', 'Port Management System')}</h1>
                     </div>
 
                     {/* Header Actions - Right Side */}
@@ -106,14 +107,17 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                         {/* User Section */}
                         <div className="user-section">
                             <div className="user-info">
-                                <span className="user-name">{currentUser?.name || 'Unknown User'}</span>
-                                <span className="user-role">({currentUser?.role || 'no role'})</span>
+                                <span className="user-name">{currentUser?.name || t('user.unknown_user', 'Unknown User')}</span>
+                                <span className="user-role">({currentUser?.role || t('user.no_role', 'no role')})</span>
                             </div>
                             <UserRoleSwitcher />
                         </div>
                         
+                        {/* Language Switcher */}
+                        <LanguageSwitcher />
+                        
                         {/* Theme Switch */}
-                        <div className="theme-switch" onClick={toggleTheme} title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+                        <div className="theme-switch" onClick={toggleTheme} title={isDarkMode ? t('theme.switch_to_light', 'Switch to Light Mode') : t('theme.switch_to_dark', 'Switch to Dark Mode')}>
                             <div className={`theme-switch-track ${isDarkMode ? 'dark' : 'light'}`}>
                                 <div className={`theme-switch-thumb ${isDarkMode ? 'dark' : 'light'}`}>
                                     <span className="theme-icon">{isDarkMode ? '🌙' : '☀️'}</span>
@@ -134,7 +138,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                 }}></div>
                 <nav className="slide-out-menu">
                     <div className="menu-header">
-                        <h3>Navigation</h3>
+                        <h3>{t('nav.navigation', 'Navigation')}</h3>
                         <button 
                             className="menu-close" 
                             onClick={() => {
@@ -143,7 +147,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                                     onHamburgerMenuToggle(false);
                                 }
                             }}
-                            title="Close menu"
+                            title={t('nav.close_menu', 'Close menu')}
                         >
                             ✕
                         </button>
@@ -156,7 +160,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                                 onClick={() => handleNavigateFromMenu('home')}
                             >
                                 <span className="menu-icon">🏠</span>
-                                <span className="menu-label">Home</span>
+                                <span className="menu-label">{t('nav.home', 'Home')}</span>
                             </button>
                         </li>
                         
@@ -167,7 +171,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                                     onClick={() => handleNavigateFromMenu(item.id)}
                                 >
                                     <span className="menu-icon">{item.icon}</span>
-                                    <span className="menu-label">{item.label}</span>
+                                    <span className="menu-label">{t(item.labelKey, item.labelKey)}</span>
                                 </button>
                             </li>
                         ))}

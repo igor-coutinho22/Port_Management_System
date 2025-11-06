@@ -278,9 +278,11 @@ const AppWithGlobalNav = () => {
 };
 
 root.render(
-    <UserProvider>
-        <AppWithGlobalNav />
-    </UserProvider>
+    <I18nProvider>
+        <UserProvider>
+            <AppWithGlobalNav />
+        </UserProvider>
+    </I18nProvider>
 );
 
 console.log('✅ React SPA initialized successfully!');
