@@ -95,6 +95,7 @@ const AppWithGlobalNav = () => {
     const [currentPage, setCurrentPage] = React.useState('home');
     const [isLoading, setIsLoading] = React.useState(false);
     const [sidebarVisible, setSidebarVisible] = React.useState(false);
+    const [hamburgerMenuOpen, setHamburgerMenuOpen] = React.useState(false);
 
     const handleNavigate = (page) => {
         console.log(`Navigating to: ${page}`);
@@ -108,6 +109,10 @@ const AppWithGlobalNav = () => {
 
     const handleSidebarToggle = () => {
         setSidebarVisible(!sidebarVisible);
+    };
+
+    const handleHamburgerMenuToggle = (isOpen) => {
+        setHamburgerMenuOpen(isOpen);
     };
 
     // Check if current page needs sidebar
@@ -244,7 +249,8 @@ const AppWithGlobalNav = () => {
         <div id="app">
             <Navigation 
                 currentPage={currentPage} 
-                onNavigate={handleNavigate} 
+                onNavigate={handleNavigate}
+                onHamburgerMenuToggle={handleHamburgerMenuToggle}
             />
             
             <ManagementSidebar 
@@ -252,6 +258,7 @@ const AppWithGlobalNav = () => {
                 onNavigate={handleNavigate}
                 isVisible={sidebarVisible}
                 onToggle={handleSidebarToggle}
+                hamburgerMenuOpen={hamburgerMenuOpen}
             />
             
             <main className={`main-content ${isManagementSection && sidebarVisible ? 'with-sidebar' : ''}`}>
@@ -270,6 +277,10 @@ const AppWithGlobalNav = () => {
     );
 };
 
-root.render(<AppWithGlobalNav />);
+root.render(
+    <UserProvider>
+        <AppWithGlobalNav />
+    </UserProvider>
+);
 
 console.log('✅ React SPA initialized successfully!');

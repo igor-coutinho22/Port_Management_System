@@ -1,0 +1,247 @@
+/* User Role Switcher Styles - Elegant toggle design */
+.user-role-switcher {
+    position: relative;
+    z-index: 100;
+}
+
+/* Current Role Display */
+.role-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    user-select: none;
+    min-width: 100px;
+}
+
+.role-display:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.02);
+}
+
+.role-display.expanded {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    border-radius: 8px 8px 0 0;
+}
+
+/* Role Indicator */
+.role-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+}
+
+.role-icon {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.role-text {
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* Expand Arrow */
+.expand-arrow {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
+    margin-left: 0.25rem;
+}
+
+.expand-arrow.rotated {
+    transform: rotate(180deg);
+}
+
+/* Role Options Dropdown */
+.role-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: dropdownSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+}
+
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Role Option Buttons */
+.role-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #374151;
+    text-align: left;
+    position: relative;
+}
+
+.role-option:hover:not(.active) {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1e40af;
+}
+
+.role-option.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+    cursor: default;
+}
+
+.role-option:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Role Info in Dropdown */
+.role-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1;
+}
+
+.role-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+.role-desc {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    line-height: 1.1;
+}
+
+/* Active Indicator */
+.active-indicator {
+    color: #10b981;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .role-options {
+    background: rgba(30, 30, 45, 0.95);
+    border-color: rgba(100, 181, 246, 0.3);
+}
+
+[data-theme="dark"] .role-option {
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] .role-option:hover:not(.active) {
+    background: rgba(100, 181, 246, 0.15);
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .role-option.active {
+    background: rgba(52, 211, 153, 0.2);
+    color: #6ee7b7;
+}
+
+[data-theme="dark"] .role-option:not(:last-child) {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .role-display {
+        padding: 0.4rem 0.6rem;
+        min-width: 85px;
+    }
+    
+    .role-text {
+        font-size: 0.8rem;
+    }
+    
+    .role-icon {
+        font-size: 1rem;
+        width: 18px;
+    }
+    
+    .role-options {
+        min-width: 200px;
+        right: auto;
+        left: 0;
+    }
+    
+    .role-option {
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .role-name {
+        font-size: 0.85rem;
+    }
+    
+    .role-desc {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .role-display {
+        padding: 0.3rem 0.5rem;
+        min-width: 75px;
+    }
+    
+    .role-text {
+        font-size: 0.75rem;
+    }
+    
+    .role-options {
+        position: fixed;
+        top: auto;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        animation: mobileDropdownSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+@keyframes mobileDropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

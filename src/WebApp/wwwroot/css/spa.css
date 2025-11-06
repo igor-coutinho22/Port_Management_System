@@ -104,6 +104,7 @@ body::before {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
+    gap: 0.75rem;
 }
 
 .logo-section h1 {
@@ -203,6 +204,45 @@ body::before {
     transform: scale(1.1) translateX(30px);
 }
 
+/* User Section Display */
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 0.8rem;
+    line-height: 1.1;
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.user-name {
+    color: white;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.user-role {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.7rem;
+    font-style: italic;
+    white-space: nowrap;
+}
+
+
+
 /* Backup theme classes for body */
 body.dark-theme {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
@@ -238,6 +278,7 @@ body.light-theme {
     .header-content {
         padding: 0.5rem;
         gap: 0.5rem;
+        flex-wrap: wrap;
     }
     
     .logo-section h1 {
@@ -251,6 +292,27 @@ body.light-theme {
     .nav-link {
         padding: 0.25rem 0.5rem;
         font-size: 0.8rem;
+    }
+    
+    .header-actions {
+        gap: 0.5rem;
+    }
+    
+    .user-section {
+        padding: 0.3rem 0.4rem;
+        gap: 0.4rem;
+    }
+    
+    .user-info {
+        font-size: 0.75rem;
+    }
+    
+    .user-name {
+        max-width: 100px;
+    }
+    
+    .user-role {
+        font-size: 0.65rem;
     }
     
     .nav-icon {
@@ -274,6 +336,12 @@ body.light-theme {
 }
 
 @media (max-width: 480px) {
+    .header-content {
+        flex-direction: column;
+        padding: 0.4rem;
+        gap: 0.4rem;
+    }
+    
     .nav-link span {
         display: none; /* Hide text, show only icons on very small screens */
     }
@@ -284,6 +352,28 @@ body.light-theme {
     
     .primary-navigation .nav-menu {
         gap: 0.25rem;
+    }
+    
+    .header-actions {
+        order: -1; /* Show user info and controls first */
+        gap: 0.4rem;
+    }
+    
+    .user-section {
+        flex-direction: column;
+        align-items: center;
+        padding: 0.25rem 0.4rem;
+        gap: 0.25rem;
+    }
+    
+    .user-info {
+        align-items: center;
+        text-align: center;
+        font-size: 0.7rem;
+    }
+    
+    .user-name {
+        max-width: 150px;
     }
 }
 

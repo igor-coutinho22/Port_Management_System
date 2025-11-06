@@ -4,7 +4,7 @@ const Footer = ({ currentPage, onNavigate }) => {
     const systemVersion = "1.0.0"; // This could be dynamic from config
 
     const quickLinks = [
-        { id: 'home', label: 'Home', icon: '🏠' },
+        { id: 'home', label: 'Home', icon: '⚓' },
         { id: 'management', label: 'Management', icon: '⚙️' },
         { id: '3d-view', label: '3D View', icon: '🏗️' },
         { id: 'api-docs', label: 'API Docs', icon: '📚' }

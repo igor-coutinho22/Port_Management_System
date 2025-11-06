@@ -1,6 +1,8 @@
 // Management Sidebar Component - Quick Navigation within Management Section
-const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle }) => {
-    const managementEntities = [
+const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hamburgerMenuOpen }) => {
+    const { canAccessMenu } = useUser();
+    
+    const allManagementEntities = [
         { id: 'resources', title: 'Resources', icon: '📦', description: 'Equipment & facilities' },
         { id: 'vessels', title: 'Vessels', icon: '🚢', description: 'Ships & tracking' },
         { id: 'vessel-types', title: 'Vessel Types', icon: '🛳️', description: 'Ship categories' },
@@ -13,6 +15,9 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle }) => 
         { id: 'qualifications', title: 'Qualifications', icon: '🎓', description: 'Certifications' }
     ];
 
+    // Filter entities based on user permissions
+    const managementEntities = allManagementEntities.filter(entity => canAccessMenu(entity.id));
+
     // Check if current page is within management section
     const isManagementPage = currentPage === 'management' || 
         managementEntities.some(entity => entity.id === currentPage);
@@ -23,17 +28,19 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle }) => 
 
     return (
         <>
-            {/* Sidebar Toggle Button - Always visible in management */}
-            <button 
-                className={`sidebar-toggle ${isVisible ? 'active' : ''}`}
-                onClick={onToggle}
-                title={isVisible ? 'Hide management menu' : 'Show management menu'}
-                aria-label={isVisible ? 'Hide management menu' : 'Show management menu'}
-            >
-                <span className="toggle-icon">
-                    {isVisible ? '◀' : '▶'}
-                </span>
-            </button>
+            {/* Sidebar Toggle Button - Hide when hamburger menu is open */}
+            {!hamburgerMenuOpen && (
+                <button 
+                    className={`sidebar-toggle ${isVisible ? 'active' : ''}`}
+                    onClick={onToggle}
+                    title={isVisible ? 'Hide management menu' : 'Show management menu'}
+                    aria-label={isVisible ? 'Hide management menu' : 'Show management menu'}
+                >
+                    <span className="toggle-icon">
+                        {isVisible ? '◀' : '▶'}
+                    </span>
+                </button>
+            )}
 
             {/* Sidebar Overlay for mobile */}
             {isVisible && (

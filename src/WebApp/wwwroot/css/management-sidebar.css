@@ -2,7 +2,7 @@
 .sidebar-toggle {
     position: fixed;
     left: 20px;
-    top: 90px; /* Just below the header */
+    top: 100px; /* Just below the header with extra spacing */
     z-index: 1001;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -224,7 +224,7 @@
     
     .sidebar-toggle {
         left: 10px;
-        top: 85px;
+        top: 95px;
         padding: 0.5rem;
         font-size: 0.8rem;
         width: 36px;
