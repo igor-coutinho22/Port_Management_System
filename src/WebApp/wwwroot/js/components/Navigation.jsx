@@ -159,7 +159,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                                 className={`menu-item ${currentPage === 'home' ? 'active' : ''}`}
                                 onClick={() => handleNavigateFromMenu('home')}
                             >
-                                <span className="menu-icon">🏠</span>
+                                <span className="menu-icon">⚓</span>
                                 <span className="menu-label">{t('nav.home', 'Home')}</span>
                             </button>
                         </li>

@@ -82,7 +82,7 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
                                     }
                                 }}
                             >
-                                <span className="item-icon">🏠</span>
+                                <span className="item-icon">⚙️</span>
                                 <div className="item-content">
                                     <span className="item-title">{t('management.overview', 'Overview')}</span>
                                     <span className="item-desc">{t('management.overview_desc', 'Management hub')}</span>
@@ -123,7 +123,7 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
                         }}
                         title={t('management.back_to_home', 'Back to Home')}
                     >
-                        <span className="item-icon">🏠</span>
+                        <span className="item-icon">⚓</span>
                         <div className="item-content">
                             <span className="item-title">{t('management.back_to_home', 'Back to Home')}</span>
                         </div>
