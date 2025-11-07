@@ -172,24 +172,25 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px var(--shadow);
     overflow: hidden;
     font-size: 1rem;
+    color: var(--text-primary);
 }
 
 .data-table th,
 .data-table td {
     padding: 1rem;
     text-align: left;
-    border-bottom: 1px solid #e1e8ed;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .data-table th {
-    background: #f8f9fa;
+    background: rgba(214, 208, 208, 0.945);
     font-weight: 600;
-    color: #2c3e50;
+    color: rgb(32, 31, 31);
     font-size: 1.05rem;
 }
 
@@ -198,7 +199,7 @@
 }
 
 .data-table tr:hover {
-    background: #f8f9fa;
+    background: var(--nav-hover);
 }
 
 /* Status Badges */

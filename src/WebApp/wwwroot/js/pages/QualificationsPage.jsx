@@ -28,11 +28,7 @@ const QualificationsPage = () => {
         try {
             const qualification = qualifications.find(q => q.code === qualificationCode);
             if (qualification) {
-                const obtainedDate = qualification.dateObtained ? new Date(qualification.dateObtained).toLocaleDateString() : t('qualifications.details.not_specified');
-                const expiryDate = qualification.expiryDate ? new Date(qualification.expiryDate).toLocaleDateString() : t('qualifications.details.no_expiry');
-                const isValid = qualification.expiryDate ? new Date(qualification.expiryDate) > new Date() : true;
-                const status = isValid ? t('qualifications.details.valid') : t('qualifications.details.expired');
-                alert(`${t('qualifications.details.title')}:\n\n${t('qualifications.details.code')}: ${qualification.code}\n${t('qualifications.details.name')}: ${qualification.name}\n${t('qualifications.details.date_obtained')}: ${obtainedDate}\n${t('qualifications.details.expiry_date')}: ${expiryDate}\n${t('qualifications.details.status')}: ${status}`);
+                alert(`${t('qualifications.details.title')}:\n\n${t('qualifications.details.code')}: ${qualification.code}\n${t('qualifications.details.name')}: ${qualification.name}`);
             } else {
                 alert(t('qualifications.details.not_found'));
             }
@@ -77,9 +73,6 @@ const QualificationsPage = () => {
                             <tr>
                                 <th>{t('qualifications.columns.code')}</th>
                                 <th>{t('qualifications.columns.name')}</th>
-                                <th>{t('qualifications.columns.date_obtained')}</th>
-                                <th>{t('qualifications.columns.expiry_date')}</th>
-                                <th>{t('qualifications.columns.status')}</th>
                                 <th>{t('qualifications.columns.actions')}</th>
                             </tr>
                         </thead>
@@ -88,13 +81,6 @@ const QualificationsPage = () => {
                                 <tr key={index}>
                                     <td>{qualification.code || 'N/A'}</td>
                                     <td>{qualification.name || 'N/A'}</td>
-                                    <td>{qualification.dateObtained ? new Date(qualification.dateObtained).toLocaleDateString() : 'N/A'}</td>
-                                    <td>{qualification.expiryDate ? new Date(qualification.expiryDate).toLocaleDateString() : 'N/A'}</td>
-                                    <td>
-                                        <span className={`status-badge ${qualification.expiryDate && new Date(qualification.expiryDate) > new Date() ? 'status-valid' : 'status-expired'}`}>
-                                            {qualification.expiryDate && new Date(qualification.expiryDate) > new Date() ? t('qualifications.columns.valid') : t('qualifications.columns.expired')}
-                                        </span>
-                                    </td>
                                     <td>
                                         <button 
                                             className="btn-small"
