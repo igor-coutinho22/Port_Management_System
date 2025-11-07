@@ -1,5 +1,6 @@
 // VesselTypes Page Component - React
 const VesselTypesPage = () => {
+    const { t } = useTranslation();
     const [vesselTypes, setVesselTypes] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -17,7 +18,7 @@ const VesselTypesPage = () => {
             setVesselTypes(data || []);
         } catch (err) {
             console.error('Error loading vessel types:', err);
-            setError('Error loading vessel types. Please check the API connection.');
+            setError(t('vessel_types.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -27,20 +28,20 @@ const VesselTypesPage = () => {
         try {
             const vesselType = vesselTypes.find(vt => vt.name === vesselTypeName);
             if (vesselType) {
-                alert(`Vessel Type Details:\n\nName: ${vesselType.name}\nDescription: ${vesselType.description || 'N/A'}\nMax Bays: ${vesselType.maxBays || 'N/A'}\nMax Rows: ${vesselType.maxRows || 'N/A'}\nMax Tiers: ${vesselType.maxTiers || 'N/A'}\nMax TEU Capacity: ${vesselType.maxTEUCapacity || 'N/A'}`);
+                alert(`${t('vessel_types.details.title')}:\n\n${t('vessel_types.details.name')}: ${vesselType.name}\n${t('vessel_types.details.description')}: ${vesselType.description || 'N/A'}\n${t('vessel_types.details.max_bays')}: ${vesselType.maxBays || 'N/A'}\n${t('vessel_types.details.max_rows')}: ${vesselType.maxRows || 'N/A'}\n${t('vessel_types.details.max_tiers')}: ${vesselType.maxTiers || 'N/A'}\n${t('vessel_types.details.max_teu')}: ${vesselType.maxTEUCapacity || 'N/A'}`);
             } else {
-                alert('Vessel type not found');
+                alert(t('common.error') + ': Vessel type not found');
             }
         } catch (error) {
-            alert('Error loading vessel type details: ' + error.message);
+            alert(t('common.error') + ': ' + error.message);
         }
     };
 
     if (loading) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Vessel Types</h2>
-                <div className="loading-indicator">Loading vessel types...</div>
+                <h2 className="page-title">{t('vessel_types.title')}</h2>
+                <div className="loading-indicator">{t('common.loading')}</div>
             </div>
         );
     }
@@ -48,36 +49,36 @@ const VesselTypesPage = () => {
     if (error) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Vessel Types</h2>
+                <h2 className="page-title">{t('vessel_types.title')}</h2>
                 <p className="error">{error}</p>
-                <button className="btn" onClick={loadVesselTypes}>Retry</button>
+                <button className="btn" onClick={loadVesselTypes}>{t('common.retry')}</button>
             </div>
         );
     }
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Vessel Types</h2>
-            <p>View and manage different types of vessels that can dock at the port.</p>
+            <h2 className="page-title">{t('vessel_types.title')}</h2>
+            <p>{t('vessel_types.description')}</p>
             
             {vesselTypes.length === 0 ? (
                 <div className="no-data">
-                    <h3>No Vessel Types Found</h3>
-                    <p>There are currently no vessel types configured in the system.</p>
+                    <h3>{t('vessel_types.no_data')}</h3>
+                    <p>{t('vessel_types.no_data_desc')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Max Bays</th>
-                                <th>Max Rows</th>
-                                <th>Max Tiers</th>
-                                <th>Max TEU Capacity</th>
-                                <th>Actions</th>
+                                <th>{t('vessel_types.columns.code')}</th>
+                                <th>{t('vessel_types.columns.name')}</th>
+                                <th>{t('vessel_types.columns.description')}</th>
+                                <th>{t('vessel_types.details.max_bays')}</th>
+                                <th>{t('vessel_types.details.max_rows')}</th>
+                                <th>{t('vessel_types.details.max_tiers')}</th>
+                                <th>{t('vessel_types.columns.max_teu')}</th>
+                                <th>{t('vessel_types.columns.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,7 +96,7 @@ const VesselTypesPage = () => {
                                             className="btn-small"
                                             onClick={() => handleViewDetails(vesselType.name)}
                                         >
-                                            View Details
+                                            {t('vessel_types.view_details')}
                                         </button>
                                     </td>
                                 </tr>

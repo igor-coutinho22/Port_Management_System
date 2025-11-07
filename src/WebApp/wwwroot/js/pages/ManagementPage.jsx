@@ -2,65 +2,67 @@
 console.log('ManagementPage.jsx file is being loaded!');
 
 const ManagementPage = () => {
+    const { t } = useTranslation();
+    
     const managementEntities = [
         {
             id: 'resources',
-            title: '📦 Resources',
-            description: 'Manage cranes, equipment, and port facilities',
+            title: '📦 ' + t('entities.resources'),
+            description: t('management_page.resources'),
             icon: '📦'
         },
         {
             id: 'vessels',
-            title: '🚢 Vessels',
-            description: 'Track vessels, arrivals, and operations',
+            title: '🚢 ' + t('entities.vessels'),
+            description: t('management_page.vessels'),
             icon: '🚢'
         },
         {
             id: 'vessel-types',
-            title: '🛳️ Vessel Types',
-            description: 'Manage different types of vessels',
+            title: '🛳️ ' + t('entities.vessel_types'),
+            description: t('management_page.vessel_types'),
             icon: '🛳️'
         },
         {
             id: 'docks',
-            title: '🏭 Docks',
-            description: 'Dock management and operations',
+            title: '🏭 ' + t('entities.docks'),
+            description: t('management_page.docks'),
             icon: '🏭'
         },
         {
             id: 'storage-areas',
-            title: '🏪 Storage Areas',
-            description: 'Warehouses and container yards',
+            title: '🏪 ' + t('entities.storage_areas'),
+            description: t('management_page.storage_areas'),
             icon: '🏪'
         },
         {
             id: 'organizations',
-            title: '🏢 Organizations',
-            description: 'Shipping companies and port authorities',
+            title: '🏢 ' + t('entities.organizations'),
+            description: t('management_page.organizations'),
             icon: '🏢'
         },
         {
             id: 'representatives',
-            title: '👨‍💼 Representatives',
-            description: 'Organization representatives and contacts',
+            title: '👨‍💼 ' + t('entities.representatives'),
+            description: t('management_page.representatives'),
             icon: '👨‍💼'
         },
         {
             id: 'staff',
-            title: '👷‍♂️ Staff',
-            description: 'Port staff members and roles',
+            title: '👷‍♂️ ' + t('entities.staff'),
+            description: t('management_page.staff'),
             icon: '👷‍♂️'
         },
         {
             id: 'vessel-visit-notifications',
-            title: '📋 Vessel Notifications',
-            description: 'Upcoming vessel visits and schedules',
+            title: '📋 ' + t('entities.notifications'),
+            description: t('management_page.notifications'),
             icon: '📋'
         },
         {
             id: 'qualifications',
-            title: '🎓 Qualifications',
-            description: 'Professional certifications and qualifications',
+            title: '🎓 ' + t('entities.qualifications'),
+            description: t('management_page.qualifications'),
             icon: '🎓'
         }
     ];
@@ -77,8 +79,8 @@ const ManagementPage = () => {
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Port Management</h2>
-            <p>Select a management module to view and manage port operations.</p>
+            <h2 className="page-title">{t('management_page.title')}</h2>
+            <p>{t('management_page.description')}</p>
             
             <div className="feature-grid">
                 {managementEntities.map((entity) => (

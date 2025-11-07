@@ -1,5 +1,6 @@
 // Organizations Page Component - React
 const OrganizationsPage = () => {
+    const { t } = useTranslation();
     const [organizations, setOrganizations] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -17,7 +18,7 @@ const OrganizationsPage = () => {
             setOrganizations(data || []);
         } catch (err) {
             console.error('Error loading organizations:', err);
-            setError('Error loading organizations. Please check the API connection.');
+            setError(t('organizations.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -28,7 +29,7 @@ const OrganizationsPage = () => {
             const org = organizations.find(o => o.id === organizationId);
             if (org) {
                 // Handle representatives collection properly
-                let representatives = 'None';
+                let representatives = t('organizations.details.none');
                 if (org.representatives && Array.isArray(org.representatives) && org.representatives.length > 0) {
                     representatives = org.representatives
                         .map(rep => rep.name || rep.fullName || rep.firstName + ' ' + rep.lastName || rep)
@@ -40,20 +41,20 @@ const OrganizationsPage = () => {
                         .join(', ');
                 }
                 
-                alert(`Organization Details:\n\nID: ${org.id || 'N/A'}\nLegal Name: ${org.legalName || 'N/A'}\nAlternative Names: ${org.alternativeNames || 'None'}\nAddress: ${org.address || 'N/A'}\nTax Number: ${org.taxNumber || 'N/A'}\nRepresentatives: ${representatives}`);
+                alert(`${t('organizations.details.title')}:\n\n${t('organizations.details.id')}: ${org.id || 'N/A'}\n${t('organizations.details.legal_name')}: ${org.legalName || 'N/A'}\n${t('organizations.details.alternative_names')}: ${org.alternativeNames || t('organizations.details.none')}\n${t('organizations.details.address')}: ${org.address || 'N/A'}\n${t('organizations.details.tax_number')}: ${org.taxNumber || 'N/A'}\n${t('organizations.details.representatives')}: ${representatives}`);
             } else {
-                alert('Organization not found');
+                alert(t('organizations.details.not_found'));
             }
         } catch (error) {
-            alert('Error loading organization details: ' + error.message);
+            alert(t('organizations.details.error') + ': ' + error.message);
         }
     };
 
     if (loading) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Organizations</h2>
-                <div className="loading-indicator">Loading organizations...</div>
+                <h2 className="page-title">{t('organizations.title')}</h2>
+                <div className="loading-indicator">{t('organizations.loading')}</div>
             </div>
         );
     }
@@ -61,34 +62,34 @@ const OrganizationsPage = () => {
     if (error) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Organizations</h2>
+                <h2 className="page-title">{t('organizations.title')}</h2>
                 <p className="error">{error}</p>
-                <button className="btn" onClick={loadOrganizations}>Retry</button>
+                <button className="btn" onClick={loadOrganizations}>{t('organizations.retry')}</button>
             </div>
         );
     }
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Organizations</h2>
-            <p>View and manage shipping companies, port authorities, and other organizations.</p>
+            <h2 className="page-title">{t('organizations.title')}</h2>
+            <p>{t('organizations.description')}</p>
             
             {organizations.length === 0 ? (
                 <div className="no-data">
-                    <h3>No Organizations Found</h3>
-                    <p>There are currently no organizations registered in the system.</p>
+                    <h3>{t('organizations.no_data.title')}</h3>
+                    <p>{t('organizations.no_data.message')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Legal Name</th>
-                                <th>Alternative Names</th>
-                                <th>Address</th>
-                                <th>Tax Number</th>
-                                <th>Actions</th>
+                                <th>{t('organizations.table.id')}</th>
+                                <th>{t('organizations.table.legal_name')}</th>
+                                <th>{t('organizations.table.alternative_names')}</th>
+                                <th>{t('organizations.table.address')}</th>
+                                <th>{t('organizations.table.tax_number')}</th>
+                                <th>{t('organizations.table.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -104,7 +105,7 @@ const OrganizationsPage = () => {
                                             className="btn-small"
                                             onClick={() => handleViewDetails(org.id)}
                                         >
-                                            View Details
+                                            {t('organizations.table.view_details')}
                                         </button>
                                     </td>
                                 </tr>

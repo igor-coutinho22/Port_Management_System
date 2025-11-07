@@ -1,5 +1,6 @@
 // Storage Areas Page Component - React
 const StorageAreasPage = () => {
+    const { t } = useTranslation();
     const [storageAreas, setStorageAreas] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -17,7 +18,7 @@ const StorageAreasPage = () => {
             setStorageAreas(data || []);
         } catch (err) {
             console.error('Error loading storage areas:', err);
-            setError('Error loading storage areas. Please check the API connection.');
+            setError(t('storage_areas.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -34,32 +35,32 @@ const StorageAreasPage = () => {
                 
                 if (area.type === 'Warehouse' || area.type === 'warehouse') {
                     if (area.specializedCargoType) {
-                        specializedInfo = `\nSpecialized Cargo: ${area.specializedCargoType}`;
+                        specializedInfo = `\n${t('storage_areas.details.specialized_cargo')}: ${area.specializedCargoType}`;
                     } else {
-                        specializedInfo = `\nSpecialized Cargo: Not specified`;
+                        specializedInfo = `\n${t('storage_areas.details.specialized_cargo')}: ${t('storage_areas.details.not_specified')}`;
                     }
                 } else if (area.type === 'ContainerYard' || area.type === 'containerYard') {
                     if (area.dockIds && area.dockIds.length > 0) {
-                        specializedInfo = `\nDocks Served: ${area.dockIds.length} dock(s) (IDs: ${area.dockIds.join(', ')})`;
+                        specializedInfo = `\n${t('storage_areas.details.docks_served')}: ${area.dockIds.length} ${t('storage_areas.details.dock_count')} (${t('storage_areas.details.ids')}: ${area.dockIds.join(', ')})`;
                     } else {
-                        specializedInfo = `\nDocks Served: None configured`;
+                        specializedInfo = `\n${t('storage_areas.details.docks_served')}: ${t('storage_areas.details.none_configured')}`;
                     }
                 }
                 
-                alert(`Storage Area Details:\n\nID: ${area.id || 'N/A'}\nName: ${area.name || 'N/A'}\nType: ${area.type || 'N/A'}\nMax Capacity: ${area.maxCapacityTeu || 'N/A'} TEU\nCurrent Occupancy: ${area.currentOccupancyTeu || 'N/A'} TEU\nUtilization: ${utilizationPercent}%${specializedInfo}`);
+                alert(`${t('storage_areas.details.title')}:\n\n${t('storage_areas.details.id')}: ${area.id || 'N/A'}\n${t('storage_areas.details.name')}: ${area.name || 'N/A'}\n${t('storage_areas.details.type')}: ${area.type || 'N/A'}\n${t('storage_areas.details.max_capacity')}: ${area.maxCapacityTeu || 'N/A'} ${t('storage_areas.details.teu')}\n${t('storage_areas.details.current_occupancy')}: ${area.currentOccupancyTeu || 'N/A'} ${t('storage_areas.details.teu')}\n${t('storage_areas.details.utilization')}: ${utilizationPercent}%${specializedInfo}`);
             } else {
-                alert('Storage area not found');
+                alert(t('storage_areas.details.not_found'));
             }
         } catch (error) {
-            alert('Error loading storage area details: ' + error.message);
+            alert(t('storage_areas.details.error') + ': ' + error.message);
         }
     };
 
     if (loading) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Storage Areas</h2>
-                <div className="loading-indicator">Loading storage areas...</div>
+                <h2 className="page-title">{t('storage_areas.title')}</h2>
+                <div className="loading-indicator">{t('storage_areas.loading')}</div>
             </div>
         );
     }
@@ -67,35 +68,35 @@ const StorageAreasPage = () => {
     if (error) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Storage Areas</h2>
+                <h2 className="page-title">{t('storage_areas.title')}</h2>
                 <p className="error">{error}</p>
-                <button className="btn" onClick={loadStorageAreas}>Retry</button>
+                <button className="btn" onClick={loadStorageAreas}>{t('storage_areas.retry')}</button>
             </div>
         );
     }
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Storage Areas</h2>
-            <p>View and manage port storage areas, warehouses, and container yards.</p>
+            <h2 className="page-title">{t('storage_areas.title')}</h2>
+            <p>{t('storage_areas.description')}</p>
             
             {storageAreas.length === 0 ? (
                 <div className="no-data">
-                    <h3>No Storage Areas Found</h3>
-                    <p>There are currently no storage areas configured in the system.</p>
+                    <h3>{t('storage_areas.no_data.title')}</h3>
+                    <p>{t('storage_areas.no_data.message')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Max Capacity (TEU)</th>
-                                <th>Current Occupancy (TEU)</th>
-                                <th>Utilization %</th>
-                                <th>Actions</th>
+                                <th>{t('storage_areas.columns.code')}</th>
+                                <th>{t('storage_areas.columns.name')}</th>
+                                <th>{t('storage_areas.columns.type')}</th>
+                                <th>{t('storage_areas.columns.capacity')}</th>
+                                <th>{t('storage_areas.columns.current_occupancy')}</th>
+                                <th>{t('storage_areas.columns.utilization')}</th>
+                                <th>{t('storage_areas.columns.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -112,7 +113,7 @@ const StorageAreasPage = () => {
                                             className="btn-small"
                                             onClick={() => handleViewDetails(area.id)}
                                         >
-                                            View Details
+                                            {t('storage_areas.view_details')}
                                         </button>
                                     </td>
                                 </tr>

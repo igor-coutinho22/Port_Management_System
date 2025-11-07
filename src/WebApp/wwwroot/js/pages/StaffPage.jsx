@@ -1,5 +1,6 @@
 // Staff Page Component - React
 const StaffPage = () => {
+    const { t } = useTranslation();
     const [staff, setStaff] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -17,7 +18,7 @@ const StaffPage = () => {
             setStaff(data || []);
         } catch (err) {
             console.error('Error loading staff:', err);
-            setError('Error loading staff. Please check the API connection.');
+            setError(t('staff.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -29,21 +30,21 @@ const StaffPage = () => {
             if (staffMember) {
                 const qualifications = staffMember.qualifications ? 
                     staffMember.qualifications.map(q => `${q.name} (${q.code})`).join(', ') : 
-                    'None';
-                alert(`Staff Details:\n\nMecanographic Number: ${staffMember.mecanographicNumber}\nName: ${staffMember.shortName}\nEmail: ${staffMember.email}\nPhone: ${staffMember.phone}\nStatus: ${staffMember.status}\nOperational Window: ${staffMember.operationalWindow}\nQualifications: ${qualifications}`);
+                    t('staff.details.none');
+                alert(`${t('staff.details.title')}:\n\n${t('staff.details.mecanographic_number')}: ${staffMember.mecanographicNumber}\n${t('staff.details.name')}: ${staffMember.shortName}\n${t('staff.details.email')}: ${staffMember.email}\n${t('staff.details.phone')}: ${staffMember.phone}\n${t('staff.details.status')}: ${staffMember.status}\n${t('staff.details.operational_window')}: ${staffMember.operationalWindow}\n${t('staff.details.qualifications')}: ${qualifications}`);
             } else {
-                alert('Staff member not found');
+                alert(t('staff.details.not_found'));
             }
         } catch (error) {
-            alert('Error loading staff details: ' + error.message);
+            alert(t('staff.details.error') + ': ' + error.message);
         }
     };
 
     if (loading) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Port Staff</h2>
-                <div className="loading-indicator">Loading staff...</div>
+                <h2 className="page-title">{t('staff.title')}</h2>
+                <div className="loading-indicator">{t('staff.loading')}</div>
             </div>
         );
     }
@@ -51,36 +52,36 @@ const StaffPage = () => {
     if (error) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Port Staff</h2>
+                <h2 className="page-title">{t('staff.title')}</h2>
                 <p className="error">{error}</p>
-                <button className="btn" onClick={loadStaff}>Retry</button>
+                <button className="btn" onClick={loadStaff}>{t('staff.retry')}</button>
             </div>
         );
     }
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Port Staff</h2>
-            <p>View and manage port staff members, their roles and contact information.</p>
+            <h2 className="page-title">{t('staff.title')}</h2>
+            <p>{t('staff.description')}</p>
             
             {staff.length === 0 ? (
                 <div className="no-data">
-                    <h3>No Staff Found</h3>
-                    <p>There are currently no staff members registered in the system.</p>
+                    <h3>{t('staff.no_data.title')}</h3>
+                    <p>{t('staff.no_data.message')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Mecanographic #</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Status</th>
-                                <th>Operational Window</th>
-                                <th>Qualifications</th>
-                                <th>Actions</th>
+                                <th>{t('staff.columns.mecanographic')}</th>
+                                <th>{t('staff.columns.name')}</th>
+                                <th>{t('staff.columns.email')}</th>
+                                <th>{t('staff.columns.phone')}</th>
+                                <th>{t('staff.columns.status')}</th>
+                                <th>{t('staff.columns.operational_window')}</th>
+                                <th>{t('staff.columns.qualifications')}</th>
+                                <th>{t('staff.columns.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,7 +103,7 @@ const StaffPage = () => {
                                             className="btn-small"
                                             onClick={() => handleViewDetails(staffMember.mecanographicNumber)}
                                         >
-                                            View Details
+                                            {t('staff.view_details')}
                                         </button>
                                     </td>
                                 </tr>

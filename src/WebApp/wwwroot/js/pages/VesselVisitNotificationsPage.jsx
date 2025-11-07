@@ -1,5 +1,6 @@
 // Vessel Visit Notifications Page Component - React
 const VesselVisitNotificationsPage = () => {
+    const { t } = useTranslation();
     const [notifications, setNotifications] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -17,7 +18,7 @@ const VesselVisitNotificationsPage = () => {
             setNotifications(data || []);
         } catch (err) {
             console.error('Error loading vessel visit notifications:', err);
-            setError('Error loading vessel visit notifications. Please check the API connection.');
+            setError(t('notifications.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -27,23 +28,23 @@ const VesselVisitNotificationsPage = () => {
         try {
             const notification = notifications.find(n => n.id === notificationId);
             if (notification) {
-                const loadingManifest = notification.loadingManifest ? `Type: ${notification.loadingManifest.type}` : 'None';
-                const unloadingManifest = notification.unloadingManifest ? `Type: ${notification.unloadingManifest.type}` : 'None';
-                const crewInfo = notification.crew ? notification.crew.length + ' members' : 'No crew data';
-                alert(`Vessel Visit Notification Details:\n\nID: ${notification.id}\nVessel IMO: ${notification.vesselIMO}\nDock ID: ${notification.dockId}\nVisit Date: ${new Date(notification.visitDate).toLocaleDateString()}\nPurpose: ${notification.purpose}\nStatus: ${notification.status}\nLoading Manifest: ${loadingManifest}\nUnloading Manifest: ${unloadingManifest}\nCrew: ${crewInfo}`);
+                const loadingManifest = notification.loadingManifest ? `${t('notifications.details.type')}: ${notification.loadingManifest.type}` : t('notifications.details.none');
+                const unloadingManifest = notification.unloadingManifest ? `${t('notifications.details.type')}: ${notification.unloadingManifest.type}` : t('notifications.details.none');
+                const crewInfo = notification.crew ? notification.crew.length + ' ' + t('notifications.details.members') : t('notifications.details.no_crew_data');
+                alert(`${t('notifications.details.title')}:\n\n${t('notifications.details.id')}: ${notification.id}\n${t('notifications.details.vessel_imo')}: ${notification.vesselIMO}\n${t('notifications.details.dock_id')}: ${notification.dockId}\n${t('notifications.details.visit_date')}: ${new Date(notification.visitDate).toLocaleDateString()}\n${t('notifications.details.purpose')}: ${notification.purpose}\n${t('notifications.details.status')}: ${notification.status}\n${t('notifications.details.loading_manifest')}: ${loadingManifest}\n${t('notifications.details.unloading_manifest')}: ${unloadingManifest}\n${t('notifications.details.crew')}: ${crewInfo}`);
             } else {
-                alert('Notification not found');
+                alert(t('notifications.details.not_found'));
             }
         } catch (error) {
-            alert('Error loading notification details: ' + error.message);
+            alert(t('notifications.details.error') + ': ' + error.message);
         }
     };
 
     if (loading) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Vessel Visit Notifications</h2>
-                <div className="loading-indicator">Loading notifications...</div>
+                <h2 className="page-title">{t('notifications.title')}</h2>
+                <div className="loading-indicator">{t('notifications.loading')}</div>
             </div>
         );
     }
@@ -51,36 +52,36 @@ const VesselVisitNotificationsPage = () => {
     if (error) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Vessel Visit Notifications</h2>
+                <h2 className="page-title">{t('notifications.title')}</h2>
                 <p className="error">{error}</p>
-                <button className="btn" onClick={loadNotifications}>Retry</button>
+                <button className="btn" onClick={loadNotifications}>{t('notifications.retry')}</button>
             </div>
         );
     }
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Vessel Visit Notifications</h2>
-            <p>View and manage notifications for upcoming vessel visits and port operations.</p>
+            <h2 className="page-title">{t('notifications.title')}</h2>
+            <p>{t('notifications.description')}</p>
             
             {notifications.length === 0 ? (
                 <div className="no-data">
-                    <h3>No Notifications Found</h3>
-                    <p>There are currently no vessel visit notifications in the system.</p>
+                    <h3>{t('notifications.no_data.title')}</h3>
+                    <p>{t('notifications.no_data.message')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Vessel IMO</th>
-                                <th>Dock ID</th>
-                                <th>Visit Date</th>
-                                <th>Purpose</th>
-                                <th>Status</th>
-                                <th>Crew Size</th>
-                                <th>Actions</th>
+                                <th>{t('notifications.columns.id')}</th>
+                                <th>{t('notifications.columns.vessel_imo')}</th>
+                                <th>{t('notifications.columns.dock_id')}</th>
+                                <th>{t('notifications.columns.visit_date')}</th>
+                                <th>{t('notifications.columns.purpose')}</th>
+                                <th>{t('notifications.columns.status')}</th>
+                                <th>{t('notifications.columns.crew_size')}</th>
+                                <th>{t('notifications.columns.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,7 +103,7 @@ const VesselVisitNotificationsPage = () => {
                                             className="btn-small"
                                             onClick={() => handleViewDetails(notification.id)}
                                         >
-                                            View Details
+                                            {t('notifications.view_details')}
                                         </button>
                                     </td>
                                 </tr>

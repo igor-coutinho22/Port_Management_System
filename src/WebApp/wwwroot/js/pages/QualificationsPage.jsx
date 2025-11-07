@@ -1,5 +1,6 @@
 // Qualifications Page Component - React
 const QualificationsPage = () => {
+    const { t } = useTranslation();
     const [qualifications, setQualifications] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -17,7 +18,7 @@ const QualificationsPage = () => {
             setQualifications(data || []);
         } catch (err) {
             console.error('Error loading qualifications:', err);
-            setError('Error loading qualifications. Please check the API connection.');
+            setError(t('qualifications.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -27,23 +28,24 @@ const QualificationsPage = () => {
         try {
             const qualification = qualifications.find(q => q.code === qualificationCode);
             if (qualification) {
-                const obtainedDate = qualification.dateObtained ? new Date(qualification.dateObtained).toLocaleDateString() : 'Not specified';
-                const expiryDate = qualification.expiryDate ? new Date(qualification.expiryDate).toLocaleDateString() : 'No expiry';
+                const obtainedDate = qualification.dateObtained ? new Date(qualification.dateObtained).toLocaleDateString() : t('qualifications.details.not_specified');
+                const expiryDate = qualification.expiryDate ? new Date(qualification.expiryDate).toLocaleDateString() : t('qualifications.details.no_expiry');
                 const isValid = qualification.expiryDate ? new Date(qualification.expiryDate) > new Date() : true;
-                alert(`Qualification Details:\n\nCode: ${qualification.code}\nName: ${qualification.name}\nDate Obtained: ${obtainedDate}\nExpiry Date: ${expiryDate}\nStatus: ${isValid ? 'Valid' : 'Expired'}`);
+                const status = isValid ? t('qualifications.details.valid') : t('qualifications.details.expired');
+                alert(`${t('qualifications.details.title')}:\n\n${t('qualifications.details.code')}: ${qualification.code}\n${t('qualifications.details.name')}: ${qualification.name}\n${t('qualifications.details.date_obtained')}: ${obtainedDate}\n${t('qualifications.details.expiry_date')}: ${expiryDate}\n${t('qualifications.details.status')}: ${status}`);
             } else {
-                alert('Qualification not found');
+                alert(t('qualifications.details.not_found'));
             }
         } catch (error) {
-            alert('Error loading qualification details: ' + error.message);
+            alert(t('qualifications.details.error') + ': ' + error.message);
         }
     };
 
     if (loading) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Qualifications</h2>
-                <div className="loading-indicator">Loading qualifications...</div>
+                <h2 className="page-title">{t('qualifications.title')}</h2>
+                <div className="loading-indicator">{t('qualifications.loading')}</div>
             </div>
         );
     }
@@ -51,34 +53,34 @@ const QualificationsPage = () => {
     if (error) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Qualifications</h2>
+                <h2 className="page-title">{t('qualifications.title')}</h2>
                 <p className="error">{error}</p>
-                <button className="btn" onClick={loadQualifications}>Retry</button>
+                <button className="btn" onClick={loadQualifications}>{t('qualifications.retry')}</button>
             </div>
         );
     }
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Qualifications</h2>
-            <p>View and manage professional qualifications and certifications required for port operations.</p>
+            <h2 className="page-title">{t('qualifications.title')}</h2>
+            <p>{t('qualifications.description')}</p>
             
             {qualifications.length === 0 ? (
                 <div className="no-data">
-                    <h3>No Qualifications Found</h3>
-                    <p>There are currently no qualifications registered in the system.</p>
+                    <h3>{t('qualifications.no_data.title')}</h3>
+                    <p>{t('qualifications.no_data.message')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Code</th>
-                                <th>Name</th>
-                                <th>Date Obtained</th>
-                                <th>Expiry Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>{t('qualifications.columns.code')}</th>
+                                <th>{t('qualifications.columns.name')}</th>
+                                <th>{t('qualifications.columns.date_obtained')}</th>
+                                <th>{t('qualifications.columns.expiry_date')}</th>
+                                <th>{t('qualifications.columns.status')}</th>
+                                <th>{t('qualifications.columns.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -90,7 +92,7 @@ const QualificationsPage = () => {
                                     <td>{qualification.expiryDate ? new Date(qualification.expiryDate).toLocaleDateString() : 'N/A'}</td>
                                     <td>
                                         <span className={`status-badge ${qualification.expiryDate && new Date(qualification.expiryDate) > new Date() ? 'status-valid' : 'status-expired'}`}>
-                                            {qualification.expiryDate && new Date(qualification.expiryDate) > new Date() ? 'Valid' : 'Expired'}
+                                            {qualification.expiryDate && new Date(qualification.expiryDate) > new Date() ? t('qualifications.columns.valid') : t('qualifications.columns.expired')}
                                         </span>
                                     </td>
                                     <td>
@@ -98,7 +100,7 @@ const QualificationsPage = () => {
                                             className="btn-small"
                                             onClick={() => handleViewDetails(qualification.code)}
                                         >
-                                            View Details
+                                            {t('qualifications.view_details')}
                                         </button>
                                     </td>
                                 </tr>

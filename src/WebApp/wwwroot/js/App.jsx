@@ -49,10 +49,6 @@ const App = () => {
                     );
                 }
                 return <ManagementPage />;
-            case 'resources':
-                return <ResourcesPage />;
-            case 'vessels':
-                return <VesselsPage />;
             case '3d-view':
                 return <ThreeDView />;
             case 'api-docs':
