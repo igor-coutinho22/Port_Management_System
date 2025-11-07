@@ -106,6 +106,21 @@ class ApiService {
         return this.delete(`/vessels/${imo}`);
     }
 
+    async searchVessels(name = null, operatorName = null) {
+        const params = new URLSearchParams();
+        
+        if (name && name.trim()) {
+            params.append('name', name.trim());
+        }
+        
+        if (operatorName && operatorName.trim()) {
+            params.append('operatorName', operatorName.trim());
+        }
+        
+        const queryString = params.toString();
+        return this.get(`/vessels/searchByNameAndOperator${queryString ? '?' + queryString : ''}`);
+    }
+
     // Docks API
     async getDocks() {
         return this.get('/docks');
