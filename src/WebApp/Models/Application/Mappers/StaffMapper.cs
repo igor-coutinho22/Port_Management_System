@@ -20,8 +20,6 @@ namespace WebApp.Models.Application.Mappers
                 {
                     Code = link.Qualification.Code,
                     Name = link.Qualification.Name,
-                    DateObtained = link.DateObtained,
-                    ExpiryDate = link.ExpiryDate
                 }).ToList()
             };
         }
@@ -43,9 +41,7 @@ namespace WebApp.Models.Application.Mappers
                 {
                     staff.QualificationLinks.Add(new QualificationLink(
                         dto.MecanographicNumber!,
-                        q.Code,
-                        q.DateObtained,
-                        q.ExpiryDate
+                        q.Code
                     ));
                 }
             }
