@@ -1,16 +1,16 @@
 /* CSS Variables for Light/Dark Theme */
 :root {
     /* Light Mode Colors */
-    --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --bg-secondary: rgba(255, 255, 255, 0.95);
+    --bg-primary: linear-gradient(135deg, #667eea 0%, #4a90e2 50%, #2e86de 100%);
+    --bg-secondary: rgba(236, 229, 206, 0.95);
     --text-primary: #333;
     --text-secondary: #666;
     --text-accent: #2c3e50;
-    --border-color: rgba(255, 255, 255, 0.2);
+    --border-color: rgba(0, 0, 0, 0.2);
     --shadow: rgba(0, 0, 0, 0.1);
     --header-bg: linear-gradient(135deg, #2c3e50, #3498db);
-    --card-bg: linear-gradient(145deg, #ffffff, #f8f9fa);
-    --nav-hover: rgba(255, 255, 255, 0.1);
+    --card-bg: linear-gradient(145deg, #eeeadc, #e7e1cd);
+    --nav-hover: rgba(240, 235, 220, 0.1);
 }
 
 [data-theme="dark"] {
@@ -250,7 +250,7 @@ body.dark-theme {
 }
 
 body.light-theme {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #667eea 0%, #4a90e2 50%, #2e86de 100%) !important;
     color: #333 !important;
 }
 
@@ -266,8 +266,8 @@ body.dark-theme {
 
 html[data-theme="light"] body,
 body.light-theme {
-    --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --bg-secondary: rgba(255, 255, 255, 0.95);
+    --bg-primary: linear-gradient(135deg, #667eea 0%, #4a90e2 50%, #2e86de 100%);
+    --bg-secondary: rgba(240, 235, 220, 0.95);
     --text-primary: #333;
     --text-secondary: #666;
     --text-accent: #2c3e50;
