@@ -84,7 +84,7 @@
     justify-content: space-between;
     align-items: center;
     background: linear-gradient(135deg, var(--text-accent), var(--text-accent)dd);
-    color: white;
+    color: black;
 }
 
 .sidebar-title {
@@ -103,7 +103,7 @@
 .sidebar-close {
     background: none;
     border: none;
-    color: white;
+    color: black;
     font-size: 1.2rem;
     cursor: pointer;
     padding: 0.25rem;
@@ -277,6 +277,15 @@
 
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
     background: var(--text-accent);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .sidebar-header {
+    color: white;
+}
+
+[data-theme="dark"] .sidebar-close {
+    color: white;
 }
 
 /* Animation for sidebar items */
