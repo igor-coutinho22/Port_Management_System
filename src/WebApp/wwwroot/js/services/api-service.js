@@ -12,24 +12,56 @@ class ApiService {
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
         
+        // Debug headers issue
+        console.log('🔍 Default headers:', this.defaultHeaders);
+        console.log('🔍 Options headers:', options.headers);
+        
         const config = {
-            headers: { ...this.defaultHeaders, ...options.headers },
+            headers: { ...this.defaultHeaders, ...(options.headers || {}) },
             ...options
         };
 
         // Add JSON body if data is provided
         if (options.data) {
             config.body = JSON.stringify(options.data);
+            // Ensure Content-Type is set for JSON data
+            if (!config.headers['Content-Type']) {
+                config.headers['Content-Type'] = 'application/json';
+            }
         }
 
         try {
             console.log(`API Request: ${config.method || 'GET'} ${url}`);
+            console.log('🔍 Request config:', config);
+            console.log('🔍 Request headers:', config.headers);
+            console.log('🔍 Request body:', config.body);
             
             const response = await fetch(url, config);
             
             // Handle different response types
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                // Try to get detailed error message from response body
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                
+                try {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        // Handle different error response formats
+                        errorMessage = errorData.message || errorData.error || errorData.title || errorMessage;
+                    } else {
+                        // Handle plain text error responses
+                        const errorText = await response.text();
+                        if (errorText && errorText.trim()) {
+                            errorMessage = errorText;
+                        }
+                    }
+                } catch (parseError) {
+                    // If we can't parse the error response, use the original message
+                    console.warn('Could not parse error response:', parseError);
+                }
+                
+                throw new Error(errorMessage);
             }
 
             // Return parsed JSON if response has content
@@ -95,11 +127,31 @@ class ApiService {
     }
 
     async createVessel(vesselData) {
-        return this.post('/vessels', vesselData);
+        // Extract vesselTypeName from the data to send as query parameter
+        const { vesselTypeName, ...bodyData } = vesselData;
+        
+        // Build the URL with query parameter
+        const params = new URLSearchParams();
+        if (vesselTypeName) {
+            params.append('vesselTypeName', vesselTypeName);
+        }
+        
+        const endpoint = `/vessels?${params.toString()}`;
+        return this.post(endpoint, bodyData);
     }
 
     async updateVessel(imo, vesselData) {
-        return this.put(`/vessels/${imo}`, vesselData);
+        // Extract vesselTypeName from the data to send as query parameter
+        const { vesselTypeName, ...bodyData } = vesselData;
+        
+        // Build the URL with query parameter
+        const params = new URLSearchParams();
+        if (vesselTypeName) {
+            params.append('vesselTypeName', vesselTypeName);
+        }
+        
+        const endpoint = `/vessels/${imo}?${params.toString()}`;
+        return this.put(endpoint, bodyData);
     }
 
     async deleteVessel(imo) {

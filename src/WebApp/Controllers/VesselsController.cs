@@ -49,7 +49,7 @@ namespace WebApp.Controllers
         // Update an existing vessel
         // ------------------------------------------------------------
         [HttpPut("{imo}")]
-        public async Task<IActionResult> UpdateVesselAsync(string imo, [FromBody] VesselDTO dto)
+        public async Task<IActionResult> UpdateVesselAsync(string imo, [FromBody] VesselDTO dto, [FromQuery] string vesselTypeName)
         {
             try
             {
@@ -57,7 +57,12 @@ namespace WebApp.Controllers
                 if (vessel == null)
                     return NotFound($"Vessel with IMO {imo} not found.");
 
-                var updatedVessel = VesselMapper.MapToDomain(dto, vessel.VesselType!);
+                // Get the vessel type from the query parameter
+                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(vesselTypeName);
+                if (vesselType == null)
+                    return NotFound($"Vessel type '{vesselTypeName}' not found.");
+
+                var updatedVessel = VesselMapper.MapToDomain(dto, vesselType);
                 await _vesselService.UpdateVesselAsync(updatedVessel);
                 return CreatedAtRoute("GetByIMO", new { imo = updatedVessel.IMO }, VesselMapper.MapToDto(updatedVessel));
             }

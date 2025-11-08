@@ -10,7 +10,12 @@ const EditVesselForm = ({ onSuccess }) => {
         imo: '',
         vesselName: '',
         operatorName: '',
-        vesselTypeName: ''
+        vesselTypeName: '',
+        requiredCraneCount: '',
+        requiredDockLength: '',
+        bays: '',
+        rows: '',
+        tiers: ''
     });
     const [vesselTypes, setVesselTypes] = React.useState([]);
     const [vessel, setVessel] = React.useState(null);
@@ -82,7 +87,12 @@ const EditVesselForm = ({ onSuccess }) => {
                     imo: data.imo || '',
                     vesselName: data.vesselName || '',
                     operatorName: data.operatorName || '',
-                    vesselTypeName: data.vesselTypeName || ''
+                    vesselTypeName: data.vesselTypeName || '',
+                    requiredCraneCount: data.requiredCraneCount || '',
+                    requiredDockLength: data.requiredDockLength || '',
+                    bays: data.bays || '',
+                    rows: data.rows || '',
+                    tiers: data.tiers || ''
                 });
                 setHasSearched(true);
                 setStep('edit');
@@ -113,12 +123,44 @@ const EditVesselForm = ({ onSuccess }) => {
 
         try {
             // Validate required fields
-            if (!formData.imo || !formData.vesselName || !formData.operatorName || !formData.vesselTypeName) {
+            if (!formData.imo?.trim() || !formData.vesselName?.trim() || !formData.operatorName?.trim() || !formData.vesselTypeName?.trim() ||
+                !formData.requiredCraneCount?.toString().trim() || !formData.requiredDockLength?.toString().trim() || 
+                !formData.bays?.toString().trim() || !formData.rows?.toString().trim() || !formData.tiers?.toString().trim()) {
                 throw new Error(t('vessels.forms.register.error.required'));
             }
 
+            // Validate numeric fields
+            if (isNaN(parseInt(formData.requiredCraneCount)) || parseInt(formData.requiredCraneCount) < 0) {
+                throw new Error('Required crane count must be a valid number');
+            }
+            if (isNaN(parseFloat(formData.requiredDockLength)) || parseFloat(formData.requiredDockLength) <= 0) {
+                throw new Error('Required dock length must be a valid positive number');
+            }
+            if (isNaN(parseInt(formData.bays)) || parseInt(formData.bays) <= 0) {
+                throw new Error('Bays must be a valid positive number');
+            }
+            if (isNaN(parseInt(formData.rows)) || parseInt(formData.rows) <= 0) {
+                throw new Error('Rows must be a valid positive number');
+            }
+            if (isNaN(parseInt(formData.tiers)) || parseInt(formData.tiers) <= 0) {
+                throw new Error('Tiers must be a valid positive number');
+            }
+
+            // Transform data to match backend DTO expectations (PascalCase)
+            const vesselData = {
+                IMO: formData.imo,
+                VesselName: formData.vesselName,
+                OperatorName: formData.operatorName,
+                vesselTypeName: formData.vesselTypeName, // This will be sent as query parameter
+                RequiredCraneCount: parseInt(formData.requiredCraneCount),
+                RequiredDockLength: parseFloat(formData.requiredDockLength),
+                Bays: parseInt(formData.bays),
+                Rows: parseInt(formData.rows),
+                Tiers: parseInt(formData.tiers)
+            };
+
             // Update vessel
-            await apiService.updateVessel(formData.imo, formData);
+            await apiService.updateVessel(formData.imo, vesselData);
             
             setMessage({ type: 'success', text: t('vessels.forms.edit.success') });
             
@@ -303,6 +345,97 @@ const EditVesselForm = ({ onSuccess }) => {
                                     ))}
                                 </select>
                                 <small className="form-help">{t('vessels.forms.register.type.help')}</small>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="editRequiredCraneCount">
+                                    {t('vessels.forms.register.crane_count.label')} <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="editRequiredCraneCount"
+                                    name="requiredCraneCount"
+                                    value={formData.requiredCraneCount}
+                                    onChange={handleFormInputChange}
+                                    placeholder={t('vessels.forms.register.crane_count.placeholder')}
+                                    min="0"
+                                    className="form-input"
+                                    required
+                                />
+                                <small className="form-help">{t('vessels.forms.register.crane_count.help')}</small>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="editRequiredDockLength">
+                                    {t('vessels.forms.register.dock_length.label')} <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="editRequiredDockLength"
+                                    name="requiredDockLength"
+                                    value={formData.requiredDockLength}
+                                    onChange={handleFormInputChange}
+                                    placeholder={t('vessels.forms.register.dock_length.placeholder')}
+                                    min="0"
+                                    step="0.1"
+                                    className="form-input"
+                                    required
+                                />
+                                <small className="form-help">{t('vessels.forms.register.dock_length.help')}</small>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="editBays">
+                                    {t('vessels.forms.register.bays.label')} <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="editBays"
+                                    name="bays"
+                                    value={formData.bays}
+                                    onChange={handleFormInputChange}
+                                    placeholder={t('vessels.forms.register.bays.placeholder')}
+                                    min="1"
+                                    className="form-input"
+                                    required
+                                />
+                                <small className="form-help">{t('vessels.forms.register.bays.help')}</small>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="editRows">
+                                    {t('vessels.forms.register.rows.label')} <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="editRows"
+                                    name="rows"
+                                    value={formData.rows}
+                                    onChange={handleFormInputChange}
+                                    placeholder={t('vessels.forms.register.rows.placeholder')}
+                                    min="1"
+                                    className="form-input"
+                                    required
+                                />
+                                <small className="form-help">{t('vessels.forms.register.rows.help')}</small>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="editTiers">
+                                    {t('vessels.forms.register.tiers.label')} <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="editTiers"
+                                    name="tiers"
+                                    value={formData.tiers}
+                                    onChange={handleFormInputChange}
+                                    placeholder={t('vessels.forms.register.tiers.placeholder')}
+                                    min="1"
+                                    className="form-input"
+                                    required
+                                />
+                                <small className="form-help">{t('vessels.forms.register.tiers.help')}</small>
                             </div>
                         </div>
 

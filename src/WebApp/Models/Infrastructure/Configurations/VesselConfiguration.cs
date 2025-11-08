@@ -42,7 +42,7 @@ namespace WebApp.Models.Infrastructure.Configurations
                 .IsRequired();
 
             // Navigation: VesselType
-            builder.HasOne<VesselType>()
+            builder.HasOne(v => v.VesselType)
                 .WithMany()
                 .HasForeignKey(v => v.VesselTypeName)
                 .HasPrincipalKey(vt => vt.Name)
