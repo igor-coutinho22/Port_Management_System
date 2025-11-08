@@ -97,8 +97,9 @@ class ApiService {
     // Specific API endpoints for Port Management
     
     // Resources API
-    async getResources() {
-        return this.get('/resources');
+    async getResources(queryParams = '') {
+        const url = queryParams ? `/resources?${queryParams}` : '/resources';
+        return this.get(url);
     }
 
     async getResourceById(id) {

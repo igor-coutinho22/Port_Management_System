@@ -215,4 +215,4 @@ This project is developed for academic purposes as part of the LAPR5 course at I
 
 ---
 
-*Last updated: November 2024*
+*Last updated: November 2025*

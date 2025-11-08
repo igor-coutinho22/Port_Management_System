@@ -1,4 +1,5 @@
 using WebApp.Models.Domain.Qualifications;
+using WebApp.Models.Domain.Qualifications.Interfaces;
 using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Resources.Enums;
 using WebApp.Models.Domain.Resources.Interfaces;
@@ -8,10 +9,12 @@ namespace WebApp.Models.Application.Services.Resources
     public class ResourceService : IResourceService
     {
         private readonly IResourceRepository _resourceRepo;
+        private readonly IQualificationRepository _qualificationRepo;
 
-        public ResourceService(IResourceRepository resourceRepo)
+        public ResourceService(IResourceRepository resourceRepo, IQualificationRepository qualificationRepo)
         {
             _resourceRepo = resourceRepo;
+            _qualificationRepo = qualificationRepo;
         }
 
         public void RegisterResource(
@@ -176,6 +179,29 @@ namespace WebApp.Models.Application.Services.Resources
             var existing = await _resourceRepo.GetByIdAsync(resource.Id!);
             if (existing != null)
                 throw new ArgumentException($"A resource with ID '{resource.Id}' already exists.");
+
+            // Handle qualifications properly to avoid FK constraint violations
+            if (resource.qualificationRequirements != null && resource.qualificationRequirements.Any())
+            {
+                var qualificationCodes = resource.qualificationRequirements.Select(q => q.Code).ToList();
+                var existingQualifications = new HashSet<Qualification>();
+                
+                foreach (var code in qualificationCodes)
+                {
+                    var existingQual = await _qualificationRepo.GetByCodeAsync(code);
+                    if (existingQual != null)
+                    {
+                        existingQualifications.Add(existingQual);
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Qualification with code '{code}' does not exist in the database.");
+                    }
+                }
+                
+                // Replace with the actual tracked entities from database
+                resource.qualificationRequirements = existingQualifications;
+            }
 
             await _resourceRepo.AddResourceAsync(resource);
         }

@@ -105,7 +105,11 @@ const AppWithGlobalNav = () => {
                 }
                 return <ManagementPage />;
             case 'resources':
-                return <ResourcesPage />;
+                console.log('Loading ResourcesHubPage, type:', typeof ResourcesHubPage);
+                if (typeof ResourcesHubPage === 'undefined') {
+                    return <div className="error">ResourcesHubPage component not loaded</div>;
+                }
+                return <ResourcesHubPage />;
             case 'vessels':
                 console.log('Loading VesselsHubPage, type:', typeof VesselsHubPage);
                 if (typeof VesselsHubPage === 'undefined') {

@@ -21,6 +21,20 @@ namespace WebApp.Models.Infrastructure.Repositories.Resources
 
         public async Task AddResourceAsync(Resource resource)
         {
+            // Attach existing qualifications to the context to prevent insertion attempts
+            if (resource.qualificationRequirements != null)
+            {
+                foreach (var qualification in resource.qualificationRequirements)
+                {
+                    var existingQual = _context.Qualifications.Local.FirstOrDefault(q => q.Code == qualification.Code);
+                    if (existingQual == null)
+                    {
+                        // Attach the qualification as unchanged to prevent EF from trying to insert it
+                        _context.Entry(qualification).State = Microsoft.EntityFrameworkCore.EntityState.Unchanged;
+                    }
+                }
+            }
+            
             await _context.Resources.AddAsync(resource);
             await _context.SaveChangesAsync();
         }
@@ -39,12 +53,12 @@ namespace WebApp.Models.Infrastructure.Repositories.Resources
         public Resource? GetByDescription(string description) =>
             _context.Resources
                 .Include(r => r.qualificationRequirements)
-                .FirstOrDefault(r => r.Description.Equals(description, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(r => r.Description!.Equals(description, StringComparison.OrdinalIgnoreCase));
 
          public async Task<Resource?> GetByDescriptionAsync(string description) =>
             await _context.Resources
                 .Include(r => r.qualificationRequirements)
-                .FirstOrDefaultAsync(r => r.Description.Equals(description, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefaultAsync(r => r.Description!.Equals(description, StringComparison.OrdinalIgnoreCase));
 
         public List<Resource> GetAll() =>
             _context.Resources

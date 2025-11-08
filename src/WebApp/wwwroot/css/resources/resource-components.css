@@ -1,0 +1,370 @@
+/* Resource Components CSS - Form-specific styles */
+
+/* This file contains styles specific to resource forms that don't conflict with the main form-components.css */
+
+/* Resource-specific buttons - consistent styling */
+.search-btn,
+.find-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--text-accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.search-btn:hover:not(:disabled),
+.find-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 73, 94, 0.3);
+}
+
+.search-btn:disabled,
+.find-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Search different button */
+.search-different-btn {
+    padding: 0.5rem 1rem;
+    background: #9b59b6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.search-different-btn:hover {
+    background: #8e44ad;
+    transform: translateY(-1px);
+}
+
+/* Button groups for side-by-side layout */
+.button-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Ensure form actions display side-by-side in resource forms */
+.resource-search-form .form-actions,
+.search-form .form-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Resource type selection */
+.resource-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.resource-type-card {
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: var(--card-bg);
+}
+
+.resource-type-card:hover {
+    border-color: var(--text-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.resource-type-card.selected {
+    border-color: var(--text-accent);
+    background: var(--text-accent);
+    color: white;
+}
+
+.resource-type-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Qualification selection */
+.qualification-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.5rem;
+    background: var(--card-bg);
+}
+
+.qualification-item {
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    margin-bottom: 0.25rem;
+}
+
+.qualification-item:hover {
+    background: var(--nav-hover);
+}
+
+.qualification-item.selected {
+    background: var(--text-accent);
+    color: white;
+}
+
+.qualification-checkbox {
+    margin-right: 0.5rem;
+}
+
+/* Resource status indicators */
+.resource-status-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.resource-status-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.resource-status-icon {
+    font-size: 1.2rem;
+}
+
+/* Capacity and time inputs */
+.capacity-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.capacity-unit {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.time-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-unit {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Resource search specific */
+.resource-search-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.search-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Resource edit specific */
+.resource-edit-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #856404;
+}
+
+.resource-edit-warning .warning-icon {
+    margin-right: 0.5rem;
+}
+
+/* Resource delete specific */
+.resource-delete-confirmation {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1rem 0;
+    color: #721c24;
+    text-align: center;
+}
+
+.resource-delete-warning {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Resource status management */
+.status-management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.status-action-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.status-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.status-action-card.available {
+    border-left: 4px solid #28a745;
+}
+
+.status-action-card.maintenance {
+    border-left: 4px solid #ffc107;
+}
+
+.status-action-card.inactive {
+    border-left: 4px solid #6c757d;
+}
+
+.status-action-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-action-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.status-action-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .resource-type-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .resource-search-filters {
+        grid-template-columns: 1fr;
+    }
+    
+    .status-management-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .capacity-input-group,
+    .time-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Qualification Selector Styles */
+.qualification-selector {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    background: var(--background-light);
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+}
+
+.qualification-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    margin-bottom: 0.25rem;
+}
+
+.qualification-option:last-child {
+    margin-bottom: 0;
+}
+
+.qualification-option:hover {
+    background: var(--background-dark);
+    border-color: var(--text-accent);
+}
+
+.qualification-option.selected {
+    background: var(--text-accent);
+    color: white;
+    border-color: var(--text-accent);
+    font-weight: 600;
+}
+
+.qualification-option.selected:hover {
+    background: var(--text-dark);
+}
+
+.qualification-name {
+    font-weight: 500;
+    flex: 1;
+}
+
+.qualification-code {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+.qualification-option.selected .qualification-code {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.selected-indicator {
+    margin-left: 0.5rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* Empty state */
+.qualification-selector:empty::after {
+    content: "No qualifications available";
+    display: block;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 1rem;
+}
