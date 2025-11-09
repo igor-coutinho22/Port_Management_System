@@ -3,136 +3,105 @@ using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Services;
 using WebApp.Models.Application.Mappers;
-using WebApp.Models.Domain.Vessels.VesselType;
 
 namespace WebApp.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class VesselsController : ControllerBase
+    public class SchedulingController : ControllerBase
     {
         private readonly IVesselService _vesselService;
-        private readonly IVesselTypeService _vesselTypeService;
+        private readonly IHeuristicScheduleService _heuristicService;
+        private readonly IOptimalScheduleService _optimalService; // optional – if user story 3.4.2 is implemented
 
-        public VesselsController(IVesselService vesselService, IVesselTypeService vesselTypeService)
+        public SchedulingController(
+            IVesselService vesselService,
+            IHeuristicScheduleService heuristicService,
+            IOptimalScheduleService optimalService)
         {
             _vesselService = vesselService;
-            _vesselTypeService = vesselTypeService;
+            _heuristicService = heuristicService;
+            _optimalService = optimalService;
         }
 
         // ------------------------------------------------------------
-        // Register a new vessel
+        // GET: api/scheduling?mode=heuristic
+        // Generates a schedule using the selected algorithm
         // ------------------------------------------------------------
-        [HttpPost()]
-        public async Task<IActionResult> RegisterVesselAsync([FromBody] VesselDTO dto, [FromQuery] string vesselTypeName)
+        [HttpGet]
+        public async Task<IActionResult> GetScheduleAsync([FromQuery] string mode = "heuristic")
         {
             try
             {
-                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(vesselTypeName);
-                if (vesselType == null)
-                    return NotFound($"Vessel type '{vesselTypeName}' not found.");
+                // Retrieve all vessels (can be filtered to today's vessels)
+                var vessels = await _vesselService.GetAllVesselsAsync();
+                if (vessels == null || !vessels.Any())
+                    return NotFound("No vessels found to schedule.");
 
-                var vessel = VesselMapper.MapToDomain(dto, vesselType!);
-                await _vesselService.RegisterVesselAsync(vessel);
+                // Choose which algorithm to use
+                var result = mode.ToLower() switch
+                {
+                    "optimal" => _optimalService.ComputeSchedule(vessels),
+                    _ => _heuristicService.ComputeSchedule(vessels)
+                };
 
-                var created = await _vesselService.GetVesselByIMOAsync(dto.IMO!);
-                return CreatedAtRoute("GetByIMO", new { imo = created!.IMO }, VesselMapper.MapToDto(created));
+                // Map to DTO for response
+                var dto = SchedulingResultMapper.ToDTO(result);
+
+                return Ok(dto);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest($"Error generating schedule: {ex.Message}");
             }
         }
 
         // ------------------------------------------------------------
-        // Update an existing vessel
+        // POST: api/scheduling/heuristic
+        // Explicit endpoint for heuristic scheduling
         // ------------------------------------------------------------
-        [HttpPut("{imo}")]
-        public async Task<IActionResult> UpdateVesselAsync(string imo, [FromBody] VesselDTO dto, [FromQuery] string vesselTypeName)
+        [HttpPost("heuristic")]
+        public async Task<IActionResult> GenerateHeuristicScheduleAsync()
         {
             try
             {
-                var vessel = await _vesselService.GetVesselByIMOAsync(imo);
-                if (vessel == null)
-                    return NotFound($"Vessel with IMO {imo} not found.");
+                var vessels = await _vesselService.GetAllVesselsAsync();
+                if (vessels == null || !vessels.Any())
+                    return NotFound("No vessels found to schedule.");
 
-                // Get the vessel type from the query parameter
-                var vesselType = await _vesselTypeService.GetVesselTypeByNameAsync(vesselTypeName);
-                if (vesselType == null)
-                    return NotFound($"Vessel type '{vesselTypeName}' not found.");
+                var result = _heuristicService.ComputeSchedule(vessels);
+                var dto = SchedulingResultMapper.ToDTO(result);
 
-                var updatedVessel = VesselMapper.MapToDomain(dto, vesselType);
-                await _vesselService.UpdateVesselAsync(updatedVessel);
-                return CreatedAtRoute("GetByIMO", new { imo = updatedVessel.IMO }, VesselMapper.MapToDto(updatedVessel));
+                return Ok(dto);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest($"Error generating heuristic schedule: {ex.Message}");
             }
         }
 
         // ------------------------------------------------------------
-        // Get by IMO
+        // POST: api/scheduling/optimal
+        // Explicit endpoint for optimal scheduling (optional)
         // ------------------------------------------------------------
-        [HttpGet("getByIMO/{imo}", Name = "GetByIMO")]
-        public async Task<IActionResult> GetByIMOAsync(string imo)
-            {
-                var vessel = await _vesselService.GetVesselByIMOAsync(imo);
-                if (vessel == null)
-                    return NotFound($"Vessel with IMO {imo} not found.");
-
-                return Ok(VesselMapper.MapToDto(vessel));
-            }
-
-        // ------------------------------------------------------------
-        // Search by name or operator
-        // ------------------------------------------------------------
-        [HttpGet("searchByNameAndOperator")]
-        public async Task<IActionResult> SearchAsync([FromQuery] string? name, [FromQuery] string? operatorName)
-        {
-            var results = await _vesselService.GetAllVesselsAsync();
-
-            if (!string.IsNullOrWhiteSpace(name))
-                results = results.Where(v => v.VesselName.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            if (!string.IsNullOrWhiteSpace(operatorName))
-                results = results.Where(v => v.OperatorName.Contains(operatorName, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(operatorName))
-                return BadRequest("At least one search parameter (name or operator) must be provided.");
-
-            if (results.Count == 0)
-                return NotFound("No vessels found matching the search criteria.");
-
-            return Ok(results.Select(VesselMapper.MapToDto));
-        }
-
-        // ------------------------------------------------------------
-        // Get all vessel types
-        // ------------------------------------------------------------
-        [HttpGet()]
-        public async Task<IActionResult> GetAllVesselsAsync()
-        {
-            var vessels = await _vesselService.GetAllVesselsAsync();
-            
-            return Ok(vessels);
-        }
-
-        // ------------------------------------------------------------
-        // Delete a vessel
-        // ------------------------------------------------------------
-        [HttpDelete("{imo}")]
-        public async Task<IActionResult> DeleteVesselAsync(string imo)
+        [HttpPost("optimal")]
+        public async Task<IActionResult> GenerateOptimalScheduleAsync()
         {
             try
             {
-                await _vesselService.DeleteVesselAsync(imo);
-                return NoContent();
+                var vessels = await _vesselService.GetAllVesselsAsync();
+                if (vessels == null || !vessels.Any())
+                    return NotFound("No vessels found to schedule.");
+
+                var result = _optimalService.ComputeSchedule(vessels);
+                var dto = SchedulingResultMapper.ToDTO(result);
+
+                return Ok(dto);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest($"Error generating optimal schedule: {ex.Message}");
             }
         }
     }
