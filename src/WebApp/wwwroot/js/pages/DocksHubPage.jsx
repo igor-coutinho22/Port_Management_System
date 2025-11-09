@@ -136,11 +136,11 @@ const DocksHubPage = () => {
                         {expandedSection === section.id && (
                             <div className="operation-content">
                                 <div className="operation-body">
-                                    {section.component === 'RegisterDockForm' && <div>Register Dock Form (Coming Soon)</div>}
-                                    {section.component === 'SearchDocksForm' && <div>Search Docks Form (Coming Soon)</div>}
-                                    {section.component === 'GetDockByIdForm' && <div>Get Dock by ID Form (Coming Soon)</div>}
-                                    {section.component === 'EditDockForm' && <div>Edit Dock Form (Coming Soon)</div>}
-                                    {section.component === 'DeleteDockForm' && <div>Delete Dock Form (Coming Soon)</div>}
+                                    {section.component === 'RegisterDockForm' && <RegisterDockForm onSuccess={loadDocks} />}
+                                    {section.component === 'SearchDocksForm' && <SearchDocksForm />}
+                                    {section.component === 'GetDockByIdForm' && <GetDockByIdForm />}
+                                    {section.component === 'EditDockForm' && <EditDockForm onSuccess={loadDocks} />}
+                                    {section.component === 'DeleteDockForm' && <DeleteDockForm onSuccess={loadDocks} />}
                                 </div>
                             </div>
                         )}

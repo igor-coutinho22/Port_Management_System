@@ -44,65 +44,223 @@
 
 /* Vessel types selection */
 .vessel-types-selection {
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 20px;
-    background: #f8f9fa;
+    border: 2px solid #1abc9c;
+    border-radius: 12px;
+    padding: 24px;
+    background: linear-gradient(135deg, #f8fffe 0%, #e8f8f5 100%);
     margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(26, 188, 156, 0.1);
+    transition: all 0.3s ease;
+}
+
+.vessel-types-selection:hover {
+    box-shadow: 0 6px 20px rgba(26, 188, 156, 0.15);
+    transform: translateY(-2px);
 }
 
 .vessel-types-selection .selection-header {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #b2dfdb;
+    padding-bottom: 12px;
 }
 
 .vessel-types-selection .selection-header h5 {
-    color: #2c3e50;
-    margin: 0 0 5px 0;
+    color: #00695c;
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vessel-types-selection .selection-header h5::before {
+    content: "🚢";
     font-size: 1.1rem;
 }
 
 .vessel-types-selection .selection-header p {
-    color: #6c757d;
+    color: #00796b;
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
 .vessel-types-checkboxes {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 10px;
-    max-height: 200px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    max-height: 220px;
     overflow-y: auto;
-    padding: 10px;
-    border: 1px solid #dee2e6;
+    padding: 16px;
+    border: 2px solid #b2dfdb;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.vessel-types-checkboxes::-webkit-scrollbar {
+    width: 8px;
+}
+
+.vessel-types-checkboxes::-webkit-scrollbar-track {
+    background: #e0f2f1;
     border-radius: 4px;
-    background: white;
+}
+
+.vessel-types-checkboxes::-webkit-scrollbar-thumb {
+    background: #26a69a;
+    border-radius: 4px;
+}
+
+.vessel-types-checkboxes::-webkit-scrollbar-thumb:hover {
+    background: #00796b;
 }
 
 .vessel-type-checkbox {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border: 2px solid transparent;
+    cursor: pointer;
 }
 
 .vessel-type-checkbox:hover {
-    background-color: #f1f3f4;
+    background: linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%);
+    border-color: #4caf50;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.15);
 }
 
 .vessel-type-checkbox input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
+    accent-color: #1abc9c;
+    cursor: pointer;
+    margin-top: 2px;
+}
+
+.vessel-type-checkbox input[type="checkbox"]:checked {
+    accent-color: #00695c;
 }
 
 .vessel-type-checkbox label {
     margin: 0;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: #2c3e50;
     flex: 1;
+    line-height: 1.4;
+}
+
+.vessel-type-checkbox label strong {
+    color: #00695c;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.vessel-type-checkbox label span {
+    color: #546e7a;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.vessel-type-checkbox:has(input[type="checkbox"]:checked) {
+    background: linear-gradient(135deg, #e0f2f1 0%, #c8e6c9 100%);
+    border-color: #00695c;
+    box-shadow: 0 4px 12px rgba(0, 105, 92, 0.2);
+}
+
+.vessel-type-checkbox:has(input[type="checkbox"]:checked) label strong {
+    color: #004d40;
+}
+
+.vessel-type-checkbox:has(input[type="checkbox"]:checked) label span {
+    color: #00695c;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+    .vessel-types-selection {
+        background: linear-gradient(135deg, #1e3a35 0%, #263238 100%);
+        border-color: #26a69a;
+        box-shadow: 0 4px 12px rgba(26, 166, 154, 0.2);
+    }
+
+    .vessel-types-selection .selection-header {
+        border-bottom-color: #37474f;
+    }
+
+    .vessel-types-selection .selection-header h5 {
+        color: #80cbc4;
+    }
+
+    .vessel-types-selection .selection-header p {
+        color: #a7c0cd;
+    }
+
+    .vessel-types-checkboxes {
+        background: linear-gradient(135deg, #263238 0%, #37474f 100%);
+        border-color: #455a64;
+    }
+
+    .vessel-types-checkboxes::-webkit-scrollbar-track {
+        background: #37474f;
+    }
+
+    .vessel-types-checkboxes::-webkit-scrollbar-thumb {
+        background: #80cbc4;
+    }
+
+    .vessel-types-checkboxes::-webkit-scrollbar-thumb:hover {
+        background: #26a69a;
+    }
+
+    .vessel-type-checkbox {
+        background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+        border-color: transparent;
+    }
+
+    .vessel-type-checkbox:hover {
+        background: linear-gradient(135deg, #455a64 0%, #546e7a 100%);
+        border-color: #80cbc4;
+        box-shadow: 0 4px 8px rgba(128, 203, 196, 0.2);
+    }
+
+    .vessel-type-checkbox input[type="checkbox"] {
+        accent-color: #80cbc4;
+    }
+
+    .vessel-type-checkbox label {
+        color: #eceff1;
+    }
+
+    .vessel-type-checkbox label strong {
+        color: #80cbc4;
+    }
+
+    .vessel-type-checkbox label span {
+        color: #b0bec5;
+    }
+
+    .vessel-type-checkbox:has(input[type="checkbox"]:checked) {
+        background: linear-gradient(135deg, #004d40 0%, #00695c 100%);
+        border-color: #80cbc4;
+        box-shadow: 0 4px 12px rgba(128, 203, 196, 0.3);
+    }
+
+    .vessel-type-checkbox:has(input[type="checkbox"]:checked) label strong {
+        color: #b2dfdb;
+    }
+
+    .vessel-type-checkbox:has(input[type="checkbox"]:checked) label span {
+        color: #80cbc4;
+    }
 }
 
 /* Dock details card */
@@ -282,5 +440,388 @@
     
     .dock-summary {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Get Dock by ID specific styles */
+.dock-details-card {
+    background: linear-gradient(135deg, #f8fffe 0%, #e8f8f5 100%);
+    border: 2px solid #1abc9c;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: 0 4px 12px rgba(26, 188, 156, 0.1);
+}
+
+.dock-header {
+    border-bottom: 2px solid #b2dfdb;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.dock-name {
+    color: #00695c;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dock-name::before {
+    content: "🏭";
+    font-size: 1.3rem;
+}
+
+.dock-id {
+    background: linear-gradient(135deg, #26a69a 0%, #00695c 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.dock-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 1.5rem;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-group label {
+    font-weight: 600;
+    color: #00695c;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.info-group span {
+    color: #2c3e50;
+    font-weight: 500;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+    border: 2px solid #b2dfdb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.info-group span:hover {
+    border-color: #80cbc4;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(26, 188, 156, 0.15);
+}
+
+.vessel-types-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.vessel-type-tag {
+    background: linear-gradient(135deg, #26a69a 0%, #00695c 100%) !important;
+    color: white !important;
+    padding: 8px 14px !important;
+    border-radius: 16px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(26, 166, 154, 0.3) !important;
+    transition: all 0.2s ease !important;
+    transform: none !important;
+}
+
+.vessel-type-tag:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(26, 166, 154, 0.4) !important;
+}
+
+.no-vessel-types {
+    color: #6c757d !important;
+    font-style: italic !important;
+    background: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+}
+
+/* Dark mode styles for dock details */
+@media (prefers-color-scheme: dark) {
+    .dock-details-card {
+        background: linear-gradient(135deg, #1e3a35 0%, #263238 100%);
+        border-color: #26a69a;
+    }
+
+    .dock-header {
+        border-bottom-color: #37474f;
+    }
+
+    .dock-name {
+        color: #80cbc4;
+    }
+
+    .info-group label {
+        color: #80cbc4;
+    }
+
+    .info-group span {
+        background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+        border-color: #546e7a;
+        color: #eceff1;
+    }
+
+    .info-group span:hover {
+        border-color: #80cbc4;
+    }
+
+    .no-vessel-types {
+        background: #37474f !important;
+        border-color: #546e7a !important;
+        color: #b0bec5 !important;
+    }
+}
+
+/* Delete Dock Form Styles */
+.delete-dock-info {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border: 2px solid #ff9800;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.delete-dock-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff9800, #f57c00, #ef6c00);
+}
+
+.delete-dock-info h6 {
+    margin: 0 0 16px 0;
+    color: #e65100;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delete-dock-info h6::before {
+    content: "⚠️";
+    font-size: 1rem;
+}
+
+.dock-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    border: 1px solid #ffcc02;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #ffe0b2;
+}
+
+.summary-item strong {
+    color: #e65100;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.summary-item:not(strong) {
+    color: #5d4037;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+/* Danger Zone Styling */
+.danger-zone {
+    background: linear-gradient(135deg, #fdf2f2 0%, #ffebee 100%);
+    border: 2px solid #e74c3c;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0 20px 0;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.danger-zone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #e74c3c, #c0392b, #a93226);
+}
+
+.danger-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f1948a;
+}
+
+.danger-header h6 {
+    margin: 0 0 8px 0;
+    color: #c0392b;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.danger-header p {
+    margin: 0;
+    color: #e74c3c;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.danger-input {
+    border: 2px solid #e74c3c !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: #2c3e50 !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+.danger-input:focus {
+    border-color: #c0392b !important;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2) !important;
+    transform: translateY(-1px) !important;
+}
+
+.danger-help {
+    color: #e74c3c !important;
+    font-weight: 500 !important;
+}
+
+.delete-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    border: 2px solid #e74c3c;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.delete-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    border-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
+}
+
+.delete-btn:disabled {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    border-color: #bdc3c7;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Dark mode styles for delete form */
+@media (prefers-color-scheme: dark) {
+    .delete-dock-info {
+        background: linear-gradient(135deg, #3e2723 0%, #5d4037 100%);
+        border-color: #ff9800;
+    }
+
+    .delete-dock-info h6 {
+        color: #ffb74d;
+    }
+
+    .dock-summary {
+        background: rgba(66, 66, 66, 0.7);
+        border-color: #ffb74d;
+    }
+
+    .summary-item {
+        background: #424242;
+        border-color: #5d4037;
+        color: #fff3e0;
+    }
+
+    .summary-item strong {
+        color: #ffb74d;
+    }
+
+    .danger-zone {
+        background: linear-gradient(135deg, #3e2723 0%, #424242 100%);
+        border-color: #f44336;
+    }
+
+    .danger-header {
+        border-bottom-color: #6d4c41;
+    }
+
+    .danger-header h6 {
+        color: #ff5722;
+    }
+
+    .danger-header p {
+        color: #ff8a65;
+    }
+
+    .danger-input {
+        background: rgba(66, 66, 66, 0.9) !important;
+        border-color: #f44336 !important;
+        color: #eceff1 !important;
+    }
+
+    .danger-input:focus {
+        border-color: #ff5722 !important;
+        box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.3) !important;
+    }
+
+    .danger-help {
+        color: #ff8a65 !important;
     }
 }
