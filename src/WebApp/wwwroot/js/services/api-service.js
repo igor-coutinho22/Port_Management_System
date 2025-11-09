@@ -12,24 +12,56 @@ class ApiService {
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
         
+        // Debug headers issue
+        console.log('🔍 Default headers:', this.defaultHeaders);
+        console.log('🔍 Options headers:', options.headers);
+        
         const config = {
-            headers: { ...this.defaultHeaders, ...options.headers },
+            headers: { ...this.defaultHeaders, ...(options.headers || {}) },
             ...options
         };
 
         // Add JSON body if data is provided
         if (options.data) {
             config.body = JSON.stringify(options.data);
+            // Ensure Content-Type is set for JSON data
+            if (!config.headers['Content-Type']) {
+                config.headers['Content-Type'] = 'application/json';
+            }
         }
 
         try {
             console.log(`API Request: ${config.method || 'GET'} ${url}`);
+            console.log('🔍 Request config:', config);
+            console.log('🔍 Request headers:', config.headers);
+            console.log('🔍 Request body:', config.body);
             
             const response = await fetch(url, config);
             
             // Handle different response types
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                // Try to get detailed error message from response body
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                
+                try {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        // Handle different error response formats
+                        errorMessage = errorData.message || errorData.error || errorData.title || errorMessage;
+                    } else {
+                        // Handle plain text error responses
+                        const errorText = await response.text();
+                        if (errorText && errorText.trim()) {
+                            errorMessage = errorText;
+                        }
+                    }
+                } catch (parseError) {
+                    // If we can't parse the error response, use the original message
+                    console.warn('Could not parse error response:', parseError);
+                }
+                
+                throw new Error(errorMessage);
             }
 
             // Return parsed JSON if response has content
@@ -65,8 +97,9 @@ class ApiService {
     // Specific API endpoints for Port Management
     
     // Resources API
-    async getResources() {
-        return this.get('/resources');
+    async getResources(queryParams = '') {
+        const url = queryParams ? `/resources?${queryParams}` : '/resources';
+        return this.get(url);
     }
 
     async getResourceById(id) {
@@ -95,15 +128,50 @@ class ApiService {
     }
 
     async createVessel(vesselData) {
-        return this.post('/vessels', vesselData);
+        // Extract vesselTypeName from the data to send as query parameter
+        const { vesselTypeName, ...bodyData } = vesselData;
+        
+        // Build the URL with query parameter
+        const params = new URLSearchParams();
+        if (vesselTypeName) {
+            params.append('vesselTypeName', vesselTypeName);
+        }
+        
+        const endpoint = `/vessels?${params.toString()}`;
+        return this.post(endpoint, bodyData);
     }
 
     async updateVessel(imo, vesselData) {
-        return this.put(`/vessels/${imo}`, vesselData);
+        // Extract vesselTypeName from the data to send as query parameter
+        const { vesselTypeName, ...bodyData } = vesselData;
+        
+        // Build the URL with query parameter
+        const params = new URLSearchParams();
+        if (vesselTypeName) {
+            params.append('vesselTypeName', vesselTypeName);
+        }
+        
+        const endpoint = `/vessels/${imo}?${params.toString()}`;
+        return this.put(endpoint, bodyData);
     }
 
     async deleteVessel(imo) {
         return this.delete(`/vessels/${imo}`);
+    }
+
+    async searchVessels(name = null, operatorName = null) {
+        const params = new URLSearchParams();
+        
+        if (name && name.trim()) {
+            params.append('name', name.trim());
+        }
+        
+        if (operatorName && operatorName.trim()) {
+            params.append('operatorName', operatorName.trim());
+        }
+        
+        const queryString = params.toString();
+        return this.get(`/vessels/searchByNameAndOperator${queryString ? '?' + queryString : ''}`);
     }
 
     // Docks API
@@ -147,8 +215,77 @@ class ApiService {
         return this.get('/vesselTypes');
     }
 
-    async getVesselTypeById(id) {
-        return this.get(`/vesselTypes/${id}`);
+    async getVesselTypeByName(name) {
+        return this.get(`/vesselTypes/GetByName/${name}`);
+    }
+
+    async createVesselType(vesselTypeData) {
+        return this.post('/vesselTypes', vesselTypeData);
+    }
+
+    async updateVesselType(currentName, vesselTypeData) {
+        return this.put(`/vesselTypes/${currentName}`, vesselTypeData);
+    }
+
+    async deleteVesselType(name) {
+        return this.delete(`/vesselTypes/${name}`);
+    }
+
+    async searchVesselTypes(name = null, description = null) {
+        const params = new URLSearchParams();
+        
+        if (name && name.trim()) {
+            params.append('name', name.trim());
+        }
+        
+        if (description && description.trim()) {
+            params.append('description', description.trim());
+        }
+        
+        if (!params.toString()) {
+            throw new Error('At least one search parameter (name or description) must be provided.');
+        }
+        
+        return this.get(`/vesselTypes/search?${params.toString()}`);
+    }
+
+    // Docks API
+    async getDocks() {
+        return this.get('/docks');
+    }
+
+    async getDockById(id) {
+        return this.get(`/docks/${id}`);
+    }
+
+    async createDock(dockData) {
+        return this.post('/docks', dockData);
+    }
+
+    async updateDock(id, dockData) {
+        return this.put(`/docks/${id}`, dockData);
+    }
+
+    async deleteDock(id) {
+        return this.delete(`/docks/${id}`);
+    }
+
+    async searchDocks(name = null, location = null, vesselTypeName = null) {
+        const params = new URLSearchParams();
+        
+        if (name && name.trim()) {
+            params.append('name', name.trim());
+        }
+        
+        if (location && location.trim()) {
+            params.append('location', location.trim());
+        }
+        
+        if (vesselTypeName && vesselTypeName.trim()) {
+            params.append('vesselTypeName', vesselTypeName.trim());
+        }
+        
+        return this.get(`/docks/search?${params.toString()}`);
     }
 
     // Representatives API

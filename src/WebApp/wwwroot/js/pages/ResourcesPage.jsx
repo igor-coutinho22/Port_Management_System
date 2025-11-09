@@ -1,5 +1,6 @@
 // Resources Page Component - React
 const ResourcesPage = () => {
+    const { t } = useTranslation();
     const [resources, setResources] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -17,7 +18,7 @@ const ResourcesPage = () => {
             setResources(data || []);
         } catch (err) {
             console.error('Error loading resources:', err);
-            setError('Error loading resources. Please check the API connection.');
+            setError(t('resources.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -28,7 +29,7 @@ const ResourcesPage = () => {
             const resource = await apiService.getResourceById(resourceId);
             
             // Handle qualificationRequirements HashSet properly
-            let qualifications = 'None';
+            let qualifications = t('resources.details.none');
             if (resource.qualificationRequirements && Array.isArray(resource.qualificationRequirements) && resource.qualificationRequirements.length > 0) {
                 qualifications = resource.qualificationRequirements
                     .map(q => q.name || q.code || q)
@@ -40,17 +41,17 @@ const ResourcesPage = () => {
                     .join(', ');
             }
             
-            alert(`Resource Details:\n\nID: ${resource.id || 'N/A'}\nDescription: ${resource.description || 'N/A'}\nType: ${resource.resourceType || 'N/A'}\nStatus: ${resource.status || 'N/A'}\nCapacity: ${resource.operationalCapacity || 'N/A'}\nSetup Time: ${resource.setupTime || 'N/A'} minutes\nQualification Requirements: ${qualifications}`);
+            alert(`${t('resources.details.title')}:\n\n${t('resources.details.id')}: ${resource.id || 'N/A'}\n${t('resources.details.description')}: ${resource.description || 'N/A'}\n${t('resources.details.type')}: ${resource.resourceType || 'N/A'}\n${t('resources.details.status')}: ${resource.status || 'N/A'}\n${t('resources.details.capacity')}: ${resource.operationalCapacity || 'N/A'}\n${t('resources.details.setup_time')}: ${resource.setupTime || 'N/A'} ${t('resources.details.minutes')}\n${t('resources.details.qualifications')}: ${qualifications}`);
         } catch (error) {
-            alert('Error loading resource details: ' + error.message);
+            alert(t('common.error') + ': ' + error.message);
         }
     };
 
     if (loading) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Port Resources</h2>
-                <div className="loading-indicator">Loading resources...</div>
+                <h2 className="page-title">{t('resources.title')}</h2>
+                <div className="loading-indicator">{t('common.loading')}</div>
             </div>
         );
     }
@@ -58,34 +59,34 @@ const ResourcesPage = () => {
     if (error) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Port Resources</h2>
+                <h2 className="page-title">{t('resources.title')}</h2>
                 <p className="error">{error}</p>
-                <button className="btn" onClick={loadResources}>Retry</button>
+                <button className="btn" onClick={loadResources}>{t('common.retry')}</button>
             </div>
         );
     }
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Port Resources</h2>
-            <p>View and manage port resources including cranes, equipment, and facilities.</p>
+            <h2 className="page-title">{t('resources.title')}</h2>
+            <p>{t('resources.description')}</p>
             
             {resources.length === 0 ? (
                 <div className="no-data">
-                    <h3>No Resources Found</h3>
-                    <p>There are currently no resources in the system.</p>
+                    <h3>{t('resources.no_data')}</h3>
+                    <p>{t('resources.no_data_desc')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Description</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>Capacity</th>
-                                <th>Actions</th>
+                                <th>{t('resources.columns.code')}</th>
+                                <th>{t('resources.columns.name')}</th>
+                                <th>{t('resources.columns.type')}</th>
+                                <th>{t('resources.columns.status')}</th>
+                                <th>{t('resources.columns.capacity')}</th>
+                                <th>{t('resources.columns.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -105,7 +106,7 @@ const ResourcesPage = () => {
                                             className="btn-small"
                                             onClick={() => handleViewDetails(resource.id)}
                                         >
-                                            View Details
+                                            {t('resources.view_details')}
                                         </button>
                                     </td>
                                 </tr>

@@ -4,18 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Port Management System</title>
-    <link rel="stylesheet" href="css/site.css">
     <link rel="stylesheet" href="css/spa.css">
         <!-- Styles -->
-    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/react-components.css?v=2">
-    <link rel="stylesheet" href="css/modal.css?v=3">
     <link rel="stylesheet" href="css/breadcrumb.css?v=1">
     <link rel="stylesheet" href="css/management-sidebar.css?v=1">
     <link rel="stylesheet" href="css/user-role-switcher.css?v=1">
     <link rel="stylesheet" href="css/footer.css?v=1">
-    <link rel="stylesheet" href="css/hamburger-menu.css?v=1">
+    <link rel="stylesheet" href="css/side-menu.css?v=1">
     <link rel="stylesheet" href="css/language-switcher.css?v=1">
+    <link rel="stylesheet" href="css/vessels/vessels-hub.css?v=1">
+    <link rel="stylesheet" href="css/form-components.css?v=1">
+    <link rel="stylesheet" href="css/vessels/vessel-components.css?v=1">
+    <link rel="stylesheet" href="css/resources/resources-hub.css?v=1">
+    <link rel="stylesheet" href="css/resources/resource-components.css?v=1">
+    <link rel="stylesheet" href="css/vessel-types/vessel-types-hub.css?v=1">
+    <link rel="stylesheet" href="css/vessel-types/vessel-type-components.css?v=1">
+    <link rel="stylesheet" href="css/docks/docks-components.css?v=1">
+    <link rel="stylesheet" href="css/docks/docks-hub.css?v=1">
     
     <!-- React CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -45,11 +51,39 @@
     
     <!-- React Components (Reusable UI Components) -->
     <script type="text/babel" src="js/components/Navigation.jsx?v=5"></script>
-    <script type="text/babel" src="js/components/Modal.jsx?v=3"></script>
     <script type="text/babel" src="js/components/Breadcrumb.jsx?v=1"></script>
     <script type="text/babel" src="js/components/ManagementSidebar.jsx?v=2"></script>
     <script type="text/babel" src="js/components/UserRoleSwitcher.jsx?v=2"></script>
     
+    <!-- Form Components -->
+    <!-- Vessels -->
+    <script type="text/babel" src="js/components/forms/vessels/RegisterVesselForm.jsx?v=1"></script>
+    <script type="text/babel" src="js/components/forms/vessels/SearchVesselsForm.jsx?v=1"></script>
+    <script type="text/babel" src="js/components/forms/vessels/GetVesselByImoForm.jsx?v=1"></script>
+    <script type="text/babel" src="js/components/forms/vessels/EditVesselForm.jsx?v=1"></script>
+    <script type="text/babel" src="js/components/forms/vessels/DeleteVesselForm.jsx?v=1"></script>
+    
+    <!-- Resources -->
+    <script type="text/babel" src="js/components/forms/resources/RegisterResourceForm.jsx?v=1"></script>
+    <script type="text/babel" src="js/components/forms/resources/SearchResourceForm.jsx?v=1"></script>
+    <script type="text/babel" src="js/components/forms/resources/EditResourceForm.jsx?v=1"></script>
+    <script type="text/babel" src="js/components/forms/resources/DeleteResourceForm.jsx?v=1"></script>
+    <script type="text/babel" src="js/components/forms/resources/ResourceStatusForm.jsx?v=1"></script>
+
+    <!-- Vessel Types -->
+    <script type ="text/babel" src="js/components/forms/vesselTypes/RegisterVesselTypeForm.jsx?v=1"></script>
+    <script type ="text/babel" src="js/components/forms/vesselTypes/SearchVesselTypesForm.jsx?v=1"></script>
+    <script type ="text/babel" src="js/components/forms/vesselTypes/GetVesselTypeByNameForm.jsx?v=1"></script>
+    <script type ="text/babel" src="js/components/forms/vesselTypes/EditVesselTypeForm.jsx?v=1"></script>
+    <script type ="text/babel" src="js/components/forms/vesselTypes/DeleteVesselTypeForm.jsx?v=1"></script>
+
+    <!-- Docks -->
+    <script type ="text/babel" src="js/components/forms/docks/RegisterDockForm.jsx?v=1"></script>
+    <script type ="text/babel" src="js/components/forms/docks/SearchDocksForm.jsx?v=1"></script>
+    <script type ="text/babel" src="js/components/forms/docks/GetDockByIdForm.jsx?v=1"></script>
+    <script type ="text/babel" src="js/components/forms/docks/EditDockForm.jsx?v=1"></script>
+    <script type ="text/babel" src="js/components/forms/docks/DeleteDockForm.jsx?v=1"></script>
+
     <!-- Internationalization -->
     <script src="js/translations/translations.js?v=1"></script>
     <script type="text/babel" src="js/contexts/I18nContext.jsx?v=1"></script>
@@ -60,10 +94,10 @@
     <!-- React Pages (Route-specific Components) -->
     <script type="text/babel" src="js/pages/HomePage.jsx?v=2"></script>
     <script type="text/babel" src="js/pages/ManagementPage.jsx?v=7"></script>
-    <script type="text/babel" src="js/pages/ResourcesPage.jsx"></script>
-    <script type="text/babel" src="js/pages/VesselsPage.jsx"></script>
-    <script type="text/babel" src="js/pages/VesselTypesPage.jsx?v=2"></script>
-    <script type="text/babel" src="js/pages/DocksPage.jsx?v=2"></script>
+    <script type="text/babel" src="js/pages/VesselsHubPage.jsx?v=1"></script>
+    <script type="text/babel" src="js/pages/ResourcesHubPage.jsx?v=1"></script>
+    <script type="text/babel" src="js/pages/VesselTypesHubPage.jsx?v=2"></script>
+    <script type="text/babel" src="js/pages/DocksHubPage.jsx?v=1"></script>
     <script type="text/babel" src="js/pages/StorageAreasPage.jsx?v=2"></script>
     <script type="text/babel" src="js/pages/OrganizationsPage.jsx?v=2"></script>
     <script type="text/babel" src="js/pages/RepresentativesPage.jsx?v=2"></script>

@@ -1,0 +1,121 @@
+/* Docks Hub Page Styles */
+.docks-hub {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.docks-quick-table .table-container {
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.docks-quick-table .table-header {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    padding: 15px 20px;
+    border-bottom: 3px solid #1abc9c;
+}
+
+.docks-quick-table .table-header h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.docks-quick-table .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.docks-quick-table .data-table th {
+    background: #f8f9fa;
+    color: #2c3e50;
+    font-weight: 600;
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid #e9ecef;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.docks-quick-table .data-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: top;
+}
+
+.docks-quick-table .data-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.docks-quick-table .data-table .numeric {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.docks-quick-table .vessel-types-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-width: 300px;
+}
+
+.docks-quick-table .vessel-type-tag {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border: 1px solid #bbdefb;
+}
+
+.docks-quick-table .no-types {
+    color: #757575;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+.docks-quick-table .no-data {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    color: #6c757d;
+}
+
+.docks-quick-table .no-data p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* Responsive design for docks table */
+@media (max-width: 768px) {
+    .docks-quick-table .data-table {
+        font-size: 0.8rem;
+    }
+    
+    .docks-quick-table .data-table th,
+    .docks-quick-table .data-table td {
+        padding: 8px 10px;
+    }
+    
+    .docks-quick-table .vessel-types-list {
+        max-width: 200px;
+    }
+    
+    .docks-quick-table .vessel-type-tag {
+        font-size: 0.7rem;
+        padding: 3px 6px;
+    }
+}

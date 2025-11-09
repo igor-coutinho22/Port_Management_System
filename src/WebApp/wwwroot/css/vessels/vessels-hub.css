@@ -1,0 +1,291 @@
+/* Vessels Hub Page - Swagger-style Interface */
+
+/* Hub Header */
+.hub-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.hub-header h2 {
+    color: var(--text-accent);
+    margin-bottom: 0.5rem;
+}
+
+/* Quick View Section */
+.quick-view-container {
+    margin-bottom: 2rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border-color);
+}
+
+.quick-view-btn {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.quick-view-btn:hover {
+    background: var(--nav-hover);
+    transform: translateY(-1px);
+}
+
+.quick-view-btn.active {
+    background: var(--text-accent);
+    color: white;
+}
+
+.quick-view-icon {
+    font-size: 1.3rem;
+    margin-right: 0.5rem;
+}
+
+.quick-view-arrow {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.quick-view-arrow.up {
+    transform: rotate(180deg);
+}
+
+.quick-view-panel {
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    animation: slideDown 0.3s ease;
+}
+
+/* Operations Container - Swagger Style */
+.operations-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.operation-section {
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.operation-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--shadow);
+}
+
+.operation-header {
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--text-accent);
+    transition: all 0.3s ease;
+}
+
+.operation-header:hover {
+    background: var(--nav-hover);
+}
+
+.operation-header.expanded {
+    background: var(--text-accent);
+    color: white;
+}
+
+.operation-header.expanded .operation-description {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.operation-info {
+    flex: 1;
+}
+
+.operation-title {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.operation-description {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.operation-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.http-method {
+    padding: 0.25rem 0.75rem;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.expand-arrow {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.expand-arrow.up {
+    transform: rotate(180deg);
+}
+
+.operation-content {
+    animation: slideDown 0.3s ease;
+    border-top: 1px solid var(--border-color);
+}
+
+.operation-body {
+    padding: 1.5rem;
+    background: var(--card-bg);
+}
+
+/* Quick Table Styles */
+.quick-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.quick-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.quick-table-header h4 {
+    margin: 0;
+    color: var(--text-accent);
+    font-size: 1.1rem;
+}
+
+.refresh-btn {
+    padding: 0.5rem 1rem;
+    background: var(--text-accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.quick-table {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.quick-table th {
+    background: var(--bg-secondary);
+    padding: 0.75rem;
+    font-size: 0.85rem;
+}
+
+.quick-table td {
+    padding: 0.75rem;
+}
+
+/* Loading States */
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .operation-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .operation-controls {
+        align-self: flex-end;
+    }
+    
+    .quick-view-btn {
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .operation-body {
+        padding: 1rem;
+    }
+    
+    .quick-table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .refresh-btn {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .hub-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .operation-title {
+        font-size: 1rem;
+    }
+    
+    .operation-description {
+        font-size: 0.85rem;
+    }
+    
+    .http-method {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+    }
+}

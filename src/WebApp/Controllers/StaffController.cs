@@ -94,9 +94,7 @@ namespace PortApi.Controllers
             var qualification = new Qualification(dto.Code, dto.Name);
             await _staffService.AddQualificationToStaffAsync(
                 mecNumber,
-                qualification,
-                dto.DateObtained,
-                dto.ExpiryDate
+                qualification
             );
             return NoContent();
         }

@@ -2,30 +2,36 @@
 const HomePage = () => {
     const features = [
         {
-            title: '⚙️ Management',
-            description: 'Access all port management modules including vessels, docks, staff, and resources.',
+            titleKey: 'home.feature.management.title',
+            descKey: 'home.feature.management.desc',
             route: 'management'
         },
         {
-            title: '🏗️ 3D Port Visualization', 
-            description: 'Interactive 3D view of the port infrastructure and operations.',
+            titleKey: 'home.feature.3d_view.title',
+            descKey: 'home.feature.3d_view.desc',
             route: '3d-view'
         },
         {
-            title: '📚 API Documentation',
-            description: 'Explore the complete API documentation and endpoints.',
+            titleKey: 'home.feature.api_docs.title',
+            descKey: 'home.feature.api_docs.desc',
             route: 'api-docs'
-        }
-    ];
+        }];
+    const { t } = useTranslation();
+    
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Welcome to Port Management System</h2>
-            <p>This is a comprehensive port management system for handling vessels, docks, storage areas, and resources.</p>
-            
+            <h2 className="page-title">{t('home.welcome_message')}</h2>
+            <p>{t('home.description')}</p>
+
             <div className="feature-grid">
                 {features.map((feature, index) => (
-                    <FeatureCard key={index} {...feature} />
+                    <FeatureCard 
+                        key={index} 
+                        titleKey={feature.titleKey}
+                        descKey={feature.descKey}
+                        route={feature.route}
+                    />
                 ))}
             </div>
         </div>
@@ -33,15 +39,17 @@ const HomePage = () => {
 };
 
 // Feature Card Sub-component
-const FeatureCard = ({ title, description, route }) => {
+const FeatureCard = ({ titleKey, descKey, route }) => {
+    const { t } = useTranslation();
+    
     return (
         <div 
             className="feature-card"
             onClick={() => window.app.navigate(route)}
             style={{ cursor: 'pointer' }}
         >
-            <h3>{title}</h3>
-            <p>{description}</p>
+            <h3>{t(titleKey)}</h3>
+            <p>{t(descKey)}</p>
         </div>
     );
 };

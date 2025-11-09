@@ -1,87 +1,3 @@
-import { createRoot } from "react-dom/client";
-import { PublicClientApplication } from "@azure/msal-browser";
-import { MsalProvider } from "@azure/msal-react";
-import { msalConfig } from "./msalConfig";
-
-// Main React Application
-const App = () => {
-    const [currentPage, setCurrentPage] = React.useState('home');
-
-    // Handle navigation
-    const handleNavigate = (page) => {
-        setCurrentPage(page);
-        // Update URL without page refresh
-        window.history.pushState({ page }, '', `#${page}`);
-    };
-
-    // Handle browser back/forward buttons
-    React.useEffect(() => {
-        const handlePopState = () => {
-            const hash = window.location.hash.slice(1);
-            const page = hash || 'home';
-            setCurrentPage(page);
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        
-        // Handle initial route
-        handlePopState();
-
-        return () => {
-            window.removeEventListener('popstate', handlePopState);
-        };
-    }, []);
-
-    // Render current page component
-    const renderCurrentPage = () => {
-        console.log('Rendering page:', currentPage);
-        
-        switch (currentPage) {
-            case 'home':
-                return <HomePage />;
-            case 'management':
-                console.log('Loading Management page...');
-                console.log('ManagementPage type:', typeof ManagementPage);
-                console.log('Available components:', Object.keys(window).filter(key => key.includes('Page')));
-                if (typeof ManagementPage === 'undefined') {
-                    console.error('ManagementPage component not loaded!');
-                    return (
-                        <div className="page-section">
-                            <h2 className="page-title">Management (Loading Error)</h2>
-                            <p className="error">ManagementPage component not found. Check browser console for details.</p>
-                            <p><strong>Debug Info:</strong> Component type is {typeof ManagementPage}</p>
-                        </div>
-                    );
-                }
-                return <ManagementPage />;
-            case 'resources':
-                return <ResourcesPage />;
-            case 'vessels':
-                return <VesselsPage />;
-            case '3d-view':
-                return <ThreeDView />;
-            case 'api-docs':
-                return <ApiDocsPage />;
-            default:
-                console.log('Unknown page, defaulting to home');
-                return <HomePage />;
-        }
-    };
-
-    return (
-        <div id="app">
-            <Navigation 
-                currentPage={currentPage} 
-                onNavigate={handleNavigate} 
-            />
-            
-            <main className="main-content">
-                {renderCurrentPage()}
-            </main>
-        </div>
-    );
-};
-
 // Global reference for navigation from legacy components
 window.app = {
     navigate: (page) => {
@@ -195,21 +111,29 @@ const AppWithGlobalNav = () => {
                 }
                 return <ManagementPage />;
             case 'resources':
-                return <ResourcesPage />;
+                console.log('Loading ResourcesHubPage, type:', typeof ResourcesHubPage);
+                if (typeof ResourcesHubPage === 'undefined') {
+                    return <div className="error">ResourcesHubPage component not loaded</div>;
+                }
+                return <ResourcesHubPage />;
             case 'vessels':
-                return <VesselsPage />;
+                console.log('Loading VesselsHubPage, type:', typeof VesselsHubPage);
+                if (typeof VesselsHubPage === 'undefined') {
+                    return <div className="error">VesselsHubPage component not loaded</div>;
+                }
+                return <VesselsHubPage />;
             case 'vessel-types':
-                console.log('Loading VesselTypesPage, type:', typeof VesselTypesPage);
-                if (typeof VesselTypesPage === 'undefined') {
-                    return <div className="error">VesselTypesPage component not loaded</div>;
+                console.log('Loading VesselTypesHubPage, type:', typeof VesselTypesHubPage);
+                if (typeof VesselTypesHubPage === 'undefined') {
+                    return <div className="error">VesselTypesHubPage component not loaded</div>;
                 }
-                return <VesselTypesPage />;
+                return <VesselTypesHubPage />;
             case 'docks':
-                console.log('Loading DocksPage, type:', typeof DocksPage);
-                if (typeof DocksPage === 'undefined') {
-                    return <div className="error">DocksPage component not loaded</div>;
+                console.log('Loading DocksHubPage, type:', typeof DocksHubPage);
+                if (typeof DocksHubPage === 'undefined') {
+                    return <div className="error">DocksHubPage component not loaded</div>;
                 }
-                return <DocksPage />;
+                return <DocksHubPage />;
             case 'storage-areas':
                 console.log('Loading StorageAreasPage, type:', typeof StorageAreasPage);
                 if (typeof StorageAreasPage === 'undefined') {

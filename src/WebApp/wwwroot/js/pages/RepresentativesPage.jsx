@@ -1,5 +1,6 @@
 // Representatives Page Component - React
 const RepresentativesPage = () => {
+    const { t } = useTranslation();
     const [representatives, setRepresentatives] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
@@ -17,7 +18,7 @@ const RepresentativesPage = () => {
             setRepresentatives(data || []);
         } catch (err) {
             console.error('Error loading representatives:', err);
-            setError('Error loading representatives. Please check the API connection.');
+            setError(t('representatives.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -27,20 +28,21 @@ const RepresentativesPage = () => {
         try {
             const representative = representatives.find(r => r.id === representativeId);
             if (representative) {
-                alert(`Representative Details:\n\nID: ${representative.id}\nName: ${representative.name}\nCitizen ID: ${representative.citizenId}\nNationality: ${representative.nationality}\nEmail: ${representative.email}\nPhone: ${representative.phone}\nOrganization ID: ${representative.organizationId}\nStatus: ${representative.isActive ? 'Active' : 'Inactive'}`);
+                const status = representative.isActive ? t('representatives.details.active') : t('representatives.details.inactive');
+                alert(`${t('representatives.details.title')}:\n\n${t('representatives.details.id')}: ${representative.id}\n${t('representatives.details.name')}: ${representative.name}\n${t('representatives.details.citizen_id')}: ${representative.citizenId}\n${t('representatives.details.nationality')}: ${representative.nationality}\n${t('representatives.details.email')}: ${representative.email}\n${t('representatives.details.phone')}: ${representative.phone}\n${t('representatives.details.organization_id')}: ${representative.organizationId}\n${t('representatives.details.status')}: ${status}`);
             } else {
-                alert('Representative not found');
+                alert(t('representatives.details.not_found'));
             }
         } catch (error) {
-            alert('Error loading representative details: ' + error.message);
+            alert(t('representatives.details.error') + ': ' + error.message);
         }
     };
 
     if (loading) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Representatives</h2>
-                <div className="loading-indicator">Loading representatives...</div>
+                <h2 className="page-title">{t('representatives.title')}</h2>
+                <div className="loading-indicator">{t('representatives.loading')}</div>
             </div>
         );
     }
@@ -48,36 +50,36 @@ const RepresentativesPage = () => {
     if (error) {
         return (
             <div className="page-section">
-                <h2 className="page-title">Representatives</h2>
+                <h2 className="page-title">{t('representatives.title')}</h2>
                 <p className="error">{error}</p>
-                <button className="btn" onClick={loadRepresentatives}>Retry</button>
+                <button className="btn" onClick={loadRepresentatives}>{t('representatives.retry')}</button>
             </div>
         );
     }
 
     return (
         <div className="page-section">
-            <h2 className="page-title">Representatives</h2>
-            <p>View and manage organization representatives and their contact information.</p>
+            <h2 className="page-title">{t('representatives.title')}</h2>
+            <p>{t('representatives.description')}</p>
             
             {representatives.length === 0 ? (
                 <div className="no-data">
-                    <h3>No Representatives Found</h3>
-                    <p>There are currently no representatives registered in the system.</p>
+                    <h3>{t('representatives.no_data.title')}</h3>
+                    <p>{t('representatives.no_data.message')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Citizen ID</th>
-                                <th>Nationality</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>{t('representatives.columns.id')}</th>
+                                <th>{t('representatives.columns.name')}</th>
+                                <th>{t('representatives.columns.citizen_id')}</th>
+                                <th>{t('representatives.columns.nationality')}</th>
+                                <th>{t('representatives.columns.email')}</th>
+                                <th>{t('representatives.columns.phone')}</th>
+                                <th>{t('representatives.columns.status')}</th>
+                                <th>{t('representatives.columns.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -91,7 +93,7 @@ const RepresentativesPage = () => {
                                     <td>{representative.phone || 'N/A'}</td>
                                     <td>
                                         <span className={`status-badge status-${representative.isActive ? 'active' : 'inactive'}`}>
-                                            {representative.isActive ? 'Active' : 'Inactive'}
+                                            {representative.isActive ? t('representatives.columns.active') : t('representatives.columns.inactive')}
                                         </span>
                                     </td>
                                     <td>
@@ -99,7 +101,7 @@ const RepresentativesPage = () => {
                                             className="btn-small"
                                             onClick={() => handleViewDetails(representative.id)}
                                         >
-                                            View Details
+                                            {t('representatives.view_details')}
                                         </button>
                                     </td>
                                 </tr>
