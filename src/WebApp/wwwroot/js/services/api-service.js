@@ -249,6 +249,45 @@ class ApiService {
         return this.get(`/vesselTypes/search?${params.toString()}`);
     }
 
+    // Docks API
+    async getDocks() {
+        return this.get('/docks');
+    }
+
+    async getDockById(id) {
+        return this.get(`/docks/${id}`);
+    }
+
+    async createDock(dockData) {
+        return this.post('/docks', dockData);
+    }
+
+    async updateDock(id, dockData) {
+        return this.put(`/docks/${id}`, dockData);
+    }
+
+    async deleteDock(id) {
+        return this.delete(`/docks/${id}`);
+    }
+
+    async searchDocks(name = null, location = null, vesselTypeName = null) {
+        const params = new URLSearchParams();
+        
+        if (name && name.trim()) {
+            params.append('name', name.trim());
+        }
+        
+        if (location && location.trim()) {
+            params.append('location', location.trim());
+        }
+        
+        if (vesselTypeName && vesselTypeName.trim()) {
+            params.append('vesselTypeName', vesselTypeName.trim());
+        }
+        
+        return this.get(`/docks/search?${params.toString()}`);
+    }
+
     // Representatives API
     async getRepresentatives() {
         return this.get('/representatives');
