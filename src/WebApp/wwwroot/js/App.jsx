@@ -1,3 +1,8 @@
+import { createRoot } from "react-dom/client";
+import { PublicClientApplication } from "@azure/msal-browser";
+import { MsalProvider } from "@azure/msal-react";
+import { msalConfig } from "./msalConfig";
+
 // Main React Application
 const App = () => {
     const [currentPage, setCurrentPage] = React.useState('home');
@@ -87,8 +92,14 @@ window.app = {
     }
 };
 
+const pca = new PublicClientApplication(msalConfig);
+
 // Render the React app
-const root = ReactDOM.createRoot(document.getElementById('root'));
+createRoot(document.getElementById("root")).render(
+  <MsalProvider instance={pca}>
+    <App />
+  </MsalProvider>
+);
 
 // Enhanced App with global navigation
 const AppWithGlobalNav = () => {
@@ -285,4 +296,4 @@ root.render(
     </I18nProvider>
 );
 
-console.log('✅ React SPA initialized successfully!');
+console.log('React SPA initialized successfully!');

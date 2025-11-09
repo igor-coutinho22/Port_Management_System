@@ -4,9 +4,11 @@ using WebApp.Models.Application.Mappers;
 using WebApp.Models.Domain.Staff;
 using WebApp.Models.Domain.Staff.Interfaces;
 using WebApp.Models.Domain.Qualifications;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PortApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class StaffController : ControllerBase
