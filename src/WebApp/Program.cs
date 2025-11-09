@@ -23,6 +23,7 @@ using WebApp.Models.Infrastructure.Repositories.StaffRepository;
 using WebApp.Models.Application.Services.StaffService;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
+using WebApp.Models.Application.Services.Scheduling;
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
@@ -49,7 +50,6 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 
 builder.Logging.AddConsole();
 
-
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
@@ -65,17 +65,15 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("Manager", "Admin"));
 });
 
-
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>
 {
     // Use enum names instead of numbers
-    // Aldo accepts lower case
+    // Also accepts lower case
     options.JsonSerializerOptions.Converters.Add(
-    new System.Text.Json.Serialization.JsonStringEnumConverter(
-        System.Text.Json.JsonNamingPolicy.CamelCase
-    ));
-
-});;
+        new System.Text.Json.Serialization.JsonStringEnumConverter(
+            System.Text.Json.JsonNamingPolicy.CamelCase
+        ));
+});
 builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -100,6 +98,7 @@ builder.Services.AddScoped<IDockRepository, DockRepository>();
 builder.Services.AddScoped<IDockService, DockService>();
 builder.Services.AddScoped<IVesselVisitNotificationRepository, VesselVisitNotificationRepository>();
 builder.Services.AddScoped<IVesselVisitNotificationService, VesselVisitNotificationService>();
+builder.Services.AddScoped<IHeuristicScheduleService, HeuristicScheduleService>();
 
 var app = builder.Build();
 
@@ -111,7 +110,6 @@ using (var scope = app.Services.CreateScope())
         var db = services.GetRequiredService<PortManagementContext>();
         if (db.Database.IsRelational())
             db.Database.Migrate();
-        
         // TEMPORARILY COMMENTED OUT FOR SPA TESTING - FIX BOOTSTRAP LATER
         await DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
         await DataSeeder.SeedDomainDataAsync(services);
@@ -162,6 +160,5 @@ app.MapFallback(async context =>
 });
 
 app.Run();
-
 
 public partial class Program { }
