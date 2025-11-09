@@ -117,11 +117,11 @@ const AppWithGlobalNav = () => {
                 }
                 return <VesselsHubPage />;
             case 'vessel-types':
-                console.log('Loading VesselTypesPage, type:', typeof VesselTypesPage);
-                if (typeof VesselTypesPage === 'undefined') {
-                    return <div className="error">VesselTypesPage component not loaded</div>;
+                console.log('Loading VesselTypesHubPage, type:', typeof VesselTypesHubPage);
+                if (typeof VesselTypesHubPage === 'undefined') {
+                    return <div className="error">VesselTypesHubPage component not loaded</div>;
                 }
-                return <VesselTypesPage />;
+                return <VesselTypesHubPage />;
             case 'docks':
                 console.log('Loading DocksPage, type:', typeof DocksPage);
                 if (typeof DocksPage === 'undefined') {

@@ -215,8 +215,38 @@ class ApiService {
         return this.get('/vesselTypes');
     }
 
-    async getVesselTypeById(id) {
-        return this.get(`/vesselTypes/${id}`);
+    async getVesselTypeByName(name) {
+        return this.get(`/vesselTypes/GetByName/${name}`);
+    }
+
+    async createVesselType(vesselTypeData) {
+        return this.post('/vesselTypes', vesselTypeData);
+    }
+
+    async updateVesselType(currentName, vesselTypeData) {
+        return this.put(`/vesselTypes/${currentName}`, vesselTypeData);
+    }
+
+    async deleteVesselType(name) {
+        return this.delete(`/vesselTypes/${name}`);
+    }
+
+    async searchVesselTypes(name = null, description = null) {
+        const params = new URLSearchParams();
+        
+        if (name && name.trim()) {
+            params.append('name', name.trim());
+        }
+        
+        if (description && description.trim()) {
+            params.append('description', description.trim());
+        }
+        
+        if (!params.toString()) {
+            throw new Error('At least one search parameter (name or description) must be provided.');
+        }
+        
+        return this.get(`/vesselTypes/search?${params.toString()}`);
     }
 
     // Representatives API

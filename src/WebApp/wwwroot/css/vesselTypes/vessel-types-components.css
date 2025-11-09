@@ -1,0 +1,445 @@
+/* Vessel Type-Specific Form Components */
+
+/* Vessel Type Form Layout */
+.vessel-type-form,
+.search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.delete-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Vessel Type Details Card for GetByName Results */
+.vessel-type-details-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.vessel-type-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.vessel-type-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-accent);
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+}
+
+.vessel-type-badge {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.vessel-type-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-group label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-group span {
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Description field specific styling */
+.description-field {
+    max-width: 100%;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
+.vessel-type-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Edit and Delete Form Specific Styles */
+.form-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem 0 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(100, 181, 246, 0.15);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.form-section-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--text-accent), #64b5f6);
+    z-index: -1;
+}
+
+.form-section-header h5 {
+    margin: 0;
+    color: var(--text-accent);
+    font-size: 1.1rem;
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: var(--text-accent);
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.link-btn:hover {
+    background: var(--bg-secondary);
+    text-decoration: none;
+}
+
+/* Delete Form Specific Styles with Scoped Theme Variables */
+.delete-vessel-type-info {
+    /* Light theme warning colors */
+    --warning-bg-local: #fef7f0;
+    --warning-border-local: #f39c12;
+    --warning-text-local: #d35400;
+    
+    background: var(--warning-bg-local);
+    border: 2px solid var(--warning-border-local);
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 2rem 0 1.5rem 0;
+    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.15);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.delete-vessel-type-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--warning-border-local), #e67e22);
+    z-index: -1;
+}
+
+.delete-vessel-type-info h6 {
+    margin: 0 0 0.75rem 0;
+    color: var(--warning-text-local);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.vessel-type-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.summary-item {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.summary-item strong {
+    color: var(--text-accent);
+}
+
+/* Capacity summary styling */
+.capacity-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.capacity-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.capacity-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.capacity-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-accent);
+}
+
+/* Danger Zone Styling with Scoped Variables */
+.danger-zone {
+    /* Light theme danger colors */
+    --danger-bg-local: #fdf2f2;
+    --danger-border-local: #e74c3c;
+    --danger-text-local: #e74c3c;
+    --danger-text-strong-local: #c0392b;
+    
+    background: var(--danger-bg-local);
+    border: 2px solid var(--danger-border-local);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0 1.5rem 0;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.danger-zone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--danger-border-local), #c0392b, #e74c3c);
+    z-index: -1;
+}
+
+.danger-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--danger-border-local);
+}
+
+.danger-header h6 {
+    margin: 0 0 0.5rem 0;
+    color: var(--danger-text-strong-local);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.danger-header p {
+    margin: 0;
+    color: var(--danger-text-local);
+    font-size: 0.9rem;
+}
+
+.danger-input {
+    border-color: var(--danger-border-local) !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.danger-input:focus {
+    border-color: var(--danger-text-strong-local) !important;
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2) !important;
+}
+
+.danger-help {
+    color: var(--danger-text-local) !important;
+}
+
+.delete-btn {
+    background: var(--danger-border-local);
+    color: white;
+    border: 2px solid var(--danger-border-local);
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.delete-btn:hover:not(:disabled) {
+    background: var(--danger-text-strong-local);
+    border-color: var(--danger-text-strong-local);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.delete-btn:disabled {
+    background: var(--text-secondary);
+    border-color: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Dark Theme Overrides - Scoped to Delete Form Only */
+html[data-theme="dark"] .delete-vessel-type-info,
+body.dark-theme .delete-vessel-type-info {
+    --warning-bg-local: rgba(25, 20, 15, 0.8);
+    --warning-border-local: #ffa726;
+    --warning-text-local: #ffe0b2;
+    box-shadow: 0 2px 8px rgba(255, 167, 38, 0.25);
+}
+
+html[data-theme="dark"] .delete-vessel-type-info::before,
+body.dark-theme .delete-vessel-type-info::before {
+    background: linear-gradient(90deg, #ffa726, #ff9800);
+}
+
+html[data-theme="dark"] .danger-zone,
+body.dark-theme .danger-zone {
+    --danger-bg-local: rgba(20, 20, 30, 0.8);
+    --danger-border-local: #ff6b6b;
+    --danger-text-local: #ff8a80;
+    --danger-text-strong-local: #ffcdd2;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.25);
+}
+
+html[data-theme="dark"] .danger-zone::before,
+body.dark-theme .danger-zone::before {
+    background: linear-gradient(90deg, #ff6b6b, #ff5252, #ff8a80);
+}
+
+html[data-theme="dark"] .form-section-header,
+body.dark-theme .form-section-header {
+    box-shadow: 0 2px 8px rgba(100, 181, 246, 0.25);
+}
+
+html[data-theme="dark"] .form-section-header::before,
+body.dark-theme .form-section-header::before {
+    background: linear-gradient(90deg, #64b5f6, #42a5f5);
+}
+
+html[data-theme="dark"] .delete-btn,
+body.dark-theme .delete-btn {
+    box-shadow: 0 2px 4px rgba(255, 107, 107, 0.2);
+}
+
+html[data-theme="dark"] .delete-btn:hover:not(:disabled),
+body.dark-theme .delete-btn:hover:not(:disabled) {
+    box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+}
+
+/* Mobile responsive for vessel type details */
+@media (max-width: 768px) {
+    .vessel-type-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .vessel-type-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .vessel-type-actions {
+        flex-direction: column;
+    }
+    
+    .form-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .vessel-type-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .capacity-summary {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .link-btn {
+        align-self: flex-start;
+    }
+}
+
+/* Dark Theme Enhancements for Delete Form */
+@media (prefers-color-scheme: dark) {
+    .danger-zone {
+        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.1);
+    }
+    
+    .delete-vessel-type-info {
+        box-shadow: 0 2px 8px rgba(255, 167, 38, 0.1);
+    }
+    
+    .danger-input::placeholder {
+        color: var(--danger-text);
+        opacity: 0.7;
+    }
+}
+
+/* Force dark theme styles when data-theme="dark" */
+html[data-theme="dark"] .danger-zone,
+body.dark-theme .danger-zone {
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.1);
+}
+
+html[data-theme="dark"] .delete-vessel-type-info,
+body.dark-theme .delete-vessel-type-info {
+    box-shadow: 0 2px 8px rgba(255, 167, 38, 0.1);
+}
+
+html[data-theme="dark"] .danger-input::placeholder,
+body.dark-theme .danger-input::placeholder {
+    color: var(--danger-text);
+    opacity: 0.7;
+}

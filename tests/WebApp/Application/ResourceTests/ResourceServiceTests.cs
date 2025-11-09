@@ -8,16 +8,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using WebApp.Models.Domain.Qualifications.Interfaces;
 
 public class ResourceServiceTests
 {
     private readonly StubResourceRepository _repo;
+    private readonly IQualificationRepository _qualificationRepo;
     private readonly ResourceService _service;
 
-    public ResourceServiceTests()
+    public ResourceServiceTests(IQualificationRepository qualificationRepo)
     {
         _repo = new StubResourceRepository();
-        _service = new ResourceService(_repo);
+        _qualificationRepo = qualificationRepo;
+        _service = new ResourceService(_repo, _qualificationRepo);
     }
 
     [Fact]
