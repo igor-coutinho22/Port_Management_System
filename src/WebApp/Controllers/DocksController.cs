@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Services;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Controllers
 {

@@ -1,5 +1,7 @@
-using Application.DTOs;
-using Domain.Scheduling;
+
+
+using WebApp.Models.Application.DTOs;
+using WebApp.Models.Domain.Scheduling;
 
 namespace WebApp.Models.Application.Mappers
 {

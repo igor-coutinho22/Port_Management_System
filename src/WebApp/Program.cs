@@ -23,7 +23,7 @@ using WebApp.Models.Infrastructure.Repositories.StaffRepository;
 using WebApp.Models.Application.Services.StaffService;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
-using WebApp.Models.Application.Services.Scheduling;
+using WebApp.Models.Domain.Scheduling.Interfaces;
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
@@ -98,7 +98,6 @@ builder.Services.AddScoped<IDockRepository, DockRepository>();
 builder.Services.AddScoped<IDockService, DockService>();
 builder.Services.AddScoped<IVesselVisitNotificationRepository, VesselVisitNotificationRepository>();
 builder.Services.AddScoped<IVesselVisitNotificationService, VesselVisitNotificationService>();
-builder.Services.AddScoped<IHeuristicScheduleService, HeuristicScheduleService>();
 
 var app = builder.Build();
 

@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using Domain.Entities;
-using Domain.ValueObjects;
+/*using System.Diagnostics;
+using WebApp.Models.Domain.Scheduling;
+using WebApp.Models.Domain.Scheduling.Interfaces;
+using WebApp.Models.Domain.Vessels;
 
 namespace Application.Services
 {
@@ -56,7 +53,7 @@ namespace Application.Services
         {
             return string.Join(Environment.NewLine,
                 vessels.Select(v =>
-                    $"vessel({v.Imo.ToLower()}, {v.ArrivalTime}, {v.DepartureTime}, {v.UnloadTime}, {v.LoadTime})."));
+                    $"vessel({v.IMO.ToLower()}, {v.ArrivalTime}, {v.DepartureTime}, {v.UnloadTime}, {v.LoadTime})."));
         }
 
         private SchedulingResult ParsePrologOutput(string output)
@@ -82,3 +79,4 @@ namespace Application.Services
         }
     }
 }
+*/
