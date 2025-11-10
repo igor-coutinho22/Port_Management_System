@@ -54,6 +54,7 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new DockStorageAreaConnectionConfiguration());
             modelBuilder.ApplyConfiguration(new DockConfiguration());
             modelBuilder.ApplyConfiguration(new QualificationLinkConfiguration());
+            modelBuilder.ApplyConfiguration(new ResourceConfiguration());
 
             // Storage area hierarchy
             modelBuilder.Entity<StorageArea>(builder =>
