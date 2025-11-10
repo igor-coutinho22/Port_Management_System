@@ -23,6 +23,8 @@ using WebApp.Models.Infrastructure.Repositories.StaffRepository;
 using WebApp.Models.Application.Services.StaffService;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using WebApp.Models.Application.Services.Scheduling;
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
@@ -36,6 +38,8 @@ builder.Services.AddDbContext<PortManagementContext>(options =>
 );
 
 // ---------- Identity with Roles ----------
+// NOTE: Keep Identity for internal role management and user records.
+// Do NOT use cookie-based login for the SPA; SPA will use JWT bearer from External ID.
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.Password.RequireDigit = true;
@@ -50,6 +54,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 
 builder.Logging.AddConsole();
 
+// (Optional, for MVC/Razor areas you may still have; SPA won’t use this)
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
@@ -57,8 +62,39 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
 });
 
-builder.Services.AddAuthentication();
+// ---------- CORS (ADD) ----------
+builder.Services.AddCors(opt =>
+{
+    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() ?? new[] { "http://localhost:5173" };
+    opt.AddDefaultPolicy(p => p
+        .WithOrigins(origins)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
 
+// ---------- Authentication: JWT Bearer (External ID/B2C) (ADD) ----------
+var host      = "https://sinesport.ciamlogin.com";
+var tenantId  = "a8192c11-2c11-4411-a807-8b0659f4c9a9"; // GUID
+var appIdUri  = "api://port-management";                // from Expose an API
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Standard CIAM discovery (no policy)
+        options.Authority        = $"{host}/{tenantId}/v2.0";
+        options.MetadataAddress  = $"{host}/{tenantId}/v2.0/.well-known/openid-configuration";
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer   = true,
+            ValidateAudience = true,
+            ValidAudience    = appIdUri,   // MUST equal Application ID URI (not the scope)
+            ValidateLifetime = true
+        };
+    });
+    
+// ---------- Authorization ----------
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireManagerRole", policy =>
@@ -67,8 +103,6 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>
 {
-    // Use enum names instead of numbers
-    // Also accepts lower case
     options.JsonSerializerOptions.Converters.Add(
         new System.Text.Json.Serialization.JsonStringEnumConverter(
             System.Text.Json.JsonNamingPolicy.CamelCase
@@ -78,6 +112,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// ---------- DI registrations (yours) ----------
 builder.Services.AddScoped<IQualificationRepository, QualificationRepository>();
 builder.Services.AddScoped<IQualificationService, QualificationService>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
@@ -110,8 +145,7 @@ using (var scope = app.Services.CreateScope())
         var db = services.GetRequiredService<PortManagementContext>();
         if (db.Database.IsRelational())
             db.Database.Migrate();
-        // TEMPORARILY COMMENTED OUT FOR SPA TESTING - FIX BOOTSTRAP LATER
-        await DataSeeder.SeedRolesAndAdminAsync(services, new[] { "Admin", "Manager", "Staff" });
+
         await DataSeeder.SeedDomainDataAsync(services);
     }
     catch (Exception ex)
@@ -132,14 +166,75 @@ if (!app.Environment.IsEnvironment("Testing"))
 {
     app.UseHttpsRedirection();
 }
+
 app.UseStaticFiles();
 app.UseRouting();
+
+// ADD: CORS before auth
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapRazorPages();
+
+// --- ADD: /api/me for SPA to load internal role after IAM login ---
+// This assumes you want to keep Identity roles as your "internal role" store.
+// We do NOT create passwords here. We bind an ApplicationUser to the external subject/email.
+app.MapGet("/api/me", async (HttpContext http,
+                            UserManager<ApplicationUser> userManager,
+                            RoleManager<IdentityRole> roleManager) =>
+{
+    // Validate bearer auth
+    if (!http.User.Identity?.IsAuthenticated ?? true)
+        return Results.Unauthorized();
+
+    // External token claims (B2C typically provides "sub" and "emails" or "email")
+    var sub = http.User.FindFirst("sub")?.Value;
+    var email = http.User.FindFirst("emails")?.Value ?? http.User.FindFirst("email")?.Value;
+
+    if (string.IsNullOrWhiteSpace(sub) || string.IsNullOrWhiteSpace(email))
+        return Results.BadRequest(new { error = "Required claims missing (sub/email)." });
+
+    // Find existing user by email; if not present, create WITHOUT password.
+    var user = await userManager.FindByEmailAsync(email);
+    if (user == null)
+    {
+        user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            // If your ApplicationUser has an ExternalSubjectId property, set it here:
+            // ExternalSubjectId = sub
+        };
+        // Create user record without password; no local sign-in.
+        var createResult = await userManager.CreateAsync(user);
+        if (!createResult.Succeeded)
+            return Results.StatusCode(500);
+        // Optionally: assign default role (e.g., "Staff") here if that’s your policy.
+        if (await roleManager.RoleExistsAsync("Staff"))
+            await userManager.AddToRoleAsync(user, "Staff");
+    }
+
+    var roles = await userManager.GetRolesAsync(user);
+    var role = roles.FirstOrDefault();
+
+    // If no role or role is inactive according to your policy, deny:
+    if (string.IsNullOrWhiteSpace(role))
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    // Build response for SPA
+    return Results.Ok(new
+    {
+        id = user.Id,
+        email = user.Email,
+        firstName = http.User.FindFirst("given_name")?.Value ?? "",
+        lastName = http.User.FindFirst("family_name")?.Value ?? "",
+        role
+        // You can also include allowed features here, based on role
+    });
+}).RequireAuthorization();
 
 // SPA Configuration - serve index.html for root and SPA routes
 app.MapGet("/", context =>
