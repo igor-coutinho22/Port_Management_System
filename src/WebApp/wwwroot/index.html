@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,8 +20,8 @@
   <link rel="stylesheet" href="css/vessels/vessel-components.css?v=1" />
   <link rel="stylesheet" href="css/resources/resources-hub.css?v=1" />
   <link rel="stylesheet" href="css/resources/resource-components.css?v=1" />
-  <link rel="stylesheet" href="css/vessel-types/vessel-types-hub.css?v=1" />
-  <link rel="stylesheet" href="css/vessel-types/vessel-type-components.css?v=1" />
+  <link rel="stylesheet" href="css/vesselTypes/vessel-types-hub.css?v=1" />
+  <link rel="stylesheet" href="css/vesselTypes/vessel-types-components.css?v=1" />
   <link rel="stylesheet" href="css/docks/docks-components.css?v=1" />
   <link rel="stylesheet" href="css/docks/docks-hub.css?v=1" />
 
@@ -43,6 +44,7 @@
   <!-- Optional API client helpers -->
   <script src="auth/apiClient.js"></script>
 </head>
+
 <body>
   <div id="root"></div>
 
@@ -108,7 +110,11 @@
   <script type="text/babel" src="js/pages/QualificationsPage.jsx?v=2"></script>
   <script type="text/babel" src="js/pages/ApiDocsPage.jsx"></script>
 
+  <!-- 🔹 Load the AuthGate -->
+  <script type="text/babel" src="auth/AuthGate.jsx?v=1"></script>
+
   <!-- Main App (must be last) -->
-  <script type="text/babel" src="js/app.jsx?v=8"></script>
+  <script type="text/babel" src="js/app.jsx?v=9"></script>
 </body>
+
 </html>
