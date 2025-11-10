@@ -22,9 +22,9 @@ namespace WebApp.Models.Application.Mappers
                 OperationalCapacity = resource.OperationalCapacity,
                 Status = resource.Status,
                 SetupTime = resource.SetupTime,
-                QualificationRequirements = resource.qualificationRequirements?
+                QualificationRequirements = resource.QualificationRequirements?
                     .Select(QualificationMapper.ToDTO)
-                    .ToHashSet() 
+                    .ToHashSet()
                     ?? new HashSet<QualificationDTO>()
             };
         }
@@ -44,7 +44,7 @@ namespace WebApp.Models.Application.Mappers
                 setupTime: dto.SetupTime,
                 qualifications: dto.QualificationRequirements?
                     .Select(QualificationMapper.ToDomain)
-                    .ToHashSet() 
+                    .ToHashSet()
                     ?? new HashSet<Qualification>()
             );
         }

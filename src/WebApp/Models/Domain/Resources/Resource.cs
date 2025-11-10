@@ -11,13 +11,18 @@ public class Resource
     public int OperationalCapacity { get; set; }
     public ResourceAvailabilityStatus Status { get; set; }
     public int SetupTime { get; set; }
-    public HashSet<Qualification>? qualificationRequirements { get; set; }
+    public ICollection<Qualification> QualificationRequirements { get; set; } = new HashSet<Qualification>();
 
-    protected Resource()
-    {
-        // EF Core
-    }
-    public Resource(string id, string description,ResourceType type, int operationalCapacity, ResourceAvailabilityStatus status, int setupTime,HashSet<Qualification> qualifications )
+    protected Resource() { }
+
+    public Resource(
+        string id,
+        string description,
+        ResourceType type,
+        int operationalCapacity,
+        ResourceAvailabilityStatus status,
+        int setupTime,
+        HashSet<Qualification> qualifications)
     {
         Id = id;
         Description = description;
@@ -25,7 +30,6 @@ public class Resource
         OperationalCapacity = operationalCapacity;
         Status = status;
         SetupTime = setupTime;
-        qualificationRequirements = qualifications;
+        QualificationRequirements = qualifications;
     }
-
 }

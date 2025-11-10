@@ -22,9 +22,9 @@ namespace WebApp.Models.Infrastructure.Repositories.Resources
         public async Task AddResourceAsync(Resource resource)
         {
             // Attach existing qualifications to the context to prevent insertion attempts
-            if (resource.qualificationRequirements != null)
+            if (resource.QualificationRequirements != null)
             {
-                foreach (var qualification in resource.qualificationRequirements)
+                foreach (var qualification in resource.QualificationRequirements)
                 {
                     var existingQual = _context.Qualifications.Local.FirstOrDefault(q => q.Code == qualification.Code);
                     if (existingQual == null)
@@ -34,62 +34,62 @@ namespace WebApp.Models.Infrastructure.Repositories.Resources
                     }
                 }
             }
-            
+
             await _context.Resources.AddAsync(resource);
             await _context.SaveChangesAsync();
         }
 
-        
+
         public Resource? GetById(string id) =>
             _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .FirstOrDefault(r => r.Id == id);
 
         public async Task<Resource?> GetByIdAsync(string id) =>
             await _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
         public Resource? GetByDescription(string description) =>
             _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .FirstOrDefault(r => r.Description!.Equals(description, StringComparison.OrdinalIgnoreCase));
 
-         public async Task<Resource?> GetByDescriptionAsync(string description) =>
-            await _context.Resources
-                .Include(r => r.qualificationRequirements)
-                .FirstOrDefaultAsync(r => r.Description!.Equals(description, StringComparison.OrdinalIgnoreCase));
+        public async Task<Resource?> GetByDescriptionAsync(string description) =>
+           await _context.Resources
+               .Include(r => r.QualificationRequirements)
+               .FirstOrDefaultAsync(r => r.Description!.Equals(description, StringComparison.OrdinalIgnoreCase));
 
         public List<Resource> GetAll() =>
             _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .ToList();
         public async Task<List<Resource>> GetAllAsync() =>
             await _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .ToListAsync();
 
         public List<Resource> GetByType(ResourceType type) =>
             _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .Where(r => r.ResourceType == type)
                 .ToList();
 
         public async Task<List<Resource>> GetByTypeAsync(ResourceType type) =>
             await _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .Where(r => r.ResourceType == type)
                 .ToListAsync();
 
         public List<Resource> GetByStatus(ResourceAvailabilityStatus status) =>
             _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .Where(r => r.Status == status)
                 .ToList();
 
         public async Task<List<Resource>> GetByStatusAsync(ResourceAvailabilityStatus status) =>
             await _context.Resources
-                .Include(r => r.qualificationRequirements)
+                .Include(r => r.QualificationRequirements)
                 .Where(r => r.Status == status)
                 .ToListAsync();
 
@@ -109,7 +109,7 @@ namespace WebApp.Models.Infrastructure.Repositories.Resources
             _context.SaveChanges();
         }
 
-       public async Task UpdateAvailabilityAsync(string id, ResourceAvailabilityStatus newStatus)
+        public async Task UpdateAvailabilityAsync(string id, ResourceAvailabilityStatus newStatus)
         {
             var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
             if (resource == null)

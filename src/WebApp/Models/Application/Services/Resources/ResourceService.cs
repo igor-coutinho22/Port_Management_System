@@ -62,19 +62,49 @@ namespace WebApp.Models.Application.Services.Resources
             if (resource == null)
                 throw new ArgumentNullException(nameof(resource));
 
-            var existing = await _resourceRepo.GetByIdAsync(resource.Id!);
-            if (existing == null)
-                throw new KeyNotFoundException($"Resource with ID '{resource.Id}' not found.");
+            var existing = await _resourceRepo.GetByIdAsync(resource.Id!)
+                ?? throw new KeyNotFoundException($"Resource with ID '{resource.Id}' not found.");
 
             existing.Description = resource.Description;
             existing.OperationalCapacity = resource.OperationalCapacity;
             existing.SetupTime = resource.SetupTime;
             existing.Status = resource.Status;
             existing.ResourceType = resource.ResourceType;
-            existing.qualificationRequirements = resource.qualificationRequirements;
+
+            var incomingCodes = (resource.QualificationRequirements == null)
+                ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                : resource.QualificationRequirements
+                    .Select(q => q.Code)
+                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            existing.QualificationRequirements ??= new HashSet<Qualification>();
+
+            var currentCodes = existing.QualificationRequirements
+                .Select(q => q.Code)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var toRemove = existing.QualificationRequirements
+                .Where(q => !incomingCodes.Contains(q.Code))
+                .ToList();
+
+            foreach (var q in toRemove)
+                existing.QualificationRequirements.Remove(q);
+
+            var codesToAdd = incomingCodes.Except(currentCodes, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var code in codesToAdd)
+            {
+                var existingQual = await _qualificationRepo.GetByCodeAsync(code);
+                if (existingQual == null)
+                    throw new ArgumentException($"Qualification with code '{code}' does not exist in the database.");
+
+                existing.QualificationRequirements.Add(existingQual);
+            }
 
             await _resourceRepo.UpdateAsync(existing);
         }
+
 
         public void UpdateAvailability(string id, ResourceAvailabilityStatus newStatus)
         {
@@ -137,7 +167,7 @@ namespace WebApp.Models.Application.Services.Resources
 
             await _resourceRepo.UpdateAvailabilityAsync(id, ResourceAvailabilityStatus.Active);
         }
-        
+
         public async Task RegisterResourceAsync(
             string id,
             string description,
@@ -147,14 +177,14 @@ namespace WebApp.Models.Application.Services.Resources
             int setupTime,
             HashSet<Qualification> qualifications)
         {
-            
+
             if (string.IsNullOrWhiteSpace(id))
                 throw new ArgumentException("Resource ID cannot be null or empty.");
-            
+
             var existing = await _resourceRepo.GetByIdAsync(id);
             if (existing != null)
                 throw new ArgumentException($"A resource with ID '{id}' already exists.");
-            
+
             var resource = new Resource(
                 id,
                 description,
@@ -181,11 +211,11 @@ namespace WebApp.Models.Application.Services.Resources
                 throw new ArgumentException($"A resource with ID '{resource.Id}' already exists.");
 
             // Handle qualifications properly to avoid FK constraint violations
-            if (resource.qualificationRequirements != null && resource.qualificationRequirements.Any())
+            if (resource.QualificationRequirements != null && resource.QualificationRequirements.Any())
             {
-                var qualificationCodes = resource.qualificationRequirements.Select(q => q.Code).ToList();
+                var qualificationCodes = resource.QualificationRequirements.Select(q => q.Code).ToList();
                 var existingQualifications = new HashSet<Qualification>();
-                
+
                 foreach (var code in qualificationCodes)
                 {
                     var existingQual = await _qualificationRepo.GetByCodeAsync(code);
@@ -198,9 +228,9 @@ namespace WebApp.Models.Application.Services.Resources
                         throw new ArgumentException($"Qualification with code '{code}' does not exist in the database.");
                     }
                 }
-                
+
                 // Replace with the actual tracked entities from database
-                resource.qualificationRequirements = existingQualifications;
+                resource.QualificationRequirements = existingQualifications;
             }
 
             await _resourceRepo.AddResourceAsync(resource);
@@ -232,6 +262,6 @@ namespace WebApp.Models.Application.Services.Resources
 
 
     }
-    
-    
+
+
 }
