@@ -1,48 +1,55 @@
-/*** wwwroot/js/app.jsx ***/
 /* global React, ReactDOM, msal */
 
-// --- Safety check for config ---
+// ---------- Safety: require MSAL config ----------
 if (!window.msalConfig || !window.loginRequest) {
   const el = document.getElementById("root");
   if (el) {
     el.innerHTML =
       '<div style="color:#b00;padding:16px;font-family:sans-serif">' +
-      '<h2>MSAL configuration missing</h2>' +
-      '<p>Make sure <code>wwwroot/auth/msalConfig.js</code> defines ' +
-      '<code>window.msalConfig</code> and <code>window.loginRequest</code>.</p>' +
+      "<h2>MSAL configuration missing</h2>" +
+      "<p>Make sure <code>wwwroot/auth/msalConfig.js</code> defines " +
+      "<code>window.msalConfig</code> and <code>window.loginRequest</code>.</p>" +
       "</div>";
   }
   throw new Error("MSAL configuration missing");
 }
 
-// --- Global navigation (kept) ---
+// ---------- Global navigation (kept) ----------
 window.app = {
   navigate: (page) => {
     if (window.appNavigate) window.appNavigate(page);
   },
 };
 
-// --- MSAL (no msal-react needed) ---
-const pca = new msal.PublicClientApplication(window.msalConfig);
+// ---------- MSAL init (REUSE if it already exists) ----------
+const existingPca = window.__pca;
+const pca = existingPca || new msal.PublicClientApplication(window.msalConfig);
 window.__pca = pca;
 
-function AuthGate({ children }) {
-  const [ready, setReady] = React.useState(false);
-
-  React.useEffect(() => {
-    const accts = pca.getAllAccounts();
-    if (accts.length === 0) {
-      pca.loginRedirect(window.loginRequest);
-    } else {
-      setReady(true);
-    }
-  }, []);
-
-  if (!ready) return null;
-  return children;
+// Only call handleRedirectPromise ONCE globally
+let msalReady = window.__msalReady;
+if (!msalReady) {
+  msalReady = pca
+    .handleRedirectPromise()
+    .then((response) => {
+      if (response?.account) {
+        pca.setActiveAccount(response.account);
+      } else {
+        const accts = pca.getAllAccounts();
+        if (!pca.getActiveAccount() && accts.length > 0) {
+          pca.setActiveAccount(accts[0]);
+        }
+      }
+    })
+    .catch((err) => {
+      console.error("MSAL handleRedirectPromise error:", err && (err.errorCode || err.message), err);
+      // clear any “login started” latch so we don’t get stuck
+      sessionStorage.removeItem("msal.login.started");
+    });
+  window.__msalReady = msalReady;
 }
 
-// --- Your original app (kept) ---
+// ---------- Your original app (kept) ----------
 const AppWithGlobalNav = () => {
   const [currentPage, setCurrentPage] = React.useState("home");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -102,6 +109,7 @@ const AppWithGlobalNav = () => {
 
   const renderCurrentPage = () => {
     if (isLoading) return <div className="loading-indicator">Loading page...</div>;
+
     switch (currentPage) {
       case "home":
         return <HomePage />;
@@ -201,9 +209,7 @@ const AppWithGlobalNav = () => {
       />
 
       <main
-        className={`main-content ${
-          isManagementSection && sidebarVisible ? "with-sidebar" : ""
-        }`}
+        className={`main-content ${isManagementSection && sidebarVisible ? "with-sidebar" : ""}`}
       >
         <Breadcrumb currentPage={currentPage} onNavigate={handleNavigate} />
         {renderCurrentPage()}
@@ -214,7 +220,8 @@ const AppWithGlobalNav = () => {
   );
 };
 
-// --- Mount (no msal-react provider needed) ---
+// ---------- Render using the shared/global AuthGate ----------
+const AuthGate = window.AuthGate;
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <I18nProvider>
