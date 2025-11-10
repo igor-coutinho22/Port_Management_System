@@ -25,7 +25,6 @@ using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using WebApp.Models.Application.Services.Scheduling;
 using WebApp.Models.Domain.Scheduling.Interfaces;
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
@@ -75,26 +74,26 @@ builder.Services.AddCors(opt =>
 });
 
 // ---------- Authentication: JWT Bearer (External ID/B2C) (ADD) ----------
-var host      = "https://sinesport.ciamlogin.com";
-var tenantId  = "a8192c11-2c11-4411-a807-8b0659f4c9a9"; // GUID
-var appIdUri  = "api://port-management";                // from Expose an API
+var host = "https://sinesport.ciamlogin.com";
+var tenantId = "a8192c11-2c11-4411-a807-8b0659f4c9a9"; // GUID
+var appIdUri = "api://port-management";                // from Expose an API
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         // Standard CIAM discovery (no policy)
-        options.Authority        = $"{host}/{tenantId}/v2.0";
-        options.MetadataAddress  = $"{host}/{tenantId}/v2.0/.well-known/openid-configuration";
+        options.Authority = $"{host}/{tenantId}/v2.0";
+        options.MetadataAddress = $"{host}/{tenantId}/v2.0/.well-known/openid-configuration";
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer   = true,
+            ValidateIssuer = true,
             ValidateAudience = true,
-            ValidAudience    = appIdUri,   // MUST equal Application ID URI (not the scope)
+            ValidAudience = appIdUri,   // MUST equal Application ID URI (not the scope)
             ValidateLifetime = true
         };
     });
-    
+
 // ---------- Authorization ----------
 builder.Services.AddAuthorization(options =>
 {
