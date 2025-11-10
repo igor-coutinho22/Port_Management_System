@@ -34,7 +34,7 @@ namespace WebApp.Migrations
 
                     b.HasIndex("VesselTypeId");
 
-                    b.ToTable("DockVesselType", (string)null);
+                    b.ToTable("DockVesselType");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -174,6 +174,21 @@ namespace WebApp.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ResourceQualificationRequirement", b =>
+                {
+                    b.Property<string>("ResourceId")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("QualificationCode")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ResourceId", "QualificationCode");
+
+                    b.HasIndex("QualificationCode");
+
+                    b.ToTable("ResourceQualificationRequirements", (string)null);
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Agents.Representative", b =>
                 {
                     b.Property<Guid>("Id")
@@ -216,7 +231,7 @@ namespace WebApp.Migrations
                     b.HasIndex("OrganizationId", "Email")
                         .IsUnique();
 
-                    b.ToTable("Representatives", (string)null);
+                    b.ToTable("Representatives");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Agents.ShippingAgentOrganization", b =>
@@ -248,7 +263,7 @@ namespace WebApp.Migrations
                     b.HasIndex("TaxNumber")
                         .IsUnique();
 
-                    b.ToTable("Organizations", (string)null);
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Docks.Dock", b =>
@@ -297,23 +312,20 @@ namespace WebApp.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("ResourceId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Code");
 
-                    b.HasIndex("ResourceId");
-
-                    b.ToTable("Qualifications", (string)null);
+                    b.ToTable("Qualifications");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Resources.Resource", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("OperationalCapacity")
                         .HasColumnType("int");
@@ -329,7 +341,7 @@ namespace WebApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Resources", (string)null);
+                    b.ToTable("Resources");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.QualificationLink", b =>
@@ -350,7 +362,7 @@ namespace WebApp.Migrations
 
                     b.HasIndex("QualificationCode");
 
-                    b.ToTable("QualificationLinks", (string)null);
+                    b.ToTable("QualificationLinks");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.Staff", b =>
@@ -383,7 +395,7 @@ namespace WebApp.Migrations
 
                     b.HasKey("MecanographicNumber");
 
-                    b.ToTable("Staff", (string)null);
+                    b.ToTable("Staff");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.DockStorageAreaConnection", b =>
@@ -411,7 +423,7 @@ namespace WebApp.Migrations
                     b.HasIndex("StorageAreaId", "DockId")
                         .IsUnique();
 
-                    b.ToTable("DockStorageAreaConnections", (string)null);
+                    b.ToTable("DockStorageAreaConnections");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.StorageArea", b =>
@@ -441,7 +453,7 @@ namespace WebApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StorageAreas", (string)null);
+                    b.ToTable("StorageAreas");
 
                     b.HasDiscriminator<int>("StorageAreaType");
 
@@ -515,48 +527,6 @@ namespace WebApp.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("WebApp.Models.Domain.Vessel.Vessel", b =>
-                {
-                    b.Property<string>("IMO")
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
-
-                    b.Property<int>("Bays")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OperatorName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<int>("RequiredCraneCount")
-                        .HasColumnType("int");
-
-                    b.Property<double>("RequiredDockLength")
-                        .HasColumnType("float");
-
-                    b.Property<int>("Rows")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Tiers")
-                        .HasColumnType("int");
-
-                    b.Property<string>("VesselName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("VesselTypeName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("IMO");
-
-                    b.HasIndex("VesselTypeName");
-
-                    b.ToTable("Vessels", (string)null);
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.CargoManifest", b =>
@@ -661,7 +631,7 @@ namespace WebApp.Migrations
 
                     b.HasIndex("VesselVisitNotificationId");
 
-                    b.ToTable("DecisionLog", (string)null);
+                    b.ToTable("DecisionLog");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
@@ -694,7 +664,49 @@ namespace WebApp.Migrations
                     b.ToTable("VesselVisitNotifications", (string)null);
                 });
 
-            modelBuilder.Entity("WebApp.Models.Domain.Vessels.VesselType.VesselType", b =>
+            modelBuilder.Entity("WebApp.Models.Domain.Vessels.Vessel", b =>
+                {
+                    b.Property<string>("IMO")
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<int>("Bays")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OperatorName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("RequiredCraneCount")
+                        .HasColumnType("int");
+
+                    b.Property<double>("RequiredDockLength")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Rows")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Tiers")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VesselName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("VesselTypeName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IMO");
+
+                    b.HasIndex("VesselTypeName");
+
+                    b.ToTable("Vessels");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.Vessels.VesselType", b =>
                 {
                     b.Property<string>("Name")
                         .HasMaxLength(50)
@@ -716,7 +728,7 @@ namespace WebApp.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("VesselTypes", (string)null);
+                    b.ToTable("VesselTypes");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.ContainerYard", b =>
@@ -744,7 +756,7 @@ namespace WebApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebApp.Models.Domain.Vessels.VesselType.VesselType", null)
+                    b.HasOne("WebApp.Models.Domain.Vessels.VesselType", null)
                         .WithMany()
                         .HasForeignKey("VesselTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -802,6 +814,21 @@ namespace WebApp.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ResourceQualificationRequirement", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.Qualifications.Qualification", null)
+                        .WithMany()
+                        .HasForeignKey("QualificationCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WebApp.Models.Domain.Resources.Resource", null)
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Agents.Representative", b =>
                 {
                     b.HasOne("WebApp.Models.Domain.Agents.ShippingAgentOrganization", "Organization")
@@ -818,13 +845,6 @@ namespace WebApp.Migrations
                     b.HasOne("WebApp.Models.Domain.StorageArea.ContainerYard", null)
                         .WithMany("DocksServed")
                         .HasForeignKey("ContainerYardId");
-                });
-
-            modelBuilder.Entity("WebApp.Models.Domain.Qualifications.Qualification", b =>
-                {
-                    b.HasOne("WebApp.Models.Domain.Resources.Resource", null)
-                        .WithMany("qualificationRequirements")
-                        .HasForeignKey("ResourceId");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.QualificationLink", b =>
@@ -853,17 +873,6 @@ namespace WebApp.Migrations
                         .HasForeignKey("StorageAreaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("WebApp.Models.Domain.Vessel.Vessel", b =>
-                {
-                    b.HasOne("WebApp.Models.Domain.Vessels.VesselType.VesselType", "VesselType")
-                        .WithMany()
-                        .HasForeignKey("VesselTypeName")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("VesselType");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.CargoManifest", b =>
@@ -904,13 +913,24 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
                 {
-                    b.HasOne("WebApp.Models.Domain.Vessel.Vessel", "Vessel")
+                    b.HasOne("WebApp.Models.Domain.Vessels.Vessel", "Vessel")
                         .WithMany()
                         .HasForeignKey("VesselIMO")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Vessel");
+                });
+
+            modelBuilder.Entity("WebApp.Models.Domain.Vessels.Vessel", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.Vessels.VesselType", "VesselType")
+                        .WithMany()
+                        .HasForeignKey("VesselTypeName")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("VesselType");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Agents.ShippingAgentOrganization", b =>
@@ -921,11 +941,6 @@ namespace WebApp.Migrations
             modelBuilder.Entity("WebApp.Models.Domain.Qualifications.Qualification", b =>
                 {
                     b.Navigation("QualificationLinks");
-                });
-
-            modelBuilder.Entity("WebApp.Models.Domain.Resources.Resource", b =>
-                {
-                    b.Navigation("qualificationRequirements");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Staff.Staff", b =>

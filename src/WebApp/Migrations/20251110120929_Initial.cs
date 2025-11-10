@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateInitial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -67,11 +67,23 @@ namespace WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Qualifications",
+                columns: table => new
+                {
+                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Qualifications", x => x.Code);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Resources",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     ResourceType = table.Column<int>(type: "int", nullable: false),
                     OperationalCapacity = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
@@ -262,21 +274,53 @@ namespace WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Qualifications",
+                name: "ResourceQualificationRequirements",
                 columns: table => new
                 {
-                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ResourceId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    ResourceId = table.Column<string>(type: "nvarchar(50)", nullable: false),
+                    QualificationCode = table.Column<string>(type: "nvarchar(50)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Qualifications", x => x.Code);
+                    table.PrimaryKey("PK_ResourceQualificationRequirements", x => new { x.ResourceId, x.QualificationCode });
                     table.ForeignKey(
-                        name: "FK_Qualifications_Resources_ResourceId",
+                        name: "FK_ResourceQualificationRequirements_Qualifications_QualificationCode",
+                        column: x => x.QualificationCode,
+                        principalTable: "Qualifications",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ResourceQualificationRequirements_Resources_ResourceId",
                         column: x => x.ResourceId,
                         principalTable: "Resources",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "QualificationLinks",
+                columns: table => new
+                {
+                    StaffMecanographicNumber = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    QualificationCode = table.Column<string>(type: "nvarchar(50)", nullable: false),
+                    DateObtained = table.Column<DateOnly>(type: "date", nullable: true),
+                    ExpiryDate = table.Column<DateOnly>(type: "date", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QualificationLinks", x => new { x.StaffMecanographicNumber, x.QualificationCode });
+                    table.ForeignKey(
+                        name: "FK_QualificationLinks_Qualifications_QualificationCode",
+                        column: x => x.QualificationCode,
+                        principalTable: "Qualifications",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_QualificationLinks_Staff_StaffMecanographicNumber",
+                        column: x => x.StaffMecanographicNumber,
+                        principalTable: "Staff",
+                        principalColumn: "MecanographicNumber",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -331,7 +375,6 @@ namespace WebApp.Migrations
                     VesselName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     OperatorName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     VesselTypeName = table.Column<string>(type: "nvarchar(50)", nullable: false),
-                    VesselTypeName1 = table.Column<string>(type: "nvarchar(50)", nullable: false),
                     RequiredCraneCount = table.Column<int>(type: "int", nullable: false),
                     RequiredDockLength = table.Column<double>(type: "float", nullable: false),
                     Bays = table.Column<int>(type: "int", nullable: false),
@@ -347,38 +390,6 @@ namespace WebApp.Migrations
                         principalTable: "VesselTypes",
                         principalColumn: "Name",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Vessels_VesselTypes_VesselTypeName1",
-                        column: x => x.VesselTypeName1,
-                        principalTable: "VesselTypes",
-                        principalColumn: "Name",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "QualificationLinks",
-                columns: table => new
-                {
-                    StaffMecanographicNumber = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    QualificationCode = table.Column<string>(type: "nvarchar(50)", nullable: false),
-                    DateObtained = table.Column<DateOnly>(type: "date", nullable: true),
-                    ExpiryDate = table.Column<DateOnly>(type: "date", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_QualificationLinks", x => new { x.StaffMecanographicNumber, x.QualificationCode });
-                    table.ForeignKey(
-                        name: "FK_QualificationLinks_Qualifications_QualificationCode",
-                        column: x => x.QualificationCode,
-                        principalTable: "Qualifications",
-                        principalColumn: "Code",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_QualificationLinks_Staff_StaffMecanographicNumber",
-                        column: x => x.StaffMecanographicNumber,
-                        principalTable: "Staff",
-                        principalColumn: "MecanographicNumber",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -609,25 +620,20 @@ namespace WebApp.Migrations
                 column: "QualificationCode");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Qualifications_ResourceId",
-                table: "Qualifications",
-                column: "ResourceId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Representatives_OrganizationId_Email",
                 table: "Representatives",
                 columns: new[] { "OrganizationId", "Email" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ResourceQualificationRequirements_QualificationCode",
+                table: "ResourceQualificationRequirements",
+                column: "QualificationCode");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Vessels_VesselTypeName",
                 table: "Vessels",
                 column: "VesselTypeName");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Vessels_VesselTypeName1",
-                table: "Vessels",
-                column: "VesselTypeName1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VesselVisitNotifications_VesselIMO",
@@ -675,6 +681,9 @@ namespace WebApp.Migrations
                 name: "Representatives");
 
             migrationBuilder.DropTable(
+                name: "ResourceQualificationRequirements");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -687,22 +696,22 @@ namespace WebApp.Migrations
                 name: "Docks");
 
             migrationBuilder.DropTable(
-                name: "Qualifications");
-
-            migrationBuilder.DropTable(
                 name: "Staff");
 
             migrationBuilder.DropTable(
                 name: "Organizations");
 
             migrationBuilder.DropTable(
+                name: "Qualifications");
+
+            migrationBuilder.DropTable(
+                name: "Resources");
+
+            migrationBuilder.DropTable(
                 name: "VesselVisitNotifications");
 
             migrationBuilder.DropTable(
                 name: "StorageAreas");
-
-            migrationBuilder.DropTable(
-                name: "Resources");
 
             migrationBuilder.DropTable(
                 name: "Vessels");
