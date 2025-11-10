@@ -1,9 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
-using WebApp.Models.Domain.Vessels.VesselType;
 
-namespace WebApp.Models.Domain.Vessel
+namespace WebApp.Models.Domain.Vessels
 {
     public class Vessel
     {

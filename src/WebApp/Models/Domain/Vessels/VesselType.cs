@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WebApp.Models.Domain.Vessels.VesselType
+namespace WebApp.Models.Domain.Vessels
 {
     public class VesselType
     {

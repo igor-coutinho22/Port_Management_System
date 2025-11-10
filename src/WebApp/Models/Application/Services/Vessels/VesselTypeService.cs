@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Graph.SecurityNamespace;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 using WebApp.Models.Infrastructure.Repositories;
 
 namespace WebApp.Models.Application.Services.VesselTypeService

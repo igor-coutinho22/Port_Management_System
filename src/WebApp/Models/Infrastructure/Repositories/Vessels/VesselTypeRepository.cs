@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Models.Infrastructure.Repositories.VesselTypeRepository
 {

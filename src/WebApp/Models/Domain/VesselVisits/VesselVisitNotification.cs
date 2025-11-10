@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using WebApp.Models.Domain.Vessel;
+using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Models.Domain.VesselVisits
 {
@@ -15,7 +15,7 @@ namespace WebApp.Models.Domain.VesselVisits
     {
         public Guid Id { get; private set; }
         public string VesselIMO { get; private set; } = default!;
-        public Vessel.Vessel Vessel { get; private set; } = default!;
+        public Vessel Vessel { get; private set; } = default!;
 
         public DateTime VisitDate { get; private set; }
         public Guid DockId { get; private set; }

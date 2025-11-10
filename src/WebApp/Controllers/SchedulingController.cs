@@ -1,28 +1,24 @@
-namespace WebApp.Controllers
+/*using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using WebApp.Models.Domain.Scheduling.Interfaces;
+namespace PortApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SchedulingController : ControllerBase
-{
+public class SchedulingController{
     private readonly IHeuristicScheduleService _heuristicService;
-    private readonly IOptimalScheduleService _optimalService;
-
     public SchedulingController(
-        IHeuristicScheduleService heuristicService,
-        IOptimalScheduleService optimalService)
+        IHeuristicScheduleService heuristicService
+        )
     {
         _heuristicService = heuristicService;
-        _optimalService = optimalService;
     }
 
     [HttpGet]
     public IActionResult GetSchedule([FromQuery] string mode = "heuristic")
     {
-        var vessels = GetTodayVessels(); // hypothetical data source
-        var result = mode == "optimal"
-            ? _optimalService.ComputeSchedule(vessels)
-            : _heuristicService.ComputeSchedule(vessels);
-
+        var vessels = GetTodayVessels();
+        var result = _heuristicService.ComputeSchedule(vessels);
         return Ok(result);
     }
-}
+}*/

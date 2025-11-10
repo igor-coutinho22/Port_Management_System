@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using WebApp.Models.Domain.Qualifications;
 using WebApp.Models.Domain.Resources;
 using WebApp.Models.Domain.Staff;
-using WebApp.Models.Domain.Vessel;
-using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Infrastructure.Configurations;
 using WebApp.Models.Domain.Users;
 using WebApp.Models.Domain.StorageArea;
@@ -14,6 +12,7 @@ using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Infrastructure.Configurations.VesselVisits;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Infrastructure.Configurations.Docks;
+using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Models.Context
 {

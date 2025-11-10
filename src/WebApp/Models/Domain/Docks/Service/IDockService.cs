@@ -1,8 +1,6 @@
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Infrastructure.Repositories;
-using WebApp.Models.Domain.Vessels.VesselType;
-
 namespace WebApp.Models.Application.Services
 {
     public interface IDockService

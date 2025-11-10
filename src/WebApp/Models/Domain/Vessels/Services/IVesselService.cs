@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using WebApp.Models.Application.DTOs;
-using WebApp.Models.Domain.Vessel;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
+
 
 namespace WebApp.Models.Application.Services
 {
