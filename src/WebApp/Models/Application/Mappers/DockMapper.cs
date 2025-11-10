@@ -1,5 +1,5 @@
 using WebApp.Models.Domain.Docks;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Models.Application.DTOs
 {

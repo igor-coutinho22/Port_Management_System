@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.ComponentModel;
 using System.Text.Json;
-using WebApp.Models.Domain.Vessel;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
+
 
 namespace WebApp.Models.Infrastructure.Configurations
 {

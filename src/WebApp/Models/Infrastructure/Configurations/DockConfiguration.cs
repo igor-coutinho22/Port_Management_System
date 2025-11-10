@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using WebApp.Models.Domain.Docks;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Models.Infrastructure.Configurations.Docks
 {

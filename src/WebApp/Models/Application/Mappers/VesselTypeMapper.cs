@@ -2,7 +2,6 @@ namespace WebApp.Models.Application.Mappers
 {
     using WebApp.Models.Domain.Vessels;
     using WebApp.Models.Application.DTOs;
-    using WebApp.Models.Domain.Vessels.VesselType;
 
     public static class VesselTypeMapper
     {

@@ -1,4 +1,5 @@
-using WebApp.Models.Domain.Vessels.VesselType;
+
+using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Models.Infrastructure.Repositories
 {

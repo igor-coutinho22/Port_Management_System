@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Models.Application.Services
 {
