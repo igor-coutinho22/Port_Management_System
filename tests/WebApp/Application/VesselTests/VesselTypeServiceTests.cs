@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Infrastructure.Repositories;
 using WebApp.Models.Application.Services.VesselTypeService;
 using Xunit;
+using WebApp.Models.Domain.Vessels;
 
 public class VesselTypeServiceTests
 {

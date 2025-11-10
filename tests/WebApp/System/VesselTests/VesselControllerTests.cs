@@ -3,7 +3,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 using System.Collections.Generic;
@@ -149,7 +148,7 @@ public class VesselControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLif
             Tiers = 4  // Within Tanker max (4)
         };
 
-        var put = await _client.PutAsJsonAsync($"/api/vessels/{uniqueIMO}", updatedDto);
+        var put = await _client.PutAsJsonAsync($"/api/vessels/{uniqueIMO}?vesselTypeName={updatedDto.VesselTypeName}", updatedDto);
         put.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Verify the update
@@ -316,7 +315,7 @@ public class VesselControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLif
             Tiers = 2 // Within Container Ship max (8)
         };
 
-        var put = await _client.PutAsJsonAsync($"/api/vessels/{nonExistentIMO}", vesselDto);
+        var put = await _client.PutAsJsonAsync($"/api/vessels/{nonExistentIMO}?vesselTypeName={vesselDto.VesselTypeName}", vesselDto);
         put.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

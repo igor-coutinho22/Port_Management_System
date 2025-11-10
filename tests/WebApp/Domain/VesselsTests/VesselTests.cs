@@ -1,7 +1,6 @@
 using System;
 using FluentAssertions;
-using WebApp.Models.Domain.Vessel;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 using Xunit;
 
 public class VesselTests

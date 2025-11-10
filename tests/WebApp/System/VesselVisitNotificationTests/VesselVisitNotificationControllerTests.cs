@@ -14,8 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using WebApp.Models.Domain.Docks;
-using WebApp.Models.Domain.Vessel;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 
 public class VesselVisitNotificationControllerTests : IClassFixture<TestWebAppFactory>
 {

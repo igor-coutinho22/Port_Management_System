@@ -21,7 +21,7 @@ public class ResourceTests
         resource.OperationalCapacity.Should().Be(100);
         resource.Status.Should().Be(ResourceAvailabilityStatus.Active);
         resource.SetupTime.Should().Be(10);
-        resource.qualificationRequirements.Should().Contain(q);
+        resource.QualificationRequirements.Should().Contain(q);
     }
 
     [Fact]
