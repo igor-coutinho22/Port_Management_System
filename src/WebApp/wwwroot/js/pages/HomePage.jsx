@@ -7,6 +7,11 @@ const HomePage = () => {
             route: 'management'
         },
         {
+            titleKey: 'home.feature.admin_users.title',
+            descKey: 'home.feature.admin_users.desc',
+            route: 'admin-users'
+        },
+        {
             titleKey: 'home.feature.3d_view.title',
             descKey: 'home.feature.3d_view.desc',
             route: '3d-view'
@@ -15,7 +20,8 @@ const HomePage = () => {
             titleKey: 'home.feature.api_docs.title',
             descKey: 'home.feature.api_docs.desc',
             route: 'api-docs'
-        }];
+        }
+    ];
     const { t } = useTranslation();
     
 
