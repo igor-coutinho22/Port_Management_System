@@ -88,61 +88,37 @@ const ResourceStatusForm = ({ onSuccess }) => {
         setMessage({ type: '', text: '' });
 
         try {
-            let newStatus;
             let actionLabel;
-
+            let updated;
             switch (selectedAction) {
                 case 'activate':
-                    newStatus = 'Available';
+                    await apiService.activateResource(resource.id);
                     actionLabel = 'activated';
                     break;
                 case 'deactivate':
-                    newStatus = 'Inactive';
+                    await apiService.deactivateResource(resource.id);
                     actionLabel = 'deactivated';
                     break;
                 case 'maintenance-start':
-                    newStatus = 'UnderMaintenance';
+                    await apiService.startMaintenance(resource.id);
                     actionLabel = 'put under maintenance';
                     break;
                 case 'maintenance-end':
-                    newStatus = 'Available';
+                    await apiService.endMaintenance(resource.id);
                     actionLabel = 'maintenance completed';
                     break;
                 default:
                     throw new Error('Invalid action selected');
             }
-
-            // Create updated resource data
-            const updatedResourceData = {
-                Id: resource.id,
-                Description: resource.description,
-                ResourceType: resource.resourceType,
-                OperationalCapacity: resource.operationalCapacity,
-                SetupTime: resource.setupTime,
-                AvailabilityStatus: newStatus,
-                QualificationRequirements: resource.qualificationRequirements || []
-            };
-
-            // Update resource status
-            await apiService.updateResource(resource.id, updatedResourceData);
-            
+            // Fetch updated resource info
+            updated = await apiService.getResourceById(resource.id);
+            setResource(updated);
             setMessage({ 
                 type: 'success', 
                 text: `Resource ${actionLabel} successfully!` 
             });
-            
-            // Update local resource state
-            setResource(prev => ({
-                ...prev,
-                availabilityStatus: newStatus
-            }));
-
-            // Clear selected action
             setSelectedAction('');
-            
-            // Notify parent component
             if (onSuccess) onSuccess();
-
         } catch (error) {
             console.error('Error updating resource status:', error);
             setMessage({ 
@@ -270,25 +246,25 @@ const ResourceStatusForm = ({ onSuccess }) => {
 
             {resource && (
                 <div className="status-management-section">
-                    <div className="resource-summary">
+                    <div className="form-section-header">
                         <h5>Resource Information</h5>
-                        <div className="summary-grid">
-                            <div className="summary-item">
-                                <label>ID:</label>
-                                <span>{resource.id}</span>
-                            </div>
-                            <div className="summary-item">
-                                <label>Description:</label>
-                                <span>{resource.description}</span>
-                            </div>
-                            <div className="summary-item">
-                                <label>Type:</label>
-                                <span>{getResourceTypeLabel(resource.resourceType)}</span>
-                            </div>
-                            <div className="summary-item">
-                                <label>Current Status:</label>
-                                {getStatusBadge(resource.availabilityStatus)}
-                            </div>
+                    </div>
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label>ID</label>
+                            <input type="text" value={resource.id} className="form-input" disabled />
+                        </div>
+                        <div className="form-group">
+                            <label>Description</label>
+                            <input type="text" value={resource.description} className="form-input" disabled />
+                        </div>
+                        <div className="form-group">
+                            <label>Type</label>
+                            <input type="text" value={getResourceTypeLabel(resource.resourceType)} className="form-input" disabled />
+                        </div>
+                        <div className="form-group">
+                            <label>Current Status</label>
+                            <input type="text" value={resource.status || ''} className="form-input" disabled />
                         </div>
                     </div>
 
@@ -299,17 +275,18 @@ const ResourceStatusForm = ({ onSuccess }) => {
                         </div>
                     ) : (
                         <div className="actions-section">
-                            <h5>Available Actions</h5>
-                            
+                            <div style={{ margin: '2rem 0 1.5rem 0', borderTop: '2px solid #2a3b5c', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderRadius: '2px' }}></div>
+                            <h5 style={{ marginBottom: '0.5rem' }}>Available Actions</h5>
                             <form onSubmit={handleStatusUpdate} className="status-form">
-                                <div className="form-group">
-                                    <label htmlFor="statusAction">Select Action</label>
+                                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                    <label htmlFor="statusAction" style={{ fontWeight: 'bold', marginBottom: '0.3rem' }}>Select Action</label>
                                     <select
                                         id="statusAction"
                                         value={selectedAction}
                                         onChange={handleActionChange}
                                         className="form-select"
                                         required
+                                        style={{ marginBottom: '0.7rem' }}
                                     >
                                         <option value="">Choose an action</option>
                                         {getAvailableActions().map((action) => (
@@ -319,12 +296,11 @@ const ResourceStatusForm = ({ onSuccess }) => {
                                         ))}
                                     </select>
                                     {selectedAction && (
-                                        <small className="form-help">
+                                        <small className="form-help" style={{ display: 'block', marginTop: '0.3rem', color: '#7abaff' }}>
                                             {statusActions.find(a => a.value === selectedAction)?.description}
                                         </small>
                                     )}
                                 </div>
-
                                 <div className="form-actions">
                                     <button 
                                         type="submit" 

@@ -217,28 +217,15 @@ const DeleteResourceForm = ({ onSuccess }) => {
                     </div>
 
                     {/* Resource Details */}
-                    <div className="delete-vessel-info">
+                    <div className="delete-resource-info">
                         <h6>Resource to delete:</h6>
-                        <div className="vessel-summary">
-                            <div className="summary-item">
-                                <strong>ID:</strong> {resource.id}
-                            </div>
-                            <div className="summary-item">
-                                <strong>Description:</strong> {resource.description}
-                            </div>
-                            <div className="summary-item">
-                                <strong>Type:</strong> {getResourceTypeLabel(resource.resourceType)}
-                            </div>
-                            <div className="summary-item">
-                                <strong>Status:</strong> <span className={`status-badge status-${(resource.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
-                                                {resource.status || 'N/A'}</span>
-                            </div>
-                            <div className="summary-item">
-                                <strong>Capacity:</strong> {resource.operationalCapacity}
-                            </div>
-                            <div className="summary-item">
-                                <strong>Setup Time:</strong> {resource.setupTime} minutes
-                            </div>
+                        <div className="resource-summary">
+                            <div className="summary-item"><strong>ID:</strong> {resource.id}</div>
+                            <div className="summary-item"><strong>Description:</strong> {resource.description}</div>
+                            <div className="summary-item"><strong>Type:</strong> {getResourceTypeLabel(resource.resourceType)}</div>
+                            <div className="summary-item"><strong>Status:</strong> <span className={`status-badge status-${(resource.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>{resource.status || 'N/A'}</span></div>
+                            <div className="summary-item"><strong>Capacity:</strong> {resource.operationalCapacity}</div>
+                            <div className="summary-item"><strong>Setup Time:</strong> {resource.setupTime} minutes</div>
                         </div>
                     </div>
 

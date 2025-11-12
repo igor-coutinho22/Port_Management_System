@@ -121,6 +121,20 @@ class ApiService {
         return this.delete(`/resources/${id}`);
     }
 
+    // Resource status actions
+    async activateResource(id) {
+        return this.request(`/resources/${id}/activate`, { method: 'PATCH' });
+    }
+    async deactivateResource(id) {
+        return this.request(`/resources/${id}/deactivate`, { method: 'PATCH' });
+    }
+    async startMaintenance(id) {
+        return this.request(`/resources/${id}/maintenance/start`, { method: 'PATCH' });
+    }
+    async endMaintenance(id) {
+        return this.request(`/resources/${id}/maintenance/end`, { method: 'PATCH' });
+    }
+
     // Vessels
     async getVessels() {
         return this.get('/vessels');
