@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Graph.SecurityNamespace;
 using WebApp.Models.Domain.Vessels;
 using WebApp.Models.Infrastructure.Repositories;
 
