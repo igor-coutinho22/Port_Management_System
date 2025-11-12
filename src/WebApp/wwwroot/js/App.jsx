@@ -26,7 +26,7 @@ const existingPca = window.__pca;
 const pca = existingPca || new msal.PublicClientApplication(window.msalConfig);
 window.__pca = pca;
 
-// Only call handleRedirectPromise ONCE globally
+
 let msalReady = window.__msalReady;
 if (!msalReady) {
   msalReady = pca
@@ -43,7 +43,7 @@ if (!msalReady) {
     })
     .catch((err) => {
       console.error("MSAL handleRedirectPromise error:", err && (err.errorCode || err.message), err);
-      // clear any “login started” latch so we don’t get stuck
+
       sessionStorage.removeItem("msal.login.started");
     });
   window.__msalReady = msalReady;
@@ -186,6 +186,10 @@ const AppWithGlobalNav = () => {
         return <ThreeDView key="3d-view" />;
       case "api-docs":
         return <ApiDocsPage />;
+      case 'admin-users':
+        return <AdminUsersPage />;
+      case "activation-success":
+        return <ActivationSuccessPage />;
       default:
         console.warn(`Unknown page: ${currentPage}, defaulting to home`);
         return <HomePage />;
