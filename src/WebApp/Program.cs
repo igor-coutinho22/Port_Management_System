@@ -1,35 +1,45 @@
-using Microsoft.AspNetCore.Builder;
+using Azure.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Graph;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using WebApp.Models.Application.Services;
+using WebApp.Models.Application.Services.Qualifications;
 using WebApp.Models.Application.Services.Resources;
+using WebApp.Models.Application.Services.StaffService;
 using WebApp.Models.Application.Services.VesselService;
 using WebApp.Models.Application.Services.VesselTypeService;
 using WebApp.Models.Context;
-using WebApp.Models.Domain.Resources.Interfaces;
-using WebApp.Models.Domain.Users;
-using WebApp.Models.Infrastructure.Repositories;
-using WebApp.Models.Infrastructure.Repositories.Resources;
-using WebApp.Models.Infrastructure.Repositories.VesselRepository;
-using WebApp.Seeding;
-using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
 using WebApp.Models.Domain.Qualifications.Interfaces;
-using WebApp.Models.Application.Services.Qualifications;
+using WebApp.Models.Domain.Resources.Interfaces;
+using WebApp.Models.Infrastructure.Repositories;
 using WebApp.Models.Infrastructure.Repositories.Qualifications;
-using WebApp.Models.Domain.Staff.Interfaces;
+using WebApp.Models.Infrastructure.Repositories.Resources;
 using WebApp.Models.Infrastructure.Repositories.StaffRepository;
-using WebApp.Models.Application.Services.StaffService;
+using WebApp.Models.Infrastructure.Repositories.VesselRepository;
+using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
+using WebApp.Seeding;
+
+// ↓↓↓ add your new namespaces
+using System.Linq;
+using WebApp.Models.Domain.Staff.Interfaces;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using WebApp.Models.Domain.Scheduling.Interfaces;
+using WebApp.Models.Security;
+using WebApp.Security;
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
 var builder = WebApplication.CreateBuilder(args);
+
+Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 
 // ---------- Database ----------
 builder.Services.AddDbContext<PortManagementContext>(options =>
@@ -37,35 +47,11 @@ builder.Services.AddDbContext<PortManagementContext>(options =>
         sqlOptions => sqlOptions.EnableRetryOnFailure())
 );
 
-// ---------- Identity with Roles ----------
-// NOTE: Keep Identity for internal role management and user records.
-// Do NOT use cookie-based login for the SPA; SPA will use JWT bearer from External ID.
-builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
-{
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequiredLength = 6;
-    options.SignIn.RequireConfirmedAccount = false;
-})
-.AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<PortManagementContext>()
-.AddDefaultTokenProviders();
-
-builder.Logging.AddConsole();
-
-// (Optional, for MVC/Razor areas you may still have; SPA won’t use this)
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Identity/Account/Login";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
-});
-
-// ---------- CORS (ADD) ----------
+// ---------- CORS ----------
 builder.Services.AddCors(opt =>
 {
-    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() ?? new[] { "http://localhost:5173" };
+    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>()
+                  ?? new[] { "https://localhost:5179" };
     opt.AddDefaultPolicy(p => p
         .WithOrigins(origins)
         .AllowAnyHeader()
@@ -73,46 +59,120 @@ builder.Services.AddCors(opt =>
         .AllowCredentials());
 });
 
-// ---------- Authentication: JWT Bearer (External ID/B2C) (ADD) ----------
-var host = "https://sinesport.ciamlogin.com";
-var tenantId = "a8192c11-2c11-4411-a807-8b0659f4c9a9"; // GUID
-var appIdUri = "api://port-management";                // from Expose an API
+// ---------- Authentication (CIAM) ----------
+var ciam = builder.Configuration.GetSection("AzureAdCiam");
+var issuerDomain = ciam["IssuerDomain"];
+
+var host = ciam["AuthorityHost"];      // https://sinesport.ciamlogin.com
+var tenantId = ciam["TenantId"];       // a8192c11-...
+var authority = $"{host!.TrimEnd('/')}/{tenantId}/v2.0";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        // Standard CIAM discovery (no policy)
-        options.Authority = $"{host}/{tenantId}/v2.0";
-        options.MetadataAddress = $"{host}/{tenantId}/v2.0/.well-known/openid-configuration";
+.AddJwtBearer(options =>
+{
+    options.Authority = authority;
+    options.MetadataAddress = $"{authority}/.well-known/openid-configuration";
 
-        options.TokenValidationParameters = new TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = $"{host!.TrimEnd('/')}/{tenantId}/v2.0/",
+        ValidateAudience = true,
+        ValidAudiences = new[]
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidAudience = appIdUri,   // MUST equal Application ID URI (not the scope)
-            ValidateLifetime = true
-        };
-    });
+            "api://port-management",
+            "6bff1175-b880-4a1d-b320-ff8fcbbd1b99" // API app's clientId
+        },
+        ValidateLifetime = true,
+        RoleClaimType = "roles",
+        NameClaimType = "name"
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = ctx =>
+        {
+            var log = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            log.LogError(ctx.Exception, "JWT authentication failed.");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = ctx =>
+        {
+            var log = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            var iss = ctx.Principal!.FindFirst("iss")?.Value;
+            var auds = string.Join(",", ctx.Principal!.FindAll("aud").Select(c => c.Value));
+            log.LogInformation("JWT validated iss={Iss} aud={Aud}", iss, auds);
+            return Task.CompletedTask;
+        },
+        OnChallenge = ctx =>
+        {
+            var log = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            log.LogWarning("JWT challenge: {Error} {Description}", ctx.Error, ctx.ErrorDescription);
+            return Task.CompletedTask;
+        }
+    };
+});
+
 
 // ---------- Authorization ----------
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequireManagerRole", policy =>
-        policy.RequireRole("Manager", "Admin"));
+    // Example: anything that requires an operational role
+    options.AddPolicy("RequireOpsRole", policy =>
+        policy.RequireRole(Roles.Ops));
+
+    // Example: admin-only
+    options.AddPolicy("RequireAdmin", policy =>
+        policy.RequireRole(Roles.Admin));
 });
 
+// ---------- MVC / JSON ----------
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.Converters.Add(
-        new System.Text.Json.Serialization.JsonStringEnumConverter(
-            System.Text.Json.JsonNamingPolicy.CamelCase
-        ));
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 });
 builder.Services.AddRazorPages();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-// ---------- DI registrations (yours) ----------
+// ---------- Swagger (with JWT) ----------
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Port API", Version = "v1" });
+
+    var host = builder.Configuration["AzureAdCiam:AuthorityHost"]; // https://sinesport.ciamlogin.com
+    var tenantId = builder.Configuration["AzureAdCiam:TenantId"];  // a8192c11-...
+
+    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri($"{host}/{tenantId}/oauth2/v2.0/authorize", UriKind.Absolute),
+                TokenUrl = new Uri($"{host}/{tenantId}/oauth2/v2.0/token", UriKind.Absolute),
+                Scopes = new Dictionary<string, string>
+            {
+                // your API scope
+                { "api://port-management/api.read", "Access Port Management API" }
+            }
+            }
+        }
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
+            },
+            new[] { "api://port-management/api.read" }
+        }
+    });
+});
+
+// ---------- DI: repositories/services ----------
 builder.Services.AddScoped<IQualificationRepository, QualificationRepository>();
 builder.Services.AddScoped<IQualificationService, QualificationService>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
@@ -133,9 +193,38 @@ builder.Services.AddScoped<IDockRepository, DockRepository>();
 builder.Services.AddScoped<IDockService, DockService>();
 builder.Services.AddScoped<IVesselVisitNotificationRepository, VesselVisitNotificationRepository>();
 builder.Services.AddScoped<IVesselVisitNotificationService, VesselVisitNotificationService>();
+builder.Services.AddScoped<IGraphUserService, GraphUserService>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
+
+// ---------- Graph client (app-only) + claims transformation + user admin service ----------
+var backendClientId = ciam["BackendApp:ClientId"];
+var backendClientSecret = ciam["BackendApp:ClientSecret"];
+var extAppNoDashes = ciam["ExtensionsAppIdNoDashes"];
+
+builder.Services.AddSingleton(sp =>
+{
+    var credential = new ClientSecretCredential(
+        tenantId!, backendClientId!, backendClientSecret!,
+        new TokenCredentialOptions { AuthorityHost = new Uri(host!) });
+
+    return new GraphServiceClient(credential, new[] { "https://graph.microsoft.com/.default" });
+});
+
+// claims transform to read Role attribute from Graph and inject role claims
+builder.Services.AddSingleton<IClaimsTransformation>(sp =>
+    new GraphRoleClaimsTransformation(
+        sp.GetRequiredService<GraphServiceClient>(),
+        issuerDomain!,
+        extAppNoDashes!)
+);
+
+// user admin service
+builder.Services.AddScoped<IGraphUserService, GraphUserService>();
 
 var app = builder.Build();
 
+// ---------- DB migrate + seed ONLY domain data ----------
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -158,7 +247,17 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(ui =>
+    {
+        ui.SwaggerEndpoint("/swagger/v1/swagger.json", "Port API v1");
+
+        ui.OAuthClientId("6745e612-4f4f-42ad-b0bb-f3a24350a4f8");
+
+        ui.OAuthUsePkce();
+
+        ui.OAuthScopes("api://port-management/api.read");
+        ui.OAuthAppName("Swagger - Port Management");
+    });
 }
 
 if (!app.Environment.IsEnvironment("Testing"))
@@ -168,84 +267,43 @@ if (!app.Environment.IsEnvironment("Testing"))
 
 app.UseStaticFiles();
 app.UseRouting();
-
-// ADD: CORS before auth
-app.UseCors();
-
+app.UseCors();              
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ---- Helper endpoint: who am I (from token/claims) ----
+app.MapGet("/api/me", (HttpContext http) =>
+{
+    if (!http.User.Identity?.IsAuthenticated ?? true)
+        return Results.Unauthorized();
+
+    var email = http.User.FindFirst("emails")?.Value ?? http.User.FindFirst("email")?.Value;
+    var first = http.User.FindFirst("given_name")?.Value ?? "";
+    var last = http.User.FindFirst("family_name")?.Value ?? "";
+
+    // roles may come from token OR injected by claims transform
+    var roles = http.User.Claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "roles")
+                                .Select(c => c.Value).Distinct().ToArray();
+
+    if (roles.Length == 0)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    return Results.Ok(new { email, firstName = first, lastName = last, roles });
+}).RequireAuthorization();
 
 app.MapControllers();
 app.MapRazorPages();
 
-// --- ADD: /api/me for SPA to load internal role after IAM login ---
-// This assumes you want to keep Identity roles as your "internal role" store.
-// We do NOT create passwords here. We bind an ApplicationUser to the external subject/email.
-app.MapGet("/api/me", async (HttpContext http,
-                            UserManager<ApplicationUser> userManager,
-                            RoleManager<IdentityRole> roleManager) =>
-{
-    // Validate bearer auth
-    if (!http.User.Identity?.IsAuthenticated ?? true)
-        return Results.Unauthorized();
-
-    // External token claims (B2C typically provides "sub" and "emails" or "email")
-    var sub = http.User.FindFirst("sub")?.Value;
-    var email = http.User.FindFirst("emails")?.Value ?? http.User.FindFirst("email")?.Value;
-
-    if (string.IsNullOrWhiteSpace(sub) || string.IsNullOrWhiteSpace(email))
-        return Results.BadRequest(new { error = "Required claims missing (sub/email)." });
-
-    // Find existing user by email; if not present, create WITHOUT password.
-    var user = await userManager.FindByEmailAsync(email);
-    if (user == null)
-    {
-        user = new ApplicationUser
-        {
-            UserName = email,
-            Email = email,
-            // If your ApplicationUser has an ExternalSubjectId property, set it here:
-            // ExternalSubjectId = sub
-        };
-        // Create user record without password; no local sign-in.
-        var createResult = await userManager.CreateAsync(user);
-        if (!createResult.Succeeded)
-            return Results.StatusCode(500);
-        // Optionally: assign default role (e.g., "Staff") here if that’s your policy.
-        if (await roleManager.RoleExistsAsync("Staff"))
-            await userManager.AddToRoleAsync(user, "Staff");
-    }
-
-    var roles = await userManager.GetRolesAsync(user);
-    var role = roles.FirstOrDefault();
-
-    // If no role or role is inactive according to your policy, deny:
-    if (string.IsNullOrWhiteSpace(role))
-        return Results.StatusCode(StatusCodes.Status403Forbidden);
-
-    // Build response for SPA
-    return Results.Ok(new
-    {
-        id = user.Id,
-        email = user.Email,
-        firstName = http.User.FindFirst("given_name")?.Value ?? "",
-        lastName = http.User.FindFirst("family_name")?.Value ?? "",
-        role
-        // You can also include allowed features here, based on role
-    });
-}).RequireAuthorization();
-
-// SPA Configuration - serve index.html for root and SPA routes
+// SPA root
 app.MapGet("/", context =>
 {
     context.Response.Redirect("/index.html");
     return Task.CompletedTask;
 });
 
-// Fallback to index.html for SPA routing (for routes like /home, /vessels, etc.)
+// SPA fallback for non-API routes
 app.MapFallback(async context =>
 {
-    // Only apply SPA fallback for non-API routes
     if (!context.Request.Path.StartsWithSegments("/api"))
     {
         context.Response.ContentType = "text/html";
@@ -256,3 +314,14 @@ app.MapFallback(async context =>
 app.Run();
 
 public partial class Program { }
+
+// ======= Support classes (in the same file or separate files if you prefer) =======
+
+// Claims transformer: reads extension_{ExtensionsAppIdNoDashes}_Role from Graph and adds role claims
+
+
+// Graph user admin service + request record
+
+
+// Admin-only controller
+
