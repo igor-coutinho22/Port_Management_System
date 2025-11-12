@@ -1,12 +1,5 @@
-/* global React, msal */
 (function () {
-  /**
-   * Shared AuthGate for script-tag JSX apps.
-   * Depends on:
-   *   - window.__pca        (PublicClientApplication)
-   *   - window.__msalReady  (Promise from handleRedirectPromise)
-   *   - window.loginRequest (from msalConfig.js)
-   */
+  
   function AuthGate({ children }) {
     const [ready, setReady] = React.useState(false);
 
@@ -48,13 +41,12 @@
         sessionStorage.setItem("msal.login.started", "1");
         try {
           await pca.loginRedirect(window.loginRequest);
-          // Browser navigates; nothing after this
         } catch (e) {
           console.error("AuthGate: loginRedirect failed:", e && (e.errorCode || e.message), e);
           sessionStorage.removeItem("msal.login.started");
-          // Set a one-shot fuse to stop infinite attempts if the same error persists
+
           sessionStorage.setItem("msal.preventLogin", "1");
-          // Optional: show something minimal
+
           const root = document.getElementById("root");
           if (root && !cancelled) {
             root.insertAdjacentHTML(
@@ -72,10 +64,17 @@
           pca.setActiveAccount(evt.payload.account);
           sessionStorage.removeItem("msal.login.started");
           sessionStorage.removeItem("msal.preventLogin");
+
+          
+          pca.acquireTokenSilent(window.apiRequest).catch(e => {
+            console.warn("Initial acquireTokenSilent failed, trying redirect", e);
+            return pca.acquireTokenRedirect(window.apiRequest);
+          });
+
           if (!cancelled) setReady(true);
         }
         if (evt.eventType === msal.EventType.LOGIN_FAILURE) {
-          // Stop repeated attempts if the failure is persistent
+
           sessionStorage.removeItem("msal.login.started");
           sessionStorage.setItem("msal.preventLogin", "1");
         }
