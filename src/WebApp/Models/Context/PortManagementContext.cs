@@ -13,6 +13,7 @@ using WebApp.Models.Infrastructure.Configurations.VesselVisits;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Infrastructure.Configurations.Docks;
 using WebApp.Models.Domain.Vessels;
+using WebApp.Models.Security;
 
 namespace WebApp.Models.Context
 {
@@ -37,6 +38,7 @@ namespace WebApp.Models.Context
         public DbSet<ShippingAgentOrganization> Organizations { get; set; } = default!;
         public DbSet<Representative> Representatives { get; set; } = default!;
         public DbSet<Dock> Docks { get; set; } = default!;
+        public DbSet<ActivationInvite> ActivationInvites => Set<ActivationInvite>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

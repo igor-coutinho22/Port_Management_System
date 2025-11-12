@@ -6,7 +6,7 @@ using WebApp.Models.Domain.Resources.Interfaces;
 using WebApp.Models.Domain.Qualifications;
 using WebApp.Models.Application.Mappers;
 
-namespace PortApi.Controllers
+namespace WebApp.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
