@@ -47,6 +47,7 @@ window.translations = {
         'nav.toggle_menu': 'Toggle navigation menu',
         'nav.close_menu': 'Close menu',
         'nav.navigation': 'Navigation',
+        'nav.admin_users': 'Admin Users',
 
         // Theme
         'theme.switch_to_light': 'Switch to Light Mode',
@@ -74,6 +75,8 @@ window.translations = {
         'home.feature.3d_view.desc': 'Interactive 3D view of the port infrastructure and operations.',
         'home.feature.api_docs.title': '📚 API Documentation',
         'home.feature.api_docs.desc': 'Explore the complete API documentation and endpoints.',
+        'home.feature.admin_users.title': '👤 Admin Users',
+        'home.feature.admin_users.desc': 'Manage administrative users and roles.',
 
         // Management Sidebar
         'management.title': 'Management',
@@ -652,6 +655,7 @@ window.translations = {
         'nav.toggle_menu': 'Alternar menu de navegação',
         'nav.close_menu': 'Fechar menu',
         'nav.navigation': 'Navegação',
+        'nav.admin_users': 'Menu do Utilizador',
 
         // Theme
         'theme.switch_to_light': 'Mudar para Modo Claro',
@@ -679,6 +683,8 @@ window.translations = {
         'home.feature.3d_view.desc': 'Vista 3D interativa da infraestrutura e operações do porto.',
         'home.feature.api_docs.title': '📚 Documentação da API',
         'home.feature.api_docs.desc': 'Explore a documentação completa da API e os endpoints.',
+        'home.feature.admin_users.title': '👤 Funções de Utilizador',
+        'home.feature.admin_users.desc': 'Gerencie funções e permissões de utilizador.',
 
         // Management Sidebar
         'management.title': 'Gestão',

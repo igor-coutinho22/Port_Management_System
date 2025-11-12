@@ -1,0 +1,175 @@
+/* Admin Users Hub Page - Swagger-style Interface */
+
+.hub-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.hub-header h2 {
+    color: var(--text-accent);
+    margin-bottom: 0.5rem;
+}
+
+.operations-container {
+    margin-top: 2rem;
+}
+
+.operation-section {
+    margin-bottom: 2rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border-color);
+}
+
+.operation-header {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    border-left: 8px solid var(--border-color);
+}
+
+.operation-header.expanded {
+    background: var(--text-accent);
+    color: white;
+}
+
+.operation-info {
+    flex: 1;
+}
+
+.operation-title {
+    margin: 0;
+    font-size: 1.2rem;
+    color: inherit;
+}
+
+.operation-description {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.operation-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.http-method {
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-right: 0.5rem;
+}
+
+.expand-arrow {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.operation-content {
+    padding: 1.5rem;
+    background: var(--card-bg);
+}
+
+.operation-body {
+    margin-top: 0.5rem;
+}
+
+.quick-table-container {
+    margin-top: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.quick-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.refresh-btn {
+    background: var(--text-accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.refresh-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-accent);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.data-table th {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.status-badge {
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #27ae60;
+    color: #fff;
+}
+
+.status-inactive {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.action-btn {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 4px;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.action-btn:hover {
+    background: var(--text-accent);
+    color: #fff;
+}
