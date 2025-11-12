@@ -6,7 +6,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
 using WebApp.Models.Domain.Docks;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain.Vessels;
 using WebApp.Models.Infrastructure.Repositories;
 using Xunit;
 

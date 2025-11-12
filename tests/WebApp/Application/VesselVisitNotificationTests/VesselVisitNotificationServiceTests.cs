@@ -8,10 +8,10 @@ using WebApp.Models.Application.DTOs;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
 using WebApp.Models.Infrastructure.Repositories;
-using WebApp.Models.Domain.Vessel;
-using WebApp.Models.Domain.Vessels.VesselType;
+using WebApp.Models.Domain;
 using WebApp.Models.Domain.Docks;
 using Xunit;
+using WebApp.Models.Domain.Vessels;
 
 public class VesselVisitNotificationServiceTests
 {
@@ -295,7 +295,7 @@ public class VesselVisitNotificationServiceTests
     {
         private readonly List<VesselVisitNotification> _notifications = new();
 
-        public Task<VesselVisitNotification> GetByIdAsync(Guid id)
+        public Task<VesselVisitNotification?> GetByIdAsync(Guid id)
         {
             return Task.FromResult(_notifications.FirstOrDefault(v => v.Id == id));
         }
@@ -325,15 +325,15 @@ public class VesselVisitNotificationServiceTests
 
     private class StubVesselRepository : IVesselRepository
     {
-        public Task<Vessel> GetByIMOAsync(string imo)
+        public Task<Vessel?> GetByIMOAsync(string imo)
         {
             if (imo == ValidIMO || imo == "2345678" || imo == "9876543" || imo == "3456789")
             {
                 // Return a mock vessel for valid IMOs
                 var vesselType = CreateMockVesselType();
-                return Task.FromResult(new Vessel(imo, "Test Vessel", "Test Operator", vesselType, 10, 10, 5, 2, 200.0));
+                return Task.FromResult(new Vessel(imo, "Test Vessel", "Test Operator", vesselType, 10, 10, 5, 2, 200.0))!;
             }
-            return Task.FromResult<Vessel>(null);
+            return Task.FromResult<Vessel?>(null);
         }
 
         private VesselType CreateMockVesselType()
@@ -352,14 +352,14 @@ public class VesselVisitNotificationServiceTests
 
     private class StubDockRepository : IDockRepository
     {
-        public Task<Dock> GetByIdAsync(Guid id)
+        public Task<Dock?> GetByIdAsync(Guid id)
         {
             if (id != Guid.Empty)
             {
                 // Return a mock dock for non-empty GUIDs
-                return Task.FromResult(new Dock("Test Dock", "Commercial", 100.0, 50.0, 10.0, new List<VesselType>()));
+                return Task.FromResult(new Dock("Test Dock", "Commercial", 100.0, 50.0, 10.0, new List<VesselType>()))!;
             }
-            return Task.FromResult<Dock>(null);
+            return Task.FromResult<Dock?>(null);
         }
 
         public Task<List<Dock>> GetAllAsync() => throw new NotImplementedException();
@@ -367,8 +367,8 @@ public class VesselVisitNotificationServiceTests
         public Task UpdateAsync(Dock dock) => throw new NotImplementedException();
         public Task DeleteAsync(Dock dock) => throw new NotImplementedException();
         public Task<List<Dock>> SearchByNameAsync(string name) => throw new NotImplementedException();
-        public Task<Dock> GetByNameAsync(string name) => throw new NotImplementedException();
-        public Task<Dock> GetByLocationAsync(string location) => throw new NotImplementedException();
+        public Task<Dock?> GetByNameAsync(string name) => throw new NotImplementedException();
+        public Task<Dock?> GetByLocationAsync(string location) => throw new NotImplementedException();
         public Task<List<Dock>> SearchByVesselTypeAsync(string vesselType) => throw new NotImplementedException();
         public Task<List<Dock>> SearchByLocationAsync(string location) => throw new NotImplementedException();
     }

@@ -147,10 +147,10 @@ const AppWithGlobalNav = () => {
           <DocksHubPage />
         );
       case "storage-areas":
-        return typeof StorageAreasPage === "undefined" ? (
-          <div className="error">StorageAreasPage component not loaded</div>
+        return typeof StorageAreasHubPage === "undefined" ? (
+          <div className="error">StorageAreasHubPage component not loaded</div>
         ) : (
-          <StorageAreasPage />
+          <StorageAreasHubPage />
         );
       case "organizations":
         return typeof OrganizationsPage === "undefined" ? (

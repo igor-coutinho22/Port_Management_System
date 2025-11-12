@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
-using WebApp.Models.Domain.Vessels.VesselType;
 using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
 using FluentAssertions;
 using Xunit;
 using System;
 using System.Threading.Tasks;
+using WebApp.Models.Domain.Vessels;
 
 public class VesselTypeRepositoryTest
 {
