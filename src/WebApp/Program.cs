@@ -251,7 +251,7 @@ if (app.Environment.IsDevelopment())
     {
         ui.SwaggerEndpoint("/swagger/v1/swagger.json", "Port API v1");
 
-        ui.OAuthClientId("6745e612-4f4f-42ad-b0bb-f3a24350a4f8");
+        ui.OAuthClientId("453a7c55-4b93-4b26-8280-4d87954bdf19");
 
         ui.OAuthUsePkce();
 
@@ -267,7 +267,7 @@ if (!app.Environment.IsEnvironment("Testing"))
 
 app.UseStaticFiles();
 app.UseRouting();
-app.UseCors();              
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
