@@ -8,313 +8,249 @@ class ApiService {
         };
     }
 
-    // Generic HTTP request method using Fetch API
+    async _getApiAccessToken() {
+        try {
+            const pca = window.__pca;
+            if (!pca) {
+                console.warn("MSAL PCA not initialized (window.__pca missing).");
+                return null;
+            }
+            const accounts = pca.getAllAccounts();
+            if (!accounts.length) return null;
+
+            const req = { ...(window.apiRequest || {}), account: accounts[0] };
+            const result = await pca.acquireTokenSilent(req);
+            return result?.accessToken || null;
+        } catch (e) {
+            // Don’t redirect here inside the request pipeline; just log and continue without a token.
+            console.warn("acquireTokenSilent for API failed (no Authorization header will be sent):", e);
+            return null;
+        }
+    }
+
+    // ---- Core request method (fetch) ----
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
-        
-        // Debug headers issue
-        console.log('🔍 Default headers:', this.defaultHeaders);
-        console.log('🔍 Options headers:', options.headers);
-        
-        const config = {
-            headers: { ...this.defaultHeaders, ...(options.headers || {}) },
-            ...options
-        };
+
+        // Start with defaults
+        const headers = { ...this.defaultHeaders, ...(options.headers || {}) };
+
+        // Attach Bearer token if available
+        try {
+            const token = await this._getApiAccessToken();
+            if (token && !headers.Authorization) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+        } catch (_) { /* already logged */ }
+
+        const config = { ...options, headers };
 
         // Add JSON body if data is provided
-        if (options.data) {
+        if (options.data !== undefined) {
             config.body = JSON.stringify(options.data);
-            // Ensure Content-Type is set for JSON data
             if (!config.headers['Content-Type']) {
                 config.headers['Content-Type'] = 'application/json';
             }
         }
 
-        try {
-            console.log(`API Request: ${config.method || 'GET'} ${url}`);
-            console.log('🔍 Request config:', config);
-            console.log('🔍 Request headers:', config.headers);
-            console.log('🔍 Request body:', config.body);
-            
-            const response = await fetch(url, config);
-            
-            // Handle different response types
-            if (!response.ok) {
-                // Try to get detailed error message from response body
-                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-                
-                try {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        const errorData = await response.json();
-                        // Handle different error response formats
-                        errorMessage = errorData.message || errorData.error || errorData.title || errorMessage;
-                    } else {
-                        // Handle plain text error responses
-                        const errorText = await response.text();
-                        if (errorText && errorText.trim()) {
-                            errorMessage = errorText;
-                        }
-                    }
-                } catch (parseError) {
-                    // If we can't parse the error response, use the original message
-                    console.warn('Could not parse error response:', parseError);
-                }
-                
-                throw new Error(errorMessage);
-            }
+        // Debug (optional)
+        console.log(`API Request: ${config.method || 'GET'} ${url}`);
+        console.log('🔍 Request config:', config);
+        console.log('🔍 Request headers:', config.headers);
+        if (config.body) console.log('🔍 Request body:', config.body);
 
-            // Return parsed JSON if response has content
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
+        // Do the call
+        const response = await fetch(url, config);
+
+        // Error path
+        if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const ct = response.headers.get('content-type') || '';
+                if (ct.includes('application/json')) {
+                    const data = await response.json();
+                    errorMessage = data.message || data.error || data.title || errorMessage;
+                } else {
+                    const txt = await response.text();
+                    if (txt && txt.trim()) errorMessage = txt;
+                }
+            } catch (parseErr) {
+                console.warn('Could not parse error response:', parseErr);
             }
-            
-            return await response.text();
-        } catch (error) {
-            console.error(`API Error for ${url}:`, error);
-            throw error;
+            console.error(`API Error for ${url}:`, errorMessage);
+            throw new Error(errorMessage);
         }
+
+        // Success path
+        const ct = response.headers.get('content-type') || '';
+        if (ct.includes('application/json')) return response.json();
+        return response.text();
     }
 
-    // HTTP Methods
+    // ---- Convenience HTTP methods ----
     async get(endpoint, headers = {}) {
         return this.request(endpoint, { method: 'GET', headers });
     }
-
     async post(endpoint, data, headers = {}) {
         return this.request(endpoint, { method: 'POST', data, headers });
     }
-
     async put(endpoint, data, headers = {}) {
         return this.request(endpoint, { method: 'PUT', data, headers });
     }
-
     async delete(endpoint, headers = {}) {
         return this.request(endpoint, { method: 'DELETE', headers });
     }
 
-    // Specific API endpoints for Port Management
-    
-    // Resources API
+    // ===== Specific API endpoints for Port Management =====
+
+    // Resources
     async getResources(queryParams = '') {
         const url = queryParams ? `/resources?${queryParams}` : '/resources';
         return this.get(url);
     }
-
     async getResourceById(id) {
         return this.get(`/resources/${id}`);
     }
-
     async createResource(resourceData) {
         return this.post('/resources', resourceData);
     }
-
     async updateResource(id, resourceData) {
         return this.put(`/resources/${id}`, resourceData);
     }
-
     async deleteResource(id) {
         return this.delete(`/resources/${id}`);
     }
 
-    // Vessels API
+    // Vessels
     async getVessels() {
         return this.get('/vessels');
     }
-
     async getVesselByImo(imo) {
         return this.get(`/vessels/getByIMO/${imo}`);
     }
-
     async createVessel(vesselData) {
-        // Extract vesselTypeName from the data to send as query parameter
-        const { vesselTypeName, ...bodyData } = vesselData;
-        
-        // Build the URL with query parameter
+        const { vesselTypeName, ...body } = vesselData;
         const params = new URLSearchParams();
-        if (vesselTypeName) {
-            params.append('vesselTypeName', vesselTypeName);
-        }
-        
+        if (vesselTypeName) params.append('vesselTypeName', vesselTypeName);
         const endpoint = `/vessels?${params.toString()}`;
-        return this.post(endpoint, bodyData);
+        return this.post(endpoint, body);
     }
-
     async updateVessel(imo, vesselData) {
-        // Extract vesselTypeName from the data to send as query parameter
-        const { vesselTypeName, ...bodyData } = vesselData;
-        
-        // Build the URL with query parameter
+        const { vesselTypeName, ...body } = vesselData;
         const params = new URLSearchParams();
-        if (vesselTypeName) {
-            params.append('vesselTypeName', vesselTypeName);
-        }
-        
+        if (vesselTypeName) params.append('vesselTypeName', vesselTypeName);
         const endpoint = `/vessels/${imo}?${params.toString()}`;
-        return this.put(endpoint, bodyData);
+        return this.put(endpoint, body);
     }
-
     async deleteVessel(imo) {
         return this.delete(`/vessels/${imo}`);
     }
-
     async searchVessels(name = null, operatorName = null) {
         const params = new URLSearchParams();
-        
-        if (name && name.trim()) {
-            params.append('name', name.trim());
-        }
-        
-        if (operatorName && operatorName.trim()) {
-            params.append('operatorName', operatorName.trim());
-        }
-        
-        const queryString = params.toString();
-        return this.get(`/vessels/searchByNameAndOperator${queryString ? '?' + queryString : ''}`);
+        if (name?.trim()) params.append('name', name.trim());
+        if (operatorName?.trim()) params.append('operatorName', operatorName.trim());
+        const qs = params.toString();
+        return this.get(`/vessels/searchByNameAndOperator${qs ? `?${qs}` : ''}`);
     }
 
-    // Docks API
+    // Docks
     async getDocks() {
         return this.get('/docks');
     }
-
     async getDockById(id) {
         return this.get(`/docks/${id}`);
     }
+    async createDock(dockData) {
+        return this.post('/docks', dockData);
+    }
+    async updateDock(id, dockData) {
+        return this.put(`/docks/${id}`, dockData);
+    }
+    async deleteDock(id) {
+        return this.delete(`/docks/${id}`);
+    }
+    async searchDocks(name = null, location = null, vesselTypeName = null) {
+        const params = new URLSearchParams();
+        if (name?.trim()) params.append('name', name.trim());
+        if (location?.trim()) params.append('location', location.trim());
+        if (vesselTypeName?.trim()) params.append('vesselTypeName', vesselTypeName.trim());
+        return this.get(`/docks/search?${params.toString()}`);
+    }
 
-    // Storage Areas API
+    // Storage Areas
     async getStorageAreas() {
         return this.get('/storageAreas');
     }
-
     async getStorageAreaById(id) {
         return this.get(`/storageAreas/${id}`);
     }
 
-    // Staff API
+    // Staff
     async getStaff() {
         return this.get('/staff');
     }
-
     async getStaffById(id) {
         return this.get(`/staff/${id}`);
     }
 
-    // Organizations API
+    // Organizations
     async getOrganizations() {
         return this.get('/organizations');
     }
-
     async getOrganizationById(id) {
         return this.get(`/organizations/${id}`);
     }
 
-    // Vessel Types API
+    // Vessel Types
     async getVesselTypes() {
         return this.get('/vesselTypes');
     }
-
     async getVesselTypeByName(name) {
-        return this.get(`/vesselTypes/GetByName/${name}`);
+        return this.get(`/vesselTypes/GetByName/${encodeURIComponent(name)}`);
     }
-
     async createVesselType(vesselTypeData) {
         return this.post('/vesselTypes', vesselTypeData);
     }
-
     async updateVesselType(currentName, vesselTypeData) {
-        return this.put(`/vesselTypes/${currentName}`, vesselTypeData);
+        return this.put(`/vesselTypes/${encodeURIComponent(currentName)}`, vesselTypeData);
     }
-
     async deleteVesselType(name) {
-        return this.delete(`/vesselTypes/${name}`);
+        return this.delete(`/vesselTypes/${encodeURIComponent(name)}`);
     }
-
     async searchVesselTypes(name = null, description = null) {
         const params = new URLSearchParams();
-        
-        if (name && name.trim()) {
-            params.append('name', name.trim());
-        }
-        
-        if (description && description.trim()) {
-            params.append('description', description.trim());
-        }
-        
+        if (name?.trim()) params.append('name', name.trim());
+        if (description?.trim()) params.append('description', description.trim());
         if (!params.toString()) {
             throw new Error('At least one search parameter (name or description) must be provided.');
         }
-        
         return this.get(`/vesselTypes/search?${params.toString()}`);
     }
 
-    // Docks API
-    async getDocks() {
-        return this.get('/docks');
-    }
-
-    async getDockById(id) {
-        return this.get(`/docks/${id}`);
-    }
-
-    async createDock(dockData) {
-        return this.post('/docks', dockData);
-    }
-
-    async updateDock(id, dockData) {
-        return this.put(`/docks/${id}`, dockData);
-    }
-
-    async deleteDock(id) {
-        return this.delete(`/docks/${id}`);
-    }
-
-    async searchDocks(name = null, location = null, vesselTypeName = null) {
-        const params = new URLSearchParams();
-        
-        if (name && name.trim()) {
-            params.append('name', name.trim());
-        }
-        
-        if (location && location.trim()) {
-            params.append('location', location.trim());
-        }
-        
-        if (vesselTypeName && vesselTypeName.trim()) {
-            params.append('vesselTypeName', vesselTypeName.trim());
-        }
-        
-        return this.get(`/docks/search?${params.toString()}`);
-    }
-
-    // Representatives API
+    // Representatives
     async getRepresentatives() {
         return this.get('/representatives');
     }
-
     async getRepresentativeById(id) {
         return this.get(`/representatives/${id}`);
     }
 
-    // Qualifications API
+    // Qualifications
     async getQualifications() {
         return this.get('/qualifications');
     }
-
     async getQualificationById(id) {
         return this.get(`/qualifications/${id}`);
     }
 
-    // Vessel Visit Notifications API
+    // Vessel Visit Notifications
     async getVesselVisitNotifications() {
         return this.get('/vesselvisitnotification');
     }
-
     async getVesselVisitNotificationById(id) {
         return this.get(`/vesselvisitnotification/${id}`);
     }
 }
 
-// Create global API service instance
 const apiService = new ApiService();
+window.apiService = apiService;
