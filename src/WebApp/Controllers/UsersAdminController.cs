@@ -1,93 +1,86 @@
-
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Models.Context;
 using WebApp.Models.Security;
-using WebApp.Security;
+using WebApp.Models.Context;
 
-namespace WebApp.Controllers;
-
-[ApiController]
-[Route("api/admin/users")]
-[Authorize]
-public sealed class UsersAdminController : ControllerBase
+namespace WebApp.Controllers
 {
-    private readonly IGraphUserService _graphUserSvc;
-
-    public UsersAdminController(IGraphUserService graphUserSvc) => _graphUserSvc = graphUserSvc;
-
-    [HttpPost] // create user
-    public async Task<IActionResult> Create([FromBody] CreateUserRequest req)
+    [Route("api/admin/users")]
+    [ApiController]
+    public class UsersAdminController : ControllerBase
     {
-        if (string.IsNullOrWhiteSpace(req.Email) ||
-            string.IsNullOrWhiteSpace(req.DisplayName) ||
-            string.IsNullOrWhiteSpace(req.Password) ||
-            string.IsNullOrWhiteSpace(req.Role))
+        private readonly IGraphUserService _graphUserSvc;
+        private readonly PortManagementContext _db;
+        private readonly IEmailSender _emailSender;
+        private readonly IConfiguration _cfg;
+        private readonly ILogger<UsersAdminController> _logger;
+
+        public UsersAdminController(IGraphUserService graphUserSvc, PortManagementContext db, IEmailSender emailSender, IConfiguration cfg, ILogger<UsersAdminController> logger)
         {
-            return BadRequest("Email, DisplayName, Password and Role are required.");
+            _graphUserSvc = graphUserSvc;
+            _db = db;
+            _emailSender = emailSender;
+            _cfg = cfg;
+            _logger = logger;
         }
 
-        var allowed = Roles.All;
-
-        if (!allowed.Contains(req.Role)) return BadRequest($"Role must be one of: {string.Join(", ", allowed)}");
-
-        var id = await _graphUserSvc.CreateLocalUserAsync(req);
-        return CreatedAtAction(nameof(GetByEmail), new { email = req.Email }, new { id, email = req.Email });
-    }
-
-    [HttpPatch("{email}/role")] // change role
-    public async Task<IActionResult> SetRole([FromRoute] string email, [FromBody] string role)
-    {
-
-        var allowed = Roles.All;
-
-        if (!allowed.Contains(role)) return BadRequest($"Role must be one of: {string.Join(", ", allowed)}");
-
-        await _graphUserSvc.SetUserRoleAsync(email, role);
-        return NoContent();
-    }
-
-    [HttpGet("{email}")]
-    public IActionResult GetByEmail([FromRoute] string email) => Ok(new { email });
-
-    [HttpPost("invite")]
-    public async Task<IActionResult> Invite([FromBody] CreateUserRequest req,
-                                           [FromServices] PortManagementContext db,
-                                           [FromServices] IEmailSender emailSender,
-                                           [FromServices] IConfiguration cfg)
-    {
-        // validate
-        if (string.IsNullOrWhiteSpace(req.Email) ||
-            string.IsNullOrWhiteSpace(req.DisplayName) ||
-            string.IsNullOrWhiteSpace(req.Role))
-            return BadRequest("Email, DisplayName, and Role are required.");
-
-        var allowed = WebApp.Security.Roles.All;
-        if (!allowed.Contains(req.Role)) return BadRequest($"Role must be one of: {string.Join(", ", allowed)}");
-
-        await _graphUserSvc.CreateLocalUserDisabledAsync(req);
-
-        var invite = new ActivationInvite
+        [HttpPost("invite")]
+        public async Task<IActionResult> Invite([FromBody] InviteUserRequest req)
         {
-            Email = req.Email,
-            Role = req.Role,
-            ExpiresUtc = DateTime.UtcNow.AddDays(2)
-        };
-        db.ActivationInvites.Add(invite);
-        await db.SaveChangesAsync();
+            // Validate input
+            if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.DisplayName) || string.IsNullOrWhiteSpace(req.Role))
+                return BadRequest("Email, DisplayName, and Role are required.");
 
-        var apiBase = "https://localhost:5179";
-        var link = $"{apiBase}/api/activation/confirm?token={invite.Id}";
+            var allowedRoles = WebApp.Security.Roles.All;
+            if (!allowedRoles.Contains(req.Role))
+                return BadRequest($"Role must be one of: {string.Join(", ", allowedRoles)}");
 
-        var body = $@"
-        <p>Hello {req.DisplayName},</p>
-        <p>You have been invited to Sines Port Management System. Please confirm your account:</p>
-        <p><a href=""{link}"">Activate my account</a></p>
-        <p>This link expires on {invite.ExpiresUtc:u}.</p>";
+            try
+            {
+                // Step 1: Create user in Azure AD with temporary password
+                var result = await _graphUserSvc.CreateLocalUserAsync(req);
 
-        await emailSender.SendEmailAsync(req.Email, "Activate your Port Management account", body);
+                // Step 2: Create activation invite record
+                var invite = new ActivationInvite
+                {
+                    Email = req.Email,
+                    Role = req.Role,
+                    ExpiresUtc = DateTime.UtcNow.AddDays(2),
+                    Used = false,
+                    TempPassword = result.TempPassword
+                };
 
-        return Accepted(new { email = req.Email });
+                _db.ActivationInvites.Add(invite);
+                await _db.SaveChangesAsync();
+
+                // Step 3: Generate activation URL
+                var frontendBase = _cfg["PublicOrigin"] ?? $"{Request.Scheme}://{Request.Host}";
+                var activationUrl = $"{frontendBase}/api/activation/confirm?token={invite.Id}";
+
+                // Step 4: Send email with the temporary password and activation link
+                var subject = "Activate your account";
+                var body = $@"
+                    <p>Hello {req.DisplayName},</p>
+                    <p>Your account has been created. Please use the following temporary password to sign in:</p>
+                    <p><b>{result.TempPassword}</b></p>
+                    <p>Activate your account here:</p>
+                    <p><a href=""{activationUrl}"">{activationUrl}</a></p>
+                    <p>You will be required to set a new password on your first sign-in.</p>";
+
+                await _emailSender.SendEmailAsync(req.Email, subject, body);
+
+                // Step 5: Return success response
+                return Ok(new
+                {
+                    message = "The user has received an email with an activation link.",
+                    userId = result.Id,
+                    inviteId = invite.Id
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error during user invitation: {Error}", ex.Message);
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
     }
-
 }
