@@ -1,43 +1,39 @@
-// Search Storage Area Form Component
-console.log('🔍 SearchStorageAreaForm component loading...');
+// Get Storage Area By Name Form Component
+console.log('🔎 GetStorageAreaByNameForm component loading...');
 
-
-// Get Storage Area By ID Form Component
-console.log('🎯 GetStorageAreaByIdForm component loading...');
-
-const GetStorageAreaByIdForm = () => {
+const GetStorageAreaByNameForm = () => {
     const { t } = useTranslation();
-    const [storageAreaId, setStorageAreaId] = React.useState('');
+    const [storageAreaName, setStorageAreaName] = React.useState('');
     const [result, setResult] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
 
     const handleInputChange = (e) => {
-        setStorageAreaId(e.target.value);
+        setStorageAreaName(e.target.value);
         if (message.text) setMessage({ type: '', text: '' });
     };
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        if (!storageAreaId.trim()) {
-            setMessage({ type: 'error', text: 'Please enter a storage area ID.' });
+        if (!storageAreaName.trim()) {
+            setMessage({ type: 'error', text: 'Please enter a storage area name.' });
             return;
         }
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         setResult(null);
         try {
-            const area = await apiService.getStorageAreaById(storageAreaId.trim());
+            const area = await apiService.getStorageAreaByName(storageAreaName.trim());
             if (!area) {
-                setMessage({ type: 'info', text: `Storage area with ID '${storageAreaId.trim()}' not found.` });
+                setMessage({ type: 'info', text: 'No storage area found with that name.' });
             } else {
                 setResult(area);
                 setMessage({ type: 'success', text: 'Storage area found.' });
             }
         } catch (error) {
-            console.error('Error fetching vessel:', error);
+           console.error('Error fetching vessel:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: `Storage area with ID '${storageAreaId.trim()}' not found.` });
+                setMessage({ type: 'info', text: `Storage area with name '${storageAreaName.trim()}' not found.` });
             } else {
                 setMessage({ type: 'error', text: error.message || 'Failed to get storage area. Please try again.' });
             }
@@ -48,7 +44,7 @@ const GetStorageAreaByIdForm = () => {
     };
 
     const handleClear = () => {
-        setStorageAreaId('');
+        setStorageAreaName('');
         setResult(null);
         setMessage({ type: '', text: '' });
     };
@@ -56,8 +52,8 @@ const GetStorageAreaByIdForm = () => {
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Get Storage Area by ID</h4>
-                <p>Retrieve detailed information about a specific storage area by its ID</p>
+                <h4>Get Storage Area by Name</h4>
+                <p>Retrieve detailed information about a specific storage area by its name</p>
             </div>
 
             {message.text && (
@@ -69,14 +65,14 @@ const GetStorageAreaByIdForm = () => {
             <form onSubmit={handleSearch} className="search-form">
                 <div className="form-grid">
                     <div className="form-group">
-                        <label htmlFor="storageAreaId">Storage Area ID</label>
+                        <label htmlFor="storageAreaName">Storage Area Name</label>
                         <input
                             type="text"
-                            id="storageAreaId"
-                            name="storageAreaId"
-                            value={storageAreaId}
+                            id="storageAreaName"
+                            name="storageAreaName"
+                            value={storageAreaName}
                             onChange={handleInputChange}
-                            placeholder="Enter storage area ID"
+                            placeholder="Enter storage area name"
                             className="form-input"
                         />
                     </div>
@@ -95,7 +91,7 @@ const GetStorageAreaByIdForm = () => {
                             </>
                         ) : (
                             <>
-                                <span>🎯</span>
+                                <span>🔎</span>
                                 Get Storage Area
                             </>
                         )}
@@ -166,7 +162,7 @@ const GetStorageAreaByIdForm = () => {
                                             </td>
                                         </tr>
                                     );
-                                })}
+                                })()}
                             </tbody>
                         </table>
                     </div>
@@ -176,4 +172,4 @@ const GetStorageAreaByIdForm = () => {
     );
 };
 
-console.log('GetStorageAreaByIdForm component loaded! 🎯');
+console.log('GetStorageAreaByNameForm component loaded! 🔎');
