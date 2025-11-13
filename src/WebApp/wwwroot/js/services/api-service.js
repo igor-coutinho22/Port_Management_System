@@ -196,7 +196,7 @@ class ApiService {
         return this.get('/storageAreas');
     }
     async getStorageAreaById(id) {
-        return this.get(`/storageAreas/${id}`);
+        return this.get(`/storageAreas/GetById/${id}`);
     }
     async getStorageAreaByName(name) {
         return this.get(`/storageAreas/GetByName/${encodeURIComponent(name)}`);
