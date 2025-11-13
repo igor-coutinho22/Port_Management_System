@@ -17,7 +17,8 @@ namespace WebApp.Models.Application.Mappers
                 Name = storageArea.Name,
                 Type = storageArea.Type,
                 MaxCapacityTeu = storageArea.MaxCapacityTeu,
-                CurrentOccupancyTeu = storageArea.CurrentOccupancyTeu
+                CurrentOccupancyTeu = storageArea.CurrentOccupancyTeu,
+                DockConnections = storageArea.DockConnections
             };
         }
     }

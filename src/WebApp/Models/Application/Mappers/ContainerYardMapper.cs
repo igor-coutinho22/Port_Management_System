@@ -13,12 +13,8 @@ namespace WebApp.Models.Application.Mappers
 
             return new ContainerYardDto
             {
-                Id = containerYard.Id,
-                Name = containerYard.Name,
-                Type = containerYard.Type,
-                MaxCapacityTeu = containerYard.MaxCapacityTeu,
-                CurrentOccupancyTeu = containerYard.CurrentOccupancyTeu,
-                DockIds = containerYard.DockConnections.Select(dc => dc.DockId).ToList()
+                StorageArea = StorageAreaMapper.MapToDto(containerYard),
+                DockIds = containerYard.DocksServed.Select(dc => dc.Id).ToList()
             };
         }
 
@@ -29,9 +25,9 @@ namespace WebApp.Models.Application.Mappers
 
             return new ContainerYard
             (
-                name: dto.Name!,
-                maxCapacityTeu: dto.MaxCapacityTeu,
-                currentOccupancyTeu: dto.CurrentOccupancyTeu,
+                name: dto.StorageArea!.Name!,
+                maxCapacityTeu: dto.StorageArea!.MaxCapacityTeu,
+                currentOccupancyTeu: dto.StorageArea!.CurrentOccupancyTeu,
                 docksServed: docks
             );
         }
@@ -43,9 +39,9 @@ namespace WebApp.Models.Application.Mappers
 
             return ContainerYard.CreateForUpdate(
                 id: id,
-                name: dto.Name!,
-                maxCapacityTeu: dto.MaxCapacityTeu,
-                currentOccupancyTeu: dto.CurrentOccupancyTeu,
+                name: dto.StorageArea!.Name!,
+                maxCapacityTeu: dto.StorageArea!.MaxCapacityTeu,
+                currentOccupancyTeu: dto.StorageArea!.CurrentOccupancyTeu,
                 docksServed: docks
             );
         }

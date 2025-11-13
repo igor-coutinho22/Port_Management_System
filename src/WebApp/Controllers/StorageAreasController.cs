@@ -28,7 +28,7 @@ namespace WebApp.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(dto.StorageArea!.Name))
                     return BadRequest("Name is required.");
 
                 if (dto.DockIds == null || dto.DockIds.Count == 0)
@@ -46,14 +46,14 @@ namespace WebApp.Controllers
                     docks.Add(dock);
                 }
 
-                var yard = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as ContainerYard;
+                var yard = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name) as ContainerYard;
                 if (yard != null)
-                    return BadRequest($"Container yard with name '{dto.Name}' already exists.");
+                    return BadRequest($"Container yard with name '{dto.StorageArea!.Name}' already exists.");
                 
                 yard = ContainerYardMapper.MapToDomain(dto, docks);
                 await _storageAreaService.AddContainerYardAsync(yard);
 
-                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as ContainerYard;
+                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name) as ContainerYard;
                 var resultDto = ContainerYardMapper.MapToDto(created!);
                 return CreatedAtAction(nameof(GetById), new { id = created!.Id }, resultDto);
             }
@@ -68,20 +68,20 @@ namespace WebApp.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(dto.StorageArea!.Name))
                     return BadRequest("Name is required.");
 
                 if (string.IsNullOrWhiteSpace(dto.SpecializedCargoType))
                     return BadRequest("Specialized cargo type is required.");
 
-                var warehouse = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as Warehouse;
+                var warehouse = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name) as Warehouse;
                 if (warehouse != null)
-                    return BadRequest($"Warehouse with name '{dto.Name}' already exists.");
+                    return BadRequest($"Warehouse with name '{dto.StorageArea!.Name}' already exists.");
 
                 warehouse = WarehouseMapper.MapToDomain(dto);
                 await _storageAreaService.AddWarehouseAsync(warehouse);
 
-                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name);
+                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name);
                 var resultDto = StorageAreaMapper.MapToDto(created!);
                 return CreatedAtAction(nameof(GetById), new { id = created!.Id }, resultDto);
             }
@@ -100,7 +100,7 @@ namespace WebApp.Controllers
 
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(dto.StorageArea!.Name))
                     return BadRequest("Name is required.");
 
                 if (dto.DockIds == null || dto.DockIds.Count == 0)
@@ -137,7 +137,7 @@ namespace WebApp.Controllers
 
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(dto.StorageArea!.Name))
                     return BadRequest("Name is required.");
 
                 if (string.IsNullOrWhiteSpace(dto.SpecializedCargoType))

@@ -48,28 +48,46 @@ namespace WebApp.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public Task<StorageArea?> GetByNameAsync(string name)
+        public async Task<StorageArea?> GetByNameAsync(string name)
         {
-            return _context.StorageAreas
+            var storageArea = await _context.StorageAreas
                 .Include(sa => sa.DockConnections)
                 .FirstOrDefaultAsync(sa => sa.Name == name);
+
+            if (storageArea is ContainerYard yard)
+            {
+                await _context.Entry(yard).Collection(y => y.DocksServed).LoadAsync();
+            }
+            return storageArea;
         }
 
-        public Task<StorageArea?> SearchByIdAsync(int id)
+        public async Task<StorageArea?> SearchByIdAsync(int id)
         {
-            return _context.StorageAreas
+            var storageArea = await _context.StorageAreas
                 .Include(sa => sa.DockConnections)
                 .FirstOrDefaultAsync(sa => sa.Id == id);
+
+            if (storageArea is ContainerYard yard)
+            {
+                await _context.Entry(yard).Collection(y => y.DocksServed).LoadAsync();
+            }
+            return storageArea;
         }
 
-        public Task<List<StorageArea>> GetAllAsync()
+        public async Task<List<StorageArea>> GetAllAsync()
         {
-            return _context.StorageAreas
+            var storageAreas = await _context.StorageAreas
                 .Include(sa => sa.DockConnections)
                 .ToListAsync();
+
+            foreach (var yard in storageAreas.OfType<ContainerYard>())
+            {
+                await _context.Entry(yard).Collection(y => y.DocksServed).LoadAsync();
+            }
+            return storageAreas;
         }
 
-    public async Task AddConnectionAsync(DockStorageAreaConnection connection)
+        public async Task AddConnectionAsync(DockStorageAreaConnection connection)
         {
             await _context.DockStorageAreaConnections.AddAsync(connection);
             await _context.SaveChangesAsync();

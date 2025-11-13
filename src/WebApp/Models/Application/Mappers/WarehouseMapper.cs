@@ -13,11 +13,7 @@ namespace WebApp.Models.Application.Mappers
 
             return new WarehouseDto
             {
-                Id = warehouse.Id,
-                Name = warehouse.Name,
-                Type = warehouse.Type,
-                MaxCapacityTeu = warehouse.MaxCapacityTeu,
-                CurrentOccupancyTeu = warehouse.CurrentOccupancyTeu,
+                StorageArea = StorageAreaMapper.MapToDto(warehouse),
                 SpecializedCargoType = warehouse.SpecializedCargoType
             };
         }
@@ -29,9 +25,9 @@ namespace WebApp.Models.Application.Mappers
 
             return new Warehouse
             (
-                name: dto.Name!,
-                maxCapacityTeu: dto.MaxCapacityTeu,
-                currentOccupancyTeu: dto.CurrentOccupancyTeu,
+                name: dto.StorageArea!.Name!,
+                maxCapacityTeu: dto.StorageArea!.MaxCapacityTeu,
+                currentOccupancyTeu: dto.StorageArea!.CurrentOccupancyTeu,
                 specializedCargoType: dto.SpecializedCargoType!
             );
         }
@@ -43,9 +39,9 @@ namespace WebApp.Models.Application.Mappers
 
             return Warehouse.CreateForUpdate(
                 id: id,
-                name: dto.Name!,
-                maxCapacityTeu: dto.MaxCapacityTeu,
-                currentOccupancyTeu: dto.CurrentOccupancyTeu,
+                name: dto.StorageArea!.Name!,
+                maxCapacityTeu: dto.StorageArea!.MaxCapacityTeu,
+                currentOccupancyTeu: dto.StorageArea!.CurrentOccupancyTeu,
                 specializedCargoType: dto.SpecializedCargoType!
             );
         }
