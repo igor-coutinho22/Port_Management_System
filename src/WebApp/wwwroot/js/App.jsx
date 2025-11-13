@@ -110,7 +110,20 @@ const AppWithGlobalNav = () => {
   const renderCurrentPage = () => {
     if (isLoading) return <div className="loading-indicator">Loading page...</div>;
 
-    switch (currentPage) {
+    // Log currentPage before the split
+    console.log("currentPage before split:", currentPage);
+
+    // Ensure currentPage is a string before splitting
+    if (typeof currentPage === "string") {
+      var basePage = currentPage.split('?')[0];
+    } else {
+      console.warn("currentPage is not a string:", currentPage);
+      var basePage = "home"; // Default to home if not a string
+    }
+
+    console.log("Base page after split:", basePage);
+
+    switch (basePage) {
       case "home":
         return <HomePage />;
       case "management":
@@ -191,7 +204,7 @@ const AppWithGlobalNav = () => {
       case "activation-success":
         return <ActivationSuccessPage />;
       default:
-        console.warn(`Unknown page: ${currentPage}, defaulting to home`);
+        console.warn(`Unknown page: ${basePage}, defaulting to home`);
         return <HomePage />;
     }
   };
