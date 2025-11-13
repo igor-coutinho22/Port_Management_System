@@ -1,8 +1,6 @@
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.IdentityModel.Tokens;
@@ -26,9 +24,6 @@ using WebApp.Models.Infrastructure.Repositories.StaffRepository;
 using WebApp.Models.Infrastructure.Repositories.VesselRepository;
 using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
 using WebApp.Seeding;
-
-// ↓↓↓ add your new namespaces
-using System.Linq;
 using WebApp.Models.Domain.Staff.Interfaces;
 using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
@@ -40,6 +35,8 @@ Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 var builder = WebApplication.CreateBuilder(args);
 
 Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+
+builder.Logging.AddConsole();
 
 // ---------- Database ----------
 builder.Services.AddDbContext<PortManagementContext>(options =>
@@ -314,14 +311,3 @@ app.MapFallback(async context =>
 app.Run();
 
 public partial class Program { }
-
-// ======= Support classes (in the same file or separate files if you prefer) =======
-
-// Claims transformer: reads extension_{ExtensionsAppIdNoDashes}_Role from Graph and adds role claims
-
-
-// Graph user admin service + request record
-
-
-// Admin-only controller
-
