@@ -5,9 +5,8 @@ function InviteUserForm({ onDone }) {
     const [email, setEmail] = React.useState("");
     const [displayName, setDisplayName] = React.useState("");
     const [role, setRole] = React.useState("Representative");
-    const [password, setPassword] = React.useState("");
-    const [busy, setBusy] = React.useState(false);
     const [msg, setMsg] = React.useState(null);
+    const [busy, setBusy] = React.useState(false);
 
     const submit = async (e) => {
         e.preventDefault();
@@ -15,10 +14,9 @@ function InviteUserForm({ onDone }) {
         setBusy(true);
         try {
             const body = { email, displayName, role };
-            if (password.trim()) body.password = password.trim();
             await apiService.post(INVITE_URL, body);
-            setMsg("Invitation sent successfully.");
-            setEmail(""); setDisplayName(""); setPassword("");
+            setMsg("The user has received an email with an activation link.");
+            setEmail(""); setDisplayName("");
             onDone?.();
         } catch (err) {
             setMsg((err?.message || err));
@@ -30,8 +28,8 @@ function InviteUserForm({ onDone }) {
     return (
         <form onSubmit={submit} className="form-container">
             <div className="form-header">
-                <h4>Invite User</h4>
-                <p>Send an invitation to a new user.</p>
+                <h4>Add User</h4>
+                <p>Send an invitation to a new user with an activation link.</p>
             </div>
             <div className="form-grid">
                 <div className="form-group">
@@ -47,10 +45,6 @@ function InviteUserForm({ onDone }) {
                     <select value={role} onChange={(e) => setRole(e.target.value)} className="form-select">
                         {KNOWN_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
-                </div>
-                <div className="form-group">
-                    <label>Temp password <span style={{ opacity: .6 }}>(optional)</span></label>
-                    <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} className="form-input" />
                 </div>
             </div>
             <div className="form-actions">

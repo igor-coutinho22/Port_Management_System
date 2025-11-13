@@ -1,3 +1,4 @@
+
 const AdminUsersPage = () => {
     const [expandedSection, setExpandedSection] = React.useState(null);
     const [users, setUsers] = React.useState([]);
@@ -24,18 +25,11 @@ const AdminUsersPage = () => {
 
     const sections = [
         {
-            id: "invite",
-            title: "Invite User",
-            description: "Send an invitation to a new user.",
+            id: "add",
+            title: "Add User",
+            description: "Send an invitation to a new user with an activation link.",
             color: "#27ae60",
             component: <InviteUserForm onDone={loadUsers} />
-        },
-        {
-            id: "create",
-            title: "Create User",
-            description: "Create a new user account directly.",
-            color: "#f39c12",
-            component: <CreateUserForm onDone={loadUsers} />
         },
         {
             id: "list",
@@ -63,8 +57,8 @@ const AdminUsersPage = () => {
     return (
         <div className="page-section">
             <div className="hub-header">
-                <h2 className="page-title">👤 Admin — User Management</h2>
-                <p>Create or invite users, resend invites, enable/disable accounts.</p>
+                <h2 className="page-title">Admin — User Management</h2>
+                <p>Add users, resend invites, enable/disable accounts.</p>
             </div>
 
             <div className="operations-container">
@@ -82,9 +76,6 @@ const AdminUsersPage = () => {
                             <div className="operation-controls">
                                 <span className="http-method" style={{ backgroundColor: section.color }}>
                                     {section.id.toUpperCase()}
-                                </span>
-                                <span className={`expand-arrow ${expandedSection === section.id ? "up" : "down"}`}>
-                                    {expandedSection === section.id ? "▲" : "▼"}
                                 </span>
                             </div>
                         </div>
