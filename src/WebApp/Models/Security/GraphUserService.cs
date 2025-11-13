@@ -1,139 +1,72 @@
 using Microsoft.Graph;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Graph.Models;
-using WebApp.Models.Security;
 
-public sealed class GraphUserService : IGraphUserService
+namespace WebApp.Models.Security
 {
-    private readonly GraphServiceClient _graph;
-    private readonly string _issuerDomain;
-    private readonly string _extRoleName;
-    private readonly IEmailSender _emailSender;
-
-    public GraphUserService(GraphServiceClient graph, IConfiguration cfg, IEmailSender emailSender)
+    public sealed class GraphUserService : IGraphUserService
     {
-        _graph = graph;
-        var ciam = cfg.GetSection("AzureAdCiam");
-        _issuerDomain = ciam["IssuerDomain"]!;
-        var extAppNoDashes = ciam["ExtensionsAppIdNoDashes"]!;
-        _extRoleName = $"extension_{extAppNoDashes}_Role";
-        _emailSender = emailSender;
-    }
+        private readonly GraphServiceClient _graph;
+        private readonly string _issuerDomain;
+        private readonly string _extRoleName;
 
-    public async Task<string> SetTemporaryPasswordAsync(string email)
-    {
-        var tempPassword = Convert.ToBase64String(Guid.NewGuid().ToByteArray()) + "aA1!";  // Secure random password
-
-        // Get user by email
-        var users = await _graph.Users.GetAsync(req =>
+        public GraphUserService(GraphServiceClient graph, IConfiguration cfg)
         {
-            req.QueryParameters.Filter = $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{_issuerDomain}')";
-            req.QueryParameters.Select = new[] { "id" };
-        });
+            _graph = graph;
+            var ciam = cfg.GetSection("AzureAdCiam");
+            _issuerDomain = ciam["IssuerDomain"]!;
+            var extAppNoDashes = ciam["ExtensionsAppIdNoDashes"]!;
+            _extRoleName = $"extension_{extAppNoDashes}_Role";
+        }
 
-        var u = users?.Value?.FirstOrDefault() ?? throw new InvalidOperationException("User not found");
-
-        // Set temporary password
-        await _graph.Users[u.Id].PatchAsync(new User
+        public async Task<CreateUserResult> CreateLocalUserAsync(InviteUserRequest req)
         {
-            PasswordProfile = new PasswordProfile
+            var tempPassword = Convert.ToBase64String(Guid.NewGuid().ToByteArray()) + "aA1!";
+
+            var user = new User
             {
-                Password = tempPassword,
-                ForceChangePasswordNextSignIn = true  // Forces the user to change their password at next sign-in
-            }
-        });
-
-        // Send email with password
-        await _emailSender.SendEmailAsync(email, "Temporary Password", $"Your temporary password is {tempPassword}. Please log in and change your password.");
-
-        return tempPassword;
-    }
-
-    
-    public async Task<string> CreateLocalUserAsync(CreateUserRequest req)
-    {
-        var user = new User
-        {
-            DisplayName = req.DisplayName,
-            Identities = new List<ObjectIdentity> {
-                new() {
-                    SignInType = "emailAddress",
-                    Issuer = _issuerDomain,
-                    IssuerAssignedId = req.Email
+                DisplayName = req.DisplayName,
+                Identities = new List<ObjectIdentity> {
+                    new() {
+                        SignInType = "emailAddress",
+                        Issuer = _issuerDomain,
+                        IssuerAssignedId = req.Email
+                    }
+                },
+                PasswordProfile = new PasswordProfile { Password = tempPassword, ForceChangePasswordNextSignIn = true },
+                PasswordPolicies = "DisablePasswordExpiration",
+                AccountEnabled = false,
+                AdditionalData = new Dictionary<string, object>
+                {
+                    [_extRoleName] = req.Role
                 }
-            },
-            PasswordProfile = new PasswordProfile { Password = req.Password, ForceChangePasswordNextSignIn = false },
-            PasswordPolicies = "DisablePasswordExpiration",
-            AccountEnabled = true,
-            AdditionalData = new Dictionary<string, object>
+            };
+
+            var createdUser = await _graph.Users.PostAsync(user);
+            return new CreateUserResult(createdUser.Id, tempPassword);
+        }
+        
+        public async Task EnableUserAsync(string email)
+        {
+            var users = await _graph.Users.GetAsync(req =>
             {
-                [_extRoleName] = req.Role
-            }
-        };
+                req.QueryParameters.Filter =
+                    $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{_issuerDomain}')";
+                req.QueryParameters.Select = new[] { "id", "accountEnabled" };
+            });
 
-        var created = await _graph.Users.PostAsync(user);
-        return created!.Id!;
+            var user = users?.Value?.FirstOrDefault() ?? throw new InvalidOperationException("User not found");
+
+            // Enable the user in Azure AD
+            await _graph.Users[user.Id].PatchAsync(new User { AccountEnabled = true });
+        }
+
     }
 
-    public async Task SetUserRoleAsync(string email, string role)
-    {
-        var users = await _graph.Users.GetAsync(req =>
-        {
-            req.QueryParameters.Filter =
-                $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{_issuerDomain}')";
-            req.QueryParameters.Select = new[] { "id" };
-        });
 
-        var u = users?.Value?.FirstOrDefault() ?? throw new InvalidOperationException("User not found");
 
-        await _graph.Users[u.Id].PatchAsync(new User
-        {
-            AdditionalData = new Dictionary<string, object> { [_extRoleName] = role }
-        });
-    }
-
-    public async Task<string> CreateLocalUserDisabledAsync(CreateUserRequest req)
-    {
-        var tempPassword = Convert.ToBase64String(Guid.NewGuid().ToByteArray()) + "aA1!";
-
-        var user = new User
-        {
-            DisplayName = req.DisplayName,
-            Identities = new List<ObjectIdentity> {
-            new() {
-                SignInType = "emailAddress",
-                Issuer = _issuerDomain,             
-                IssuerAssignedId = req.Email
-            }
-        },
-            PasswordProfile = new PasswordProfile
-            {
-                Password = tempPassword,
-                ForceChangePasswordNextSignIn = true
-            },
-            PasswordPolicies = "DisablePasswordExpiration",
-            AccountEnabled = false,                   
-            AdditionalData = new Dictionary<string, object>
-            {
-                [_extRoleName] = req.Role             
-            }
-        };
-
-        var created = await _graph.Users.PostAsync(user);
-        return created!.Id!;
-    }
-
-    public async Task EnableUserAsync(string email)
-    {
-        var users = await _graph.Users.GetAsync(req =>
-        {
-            req.QueryParameters.Filter =
-                $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{_issuerDomain}')";
-            req.QueryParameters.Select = new[] { "id", "accountEnabled" };
-        });
-
-        var u = users?.Value?.FirstOrDefault() ?? throw new InvalidOperationException("User not found");
-
-        await _graph.Users[u.Id].PatchAsync(new User { AccountEnabled = true });
-    }
-
+    public sealed record CreateUserResult(string Id, string TempPassword);
 }
