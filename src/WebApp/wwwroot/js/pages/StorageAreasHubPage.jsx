@@ -141,7 +141,7 @@ const StorageAreasHubPage = () => {
                         {expandedSection === section.id && (
                             <div className="operation-content">
                                 <div className="operation-body">
-                                    {section.component === 'RegisterContainerYardForm' && <RegisterContainerYardForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'RegisterContainerYardForm' && <RegisterYardForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'RegisterWarehouseForm' && <RegisterWarehouseForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'SearchStorageAreasForm' && <SearchStorageAreasForm />}
                                     {section.component === 'GetStorageAreaByIdForm' && <GetStorageAreaByIdForm />}

@@ -121,6 +121,20 @@ class ApiService {
         return this.delete(`/resources/${id}`);
     }
 
+    // Resource status actions
+    async activateResource(id) {
+        return this.request(`/resources/${id}/activate`, { method: 'PATCH' });
+    }
+    async deactivateResource(id) {
+        return this.request(`/resources/${id}/deactivate`, { method: 'PATCH' });
+    }
+    async startMaintenance(id) {
+        return this.request(`/resources/${id}/maintenance/start`, { method: 'PATCH' });
+    }
+    async endMaintenance(id) {
+        return this.request(`/resources/${id}/maintenance/end`, { method: 'PATCH' });
+    }
+
     // Vessels
     async getVessels() {
         return this.get('/vessels');
@@ -183,6 +197,40 @@ class ApiService {
     }
     async getStorageAreaById(id) {
         return this.get(`/storageAreas/${id}`);
+    }
+    async getStorageAreaByName(name) {
+        return this.get(`/storageAreas/GetByName/${encodeURIComponent(name)}`);
+    }
+    async createContainerYard(data) {
+        return this.post('/storageAreas/containerYard', data);
+    }
+    async createWarehouse(data) {
+        return this.post('/storageAreas/warehouse', data);
+    }
+    async updateContainerYard(id, data) {
+        return this.put(`/storageAreas/containerYard/${id}`, data);
+    }
+    async updateWarehouse(id, data) {
+        return this.put(`/storageAreas/warehouse/${id}`, data);
+    }
+    async deleteStorageArea(id) {
+        return this.delete(`/storageAreas/${id}`);
+    }
+    // Connections
+    async addConnection(storageAreaId, data) {
+        return this.post(`/storageAreas/${storageAreaId}/connections`, data);
+    }
+    async updateConnection(storageAreaId, dockId, data) {
+        return this.put(`/storageAreas/${storageAreaId}/connections/${dockId}`, data);
+    }
+    async deleteConnection(storageAreaId, dockId) {
+        return this.delete(`/storageAreas/${storageAreaId}/connections/${dockId}`);
+    }
+    async getConnection(storageAreaId, dockId) {
+        return this.get(`/storageAreas/${storageAreaId}/connection/${dockId}`);
+    }
+    async getConnections(storageAreaId) {
+        return this.get(`/storageAreas/${storageAreaId}/connections`);
     }
 
     // Staff
