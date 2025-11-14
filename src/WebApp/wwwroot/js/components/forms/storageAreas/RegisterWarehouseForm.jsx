@@ -32,10 +32,14 @@ const RegisterWarehouseForm = ({ onSuccess }) => {
             if (isNaN(parseInt(formData.currentOccupancyTeu)) || parseInt(formData.currentOccupancyTeu) < 0) throw new Error('Current occupancy must be >= 0.');
             if (parseInt(formData.currentOccupancyTeu) > parseInt(formData.maxCapacityTeu)) throw new Error('Current occupancy cannot exceed max capacity.');
 
+            // Build nested DTO for backend
             const warehouseData = {
-                Name: formData.name,
-                MaxCapacityTeu: parseInt(formData.maxCapacityTeu),
-                CurrentOccupancyTeu: parseInt(formData.currentOccupancyTeu),
+                StorageArea: {
+                    Name: formData.name,
+                    MaxCapacityTeu: parseInt(formData.maxCapacityTeu),
+                    CurrentOccupancyTeu: parseInt(formData.currentOccupancyTeu),
+                    DockConnections: []
+                },
                 SpecializedCargoType: formData.specializedCargoType
             };
             await apiService.createWarehouse(warehouseData);

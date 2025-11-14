@@ -77,6 +77,42 @@ const StorageAreasHubPage = () => {
             color: '#e74c3c',
             component: 'DeleteStorageAreaForm'
         }
+        ,
+        {
+            id: 'addConnection',
+            title: `🔗 Add Dock Connection`,
+            description: 'Create a new dock connection for a container yard',
+            color: '#16a085',
+            component: 'AddDockConnectionForm'
+        },
+        {
+            id: 'updateConnection',
+            title: `📝 Update Dock Connection`,
+            description: 'Update an existing dock connection for a container yard',
+            color: '#f1c40f',
+            component: 'UpdateDockConnectionForm'
+        },
+        {
+            id: 'deleteConnection',
+            title: `❌ Delete Dock Connection`,
+            description: 'Remove a dock connection from a container yard',
+            color: '#c0392b',
+            component: 'DeleteDockConnectionForm'
+        },
+        {
+            id: 'getConnection',
+            title: `🔍 Get Dock Connection`,
+            description: 'Retrieve details of a specific dock connection',
+            color: '#2980b9',
+            component: 'GetDockConnectionForm'
+        },
+        {
+            id: 'getConnections',
+            title: `📋 List Dock Connections`,
+            description: 'List all dock connections for a container yard',
+            color: '#8e44ad',
+            component: 'ListDockConnectionsForm'
+        }
     ];
 
     return (
@@ -147,6 +183,11 @@ const StorageAreasHubPage = () => {
                                     {section.component === 'GetStorageAreaByNameForm' && <GetStorageAreaByNameForm />}
                                     {section.component === 'EditStorageAreaForm' && <EditStorageAreaForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'DeleteStorageAreaForm' && <DeleteStorageAreaForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'AddDockConnectionForm' && <AddDockConnectionForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'UpdateDockConnectionForm' && <UpdateDockConnectionForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'DeleteDockConnectionForm' && <DeleteDockConnectionForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'GetDockConnectionForm' && <GetDockConnectionForm />}
+                                    {section.component === 'ListDockConnectionsForm' && <ListDockConnectionsForm />}
                                 </div>
                             </div>
                         )}
