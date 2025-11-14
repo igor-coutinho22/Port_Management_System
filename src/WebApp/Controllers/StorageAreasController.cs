@@ -196,11 +196,7 @@ namespace WebApp.Controllers
                 var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
-
-                // Only ContainerYards can have dock connections
-                if (!(storageArea is ContainerYard))
-                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
-
+                    
                 var dock = await _dockService.GetByIdAsync(dto.DockId);
                 if (dock == null)
                     return NotFound($"Dock with ID {dto.DockId} not found.");
@@ -228,9 +224,6 @@ namespace WebApp.Controllers
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
                 
-                if (!(storageArea is ContainerYard))
-                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
-
                 var connection = await _storageAreaService.GetConnectionAsync(storageAreaId, dockId);
                 if (connection == null)
                     return NotFound($"Connection between storage area ID {storageAreaId} and dock ID {dockId} not found.");
@@ -257,9 +250,6 @@ namespace WebApp.Controllers
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
                 
-                if (!(storageArea is ContainerYard))
-                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
-
                 await _storageAreaService.RemoveConnectionAsync(storageAreaId, dockId);
                 return NoContent();
             }
@@ -287,9 +277,6 @@ namespace WebApp.Controllers
             if (storageArea == null)
                 return NotFound($"Storage area with ID {storageAreaId} not found.");
             
-            if (!(storageArea is ContainerYard))
-                return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
-
             var list = await _storageAreaService.GetConnectionsForStorageAreaAsync(storageAreaId);
             return Ok(list);
         }

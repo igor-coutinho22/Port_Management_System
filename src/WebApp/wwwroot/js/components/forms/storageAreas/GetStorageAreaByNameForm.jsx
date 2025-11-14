@@ -57,7 +57,14 @@ const GetStorageAreaByNameForm = () => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
+                <div
+                    className={`message ${message.type}`}
+                    style={
+                        message.type === 'error'
+                            ? { color: '#e74c3c', borderColor: '#e74c3c' }
+                            : { color: '#27ae60', borderColor: '#27ae60' }
+                    }
+                >
                     {message.text}
                 </div>
             )}
@@ -154,7 +161,7 @@ const GetStorageAreaByNameForm = () => {
                                                 {sa.dockConnections && sa.dockConnections.length > 0
                                                     ? sa.dockConnections.map((dc, idx) => (
                                                         <span key={dc.dockId}>
-                                                            {`${dc.dockId} (Dist: ${dc.distanceMeters}m, Time: ${dc.timeMinutes}min)`}
+                                                            {`${dc.dockId} (Dist: ${dc.distanceMeters}m, Time: ${dc.travelSeconds}sec)`}
                                                             {idx < sa.dockConnections.length - 1 && <><br /><br /></>}
                                                         </span>
                                                     ))

@@ -12,6 +12,14 @@ const RegisterWarehouseForm = ({ onSuccess }) => {
     const [isLoading, setIsLoading] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
 
+    // Helper to get color for message type
+    const getMessageColor = (type) => {
+        if (type === 'error') return 'red';
+        if (type === 'success') return 'green';
+        if (type === 'info') return '#0074D9'; // blue
+        return 'inherit';
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -60,7 +68,10 @@ const RegisterWarehouseForm = ({ onSuccess }) => {
                 <p>Fill in the details to register a new warehouse.</p>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`}>
+                <div
+                    className={`message ${message.type}`}
+                    style={{ color: getMessageColor(message.type), marginTop: '10px' }}
+                >
                     {message.text}
                 </div>
             )}

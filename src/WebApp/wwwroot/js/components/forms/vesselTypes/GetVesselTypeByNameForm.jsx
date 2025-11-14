@@ -1,6 +1,16 @@
 // Get Vessel Type by Name Form Component
 console.log('🎯 GetVesselTypeByNameForm component loading...');
 
+// Helper to get color for message type
+function getMessageColor(type) {
+    switch (type) {
+        case 'success': return 'green';
+        case 'error': return 'red';
+        case 'info': return 'blue';
+        default: return 'inherit';
+    }
+}
+
 const GetVesselTypeByNameForm = () => {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
@@ -75,7 +85,7 @@ const GetVesselTypeByNameForm = () => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
+                <div className="message" style={{ color: getMessageColor(message.type), fontWeight: 'bold' }}>
                     {message.text}
                 </div>
             )}

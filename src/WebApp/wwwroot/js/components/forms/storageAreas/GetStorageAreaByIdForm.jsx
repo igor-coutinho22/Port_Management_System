@@ -1,9 +1,5 @@
-// Search Storage Area Form Component
-console.log('🔍 SearchStorageAreaForm component loading...');
-
-
 // Get Storage Area By ID Form Component
-console.log('🎯 GetStorageAreaByIdForm component loading...');
+console.log('GetStorageAreaByIdForm component loading...');
 
 const GetStorageAreaByIdForm = () => {
     const { t } = useTranslation();
@@ -31,7 +27,19 @@ const GetStorageAreaByIdForm = () => {
             if (!area) {
                 setMessage({ type: 'info', text: `Storage area with ID '${storageAreaId.trim()}' not found.` });
             } else {
-                setResult(area);
+                // Normalize result to match expected table structure
+                setResult({
+                    storageArea: {
+                        id: area.id,
+                        name: area.name,
+                        type: area.type,
+                        maxCapacityTeu: area.maxCapacityTeu,
+                        currentOccupancyTeu: area.currentOccupancyTeu,
+                        dockConnections: area.dockConnections || [],
+                    },
+                    specializedCargoType: area.specializedCargoType || '',
+                    dockIds: area.docksServed || [],
+                });
                 setMessage({ type: 'success', text: 'Storage area found.' });
             }
         } catch (error) {
@@ -61,7 +69,14 @@ const GetStorageAreaByIdForm = () => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
+                <div
+                    className={`message ${message.type}`}
+                    style={
+                        message.type === 'error'
+                            ? { color: '#e74c3c', borderColor: '#e74c3c' }
+                            : { color: '#27ae60', borderColor: '#27ae60' }
+                    }
+                >
                     {message.text}
                 </div>
             )}
@@ -158,7 +173,7 @@ const GetStorageAreaByIdForm = () => {
                                                 {sa.dockConnections && sa.dockConnections.length > 0
                                                     ? sa.dockConnections.map((dc, idx) => (
                                                         <span key={dc.dockId}>
-                                                            {`${dc.dockId} (Dist: ${dc.distanceMeters}m, Time: ${dc.timeMinutes}min)`}
+                                                            {`${dc.dockId} (Dist: ${dc.distanceMeters}m, Time: ${dc.travelSeconds}sec)`}
                                                             {idx < sa.dockConnections.length - 1 && <><br /><br /></>}
                                                         </span>
                                                     ))
@@ -166,7 +181,7 @@ const GetStorageAreaByIdForm = () => {
                                             </td>
                                         </tr>
                                     );
-                                })}
+                                })()}
                             </tbody>
                         </table>
                     </div>

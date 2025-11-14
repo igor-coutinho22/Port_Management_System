@@ -12,6 +12,14 @@ const SearchVesselTypesForm = () => {
     const [hasSearched, setHasSearched] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
 
+    // Helper to get color for message type
+    const getMessageColor = (type) => {
+        if (type === 'error') return 'red';
+        if (type === 'success') return 'green';
+        if (type === 'info') return '#0074D9'; // blue
+        return 'inherit';
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setSearchData(prev => ({
@@ -88,7 +96,7 @@ const SearchVesselTypesForm = () => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
+                <div style={{ color: getMessageColor(message.type), marginTop: '10px' }}>
                     {message.text}
                 </div>
             )}

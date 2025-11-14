@@ -83,7 +83,7 @@ const StorageAreasHubPage = () => {
             title: `🔗 Add Dock Connection`,
             description: 'Create a new dock connection for a container yard',
             color: '#16a085',
-            component: 'AddDockConnectionForm'
+            component: 'AddConnectionForm'
         },
         {
             id: 'updateConnection',
@@ -183,7 +183,7 @@ const StorageAreasHubPage = () => {
                                     {section.component === 'GetStorageAreaByNameForm' && <GetStorageAreaByNameForm />}
                                     {section.component === 'EditStorageAreaForm' && <EditStorageAreaForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'DeleteStorageAreaForm' && <DeleteStorageAreaForm onSuccess={loadStorageAreas} />}
-                                    {section.component === 'AddDockConnectionForm' && <AddDockConnectionForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'AddConnectionForm' && <AddConnectionForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'UpdateDockConnectionForm' && <UpdateDockConnectionForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'DeleteDockConnectionForm' && <DeleteDockConnectionForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'GetDockConnectionForm' && <GetDockConnectionForm />}
