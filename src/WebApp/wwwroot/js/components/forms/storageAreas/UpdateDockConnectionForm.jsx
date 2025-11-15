@@ -90,16 +90,7 @@ const UpdateDockConnectionForm = ({ onSuccess }) => {
                 <p>Update the distance and travel time for an existing dock-storage area connection.</p>
             </div>
             {message.text && (
-                <div
-                    className={`message ${message.type}`}
-                    style={
-                        message.type === 'error'
-                            ? { color: '#e74c3c', borderColor: '#e74c3c' }
-                            : { color: '#27ae60', borderColor: '#27ae60' }
-                    }
-                >
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
             <form onSubmit={handleSubmit} className="connection-form">
                 <div className="form-grid">

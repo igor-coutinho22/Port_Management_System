@@ -68,12 +68,7 @@ const RegisterWarehouseForm = ({ onSuccess }) => {
                 <p>Fill in the details to register a new warehouse.</p>
             </div>
             {message.text && (
-                <div
-                    className={`message ${message.type}`}
-                    style={{ color: getMessageColor(message.type), marginTop: '10px' }}
-                >
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
             <form onSubmit={handleSubmit} className="warehouse-form">
                 <div className="form-grid">

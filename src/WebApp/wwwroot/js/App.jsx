@@ -190,10 +190,10 @@ const AppWithGlobalNav = () => {
           <VesselVisitNotificationsPage />
         );
       case "qualifications":
-        return typeof QualificationsPage === "undefined" ? (
-          <div className="error">QualificationsPage component not loaded</div>
+        return typeof QualificationsHubPage === "undefined" ? (
+          <div className="error">QualificationsHubPage component not loaded</div>
         ) : (
-          <QualificationsPage />
+          <QualificationsHubPage />
         );
       case "3d-view":
         return <ThreeDView key="3d-view" />;

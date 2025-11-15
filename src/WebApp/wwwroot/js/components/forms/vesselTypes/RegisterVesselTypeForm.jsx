@@ -126,9 +126,7 @@ const RegisterVesselTypeForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div style={{ color: getMessageColor(message.type), marginTop: '10px' }}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
 
             <form onSubmit={handleSubmit} className="vessel-form">

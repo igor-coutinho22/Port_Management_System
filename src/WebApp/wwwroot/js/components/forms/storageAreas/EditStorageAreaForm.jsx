@@ -188,9 +188,7 @@ const EditStorageAreaForm = ({ onSuccess }) => {
                 <p>Search for a storage area by ID and modify its information</p>
             </div>
             {message.text && (
-                <div style={{ color: getMessageColor(message.type), marginTop: '10px' }}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
             {/* Step 1: Search for Storage Area */}
             {step === 'search' && (

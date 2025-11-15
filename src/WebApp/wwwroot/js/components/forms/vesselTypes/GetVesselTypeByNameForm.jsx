@@ -85,9 +85,7 @@ const GetVesselTypeByNameForm = () => {
             </div>
 
             {message.text && (
-                <div className="message" style={{ color: getMessageColor(message.type), fontWeight: 'bold' }}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
 
             <form onSubmit={handleSearch} className="search-form">
@@ -95,7 +93,6 @@ const GetVesselTypeByNameForm = () => {
                     <div className="form-group">
                         <label htmlFor="searchName">Vessel Type Name</label>
                         <input
-                            type="text"
                             id="searchName"
                             name="name"
                             value={searchData.name}

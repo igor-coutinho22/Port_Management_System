@@ -97,12 +97,7 @@ const RegisterYardForm = ({ onSuccess }) => {
                 <p>Fill in the details to register a new container yard.</p>
             </div>
             {message.text && (
-                <div
-                    className={`message ${message.type}`}
-                    style={{ color: getMessageColor(message.type), marginTop: '10px' }}
-                >
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
             <form onSubmit={handleSubmit} className="yard-form">
                 <div className="form-grid">

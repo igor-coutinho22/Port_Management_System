@@ -146,7 +146,7 @@ const DeleteDockConnectionForm = ({ onSuccess }) => {
                 <p>Search for a dock-storage area connection and permanently delete it from the system.</p>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type), marginTop: '10px' }}>{message.text}</div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
             {/* Step 1: Search for Connection */}
             {step === 'search' && (

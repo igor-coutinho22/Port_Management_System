@@ -102,7 +102,7 @@ const GetDockConnectionForm = () => {
                 <p>Search for a dock-storage area connection and view its details.</p>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type), marginTop: '10px' }}>{message.text}</div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
             <form onSubmit={handleSearch} className="search-form">
                 <div className="form-grid">

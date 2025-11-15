@@ -150,11 +150,9 @@ const DeleteVesselTypeForm = ({ onSuccess }) => {
                 <p>Remove a vessel type from the system. This action cannot be undone.</p>
             </div>
 
-            {message.text && (
-                <div style={{ color: getMessageColor(message.type), marginTop: '10px' }}>
-                    {message.text}
-                </div>
-            )}
+                {message.text && (
+                    <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
+                )}
 
             {/* Step 1: Search for Vessel Type */}
             {step === 'search' && (

@@ -57,16 +57,7 @@ const GetStorageAreaByNameForm = () => {
             </div>
 
             {message.text && (
-                <div
-                    className={`message ${message.type}`}
-                    style={
-                        message.type === 'error'
-                            ? { color: '#e74c3c', borderColor: '#e74c3c' }
-                            : { color: '#27ae60', borderColor: '#27ae60' }
-                    }
-                >
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
 
             <form onSubmit={handleSearch} className="search-form">
@@ -79,7 +70,6 @@ const GetStorageAreaByNameForm = () => {
                             name="storageAreaName"
                             value={storageAreaName}
                             onChange={handleInputChange}
-                            placeholder="Enter storage area name"
                             className="form-input"
                         />
                     </div>

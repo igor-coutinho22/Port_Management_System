@@ -112,7 +112,7 @@ const DeleteStorageAreaForm = ({ onSuccess }) => {
                 <p>Search for a storage area by ID and permanently delete it from the system</p>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type), marginTop: '10px' }}>{message.text}</div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
             {/* Step 1: Search for Storage Area */}
             {step === 'search' && (

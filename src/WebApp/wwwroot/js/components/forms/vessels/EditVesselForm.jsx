@@ -216,7 +216,7 @@ const EditVesselForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div style={{ color: getMessageColor(message.type), marginTop: '10px' }}>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type), marginTop: '10px' }}>
                     {message.text}
                 </div>
             )}
@@ -233,7 +233,6 @@ const EditVesselForm = ({ onSuccess }) => {
                                 name="imo"
                                 value={searchData.imo}
                                 onChange={handleSearchInputChange}
-                                placeholder={t('vessels.forms.get_by_imo.placeholder')}
                                 maxLength="7"
                                 className="form-input"
                             />

@@ -96,9 +96,7 @@ const GetDockByIdForm = () => {
             </div>
 
             {message.text && (
-                <div className="message" style={{ color: getMessageColor(message.type), fontWeight: 'bold' }}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
             )}
 
             <form onSubmit={handleSearch} className="search-form">
