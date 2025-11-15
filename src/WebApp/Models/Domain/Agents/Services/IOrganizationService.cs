@@ -9,5 +9,6 @@ namespace WebApp.Models.Application.Services
 
         Task<IEnumerable<OrganizationDto>> ListAsync(string? name, string? taxNumber);
         Task<OrganizationDto> UpdateAsync(Guid id, UpdateOrganizationRequest req);
+        Task DeleteAsync(Guid id);
     }
 }

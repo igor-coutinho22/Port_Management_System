@@ -1,5 +1,5 @@
 // Docks Management Hub Page - Swagger-style expandable interface
-console.log('🚢 DocksHubPage.jsx is loading...');
+console.log('DocksHubPage.jsx is loading...');
 
 const DocksHubPage = () => {
     const { t } = useTranslation();

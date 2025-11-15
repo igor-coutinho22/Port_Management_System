@@ -248,6 +248,15 @@ class ApiService {
     async getOrganizationById(id) {
         return this.get(`/organizations/${id}`);
     }
+    async createOrganization(orgData) {
+        return this.post('/organizations', orgData);
+    }
+    async updateOrganization(id, orgData) {
+        return this.put(`/organizations/${id}`, orgData);
+    }
+    async deleteOrganization(id) {
+        return this.delete(`/organizations/${id}`);
+    }
 
     // Vessel Types
     async getVesselTypes() {

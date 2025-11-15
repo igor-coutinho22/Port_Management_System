@@ -36,5 +36,13 @@ namespace WebApp.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<OrganizationDto>> Update(Guid id, [FromBody] UpdateOrganizationRequest req)
             => Ok(await _service.UpdateAsync(id, req));
+
+        // DELETE /api/organizations/{id}
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            await _service.DeleteAsync(id);
+            return NoContent();
+        }
     }
 }
