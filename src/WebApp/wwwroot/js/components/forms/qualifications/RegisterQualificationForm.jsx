@@ -32,7 +32,12 @@ const RegisterQualificationForm = ({ onSuccess }) => {
             setFormData({ code: '', name: '' });
             if (onSuccess) onSuccess();
         } catch (error) {
-            setMessage({ type: 'error', text: error.message || 'Failed to register qualification' });
+            let errorText = error.message || 'Failed to register qualification';
+            // Show only the user-friendly message for duplicate code
+            if (errorText.includes("Qualification with code") && errorText.includes("already exists")) {
+                errorText = errorText.match(/Qualification with code '.*?' already exists\./)?.[0] || "Qualification with this code already exists.";
+            }
+            setMessage({ type: 'error', text: errorText });
         } finally {
             setIsLoading(false);
         }
