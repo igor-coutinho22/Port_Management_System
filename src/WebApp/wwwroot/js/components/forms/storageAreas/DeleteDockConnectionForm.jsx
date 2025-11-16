@@ -190,74 +190,46 @@ const DeleteDockConnectionForm = ({ onSuccess }) => {
             {/* Step 2: Delete Confirmation */}
             {step === 'confirm' && connection && (
                 <>
-                    <div className="form-section-header">
-                        <h5>⚠️ Confirm Connection Deletion</h5>
-                        <button type="button" className="link-btn" onClick={handleNewSearch}>🔍 Search different connection</button>
+                    <div className="delete-form-header">
+                        <span>⚠️ Confirm Connection Deletion</span>
+                        <button type="button" className="link-btn" onClick={handleNewSearch}><span style={{ marginRight: '4px' }}>🔍</span>Search different connection</button>
                     </div>
-                    {/* Connection Details */}
-                    <div className="delete-connection-info" style={{
-                        background: 'none',
-                        border: '2px solid #ffe066',
-                        borderRadius: '12px',
-                        padding: '18px 22px',
-                        margin: '18px 0',
-                        boxShadow: '0 2px 12px 0 rgba(255,224,102,0.08)',
-                        color: '#ffe066',
-                        maxWidth: '540px',
-                        fontWeight: 500
-                    }}>
-                        <div className="connection-summary" style={{ color: '#ffe066', fontSize: '1.08rem', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {['storageAreaId', 'dockId','distanceMeters', 'travelSeconds'].map((key, idx) => {
-                                const labels = {
-                                    storageAreaId: 'STORAGE AREA ID:',
-                                    dockId: 'DOCK ID:',
-                                    distanceMeters: 'DISTANCE (METERS):',
-                                    travelSeconds: 'TRAVEL TIME (SECONDS):'
-                                };
-                                // Light/dark mode detection
-                                const isLightMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-                                const fieldBg = isLightMode ? '#f5f5f5' : '#232323';
-                                const labelColor = isLightMode ? '#2d3a4a' : '#6ec6ff';
-                                const valueColor = isLightMode ? '#222' : '#fff';
-                                return (
-                                    <div key={key} className="summary-item" style={{ background: fieldBg, borderRadius: '8px', padding: '10px 16px', color: labelColor, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
-                                        <span style={{ fontWeight: 600, fontSize: '1em', color: labelColor }}>{labels[key]}</span>
-                                        <span style={{ color: valueColor, fontWeight: 600, fontSize: '1.15em' }}>{connection[key]}</span>
-                                    </div>
-                                );
-                            })}
+                    <div className="delete-details-card">
+                        <span className="delete-details-card-title">⚠️ Connection to be deleted:</span>
+                        <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                            <div className="delete-details-field"><span className="delete-details-label">STORAGE AREA ID:</span><br />{connection.storageAreaId}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">DOCK ID:</span><br />{connection.dockId}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">DISTANCE (METERS):</span><br />{connection.distanceMeters}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">TRAVEL TIME (SECONDS):</span><br />{connection.travelSeconds}</div>
                         </div>
                     </div>
-                    {/* Confirmation Form */}
-                    <form onSubmit={handleDelete} className="delete-form">
-                        <div className="danger-zone">
-                            <div className="danger-header">
-                                <h6>⚠️ Warning: This action cannot be undone</h6>
-                                <p>Deleting this connection will permanently remove it from the system. All associated data will be lost.</p>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="confirmationText">Type <strong>DELETE</strong> to confirm deletion:</label>
+                    <div className="delete-warning-card">
+                        <span className="delete-warning-title">⚠️ Warning: This action cannot be undone</span>
+                        <span className="delete-warning-desc">Deleting this connection will permanently remove it from the system. All associated data will be lost.</span>
+                        <form onSubmit={handleDelete} className="delete-form">
+                            <div className="form-group" style={{ marginBottom: '18px' }}>
+                                <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>Type <strong>DELETE</strong> to confirm deletion:</label>
                                 <input
                                     type="text"
                                     id="confirmationText"
                                     value={confirmationText}
                                     onChange={handleConfirmationInputChange}
                                     placeholder="DELETE"
-                                    className="form-input danger-input"
+                                    className="delete-confirm-input"
                                     required
                                 />
-                                <small className="form-help danger-help">This confirmation helps prevent accidental deletions</small>
+                                <small className="delete-confirm-help">This confirmation helps prevent accidental deletions</small>
                             </div>
-                        </div>
-                        <div className="form-actions">
-                            <button type="submit" className="delete-btn" disabled={isDeleting || confirmationText !== 'DELETE'} style={{ background: '#e74c3c', color: '#fff' }}>
-                                {isDeleting ? (<><span className="loading-spinner"></span>Deleting...</>) : (<><span>🗑️</span>Delete Connection</>)}
-                            </button>
-                            <button type="button" className="clear-btn" onClick={handleClear} disabled={isDeleting}>
-                                <span>🧹</span>Cancel
-                            </button>
-                        </div>
-                    </form>
+                            <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
+                                <button type="submit" className="delete-btn" disabled={isDeleting || confirmationText !== 'DELETE'}>
+                                    {isDeleting ? (<><span className="loading-spinner"></span>Deleting...</>) : (<>🗑️ Delete Connection</>)}
+                                </button>
+                                <button type="button" className="delete-cancel-btn" onClick={handleClear} disabled={isDeleting}>
+                                    <span role="img" aria-label="cancel">🧹</span>Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </>
             )}
         </div>

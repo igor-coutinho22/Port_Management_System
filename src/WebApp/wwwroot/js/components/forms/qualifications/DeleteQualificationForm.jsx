@@ -141,48 +141,39 @@ const DeleteQualificationForm = ({ onSuccess }) => {
             {/* Step 2: Confirm Deletion */}
             {step === 'confirm' && qualification && (
                 <>
-                    <div className="form-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(90deg, #1976d2 60%, #2196f3 100%)', color: 'white', borderRadius: '8px', padding: '12px 18px', marginBottom: '18px' }}>
-                        <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>Confirm deletion of qualification: {qualification.name} <span style={{ fontWeight: 400 }}>(Code: {qualification.code})</span></span>
-                        <button type="button" className="link-btn" onClick={handleNewSearch} style={{ color: 'white', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>
-                            <span role="img" aria-label="search">🔍</span> Search different qualification
-                        </button>
+                    <div className="delete-form-header">
+                        <span>⚠️ Confirm deletion of qualification: {qualification.name} <span style={{ fontWeight: 400 }}>(Code: {qualification.code})</span></span>
+                        <button type="button" className="link-btn" onClick={handleNewSearch}><span style={{ marginRight: '4px' }}>🔍</span>Search different qualification</button>
                     </div>
-                    <div style={{ background: '#2d2323', border: '2px solid #ffa726', borderRadius: '12px', padding: '18px', marginBottom: '24px' }}>
-                        <div style={{ color: '#ffa726', fontWeight: 700, fontSize: '1.1rem', marginBottom: '12px' }}>⚠️ Qualification to be deleted:</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', padding: '12px' }}>
-                            <div style={{ background: '#232b39', borderRadius: '8px', padding: '12px' }}>
-                                <div style={{ color: '#ffa726', fontWeight: 600, fontSize: '0.95rem' }}>CODE:</div>
-                                <div style={{ color: 'white', fontWeight: 600 }}>{qualification.code}</div>
-                            </div>
-                            <div style={{ background: '#232b39', borderRadius: '8px', padding: '12px' }}>
-                                <div style={{ color: '#ffa726', fontWeight: 600, fontSize: '0.95rem' }}>NAME:</div>
-                                <div style={{ color: 'white', fontWeight: 600 }}>{qualification.name}</div>
-                            </div>
+                    <div className="delete-details-card">
+                        <span className="delete-details-card-title">⚠️ Qualification to be deleted:</span>
+                        <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                            <div className="delete-details-field"><span className="delete-details-label">CODE:</span><br />{qualification.code}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">NAME:</span><br />{qualification.name}</div>
                         </div>
                     </div>
-                    <div style={{ background: '#232b39', border: '2px solid #ff5252', borderRadius: '12px', padding: '18px', marginBottom: '24px' }}>
-                        <div style={{ color: '#ff5252', fontWeight: 700, fontSize: '1.1rem', marginBottom: '12px' }}>⚠️ Warning: This action cannot be undone</div>
-                        <div style={{ color: 'white', marginBottom: '12px' }}>Deleting this qualification will permanently remove it from the system. All associated data will be lost.</div>
-                        <form onSubmit={handleDelete} className="qualification-form">
-                            <div className="form-group">
-                                <label htmlFor="confirmName" style={{ color: 'white', fontWeight: 600 }}>Type "{qualification.name}" to confirm deletion:</label>
+                    <div className="delete-warning-card">
+                        <span className="delete-warning-title">⚠️ Warning: This action cannot be undone</span>
+                        <span className="delete-warning-desc">Deleting this qualification will permanently remove it from the system. All associated data will be lost.</span>
+                        <form onSubmit={handleDelete} className="delete-form">
+                            <div className="form-group" style={{ marginBottom: '18px' }}>
+                                <label htmlFor="confirmName" style={{ color: '#fff', fontWeight: 500 }}>Type "{qualification.name}" to confirm deletion:</label>
                                 <input
                                     type="text"
                                     id="confirmName"
                                     value={confirmationText}
                                     onChange={handleConfirmationInputChange}
-                                    className="form-input"
+                                    className="delete-confirm-input"
                                     required
-                                    style={{ marginTop: '8px', background: '#232b39', color: 'white', border: '1px solid #ff5252', borderRadius: '8px', fontWeight: 600 }}
                                 />
-                                <small className="form-help" style={{ color: '#ff5252', fontWeight: 500 }}>This confirmation helps prevent accidental deletions</small>
+                                <small className="delete-confirm-help">This confirmation helps prevent accidental deletions</small>
                             </div>
-                            <div className="form-actions" style={{ marginTop: '18px' }}>
-                                <button type="submit" className="delete-btn" disabled={isDeleting} style={{ background: '#ff5252', color: 'white', fontWeight: 700, borderRadius: '8px', padding: '10px 24px', border: 'none' }}>
+                            <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
+                                <button type="submit" className="delete-btn" disabled={isDeleting || confirmationText !== qualification.name}>
                                     {isDeleting ? (<><span className="loading-spinner"></span>Deleting...</>) : (<>Delete Qualification</>)}
                                 </button>
-                                <button type="button" className="clear-btn" onClick={handleClear} disabled={isDeleting} style={{ marginLeft: '12px', background: '#232b39', color: 'white', borderRadius: '8px', padding: '10px 24px', border: '1px solid #fff' }}>
-                                    <span>🧹</span>Cancel
+                                <button type="button" className="delete-cancel-btn" onClick={handleClear} disabled={isDeleting}>
+                                    <span role="img" aria-label="cancel">🧹</span>Cancel
                                 </button>
                             </div>
                         </form>
