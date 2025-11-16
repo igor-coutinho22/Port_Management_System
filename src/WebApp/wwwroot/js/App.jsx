@@ -178,10 +178,10 @@ const AppWithGlobalNav = () => {
           <RepresentativesPage />
         );
       case "staff":
-        return typeof StaffPage === "undefined" ? (
-          <div className="error">StaffPage component not loaded</div>
+        return typeof StaffHubPage === "undefined" ? (
+          <div className="error">StaffHubPage component not loaded</div>
         ) : (
-          <StaffPage />
+          <StaffHubPage />
         );
       case "vessel-visit-notifications":
         return typeof VesselVisitNotificationsPage === "undefined" ? (

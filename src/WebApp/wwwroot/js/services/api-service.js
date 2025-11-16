@@ -256,6 +256,36 @@ class ApiService {
     async getStaffById(id) {
         return this.get(`/staff/${id}`);
     }
+    async createStaff(staffData) {
+        return this.post('/staff', staffData);
+    }
+    async updateStaff(id, staffData) {
+        return this.put(`/staff/${id}`, staffData);
+    }
+    async deleteStaff(id) {
+        return this.delete(`/staff/${id}`);
+    }
+    async activateStaff(mecNumber) {
+        return this.request(`/staff/${mecNumber}/activate`, { method: 'PATCH' });
+    }
+    async deactivateStaff(mecNumber) {
+        return this.request(`/staff/${mecNumber}/deactivate`, { method: 'PATCH' });
+    }
+    async addQualificationToStaff(staffId, qualificationCode) {
+        return this.post(`/staff/${staffId}/qualifications`, { qualificationCode });
+    }
+    async removeQualificationFromStaff(staffId, qualificationCode) {
+        return this.delete(`/staff/${staffId}/qualifications/${encodeURIComponent(qualificationCode)}`);
+    }
+
+    async searchStaff(name = null, status = null, qualificationCode = null) {
+        const params = new URLSearchParams();
+        if (name?.trim()) params.append('name', name.trim());
+        if (status?.trim()) params.append('status', status.trim());
+        if (qualificationCode?.trim()) params.append('qualification', qualificationCode.trim());
+        const qs = params.toString();
+        return this.get(`/staff${qs ? `?${qs}` : ''}`);
+    }
 
     // Organizations
     async getOrganizations() {
