@@ -1,16 +1,6 @@
 // Get Dock by ID Form Component
 console.log('🎯 GetDockByIdForm component loading...');
 
-// Helper to get color for message type
-function getMessageColor(type) {
-    switch (type) {
-        case 'success': return 'green';
-        case 'error': return 'red';
-        case 'info': return 'blue';
-        default: return 'inherit';
-    }
-}
-
 const GetDockByIdForm = () => {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
@@ -96,7 +86,7 @@ const GetDockByIdForm = () => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             <form onSubmit={handleSearch} className="search-form">

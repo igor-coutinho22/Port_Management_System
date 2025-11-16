@@ -80,7 +80,7 @@ const AddConnectionForm = ({ onSuccess }) => {
                 <p>Register a new connection between a dock and a storage area.</p>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
             <form onSubmit={handleSubmit} className="connection-form">
                 <div className="form-grid">

@@ -21,14 +21,6 @@ const EditDockForm = ({ onSuccess }) => {
     const [isUpdating, setIsUpdating] = React.useState(false);
     const [hasSearched, setHasSearched] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
-
-    // Helper to get color for message type
-    const getMessageColor = (type) => {
-        if (type === 'error') return 'red';
-        if (type === 'success') return 'green';
-        if (type === 'info') return '#0074D9'; // blue
-        return 'inherit';
-    };
     const [step, setStep] = React.useState('search'); // 'search' or 'edit'
 
     // Load vessel types on mount
@@ -242,7 +234,7 @@ const EditDockForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             {/* Step 1: Search for Dock */}

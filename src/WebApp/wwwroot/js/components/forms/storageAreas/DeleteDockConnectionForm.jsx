@@ -16,14 +16,6 @@ const DeleteDockConnectionForm = ({ onSuccess }) => {
     const [step, setStep] = React.useState('search'); // 'search' or 'confirm'
     const [confirmationText, setConfirmationText] = React.useState('');
 
-    // Helper to get color for message type
-    const getMessageColor = (type) => {
-        if (type === 'error') return 'red';
-        if (type === 'success') return 'green';
-        if (type === 'info') return '#0074D9'; // blue
-        return 'inherit';
-    };
-
     React.useEffect(() => {
         loadStorageAreas();
         loadDocks();
@@ -146,7 +138,7 @@ const DeleteDockConnectionForm = ({ onSuccess }) => {
                 <p>Search for a dock-storage area connection and permanently delete it from the system.</p>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type) }}>{message.text}</div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
             {/* Step 1: Search for Connection */}
             {step === 'search' && (

@@ -1,16 +1,6 @@
 // Resource Status Management Form Component
 console.log('🔧 ResourceStatusForm component loading...');
 
-// Helper to get color for message type
-function getMessageColor(type) {
-    switch (type) {
-        case 'success': return 'green';
-        case 'error': return 'red';
-        case 'info': return 'blue';
-        default: return 'inherit';
-    }
-}
-
 const ResourceStatusForm = ({ onSuccess }) => {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
@@ -202,9 +192,7 @@ const ResourceStatusForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className="message" style={{ color: getMessageColor(message.type), fontWeight: 'bold' }}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             <div className="search-section">
