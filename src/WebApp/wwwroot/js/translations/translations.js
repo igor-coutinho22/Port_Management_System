@@ -48,6 +48,7 @@ window.translations = {
         'nav.close_menu': 'Close menu',
         'nav.navigation': 'Navigation',
         'nav.admin_users': 'Admin Users',
+        'nav.logout': 'Sign out',
 
         // Theme
         'theme.switch_to_light': 'Switch to Light Mode',

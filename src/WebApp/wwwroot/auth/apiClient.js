@@ -1,5 +1,3 @@
-/* GLOBAL (no imports/exports). Adds an axios interceptor that injects the MSAL token. */
-/* Requires axios and msal-browser UMD scripts to be loaded before this file. */
 
 (function () {
   if (!window.msalConfig) {

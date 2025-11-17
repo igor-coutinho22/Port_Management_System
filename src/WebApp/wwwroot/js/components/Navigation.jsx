@@ -5,6 +5,25 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
     const { currentUser, canAccessMenu } = useUser();
     const { t } = useTranslation();
 
+    const handleLogout = async () => {
+        const pca = window.__pca;
+        if (!pca) {
+            console.error("Logout: MSAL PublicClientApplication (window.__pca) not found.");
+            return;
+        }
+
+        try {
+            const account = pca.getActiveAccount() || pca.getAllAccounts()[0] || null;
+
+            await pca.logoutRedirect({
+                account: account || undefined,
+                postLogoutRedirectUri: window.location.origin
+            });
+        } catch (e) {
+            console.error("Logout failed:", e && (e.errorCode || e.message), e);
+        }
+    };
+
     // Load saved theme preference
     React.useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
@@ -125,6 +144,15 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Logout Button */}
+                        <button
+                            className="logout-button"
+                            onClick={handleLogout}
+                            title={t('nav.logout', 'Sign out')}
+                        >
+                            {t('nav.logout', 'Sign out')}
+                        </button>
                     </div>
                 </div>
             </header>
