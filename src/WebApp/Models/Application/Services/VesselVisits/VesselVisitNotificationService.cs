@@ -28,39 +28,34 @@ namespace WebApp.Models.Application.Services
             return visits.Select(VesselVisitNotificationMapper.ToDTO);
         }
 
-        public async Task<VesselVisitNotificationDTO?> GetByIdAsync(Guid id)
+        public async Task<VesselVisitNotification?> GetByIdAsync(Guid id)
         {
-            var visit = await _repository.GetByIdAsync(id);
-            return visit is null ? null : VesselVisitNotificationMapper.ToDTO(visit);
+            return await _repository.GetByIdAsync(id);
         }
 
-        public async Task<VesselVisitNotificationDTO> CreateAsync(VesselVisitNotificationDTO dto)
+        public async Task CreateAsync(VesselVisitNotification vvn)
         {
             // Ensure vessel exists (by IMO)
-            var vessel = await _vesselRepository.GetByIMOAsync(dto.VesselIMO!);
+            var vessel = await _vesselRepository.GetByIMOAsync(vvn.VesselIMO!);
             if (vessel == null)
-                throw new InvalidOperationException($"Vessel with IMO {dto.VesselIMO} not found.");
+                throw new InvalidOperationException($"Vessel with IMO {vvn.VesselIMO} not found.");
 
             // Ensure dock exists
-            var dock = await _dockRepository.GetByIdAsync(dto.DockId);
+            var dock = await _dockRepository.GetByIdAsync(vvn.DockId);
             if (dock == null)
-                throw new InvalidOperationException($"Dock with ID {dto.DockId} not found.");
-
-            // Convert DTO → Domain Entity
-            var entity = VesselVisitNotificationMapper.ToEntity(dto);
+                throw new InvalidOperationException($"Dock with ID {vvn.DockId} not found.");
 
             // Enforce rule: Commercial visits need manifests
-            if (entity.Purpose == VisitPurpose.Commercial &&
-                entity.LoadingManifest == null &&
-                entity.UnloadingManifest == null)
+            if (vvn.Purpose == VisitPurpose.Commercial &&
+                vvn.LoadingManifest == null &&
+                vvn.UnloadingManifest == null)
             {
                 throw new InvalidOperationException(
                     "Commercial visits must include at least one cargo manifest."
                 );
             }
 
-            await _repository.AddAsync(entity);
-            return VesselVisitNotificationMapper.ToDTO(entity);
+            await _repository.AddAsync(vvn);
         }
 
         public async Task SubmitAsync(Guid id)
@@ -192,6 +187,15 @@ namespace WebApp.Models.Application.Services
             existingVisit.UpdateUnloadingManifest(vvn.UnloadingManifest);
             existingVisit.UpdateCrew(vvn.Crew);
             await _repository.UpdateAsync(existingVisit);
+        }
+
+        public async Task DeleteVesselAsync(Guid id)
+        {
+            var visitToDelete = await _repository.GetByIdAsync(id);
+            if (visitToDelete == null)
+                throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            await _repository.DeleteAsync(visitToDelete);
         }
     }
 }

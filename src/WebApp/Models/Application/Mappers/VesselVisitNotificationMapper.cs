@@ -19,14 +19,16 @@ namespace WebApp.Models.Application.Mappers
                     ? new CargoManifestDTO
                     {
                         Id = entity.LoadingManifest.Id,
-                        Type = entity.LoadingManifest.Type.ToString()
+                        Type = entity.LoadingManifest.Type.ToString(),
+                        Containers = entity.LoadingManifest.Containers.Select(c => new ContainerDTO { Identifier = c.Identifier }).ToList()
                     }
                     : null,
                 UnloadingManifest = entity.UnloadingManifest != null
                     ? new CargoManifestDTO
                     {
                         Id = entity.UnloadingManifest.Id,
-                        Type = entity.UnloadingManifest.Type.ToString()
+                        Type = entity.UnloadingManifest.Type.ToString(),
+                        Containers = entity.UnloadingManifest.Containers.Select(c => new ContainerDTO { Identifier = c.Identifier }).ToList()
                     }
                     : null,
                 Crew = entity.Crew.Select(c => new CrewMemberDTO
@@ -51,12 +53,26 @@ namespace WebApp.Models.Application.Mappers
             if (dto.LoadingManifest != null)
             {
                 var manifest = new CargoManifest(CargoManifestType.Loading);
+                if (dto.LoadingManifest.Containers != null)
+                {
+                    foreach (var containerDto in dto.LoadingManifest.Containers)
+                    {
+                        manifest.AddContainer(new Container(containerDto.Identifier));
+                    }
+                }
                 entity.AddLoadingManifest(manifest);
             }
 
             if (dto.UnloadingManifest != null)
             {
                 var manifest = new CargoManifest(CargoManifestType.Unloading);
+                if (dto.UnloadingManifest.Containers != null)
+                {
+                    foreach (var containerDto in dto.UnloadingManifest.Containers)
+                    {
+                        manifest.AddContainer(new Container(containerDto.Identifier));
+                    }
+                }
                 entity.AddUnloadingManifest(manifest);
             }
             foreach (var member in dto.Crew)
@@ -64,6 +80,7 @@ namespace WebApp.Models.Application.Mappers
 
             return entity;
         }
+
         public static VesselVisitNotificationFilterDTO ToFilterDTO(
             string? vesselIMO, 
             string? status, 

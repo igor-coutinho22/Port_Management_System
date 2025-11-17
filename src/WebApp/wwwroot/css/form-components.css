@@ -1,3 +1,46 @@
+/* Add/Remove Button Styling for Dynamic Lists */
+.add-btn {
+    background: linear-gradient(90deg, #27ae60 70%, #219150 100%);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1.2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px #27ae6033;
+    transition: background 0.2s, transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.add-btn:hover {
+    background: linear-gradient(90deg, #219150 70%, #27ae60 100%);
+    transform: translateY(-2px) scale(1.04);
+}
+
+.remove-btn {
+    background: linear-gradient(90deg, #e74c3c 70%, #c0392b 100%);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 1rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px #e74c3c33;
+    transition: background 0.2s, transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.remove-btn:hover {
+    background: linear-gradient(90deg, #c0392b 70%, #e74c3c 100%);
+    transform: translateY(-2px) scale(1.04);
+}
 /* ===== Delete Form Design ===== */
 .delete-form-header {
     background: linear-gradient(90deg, #174b7e 80%, #1a2940 100%);

@@ -355,6 +355,46 @@ class ApiService {
     async getVesselVisitNotificationById(id) {
         return this.get(`/vesselvisitnotification/${id}`);
     }
+    async searchVesselVisitNotifications({ vesselIMO, status, fromDate, toDate, representative }) {
+        const params = [];
+        if (vesselIMO) params.push(`vesselIMO=${encodeURIComponent(vesselIMO)}`);
+        if (status) params.push(`status=${encodeURIComponent(status)}`);
+        if (fromDate) params.push(`fromDate=${encodeURIComponent(fromDate)}`);
+        if (toDate) params.push(`toDate=${encodeURIComponent(toDate)}`);
+        if (representative) params.push(`representative=${encodeURIComponent(representative)}`);
+        const query = params.length ? `?${params.join('&')}` : '';
+        return this.get(`/vesselvisitnotification/search${query}`);
+    }
+
+    async createVesselVisitNotification(data) {
+        return this.post('/vesselvisitnotification', data);
+    }
+
+    async editVesselVisitNotificationWhileInProgress(id, data) {
+        return this.put(`/vesselvisitnotification/${id}/updateWhileInProgress`, data);
+    }
+
+    async submitVesselVisitNotification(id) {
+        return this.put(`/vesselvisitnotification/${id}/submit`);
+    }
+
+    async approveVesselVisitNotification(id, officerId, dockId) {
+        const params = [];
+        if (officerId) params.push(`officerId=${encodeURIComponent(officerId)}`);
+        if (dockId) params.push(`dockId=${encodeURIComponent(dockId)}`);
+        const query = params.length ? `?${params.join('&')}` : '';
+        return this.put(`/vesselvisitnotification/${id}/approve${query}`);
+    }
+
+    async rejectVesselVisitNotification(id, officerId, reason) {
+        const params = officerId ? `?officerId=${encodeURIComponent(officerId)}` : '';
+        // Reason is sent as raw string body
+        return this.put(`/vesselvisitnotification/${id}/reject${params}`, reason, { 'Content-Type': 'application/json' });
+    }
+
+    async deleteVesselVisitNotification(id) {
+        return this.delete(`/vesselvisitnotification/${id}`);
+    }
 }
 
 const apiService = new ApiService();

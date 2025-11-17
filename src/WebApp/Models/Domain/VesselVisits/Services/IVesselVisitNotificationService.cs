@@ -6,12 +6,12 @@ namespace WebApp.Models.Domain.VesselVisits.Services
     {
         Task<IEnumerable<VesselVisitNotificationDTO>> GetAllAsync();
         Task<IEnumerable<VesselVisitNotificationDTO>> SearchAsync(VesselVisitNotificationFilterDTO filter);
-        Task<VesselVisitNotificationDTO?> GetByIdAsync(Guid id);
-        Task<VesselVisitNotificationDTO> CreateAsync(VesselVisitNotificationDTO dto);
+        Task<VesselVisitNotification?> GetByIdAsync(Guid id);
+        Task CreateAsync(VesselVisitNotification vvn);
         Task UpdateAsync(Guid id, VesselVisitNotification vvn);
         Task SubmitAsync(Guid id);
         Task ApproveAsync(Guid id, Guid officerId, Guid dockId);
         Task RejectAsync(Guid id, Guid officerId, string reason);
-
+        Task DeleteVesselAsync(Guid id);
     }
 }

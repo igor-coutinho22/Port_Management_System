@@ -17,8 +17,8 @@ namespace WebApp.Models.Infrastructure.Repositories
         public async Task<IEnumerable<VesselVisitNotification>> GetAllAsync()
         {
             return await _context.VesselVisitNotifications
-                .Include(v => v.LoadingManifest)
-                .Include(v => v.UnloadingManifest)
+                .Include(v => v.LoadingManifest).ThenInclude(m => m!.Containers)
+                .Include(v => v.UnloadingManifest).ThenInclude(m => m!.Containers)
                 .Include(v => v.Crew)
                 .AsNoTracking()
                 .ToListAsync();
@@ -27,8 +27,8 @@ namespace WebApp.Models.Infrastructure.Repositories
         public async Task<VesselVisitNotification?> GetByIdAsync(Guid id)
         {
             return await _context.VesselVisitNotifications
-                .Include(v => v.LoadingManifest)
-                .Include(v => v.UnloadingManifest)
+                .Include(v => v.LoadingManifest).ThenInclude(m => m!.Containers)
+                .Include(v => v.UnloadingManifest).ThenInclude(m => m!.Containers)
                 .Include(v => v.Crew)
                 .FirstOrDefaultAsync(v => v.Id == id);
         }
@@ -42,6 +42,12 @@ namespace WebApp.Models.Infrastructure.Repositories
         public async Task UpdateAsync(VesselVisitNotification notification)
         {
             _context.VesselVisitNotifications.Update(notification);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(VesselVisitNotification notification)
+        {
+            _context.VesselVisitNotifications.Remove(notification);
             await _context.SaveChangesAsync();
         }
     }
