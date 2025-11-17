@@ -271,11 +271,13 @@ class ApiService {
     async deactivateStaff(mecNumber) {
         return this.request(`/staff/${mecNumber}/deactivate`, { method: 'PATCH' });
     }
-    async addQualificationToStaff(staffId, qualificationCode) {
-        return this.post(`/staff/${staffId}/qualifications`, { qualificationCode });
+    // Send { code: qualificationCode } as QualificationDTO (name is optional, backend only needs code)
+    async addQualificationToStaff(mecNumber, qualificationData) {
+    // Accepts mecNumber and a full qualificationData object
+    return this.post(`/staff/${mecNumber}/qualifications`, qualificationData);
     }
-    async removeQualificationFromStaff(staffId, qualificationCode) {
-        return this.delete(`/staff/${staffId}/qualifications/${encodeURIComponent(qualificationCode)}`);
+    async removeQualificationFromStaff(mecNumber, qualificationCode) {
+        return this.delete(`/staff/${mecNumber}/qualifications/${encodeURIComponent(qualificationCode)}`);
     }
 
     async searchStaff(name = null, status = null, qualificationCode = null) {
