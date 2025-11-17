@@ -25,7 +25,7 @@ namespace WebApp.Controllers
 
         // GET: api/vesselvisitnotification
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<VesselVisitNotificationDTO>>> GetAllAsync()
+        public async Task<ActionResult> GetAllAsync()
         {
             var visits = await _service.GetAllAsync();
             return Ok(visits);
@@ -56,19 +56,19 @@ namespace WebApp.Controllers
         }
 
         // GET: api/vesselvisitnotification/{id}
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<VesselVisitNotificationDTO>> GetByIdAsync(Guid id)
+        [HttpGet("{id:guid}", Name = "GetByIdAsync")]
+        public async Task<ActionResult> GetByIdAsync(Guid id)
         {
             var visit = await _service.GetByIdAsync(id);
             if (visit == null)
-                return NotFound();
+                return NotFound($"Vessel Visit Notification with ID {id} not found.");
 
-            return Ok(visit);
+            return Ok(VesselVisitNotificationMapper.ToDTO(visit));
         }
 
         // POST: api/vesselvisitnotification
         [HttpPost]
-        public async Task<ActionResult<VesselVisitNotificationDTO>> CreateAsync(
+        public async Task<ActionResult> CreateAsync(
             [FromBody] VesselVisitNotificationDTO dto)
         {
             if (dto == null)
@@ -76,8 +76,11 @@ namespace WebApp.Controllers
 
             try
             {
-                var created = await _service.CreateAsync(dto);
-                return Created($"/api/vesselvisitnotification/{created.Id}", created);
+                var vesselvisitnotification = VesselVisitNotificationMapper.ToEntity(dto);
+                await _service.CreateAsync(vesselvisitnotification);
+
+                var created = await _service.GetByIdAsync(vesselvisitnotification.Id);
+                return CreatedAtRoute("GetByIdAsync", new { id = created!.Id }, VesselVisitNotificationMapper.ToDTO(created));
             }
             catch (InvalidOperationException ex)
             {
@@ -170,7 +173,7 @@ namespace WebApp.Controllers
                 
                 // Return the updated entity
                 var result = await _service.GetByIdAsync(id);
-                return Ok(result);
+                return Ok(VesselVisitNotificationMapper.ToDTO(result!));
             }
             catch (KeyNotFoundException ex)
             {
@@ -184,6 +187,20 @@ namespace WebApp.Controllers
             {
                 _logger.LogError(ex, "Unexpected error while updating Vessel Visit Notification.");
                 return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteAsync(Guid id)
+        {
+            try
+            {
+                await _service.DeleteVesselAsync(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

@@ -9,5 +9,6 @@ namespace WebApp.Models.Domain.VesselVisits
         Task<VesselVisitNotification?> GetByIdAsync(Guid id);
         Task AddAsync(VesselVisitNotification notification);
         Task UpdateAsync(VesselVisitNotification notification);
+        Task DeleteAsync(VesselVisitNotification notification);
     }
 }

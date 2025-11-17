@@ -16,10 +16,17 @@ namespace WebApp.Models.Application.DTOs
         public List<CrewMemberDTO> Crew { get; set; } = new();
     }
 
+
     public class CargoManifestDTO
     {
         public Guid Id { get; set; }
         public string Type { get; set; } = string.Empty;
+        public List<ContainerDTO> Containers { get; set; } = new();
+    }
+
+    public class ContainerDTO
+    {
+        public string Identifier { get; set; } = string.Empty;
     }
 
     public class CrewMemberDTO
