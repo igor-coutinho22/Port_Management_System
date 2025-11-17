@@ -29,13 +29,13 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
         const savedTheme = localStorage.getItem('theme');
         const prefersDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
         setIsDarkMode(prefersDark);
-        
+
         // Apply theme to html element
         document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-        
+
         // Also add class to body for additional targeting
         document.body.className = prefersDark ? 'dark-theme' : 'light-theme';
-        
+
         console.log('Theme applied:', prefersDark ? 'dark' : 'light'); // Debug log
     }, []);
 
@@ -43,15 +43,15 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
         const newTheme = !isDarkMode;
         setIsDarkMode(newTheme);
         const theme = newTheme ? 'dark' : 'light';
-        
+
         // Apply theme to html element
         document.documentElement.setAttribute('data-theme', theme);
-        
+
         // Also add class to body
         document.body.className = newTheme ? 'dark-theme' : 'light-theme';
-        
+
         localStorage.setItem('theme', theme);
-        
+
         console.log('Theme toggled to:', theme); // Debug log
     };
     // All possible navigation items (labels will be translated when rendered)
@@ -106,7 +106,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
             <header className="header-bar">
                 <div className="header-content">
                     {/* Hamburger Menu Button */}
-                    <button 
+                    <button
                         className={`hamburger-menu ${isMenuOpen ? 'active' : ''}`}
                         onClick={toggleMenu}
                         title={t('nav.toggle_menu', 'Toggle navigation menu')}
@@ -132,10 +132,10 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                             </div>
                             <UserRoleSwitcher />
                         </div>
-                        
+
                         {/* Language Switcher */}
                         <LanguageSwitcher />
-                        
+
                         {/* Theme Switch */}
                         <div className="theme-switch" onClick={toggleTheme} title={isDarkMode ? t('theme.switch_to_light', 'Switch to Light Mode') : t('theme.switch_to_dark', 'Switch to Dark Mode')}>
                             <div className={`theme-switch-track ${isDarkMode ? 'dark' : 'light'}`}>
@@ -147,7 +147,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
 
                         {/* Logout Button */}
                         <button
-                            className="logout-button"
+                            className="btn logout-button"
                             onClick={handleLogout}
                             title={t('nav.logout', 'Sign out')}
                         >
@@ -168,8 +168,8 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                 <nav className="slide-out-menu">
                     <div className="menu-header">
                         <h3>{t('nav.navigation', 'Navigation')}</h3>
-                        <button 
-                            className="menu-close" 
+                        <button
+                            className="menu-close"
                             onClick={() => {
                                 setIsMenuOpen(false);
                                 if (onHamburgerMenuToggle) {
@@ -181,7 +181,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                             ✕
                         </button>
                     </div>
-                    
+
                     <ul className="menu-items">
                         <li>
                             <button
@@ -192,7 +192,7 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                                 <span className="menu-label">{t('nav.home', 'Home')}</span>
                             </button>
                         </li>
-                        
+
                         {navItems.map(item => (
                             <li key={item.id}>
                                 <button
