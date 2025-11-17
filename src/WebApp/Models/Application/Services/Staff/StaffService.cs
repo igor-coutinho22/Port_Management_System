@@ -13,16 +13,17 @@ namespace WebApp.Models.Application.Services.StaffService
             _staffRepo = staffRepo;
         }
 
-        public async Task RegisterStaffAsync(string mecanographicNumber, string shortName, string email, string phone,
-            StaffStatus status, string operationalWindow)
+        public async Task RegisterStaffAsync(Staff staff)
         {
-            var existing = await _staffRepo.GetByMecanographicNumberAsync(mecanographicNumber);
-            if (existing != null)
-                throw new ArgumentException($"Staff with mecanographic number '{mecanographicNumber}' already exists.");
+            if (staff == null)
+                throw new ArgumentNullException(nameof(staff));
 
-            var staff = new Staff(mecanographicNumber, shortName, email, phone, status, operationalWindow);
-            await _staffRepo.AddAsync(staff);
-        }
+            var existing = await _staffRepo.GetByMecanographicNumberAsync(staff.MecanographicNumber);
+            if (existing != null)
+                throw new ArgumentException(
+                    $"Staff with mecanographic number '{staff.MecanographicNumber}' already exists.");
+
+            await _staffRepo.AddAsync(staff);}
 
         public async Task<Staff?> GetByMecanographicNumberAsync(string mecanographicNumber)
             => await _staffRepo.GetByMecanographicNumberAsync(mecanographicNumber);
@@ -62,12 +63,16 @@ namespace WebApp.Models.Application.Services.StaffService
             await _staffRepo.UpdateAsync(staff);
         }
 
-        public async Task AddQualificationToStaffAsync(string staffNumber, Qualification qualification, DateOnly? obtained = null, DateOnly? expiry = null)
+        public async Task AddQualificationToStaffAsync(
+            string staffNumber,
+            Qualification qualification,
+            DateOnly? obtained = null,
+            DateOnly? expiry = null)
         {
             var staff = await _staffRepo.GetByMecanographicNumberAsync(staffNumber)
                 ?? throw new KeyNotFoundException($"Staff '{staffNumber}' not found.");
 
-            staff.QualificationLinks.Add(new QualificationLink(staffNumber, qualification.Code, obtained, expiry));
+            staff.AddQualification(qualification, obtained, expiry);
             await _staffRepo.UpdateAsync(staff);
         }
 
@@ -76,12 +81,8 @@ namespace WebApp.Models.Application.Services.StaffService
             var staff = await _staffRepo.GetByMecanographicNumberAsync(staffNumber)
                 ?? throw new KeyNotFoundException($"Staff '{staffNumber}' not found.");
 
-            var link = staff.QualificationLinks.FirstOrDefault(l => l.QualificationCode == qualificationCode);
-            if (link != null)
-            {
-                staff.QualificationLinks.Remove(link);
-                await _staffRepo.UpdateAsync(staff);
-            }
+            staff.RemoveQualification(qualificationCode);
+            await _staffRepo.UpdateAsync(staff);
         }
 
         public async Task DeleteAsync(string mecanographicNumber)

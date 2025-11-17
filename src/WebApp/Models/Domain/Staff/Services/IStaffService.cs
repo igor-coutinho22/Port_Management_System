@@ -5,14 +5,7 @@ namespace WebApp.Models.Domain.Staff.Interfaces
 {
     public interface IStaffService
     {
-        Task RegisterStaffAsync(
-            string mecanographicNumber,
-            string shortName,
-            string email,
-            string phone,
-            StaffStatus status,
-            string operationalWindow);
-
+        Task RegisterStaffAsync(Staff staff);
         Task<Staff?> GetByMecanographicNumberAsync(string mecanographicNumber);
         Task<List<Staff>> GetAllAsync();
         Task<List<Staff>> GetByStatusAsync(StaffStatus status);
