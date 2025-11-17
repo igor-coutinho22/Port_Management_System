@@ -151,9 +151,7 @@ const DeleteDockForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             {/* Step 1: Search for Dock */}
@@ -210,98 +208,67 @@ const DeleteDockForm = ({ onSuccess }) => {
             {/* Step 2: Delete Confirmation */}
             {step === 'confirm' && dock && (
                 <>
-                    <div className="form-section-header">
-                        <h5>⚠️ Confirm Dock Deletion</h5>
+                    <div className="delete-form-header">
+                        <span>⚠️ Confirm Dock Deletion</span>
                         <button 
                             type="button" 
                             className="link-btn"
                             onClick={handleNewSearch}
                         >
-                            🔍 Search different dock
+                            <span style={{ marginRight: '4px' }}>🔍</span>Search different dock
                         </button>
                     </div>
-
-                    {/* Dock Details */}
-                    <div className="delete-dock-info">
-                        <h6>Dock to be deleted:</h6>
-                        <div className="dock-summary">
-                            <div className="summary-item">
-                                <strong>ID:</strong> {dock.id}
-                            </div>
-                            <div className="summary-item">
-                                <strong>Name:</strong> {dock.name}
-                            </div>
-                            <div className="summary-item">
-                                <strong>Location:</strong> {dock.location}
-                            </div>
-                            <div className="summary-item">
-                                <strong>Dimensions:</strong> {dock.lengthMeters}m × {dock.depthMeters}m × {dock.maxDraftMeters}m
-                            </div>
-                            <div className="summary-item">
-                                <strong>Allowed Vessel Types:</strong> {dock.allowedVesselTypes && dock.allowedVesselTypes.length > 0 
-                                    ? dock.allowedVesselTypes.join(', ') 
-                                    : 'None'}
-                            </div>
+                    <div className="delete-details-card">
+                        <span className="delete-details-card-title">⚠️ Dock to be deleted:</span>
+                        <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                            <div className="delete-details-field"><span className="delete-details-label">ID:</span><br />{dock.id}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">Name:</span><br />{dock.name}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">Location:</span><br />{dock.location}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">Dimensions:</span><br />{dock.lengthMeters}m × {dock.depthMeters}m × {dock.maxDraftMeters}m</div>
+                            <div className="delete-details-field"><span className="delete-details-label">Allowed Vessel Types:</span><br />{dock.allowedVesselTypes && dock.allowedVesselTypes.length > 0 ? dock.allowedVesselTypes.join(', ') : 'None'}</div>
                         </div>
                     </div>
-
-                    {/* Confirmation Form */}
-                    <form onSubmit={handleDelete} className="delete-form">
-                        <div className="danger-zone">
-                            <div className="danger-header">
-                                <h6>⚠️ Warning: This action cannot be undone</h6>
-                                <p>Deleting this dock will permanently remove it from the system. All associated data will be lost.</p>
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="confirmationText">
-                                    Type "<strong>{dock.name}</strong>" to confirm deletion:
-                                </label>
+                    <div className="delete-warning-card">
+                        <span className="delete-warning-title">⚠️ Warning: This action cannot be undone</span>
+                        <span className="delete-warning-desc">Deleting this dock will permanently remove it from the system. All associated data will be lost.</span>
+                        <form onSubmit={handleDelete} className="delete-form">
+                            <div className="form-group" style={{ marginBottom: '18px' }}>
+                                <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>Type "<strong>{dock.name}</strong>" to confirm deletion:</label>
                                 <input
                                     type="text"
                                     id="confirmationText"
                                     value={confirmationText}
                                     onChange={handleConfirmationInputChange}
                                     placeholder={dock.name}
-                                    className="form-input danger-input"
+                                    className="delete-confirm-input"
                                     required
                                 />
-                                <small className="form-help danger-help">
-                                    This confirmation helps prevent accidental deletions
-                                </small>
+                                <small className="delete-confirm-help">This confirmation helps prevent accidental deletions</small>
                             </div>
-                        </div>
-
-                        <div className="form-actions">
-                            <button 
-                                type="submit" 
-                                className="delete-btn"
-                                disabled={isDeleting || confirmationText !== dock.name}
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <span className="loading-spinner"></span>
-                                        Deleting...
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>🗑️</span>
-                                        Delete Dock
-                                    </>
-                                )}
-                            </button>
-
-                            <button 
-                                type="button" 
-                                className="clear-btn"
-                                onClick={handleClear}
-                                disabled={isDeleting}
-                            >
-                                <span>🧹</span>
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
+                            <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
+                                <button 
+                                    type="submit" 
+                                    className="delete-btn"
+                                    disabled={isDeleting || confirmationText !== dock.name}
+                                >
+                                    {isDeleting ? (
+                                        <><span className="loading-spinner"></span>Deleting...</>
+                                    ) : (
+                                        <>🗑️ Delete Dock</>
+                                    )}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="delete-cancel-btn"
+                                    onClick={handleClear}
+                                    disabled={isDeleting}
+                                >
+                                    <span role="img" aria-label="cancel">🧹</span>
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </>
             )}
         </div>

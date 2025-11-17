@@ -2,6 +2,7 @@ namespace WebApp.Models.Application.DTOs
 {
     public class DockDto
     {
+        public Guid? Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public double LengthMeters { get; set; }

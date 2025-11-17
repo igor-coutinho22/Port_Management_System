@@ -50,18 +50,18 @@ const StorageAreasHubPage = () => {
             component: 'RegisterWarehouseForm'
         },
         {
-            id: 'search',
-            title: `🔍 Search Storage Areas`,
-            description: 'Search storage areas by name or type',
-            color: '#3498db',
-            component: 'SearchStorageAreasForm'
-        },
-        {
             id: 'getById',
             title: `🎯 Get Storage Area by ID`,
-            description: 'Retrieve detailed information about a specific storage area',
+            description: 'Retrieve detailed information about a specific storage area by its ID',
             color: '#2980b9',
             component: 'GetStorageAreaByIdForm'
+        },
+        {
+            id: 'getByName',
+            title: `🔎 Get Storage Area by Name`,
+            description: 'Retrieve detailed information about a specific storage area by its name',
+            color: '#3498db',
+            component: 'GetStorageAreaByNameForm'
         },
         {
             id: 'edit',
@@ -76,6 +76,42 @@ const StorageAreasHubPage = () => {
             description: 'Remove a storage area from the system',
             color: '#e74c3c',
             component: 'DeleteStorageAreaForm'
+        }
+        ,
+        {
+            id: 'addConnection',
+            title: `🔗 Add Dock Connection`,
+            description: 'Create a new dock connection for a container yard',
+            color: '#16a085',
+            component: 'AddConnectionForm'
+        },
+        {
+            id: 'updateConnection',
+            title: `📝 Update Dock Connection`,
+            description: 'Update an existing dock connection for a container yard',
+            color: '#f1c40f',
+            component: 'UpdateDockConnectionForm'
+        },
+        {
+            id: 'deleteConnection',
+            title: `❌ Delete Dock Connection`,
+            description: 'Remove a dock connection from a container yard',
+            color: '#c0392b',
+            component: 'DeleteDockConnectionForm'
+        },
+        {
+            id: 'getConnection',
+            title: `🔍 Get Dock Connection`,
+            description: 'Retrieve details of a specific dock connection',
+            color: '#2980b9',
+            component: 'GetDockConnectionForm'
+        },
+        {
+            id: 'getConnections',
+            title: `📋 List Dock Connections`,
+            description: 'List all dock connections for a container yard',
+            color: '#8e44ad',
+            component: 'ListDockConnectionsForm'
         }
     ];
 
@@ -143,10 +179,15 @@ const StorageAreasHubPage = () => {
                                 <div className="operation-body">
                                     {section.component === 'RegisterContainerYardForm' && <RegisterYardForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'RegisterWarehouseForm' && <RegisterWarehouseForm onSuccess={loadStorageAreas} />}
-                                    {section.component === 'SearchStorageAreasForm' && <SearchStorageAreasForm />}
                                     {section.component === 'GetStorageAreaByIdForm' && <GetStorageAreaByIdForm />}
+                                    {section.component === 'GetStorageAreaByNameForm' && <GetStorageAreaByNameForm />}
                                     {section.component === 'EditStorageAreaForm' && <EditStorageAreaForm onSuccess={loadStorageAreas} />}
                                     {section.component === 'DeleteStorageAreaForm' && <DeleteStorageAreaForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'AddConnectionForm' && <AddConnectionForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'UpdateDockConnectionForm' && <UpdateDockConnectionForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'DeleteDockConnectionForm' && <DeleteDockConnectionForm onSuccess={loadStorageAreas} />}
+                                    {section.component === 'GetDockConnectionForm' && <GetDockConnectionForm />}
+                                    {section.component === 'ListDockConnectionsForm' && <ListDockConnectionsForm />}
                                 </div>
                             </div>
                         )}
@@ -167,7 +208,6 @@ const StorageAreasQuickTable = ({ storageAreas, onRefresh }) => {
                 <h4>Storage Areas Overview ({storageAreas.length} total)</h4>
                 <button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
             </div>
-            
             {storageAreas.length === 0 ? (
                 <div className="no-data">
                     <h3>No storage areas found</h3>
@@ -185,33 +225,47 @@ const StorageAreasQuickTable = ({ storageAreas, onRefresh }) => {
                                 <th>Current Occupancy (TEU)</th>
                                 <th>Utilization</th>
                                 <th>Specialized Info</th>
+                                <th>Dock Connections</th>
                             </tr>
                         </thead>
                         <tbody>
                             {storageAreas.map((area) => {
-                                const utilizationPercent = area.maxCapacityTeu ? Math.round((area.currentOccupancyTeu / area.maxCapacityTeu) * 100) : 0;
+                                // Support nested DTOs (ContainerYardDto, WarehouseDto)
+                                const sa = area.storageArea || area;
+                                const id = sa.id || area.id || 'N/A';
+                                const name = sa.name || area.name || 'N/A';
+                                const type = sa.type || area.type || 'N/A';
+                                const maxCapacityTeu = sa.maxCapacityTeu || area.maxCapacityTeu || 'N/A';
+                                const currentOccupancyTeu = sa.currentOccupancyTeu || area.currentOccupancyTeu || 'N/A';
+                                const utilizationPercent = maxCapacityTeu && currentOccupancyTeu ? Math.round((currentOccupancyTeu / maxCapacityTeu) * 100) : 0;
                                 let specializedInfo = 'N/A';
-                                
-                                if (area.type === 'Warehouse' || area.type === 'warehouse') {
+                                // Warehouse specialized info
+                                if (type === 'Warehouse' || type === 'warehouse') {
                                     specializedInfo = area.specializedCargoType || 'General';
-                                } else if (area.type === 'ContainerYard' || area.type === 'containerYard') {
-                                    const dockCount = area.dockIds ? area.dockIds.length : 0;
+                                } else if (type === 'ContainerYard' || type === 'containerYard') {
+                                    // Try dockIds from top-level or nested
+                                    const dockIds = area.dockIds || sa.dockIds || (sa.dockConnections ? sa.dockConnections.map(dc => dc.dockId) : []);
+                                    const dockCount = dockIds ? dockIds.length : 0;
                                     specializedInfo = `${dockCount} docks served`;
                                 }
-                                
+                                // Dock connections column
+                                const dockConnections = sa.dockConnections && sa.dockConnections.length > 0
+                                    ? `${sa.dockConnections.length} dock connections`
+                                    : 'None';
                                 return (
-                                    <tr key={area.id}>
-                                        <td>{area.id || 'N/A'}</td>
-                                        <td className="name-cell">{area.name || 'N/A'}</td>
-                                        <td>{area.type || 'N/A'}</td>
-                                        <td>{area.maxCapacityTeu || 'N/A'}</td>
-                                        <td>{area.currentOccupancyTeu || 'N/A'}</td>
+                                    <tr key={id}>
+                                        <td>{id}</td>
+                                        <td className="name-cell">{name}</td>
+                                        <td>{type}</td>
+                                        <td>{maxCapacityTeu}</td>
+                                        <td>{currentOccupancyTeu}</td>
                                         <td>
                                             <span className={`utilization-badge ${utilizationPercent >= 90 ? 'high' : utilizationPercent >= 70 ? 'medium' : 'low'}`}>
                                                 {utilizationPercent}%
                                             </span>
                                         </td>
                                         <td>{specializedInfo}</td>
+                                        <td>{dockConnections}</td>
                                     </tr>
                                 );
                             })}

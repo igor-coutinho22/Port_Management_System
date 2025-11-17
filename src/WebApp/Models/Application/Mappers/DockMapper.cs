@@ -13,6 +13,7 @@ namespace WebApp.Models.Application.DTOs
 
             return new DockDto
             {
+                Id = dock.Id,
                 Name = dock.Name,
                 Location = dock.Location,
                 LengthMeters = dock.LengthMeters,

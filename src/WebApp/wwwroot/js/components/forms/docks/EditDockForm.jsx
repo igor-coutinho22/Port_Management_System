@@ -234,9 +234,7 @@ const EditDockForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             {/* Step 1: Search for Dock */}

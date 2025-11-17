@@ -146,9 +146,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             {/* Step 1: Search for Resource */}
@@ -205,87 +203,68 @@ const DeleteResourceForm = ({ onSuccess }) => {
             {/* Step 2: Delete Confirmation */}
             {step === 'confirm' && resource && (
                 <>
-                    <div className="form-section-header">
-                        <h5>⚠️ Confirm Deletion</h5>
+                    <div className="delete-form-header">
+                        <span>⚠️ Confirm Deletion</span>
                         <button 
                             type="button" 
                             className="link-btn"
                             onClick={handleNewSearch}
                         >
-                            🔍 Search Different Resource
+                            <span style={{ marginRight: '4px' }}>🔍</span>Search Different Resource
                         </button>
                     </div>
-
-                    {/* Resource Details */}
-                    <div className="delete-resource-info">
-                        <h6>Resource to delete:</h6>
-                        <div className="resource-summary">
-                            <div className="summary-item"><strong>ID:</strong> {resource.id}</div>
-                            <div className="summary-item"><strong>Description:</strong> {resource.description}</div>
-                            <div className="summary-item"><strong>Type:</strong> {getResourceTypeLabel(resource.resourceType)}</div>
-                            <div className="summary-item"><strong>Status:</strong> <span className={`status-badge status-${(resource.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>{resource.status || 'N/A'}</span></div>
-                            <div className="summary-item"><strong>Capacity:</strong> {resource.operationalCapacity}</div>
-                            <div className="summary-item"><strong>Setup Time:</strong> {resource.setupTime} minutes</div>
+                    <div className="delete-details-card">
+                        <span className="delete-details-card-title">⚠️ Resource to delete:</span>
+                        <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                            <div className="delete-details-field"><span className="delete-details-label">ID:</span><br />{resource.id}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">Description:</span><br />{resource.description}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">Type:</span><br />{getResourceTypeLabel(resource.resourceType)}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">Status:</span><br /><span className={`status-badge status-${(resource.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>{resource.status || 'N/A'}</span></div>
+                            <div className="delete-details-field"><span className="delete-details-label">Capacity:</span><br />{resource.operationalCapacity}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">Setup Time:</span><br />{resource.setupTime} minutes</div>
                         </div>
                     </div>
-
-                    {/* Confirmation Form */}
-                    <form onSubmit={handleDelete} className="delete-form">
-                        <div className="danger-zone">
-                            <div className="danger-header">
-                                <h6>⚠️ Warning</h6>
-                                <p>This action cannot be undone and will permanently remove all resource data.</p>
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="confirmationText">
-                                    Type "<strong>{resource.description}</strong>" to confirm:
-                                </label>
+                    <div className="delete-warning-card">
+                        <span className="delete-warning-title">⚠️ Warning</span>
+                        <span className="delete-warning-desc">This action cannot be undone and will permanently remove all resource data.</span>
+                        <form onSubmit={handleDelete} className="delete-form">
+                            <div className="form-group" style={{ marginBottom: '18px' }}>
+                                <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>Type "<strong>{resource.description}</strong>" to confirm:</label>
                                 <input
                                     type="text"
                                     id="confirmationText"
                                     value={confirmationText}
                                     onChange={handleConfirmationInputChange}
                                     placeholder={resource.description}
-                                    className="form-input danger-input"
+                                    className="delete-confirm-input"
                                     required
                                 />
-                                <small className="form-help danger-help">
-                                    This confirmation helps prevent accidental deletions
-                                </small>
+                                <small className="delete-confirm-help">This confirmation helps prevent accidental deletions</small>
                             </div>
-                        </div>
-
-                        <div className="form-actions">
-                            <button 
-                                type="submit" 
-                                className="delete-btn"
-                                disabled={isDeleting || confirmationText !== resource.description}
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <span className="loading-spinner"></span>
-                                        Deleting...
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>🗑️</span>
-                                        Delete Resource
-                                    </>
-                                )}
-                            </button>
-
-                            <button 
-                                type="button" 
-                                className="clear-btn"
-                                onClick={handleClear}
-                                disabled={isDeleting}
-                            >
-                                <span>🧹</span>
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
+                            <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
+                                <button 
+                                    type="submit" 
+                                    className="delete-btn"
+                                    disabled={isDeleting || confirmationText !== resource.description}
+                                >
+                                    {isDeleting ? (
+                                        <><span className="loading-spinner"></span>Deleting...</>
+                                    ) : (
+                                        <>🗑️ Delete Resource</>
+                                    )}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="delete-cancel-btn"
+                                    onClick={handleClear}
+                                    disabled={isDeleting}
+                                >
+                                    <span role="img" aria-label="cancel">🧹</span>
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </>
             )}
         </div>

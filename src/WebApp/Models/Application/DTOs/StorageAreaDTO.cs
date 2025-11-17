@@ -1,4 +1,5 @@
 using PortManagement.Domain.Enums;
+using WebApp.Models.Domain.StorageArea;
 
 namespace WebApp.Models.Application.DTOs
 {
@@ -9,5 +10,6 @@ namespace WebApp.Models.Application.DTOs
         public StorageAreaType? Type { get; set; }
         public int MaxCapacityTeu { get; set; }
         public int CurrentOccupancyTeu { get; set; }
+        public required ICollection<DockStorageAreaConnection> DockConnections { get; set; }
     }
 }

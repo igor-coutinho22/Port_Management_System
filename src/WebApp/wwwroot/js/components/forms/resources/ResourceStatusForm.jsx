@@ -192,9 +192,7 @@ const ResourceStatusForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             <div className="search-section">

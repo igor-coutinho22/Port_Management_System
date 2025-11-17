@@ -61,10 +61,14 @@ const RegisterYardForm = ({ onSuccess }) => {
             if (isNaN(parseInt(formData.currentOccupancyTeu)) || parseInt(formData.currentOccupancyTeu) < 0) throw new Error('Current occupancy must be >= 0.');
             if (parseInt(formData.currentOccupancyTeu) > parseInt(formData.maxCapacityTeu)) throw new Error('Current occupancy cannot exceed max capacity.');
 
+            // Build nested DTO for backend
             const yardData = {
-                Name: formData.name,
-                MaxCapacityTeu: parseInt(formData.maxCapacityTeu),
-                CurrentOccupancyTeu: parseInt(formData.currentOccupancyTeu),
+                StorageArea: {
+                    Name: formData.name,
+                    MaxCapacityTeu: parseInt(formData.maxCapacityTeu),
+                    CurrentOccupancyTeu: parseInt(formData.currentOccupancyTeu),
+                    DockConnections: []
+                },
                 DockIds: formData.dockIds
             };
             await apiService.createContainerYard(yardData);
@@ -85,9 +89,7 @@ const RegisterYardForm = ({ onSuccess }) => {
                 <p>Fill in the details to register a new container yard.</p>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
             <form onSubmit={handleSubmit} className="yard-form">
                 <div className="form-grid">
@@ -103,40 +105,49 @@ const RegisterYardForm = ({ onSuccess }) => {
                         <label htmlFor="currentOccupancyTeu">Current Occupancy (TEU) <span className="required">*</span></label>
                         <input type="number" id="currentOccupancyTeu" name="currentOccupancyTeu" value={formData.currentOccupancyTeu} onChange={handleInputChange} min="0" className="form-input" required />
                     </div>
-                    <div className="form-group full-width">
-                        <label htmlFor="dockIds">Docks Served <span className="required">*</span></label>
-                        <div className="dock-selector" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-                            {docks && docks.map(dock => (
-                                <div
-                                    key={dock.id}
-                                    className={`dock-option${formData.dockIds.includes(dock.id) ? ' selected' : ''}`}
-                                    onClick={() => handleDockToggle(dock.id)}
-                                    style={{
-                                        cursor: 'pointer',
-                                        background: formData.dockIds.includes(dock.id) ? '#27ae60' : '#222c36',
-                                        color: '#fff',
-                                        borderRadius: '6px',
-                                        padding: '0.3rem 0.6rem',
-                                        boxShadow: formData.dockIds.includes(dock.id) ? '0 0 4px #27ae60' : '0 0 2px #222c36',
-                                        border: formData.dockIds.includes(dock.id) ? '2px solid #27ae60' : '1px solid #222c36',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.3rem',
-                                        fontWeight: 'bold',
-                                        fontSize: '0.95rem',
-                                        transition: 'all 0.2s',
-                                    }}
-                                >
-                                    <span role="img" aria-label="dock" style={{ fontSize: '1.1rem' }}>🏭</span>
-                                    <span className="dock-name">{dock.name}</span>
-                                    <span className="dock-id" style={{ fontSize: '0.8rem', background: '#16a085', borderRadius: '4px', padding: '0.1rem 0.3rem', marginLeft: '0.3rem' }}>{dock.id}</span>
-                                    {formData.dockIds.includes(dock.id) && (
-                                        <span className="selected-indicator" style={{ marginLeft: '0.3rem', color: '#fff', fontWeight: 'bold', fontSize: '1rem' }}>✓</span>
-                                    )}
-                                </div>
-                            ))}
+                    <div className="dock-selection-box" style={{
+                        background: 'linear-gradient(135deg, #1a2332 80%, #22304a 100%)',
+                        border: '2px solid #2de1fc',
+                        borderRadius: '14px',
+                        padding: '18px 22px',
+                        margin: '18px 0',
+                        boxShadow: '0 2px 12px 0 rgba(45,225,252,0.08)',
+                        color: '#fff',
+                        maxWidth: '540px'
+                    }}>
+                        <div className="selection-header" style={{ marginBottom: '12px', borderBottom: '1px solid #2de1fc', paddingBottom: '8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <h5 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#2de1fc', margin: 0 }}>
+                                <span style={{ marginRight: '6px' }}>🛳️</span>Dock Connections <span className="required">*</span>
+                            </h5>
+                            <p style={{ fontSize: '0.98rem', color: '#b8eaff', margin: 0 }}>Select which docks are connected to this container yard</p>
                         </div>
-                        <small className="form-help">Click on docks to select/deselect them (at least one required)</small>
+                        {docks.length === 0 ? (
+                            <div className="loading" style={{ color: '#b8eaff' }}>Loading docks...</div>
+                        ) : (
+                            <div className="dock-checkboxes" style={{ maxHeight: '220px', overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {docks.map(dock => (
+                                    <div key={dock.id} className="dock-checkbox" style={{ background: '#232b3e', borderRadius: '8px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <input
+                                            type="checkbox"
+                                            id={`register-dock-${dock.id}`}
+                                            value={dock.id}
+                                            checked={formData.dockIds.includes(dock.id)}
+                                            onChange={() => handleDockToggle(dock.id)}
+                                            style={{ width: '22px', height: '22px', accentColor: '#2de1fc', marginRight: '10px' }}
+                                        />
+                                        <label htmlFor={`register-dock-${dock.id}`} style={{ color: '#fff', fontWeight: 600, fontSize: '1.05rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                            <span>
+                                                {dock.name}
+                                                {dock.location && (
+                                                    <span style={{ color: '#b8eaff', fontWeight: 400 }}> - {dock.location}</span>
+                                                )}
+                                                <span style={{ color: '#b8eaff', fontWeight: 400, fontSize: '0.95em' }}> ({dock.id})</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="form-actions">

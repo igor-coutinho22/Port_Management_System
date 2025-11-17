@@ -143,9 +143,7 @@ const DeleteVesselForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             {/* Step 1: Search for Vessel */}
@@ -203,93 +201,78 @@ const DeleteVesselForm = ({ onSuccess }) => {
             {/* Step 2: Delete Confirmation */}
             {step === 'confirm' && vessel && (
                 <>
-                    <div className="form-section-header">
-                        <h5>⚠️ {t('vessels.forms.delete.confirm_title')}</h5>
+                    <div className="delete-form-header">
+                        <span>⚠️ {t('vessels.forms.delete.confirm_title')}</span>
                         <button 
                             type="button" 
                             className="link-btn"
                             onClick={handleNewSearch}
                         >
-                            🔍 {t('vessels.forms.delete.search_different')}
+                            <span style={{ marginRight: '4px' }}>🔍</span>{t('vessels.forms.delete.search_different')}
                         </button>
                     </div>
-
-                    {/* Vessel Details */}
-                    <div className="delete-vessel-info">
-                        <h6>{t('vessels.forms.delete.vessel_to_delete')}:</h6>
-                        <div className="vessel-summary">
-                            <div className="summary-item">
-                                <strong>{t('vessels.details.imo')}:</strong> {vessel.imo}
+                    <div className="delete-details-card">
+                        <span className="delete-details-card-title">⚠️ {t('vessels.forms.delete.vessel_to_delete')}:</span>
+                        <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                            <div className="delete-details-field">
+                                <span className="delete-details-label">{t('vessels.details.imo')}:</span><br />
+                                {vessel.imo}
                             </div>
-                            <div className="summary-item">
-                                <strong>{t('vessels.details.name')}:</strong> {vessel.vesselName}
+                            <div className="delete-details-field">
+                                <span className="delete-details-label">{t('vessels.details.name')}:</span><br />
+                                {vessel.vesselName}
                             </div>
-                            <div className="summary-item">
-                                <strong>{t('vessels.details.operator')}:</strong> {vessel.operatorName}
+                            <div className="delete-details-field">
+                                <span className="delete-details-label">{t('vessels.details.operator')}:</span><br />
+                                {vessel.operatorName}
                             </div>
-                            <div className="summary-item">
-                                <strong>{t('vessels.details.type')}:</strong> {vessel.vesselTypeName}
+                            <div className="delete-details-field">
+                                <span className="delete-details-label">{t('vessels.details.type')}:</span><br />
+                                {vessel.vesselTypeName}
                             </div>
                         </div>
                     </div>
-
-                    {/* Confirmation Form */}
-                    <form onSubmit={handleDelete} className="delete-form">
-                        <div className="danger-zone">
-                            <div className="danger-header">
-                                <h6>⚠️ {t('vessels.forms.delete.warning_title')}</h6>
-                                <p>{t('vessels.forms.delete.warning_description')}</p>
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="confirmationText">
-                                    {t('vessels.forms.delete.confirmation_text')} "<strong>{vessel.vesselName}</strong>" {t('vessels.forms.delete.to_confirm')}:
-                                </label>
+                    <div className="delete-warning-card">
+                        <span className="delete-warning-title">⚠️ {t('vessels.forms.delete.warning_title')}</span>
+                        <span className="delete-warning-desc">{t('vessels.forms.delete.warning_description')}</span>
+                        <form onSubmit={handleDelete} className="delete-form">
+                            <div className="form-group" style={{ marginBottom: '18px' }}>
+                                <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>{t('vessels.forms.delete.confirmation_text')} "<strong>{vessel.vesselName}</strong>" {t('vessels.forms.delete.to_confirm')}:</label>
                                 <input
                                     type="text"
                                     id="confirmationText"
                                     value={confirmationText}
                                     onChange={handleConfirmationInputChange}
                                     placeholder={vessel.vesselName}
-                                    className="form-input danger-input"
+                                    className="delete-confirm-input"
                                     required
                                 />
-                                <small className="form-help danger-help">
-                                    {t('vessels.forms.delete.confirmation_help')}
-                                </small>
+                                <small className="delete-confirm-help">{t('vessels.forms.delete.confirmation_help')}</small>
                             </div>
-                        </div>
-
-                        <div className="form-actions">
-                            <button 
-                                type="submit" 
-                                className="delete-btn"
-                                disabled={isDeleting || confirmationText !== vessel.vesselName}
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <span className="loading-spinner"></span>
-                                        {t('vessels.forms.delete.deleting')}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>🗑️</span>
-                                        {t('vessels.forms.delete.submit')}
-                                    </>
-                                )}
-                            </button>
-
-                            <button 
-                                type="button" 
-                                className="clear-btn"
-                                onClick={handleClear}
-                                disabled={isDeleting}
-                            >
-                                <span>🧹</span>
-                                {t('common.cancel')}
-                            </button>
-                        </div>
-                    </form>
+                            <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
+                                <button 
+                                    type="submit" 
+                                    className="delete-btn"
+                                    disabled={isDeleting || confirmationText !== vessel.vesselName}
+                                >
+                                    {isDeleting ? (
+                                        <><span className="loading-spinner"></span>{t('vessels.forms.delete.deleting')}</>
+                                    ) : (
+                                        <>🗑️ {t('vessels.forms.delete.submit')}</>
+                                    )}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="delete-cancel-btn"
+                                    onClick={handleClear}
+                                    disabled={isDeleting}
+                                >
+                                    <span role="img" aria-label="cancel">🧹</span>
+                                    {t('common.cancel')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </>
             )}
         </div>

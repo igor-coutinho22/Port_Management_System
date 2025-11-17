@@ -10,5 +10,6 @@ namespace WebApp.Models.Infrastructure.Repositories
 
         Task<IEnumerable<ShippingAgentOrganization>> ListAsync(string? name, string? taxNumber);
         Task UpdateAsync(ShippingAgentOrganization org);
+        Task DeleteAsync(ShippingAgentOrganization org);
     }
 }

@@ -28,7 +28,7 @@ namespace WebApp.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(dto.StorageArea!.Name))
                     return BadRequest("Name is required.");
 
                 if (dto.DockIds == null || dto.DockIds.Count == 0)
@@ -46,14 +46,14 @@ namespace WebApp.Controllers
                     docks.Add(dock);
                 }
 
-                var yard = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as ContainerYard;
+                var yard = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name) as ContainerYard;
                 if (yard != null)
-                    return BadRequest($"Container yard with name '{dto.Name}' already exists.");
+                    return BadRequest($"Container yard with name '{dto.StorageArea!.Name}' already exists.");
                 
                 yard = ContainerYardMapper.MapToDomain(dto, docks);
                 await _storageAreaService.AddContainerYardAsync(yard);
 
-                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as ContainerYard;
+                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name) as ContainerYard;
                 var resultDto = ContainerYardMapper.MapToDto(created!);
                 return CreatedAtAction(nameof(GetById), new { id = created!.Id }, resultDto);
             }
@@ -68,20 +68,20 @@ namespace WebApp.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(dto.StorageArea!.Name))
                     return BadRequest("Name is required.");
 
                 if (string.IsNullOrWhiteSpace(dto.SpecializedCargoType))
                     return BadRequest("Specialized cargo type is required.");
 
-                var warehouse = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name) as Warehouse;
+                var warehouse = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name) as Warehouse;
                 if (warehouse != null)
-                    return BadRequest($"Warehouse with name '{dto.Name}' already exists.");
+                    return BadRequest($"Warehouse with name '{dto.StorageArea!.Name}' already exists.");
 
                 warehouse = WarehouseMapper.MapToDomain(dto);
                 await _storageAreaService.AddWarehouseAsync(warehouse);
 
-                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.Name);
+                var created = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name);
                 var resultDto = StorageAreaMapper.MapToDto(created!);
                 return CreatedAtAction(nameof(GetById), new { id = created!.Id }, resultDto);
             }
@@ -100,7 +100,7 @@ namespace WebApp.Controllers
 
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(dto.StorageArea!.Name))
                     return BadRequest("Name is required.");
 
                 if (dto.DockIds == null || dto.DockIds.Count == 0)
@@ -137,7 +137,7 @@ namespace WebApp.Controllers
 
             try
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                if (string.IsNullOrWhiteSpace(dto.StorageArea!.Name))
                     return BadRequest("Name is required.");
 
                 if (string.IsNullOrWhiteSpace(dto.SpecializedCargoType))
@@ -196,11 +196,7 @@ namespace WebApp.Controllers
                 var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
-
-                // Only ContainerYards can have dock connections
-                if (!(storageArea is ContainerYard))
-                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
-
+                    
                 var dock = await _dockService.GetByIdAsync(dto.DockId);
                 if (dock == null)
                     return NotFound($"Dock with ID {dto.DockId} not found.");
@@ -228,9 +224,6 @@ namespace WebApp.Controllers
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
                 
-                if (!(storageArea is ContainerYard))
-                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
-
                 var connection = await _storageAreaService.GetConnectionAsync(storageAreaId, dockId);
                 if (connection == null)
                     return NotFound($"Connection between storage area ID {storageAreaId} and dock ID {dockId} not found.");
@@ -257,9 +250,6 @@ namespace WebApp.Controllers
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
                 
-                if (!(storageArea is ContainerYard))
-                    return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
-
                 await _storageAreaService.RemoveConnectionAsync(storageAreaId, dockId);
                 return NoContent();
             }
@@ -287,9 +277,6 @@ namespace WebApp.Controllers
             if (storageArea == null)
                 return NotFound($"Storage area with ID {storageAreaId} not found.");
             
-            if (!(storageArea is ContainerYard))
-                return BadRequest($"Storage area with ID {storageAreaId} is not a Container Yard. Only Container Yards can have dock connections.");
-
             var list = await _storageAreaService.GetConnectionsForStorageAreaAsync(storageAreaId);
             return Ok(list);
         }

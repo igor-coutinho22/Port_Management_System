@@ -29,20 +29,20 @@ namespace WebApp.Models.Application.Services
 
             await _orgRepo.AddAsync(org);
 
-            return new OrganizationDto(org.Id, org.LegalName, org.AlternativeNames, org.Address, org.TaxNumber);
+            return new OrganizationDto(org.Id, org.LegalName, org.AlternativeNames!, org.Address, org.TaxNumber);
         }
 
         public async Task<OrganizationDto> GetAsync(Guid id)
         {
             var org = await _orgRepo.GetByIdAsync(id) ?? throw new KeyNotFoundException("Organization not found.");
-            return new OrganizationDto(org.Id, org.LegalName, org.AlternativeNames, org.Address, org.TaxNumber);
+            return new OrganizationDto(org.Id, org.LegalName, org.AlternativeNames!, org.Address, org.TaxNumber);
         }
 
         // listar com filtros opcionais
         public async Task<IEnumerable<OrganizationDto>> ListAsync(string? name, string? taxNumber)
         {
             var items = await _orgRepo.ListAsync(name, taxNumber);
-            return items.Select(o => new OrganizationDto(o.Id, o.LegalName, o.AlternativeNames, o.Address, o.TaxNumber));
+            return items.Select(o => new OrganizationDto(o.Id, o.LegalName, o.AlternativeNames!, o.Address, o.TaxNumber));
         }
 
         // update
@@ -61,7 +61,13 @@ namespace WebApp.Models.Application.Services
             org.UpdateProfile(req.LegalName, req.AlternativeNames, req.Address, req.TaxNumber);
             await _orgRepo.UpdateAsync(org);
 
-            return new OrganizationDto(org.Id, org.LegalName, org.AlternativeNames, org.Address, org.TaxNumber);
+            return new OrganizationDto(org.Id, org.LegalName, org.AlternativeNames!, org.Address, org.TaxNumber);
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            var org = await _orgRepo.GetByIdAsync(id) ?? throw new KeyNotFoundException("Organization not found.");
+            await _orgRepo.DeleteAsync(org);
         }
     }
 }

@@ -118,9 +118,7 @@ const RegisterVesselTypeForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             <form onSubmit={handleSubmit} className="vessel-form">

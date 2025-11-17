@@ -166,10 +166,10 @@ const AppWithGlobalNav = () => {
           <StorageAreasHubPage />
         );
       case "organizations":
-        return typeof OrganizationsPage === "undefined" ? (
-          <div className="error">OrganizationsPage component not loaded</div>
+        return typeof OrganizationsHubPage === "undefined" ? (
+          <div className="error">OrganizationsHubPage component not loaded</div>
         ) : (
-          <OrganizationsPage />
+          <OrganizationsHubPage />
         );
       case "representatives":
         return typeof RepresentativesPage === "undefined" ? (
@@ -178,10 +178,10 @@ const AppWithGlobalNav = () => {
           <RepresentativesPage />
         );
       case "staff":
-        return typeof StaffPage === "undefined" ? (
-          <div className="error">StaffPage component not loaded</div>
+        return typeof StaffHubPage === "undefined" ? (
+          <div className="error">StaffHubPage component not loaded</div>
         ) : (
-          <StaffPage />
+          <StaffHubPage />
         );
       case "vessel-visit-notifications":
         return typeof VesselVisitNotificationsPage === "undefined" ? (
@@ -190,10 +190,10 @@ const AppWithGlobalNav = () => {
           <VesselVisitNotificationsPage />
         );
       case "qualifications":
-        return typeof QualificationsPage === "undefined" ? (
-          <div className="error">QualificationsPage component not loaded</div>
+        return typeof QualificationsHubPage === "undefined" ? (
+          <div className="error">QualificationsHubPage component not loaded</div>
         ) : (
-          <QualificationsPage />
+          <QualificationsHubPage />
         );
       case "3d-view":
         return <ThreeDView key="3d-view" />;

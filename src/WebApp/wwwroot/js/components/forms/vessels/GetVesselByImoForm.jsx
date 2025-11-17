@@ -78,11 +78,8 @@ const GetVesselByImoForm = () => {
                 <h4>{t('vessels.forms.get_by_imo.title')}</h4>
                 <p>{t('vessels.forms.get_by_imo.description')}</p>
             </div>
-
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             <form onSubmit={handleSearch} className="search-form">

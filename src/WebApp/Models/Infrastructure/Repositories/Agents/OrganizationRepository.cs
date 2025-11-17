@@ -27,7 +27,7 @@ namespace WebApp.Models.Infrastructure.Repositories
             var q = _context.Organizations.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(name))
-                q = q.Where(o => o.LegalName.Contains(name) || o.AlternativeNames.Contains(name));
+                q = q.Where(o => o.LegalName.Contains(name) || o.AlternativeNames!.Contains(name));
 
             if (!string.IsNullOrWhiteSpace(taxNumber))
                 q = q.Where(o => o.TaxNumber.Contains(taxNumber));
@@ -39,6 +39,12 @@ namespace WebApp.Models.Infrastructure.Repositories
         public async Task UpdateAsync(ShippingAgentOrganization org)
         {
             _context.Organizations.Update(org);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(ShippingAgentOrganization org)
+        {
+            _context.Organizations.Remove(org);
             await _context.SaveChangesAsync();
         }
     }

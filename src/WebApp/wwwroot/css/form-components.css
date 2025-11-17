@@ -1,3 +1,130 @@
+/* ===== Delete Form Design ===== */
+.delete-form-header {
+    background: linear-gradient(90deg, #174b7e 80%, #1a2940 100%);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px #0a1a2f33;
+    font-weight: 600;
+    color: #fff;
+    font-size: 1.15em;
+    letter-spacing: 0.5px;
+}
+.delete-details-card {
+    background: #2a232b;
+    border: 2px solid #ffb347;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 2px 12px #ffb34733;
+}
+.delete-details-card-title {
+    color: #ffb347;
+    font-weight: 600;
+    font-size: 1.08em;
+    margin-bottom: 10px;
+    display: block;
+}
+.delete-details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 10px;
+}
+.delete-details-field {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 500;
+    color: #222;
+}
+.delete-details-label {
+    color: #ffb347;
+    font-weight: 700;
+}
+.delete-warning-card {
+    background: #2a232b;
+    border: 2px solid #ff4d4d;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 2px 12px #ff4d4d33;
+}
+.delete-warning-title {
+    color: #ff4d4d;
+    font-weight: 600;
+    font-size: 1.08em;
+    margin-bottom: 10px;
+    display: block;
+}
+.delete-warning-desc {
+    color: #fff;
+    font-size: 1em;
+    margin-bottom: 10px;
+    display: block;
+}
+.delete-confirm-input {
+    margin-top: 8px;
+    background: #18141c;
+    color: #fff;
+    border: 1.5px solid #ff4d4d;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 1em;
+}
+.delete-confirm-help {
+    color: #ff4d4d;
+    margin-top: 6px;
+    display: block;
+}
+/* Delete Button Styling */
+/* Delete Button Styling */
+/* Delete Button Styling */
+.delete-btn {
+    background: #ff5c5c !important;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-size: 1em;
+    border: none;
+    box-shadow: 0 2px 8px #ff4d4d33;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.delete-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.delete-btn:hover:not(:disabled) {
+    background: #d93636;
+}
+
+/* Cancel Button Styling */
+.delete-cancel-btn {
+    background: #e0e0e0;
+    color: #222;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-size: 1em;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+.delete-cancel-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.delete-cancel-btn:hover:not(:disabled) {
+    background: #cccccc;
+}
 /* Form Components Styling */
 
 .form-container {

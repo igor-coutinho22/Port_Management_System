@@ -86,9 +86,7 @@ const GetDockByIdForm = () => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             <form onSubmit={handleSearch} className="search-form">

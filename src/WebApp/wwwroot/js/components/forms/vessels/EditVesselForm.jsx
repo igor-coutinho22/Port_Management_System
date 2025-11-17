@@ -208,9 +208,7 @@ const EditVesselForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             {/* Step 1: Search for Vessel */}
@@ -225,7 +223,6 @@ const EditVesselForm = ({ onSuccess }) => {
                                 name="imo"
                                 value={searchData.imo}
                                 onChange={handleSearchInputChange}
-                                placeholder={t('vessels.forms.get_by_imo.placeholder')}
                                 maxLength="7"
                                 className="form-input"
                             />

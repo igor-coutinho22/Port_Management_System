@@ -180,11 +180,8 @@ const EditVesselTypeForm = ({ onSuccess }) => {
             </div>
 
             {message.text && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
-
             {step === 'search' && (
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-section-header">
