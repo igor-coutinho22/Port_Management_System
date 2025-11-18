@@ -43,14 +43,9 @@ namespace WebApp.Controllers
         [HttpPost]
         public async Task<ActionResult<StaffDTO>> PostStaff(StaffDTO dto)
         {
-            await _staffService.RegisterStaffAsync(
-                dto.MecanographicNumber!,
-                dto.ShortName!,
-                dto.Email!,
-                dto.Phone!,
-                dto.Status,
-                dto.OperationalWindow!
-            );
+            var staff = StaffMapper.ToDomain(dto);
+
+            await _staffService.RegisterStaffAsync(staff);
 
             var created = await _staffService.GetByMecanographicNumberAsync(dto.MecanographicNumber!);
             return CreatedAtAction(nameof(GetByMecNumber),
@@ -65,8 +60,36 @@ namespace WebApp.Controllers
             if (existing == null)
                 return NotFound();
 
-            var updated = StaffMapper.ToDomain(dto);
-            await _staffService.UpdateAsync(updated);
+            if (!string.IsNullOrWhiteSpace(dto.ShortName))
+                existing.ShortName = dto.ShortName;
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                existing.Email = dto.Email;
+
+            if (!string.IsNullOrWhiteSpace(dto.Phone))
+                existing.Phone = dto.Phone;
+
+            if (!string.IsNullOrWhiteSpace(dto.OperationalWindow))
+                existing.OperationalWindow = dto.OperationalWindow;
+
+            existing.Status = dto.Status;
+
+            if (dto.Qualifications != null)
+            {
+                existing.QualificationLinks.Clear();
+
+                foreach (var q in dto.Qualifications)
+                {
+                    existing.QualificationLinks.Add(new QualificationLink(
+                        existing.MecanographicNumber,
+                        q.Code,
+                        q.DateObtained,
+                        q.ExpiryDate
+                    ));
+                }
+            }
+
+            await _staffService.UpdateAsync(existing);
             return NoContent();
         }
 
