@@ -6,7 +6,7 @@ namespace WebApp.Models.Infrastructure.Repositories
 {
     // Se já tiveres uma interface IOrganizationRepository, põe isto:
     // public class OrganizationRepository : IOrganizationRepository
-    public class OrganizationRepository
+    public class OrganizationRepository : IOrganizationRepository
     {
         private readonly PortManagementContext _context;
 
