@@ -72,15 +72,19 @@ public class QualificationControllerTests : IClassFixture<TestWebAppFactory>, IA
         await _client.PutAsJsonAsync($"/api/qualifications/{code2}", dto);
     }
 
-    public Task InitializeAsync() => Task.CompletedTask;
+    Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;
 
-    public async Task DisposeAsync()
+    async Task IAsyncLifetime.DisposeAsync()
     {
-        // Clean up all created qualifications
         foreach (var code in _createdQualificationCodes)
         {
-            await _client.DeleteAsync($"/api/qualifications/{code}");
+            try
+            {
+                await _client.DeleteAsync($"/api/qualifications/{code}");
+            }
+            catch { }
         }
+        _createdQualificationCodes.Clear();
     }
     
 }
