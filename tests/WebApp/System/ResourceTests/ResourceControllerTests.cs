@@ -1,4 +1,3 @@
-
 using System.Net;
 using System.Net.Http.Json;
 using WebApp.Models.Domain.Resources.Enums;
@@ -13,10 +12,10 @@ using System.Collections.Generic;
 using System;
 
 
-public class ResourceControllerTests : IClassFixture<TestWebAppFactory>
-
+public class ResourceControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
+    private readonly List<string> _createdResourceIds = new();
 
     public ResourceControllerTests(TestWebAppFactory factory)
     {
@@ -26,7 +25,6 @@ public class ResourceControllerTests : IClassFixture<TestWebAppFactory>
     [Fact]
     public async Task Post_And_Get_Resource_ShouldWork()
     {
-
         var dto = new ResourceDTO
         {
             Id = "R999",
@@ -40,6 +38,7 @@ public class ResourceControllerTests : IClassFixture<TestWebAppFactory>
 
         var postResponse = await _client.PostAsJsonAsync("/api/resources", dto);
         postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        _createdResourceIds.Add("R999");
 
         var getResponse = await _client.GetAsync("/api/resources/R999");
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -62,6 +61,7 @@ public class ResourceControllerTests : IClassFixture<TestWebAppFactory>
             QualificationRequirements = new HashSet<QualificationDTO>()
         };
         await _client.PostAsJsonAsync("/api/resources", dto);
+        _createdResourceIds.Add("R999");
 
         var response = await _client.PatchAsync("/api/resources/R999/deactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -70,10 +70,18 @@ public class ResourceControllerTests : IClassFixture<TestWebAppFactory>
         json.Should().Contain("inactive");
     }
 
-    [Fact]
-    public async Task DisposeAsync()
+    Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;
+
+    async Task IAsyncLifetime.DisposeAsync()
     {
-        // Cleanup
-        await _client.DeleteAsync("/api/resources/R999");
+        foreach (var resourceId in _createdResourceIds)
+        {
+            try
+            {
+                await _client.DeleteAsync($"/api/resources/{resourceId}");
+            }
+            catch { }
+        }
+        _createdResourceIds.Clear();
     }
 }
