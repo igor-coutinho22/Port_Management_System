@@ -5,10 +5,13 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
+using System.Collections.Generic;
 
 public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
+    private readonly List<string> _createdStaffNumbers = new();
+     private readonly List<string> _createdQualificationCodes = new();
 
     public StaffControllerTests(TestWebAppFactory factory)
     {
@@ -34,15 +37,16 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
             qualifications = new object[] { } // explicit for completeness
         };
 
-        var post = await _client.PostAsJsonAsync("/api/staff", dto);
-        post.StatusCode.Should().Be(HttpStatusCode.Created);
+    var post = await _client.PostAsJsonAsync("/api/staff", dto);
+    post.StatusCode.Should().Be(HttpStatusCode.Created);
+    _createdStaffNumbers.Add(staffNumber);
 
-        var get = await _client.GetAsync($"/api/staff/{staffNumber}");
-        get.StatusCode.Should().Be(HttpStatusCode.OK);
+    var get = await _client.GetAsync($"/api/staff/{staffNumber}");
+    get.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await get.Content.ReadAsStringAsync();
-        body.Should().Contain("Alice");
-        body.Should().Contain(staffNumber);
+    var body = await get.Content.ReadAsStringAsync();
+    body.Should().Contain("Alice");
+    body.Should().Contain(staffNumber);
     }
 
     // -----------------------------------------------------------
@@ -64,7 +68,8 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
             qualifications = new object[] { }
         };
 
-        await _client.PostAsJsonAsync("/api/staff", dto);
+    await _client.PostAsJsonAsync("/api/staff", dto);
+    _createdStaffNumbers.Add(staffNumber);
 
         // Ensure staff is unavailable before activation
         var staffBody = await (await _client.GetAsync($"/api/staff/{staffNumber}")).Content.ReadAsStringAsync();
@@ -104,7 +109,8 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
             qualifications = new object[] { }
         };
 
-        await _client.PostAsJsonAsync("/api/staff", dto);
+    await _client.PostAsJsonAsync("/api/staff", dto);
+    _createdStaffNumbers.Add(staffNumber);
 
         // --- ensure qualification exists ---
         var qualificationCode = $"QX_{Guid.NewGuid().ToString("N").Substring(0, 8)}";
@@ -114,6 +120,7 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
             name = "Crane Operator"
         };
         await _client.PostAsJsonAsync("/api/qualifications", qualificationCreateDto);
+         _createdQualificationCodes.Add(qualificationCode);
 
         // --- add qualification ---
         var qualificationDto = new
@@ -142,7 +149,38 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
         afterRemove.Should().NotContain(qualificationCode);
     }
 
-    public Task InitializeAsync() => Task.CompletedTask;
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;
+
+    async Task IAsyncLifetime.DisposeAsync()
+    {
+        foreach (var staffNumber in _createdStaffNumbers)
+        {
+            try
+            {
+                await _client.DeleteAsync($"/api/staff/{staffNumber}");
+            }
+            catch { }
+        }
+        _createdStaffNumbers.Clear();
+
+        // Delete all test-created qualifications (QX_ prefix)
+        var response = await _client.GetAsync("/api/qualifications");
+        if (response.IsSuccessStatusCode)
+        {
+            var qualifications = await response.Content.ReadFromJsonAsync<List<WebApp.Models.Application.DTOs.QualificationDTO>>();
+            foreach (var q in qualifications!)
+            {
+                if (q.Code != null && q.Code.StartsWith("QX_"))
+                {
+                    try
+                    {
+                        await _client.DeleteAsync($"/api/qualifications/{q.Code}");
+                    }
+                    catch { }
+                }
+            }
+        }
+        _createdQualificationCodes.Clear();
+    }
 }
