@@ -82,9 +82,7 @@ namespace WebApp.Controllers
                 {
                     existing.QualificationLinks.Add(new QualificationLink(
                         existing.MecanographicNumber,
-                        q.Code,
-                        q.DateObtained,
-                        q.ExpiryDate
+                        q.Code
                     ));
                 }
             }

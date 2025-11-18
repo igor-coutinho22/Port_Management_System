@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using WebApp.Models.Domain.Qualifications.Interfaces;
+using WebApp.Models.Domain.Qualifications;
 
 public class ResourceServiceTests
 {
@@ -16,11 +17,46 @@ public class ResourceServiceTests
     private readonly IQualificationRepository _qualificationRepo;
     private readonly ResourceService _service;
 
-    public ResourceServiceTests(IQualificationRepository qualificationRepo)
+    public ResourceServiceTests()
     {
         _repo = new StubResourceRepository();
-        _qualificationRepo = qualificationRepo;
+        _qualificationRepo = new StubQualificationRepository();
         _service = new ResourceService(_repo, _qualificationRepo);
+    }
+
+    // Stub for IQualificationRepository
+    private class StubQualificationRepository : IQualificationRepository
+    {
+
+        public Task AddAsync(Qualification qualification)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Qualification?> GetByCodeAsync(string qualificationCode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Qualification?> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<Qualification>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateAsync(Qualification qualification)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAsync(Qualification qualificationCode)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [Fact]

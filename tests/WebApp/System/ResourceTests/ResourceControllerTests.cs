@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System;
 
 
-public class ResourceControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
+public class ResourceControllerTests : IClassFixture<TestWebAppFactory>
 
 {
     private readonly HttpClient _client;
@@ -69,10 +69,8 @@ public class ResourceControllerTests : IClassFixture<TestWebAppFactory>, IAsyncL
         var json = await (await _client.GetAsync("/api/resources/R999")).Content.ReadAsStringAsync();
         json.Should().Contain("inactive");
     }
-    public async Task InitializeAsync()
-    {
-    }
 
+    [Fact]
     public async Task DisposeAsync()
     {
         // Cleanup

@@ -12,6 +12,7 @@ using WebApp.Models.Domain;
 using WebApp.Models.Domain.Docks;
 using Xunit;
 using WebApp.Models.Domain.Vessels;
+using WebApp.Models.Application.Mappers;
 
 public class VesselVisitNotificationServiceTests
 {
@@ -44,14 +45,15 @@ public class VesselVisitNotificationServiceTests
         };
 
         // Act
-        var result = await _service.CreateAsync(dto);
+        var created = VesselVisitNotificationMapper.ToEntity(dto);
+        await _service.CreateAsync(created);
 
         // Assert
-        result.Should().NotBeNull();
-        result.VesselIMO.Should().Be(ValidIMO);
-        result.DockId.Should().Be(dockId);
-        result.Purpose.Should().Be(VisitPurpose.Commercial.ToString());
-        result.Status.Should().Be(VesselVisitStatus.InProgress.ToString());
+        created.Should().NotBeNull();
+        created.VesselIMO.Should().Be(ValidIMO);
+        created.DockId.Should().Be(dockId);
+        created.Purpose.Should().Be(VisitPurpose.Commercial);
+        created.Status.Should().Be(VesselVisitStatus.InProgress);
     }
 
     [Fact]
@@ -67,7 +69,8 @@ public class VesselVisitNotificationServiceTests
         };
 
         // Act & Assert
-        var act = async () => await _service.CreateAsync(dto);
+        var created = VesselVisitNotificationMapper.ToEntity(dto);
+        var act = async () => await _service.CreateAsync(created);
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*Vessel with IMO*not found*");
     }
@@ -85,7 +88,8 @@ public class VesselVisitNotificationServiceTests
         };
 
         // Act & Assert
-        var act = async () => await _service.CreateAsync(dto);
+        var created = VesselVisitNotificationMapper.ToEntity(dto);
+        var act = async () => await _service.CreateAsync(created);
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*Dock with ID*not found*");
     }
@@ -319,6 +323,12 @@ public class VesselVisitNotificationServiceTests
                 _notifications.Remove(existing);
                 _notifications.Add(notification);
             }
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteAsync(VesselVisitNotification notification)
+        {
+            _notifications.Remove(notification);
             return Task.CompletedTask;
         }
     }
