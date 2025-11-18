@@ -2,7 +2,7 @@
 const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
     const [isDarkMode, setIsDarkMode] = React.useState(false);
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const { currentUser, canAccessMenu } = useUser();
+    const { currentUser, activeRole, canAccessMenu } = useUser();
     const { t } = useTranslation();
 
     const handleLogout = async () => {
@@ -127,11 +127,16 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                         {/* User Section */}
                         <div className="user-section">
                             <div className="user-info">
-                                <span className="user-name">{currentUser?.name || t('user.unknown_user', 'Unknown User')}</span>
-                                <span className="user-role">({currentUser?.role || t('user.no_role', 'no role')})</span>
+                                <span className="user-name">
+                                    {currentUser?.name || t('user.unknown_user', 'Unknown User')}
+                                </span>
+                                <span className="user-role">
+                                    ({activeRole || t('user.no_role', 'no role')})
+                                </span>
                             </div>
                             <UserRoleSwitcher />
                         </div>
+
 
                         {/* Language Switcher */}
                         <LanguageSwitcher />

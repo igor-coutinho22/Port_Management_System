@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Security;
 using WebApp.Models.Context;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApp.Controllers
 {
     [Route("api/admin/users")]
     [ApiController]
+    [Authorize("RequireAdmin")]
     public class UsersAdminController : ControllerBase
     {
         private readonly IGraphUserService _graphUserSvc;
@@ -60,10 +62,13 @@ namespace WebApp.Controllers
                 var subject = "Activate your account";
                 var body = $@"
                     <p>Hello {req.DisplayName},</p>
-                    <p>Your account has been created. Please use the following temporary password to sign in:</p>
+                    <p>Your account has been created.</p>
+                    <p>Please use the following temporary password to sign in:</p>
+                    <p></p>
                     <p><b>{result.TempPassword}</b></p>
+                    <p></p>
                     <p>Activate your account here:</p>
-                    <p><a href=""{activationUrl}"">{activationUrl}</a></p>
+                    <p><a href=""{activationUrl}"">{activationUrl}</a></p><p></p>
                     <p>You will be required to set a new password on your first sign-in.</p>";
 
                 await _emailSender.SendEmailAsync(req.Email, subject, body);

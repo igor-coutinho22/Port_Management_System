@@ -240,14 +240,36 @@ const AppWithGlobalNav = () => {
 // ---------- Render using the shared/global AuthGate ----------
 const AuthGate = window.AuthGate;
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <I18nProvider>
-    <UserProvider>
-      <AuthGate>
+
+// Detect if we're on the activation-success page
+const rawHash = window.location.hash || "";        // e.g. "#activation-success"
+const pageHash = rawHash.startsWith("#")
+  ? rawHash.substring(1)
+  : rawHash;                                       // "activation-success"
+const basePage = pageHash.split("?")[0];           // just in case
+const isActivationPage = basePage === "activation-success";
+
+if (isActivationPage) {
+  console.log("Root: rendering WITHOUT AuthGate (activation-success page)");
+  root.render(
+    <I18nProvider>
+      <UserProvider>
         <AppWithGlobalNav />
-      </AuthGate>
-    </UserProvider>
-  </I18nProvider>
-);
+      </UserProvider>
+    </I18nProvider>
+  );
+} else {
+  console.log("Root: rendering WITH AuthGate (normal secured app)");
+  root.render(
+    <I18nProvider>
+      <UserProvider>
+        <AuthGate>
+          <AppWithGlobalNav />
+        </AuthGate>
+      </UserProvider>
+    </I18nProvider>
+  );
+}
 
 console.log("React SPA initialized successfully!");
+

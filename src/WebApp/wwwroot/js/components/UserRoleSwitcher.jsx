@@ -1,105 +1,99 @@
-// User Role Switcher Component - Elegant toggle similar to theme switcher
+// Simple User Role Switcher:
+// - Shows current role or "sem função"
+// - Shows dropdown only if there are multiple roles
 const UserRoleSwitcher = () => {
-    const { currentUser, switchUser, availableUsers } = useUser();
+    const { currentUser, activeRole, setActiveRole } = useUser();
     const { t } = useTranslation();
+
+    // Hooks: always called in same order, every render
     const [isExpanded, setIsExpanded] = React.useState(false);
 
-    // Role display configuration (with translation keys)
-    const roleConfig = {
-        administrator: {
-            shortName: t('roles.administrator', 'Administrator').split(' ')[0], // First word for short
-            icon: '👑',
-            color: '#ef4444', // Red
-            description: t('roles.administrator', 'Administrator')
-        },
-        portAuthority: {
-            shortName: t('roles.port_authority_officer', 'Port Authority Officer').split(' ')[0], // First word
-            icon: '⚓',
-            color: '#3b82f6', // Blue
-            description: t('roles.port_authority_officer', 'Port Authority Officer')
-        },
-        shippingAgent: {
-            shortName: t('roles.shipping_agent_representative', 'Shipping Agent Representative').split(' ')[0], // First word
-            icon: '🚢',
-            color: '#10b981', // Green
-            description: t('roles.shipping_agent_representative', 'Shipping Agent Representative')
-        },
-        logisticsOperator: {
-            shortName: t('roles.logistics_operator', 'Logistics Operator').split(' ')[0], // First word
-            icon: '📦',
-            color: '#f59e0b', // Amber
-            description: t('roles.logistics_operator', 'Logistics Operator')
+    // Normalize roles from user
+    const roles = Array.isArray(currentUser?.roles) ? currentUser.roles : [];
+    const hasMultipleRoles = roles.length > 1;
+
+    // Pick which role to show:
+    const effectiveRole =
+        activeRole ||
+        (roles.length > 0 ? roles[0] : null);
+
+    const toggleExpanded = () => {
+        if (hasMultipleRoles) {
+            setIsExpanded((prev) => !prev);
         }
     };
 
-    const currentRoleConfig = roleConfig[currentUser?.username] || roleConfig.administrator;
-
-    const handleRoleSwitch = (username) => {
-        switchUser(username);
+    const handleSelectRole = (role) => {
+        if (typeof setActiveRole === "function") {
+            setActiveRole(role);
+        }
         setIsExpanded(false);
     };
 
-    // Close dropdown when clicking outside
-    React.useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (isExpanded && !event.target.closest('.user-role-switcher')) {
-                setIsExpanded(false);
-            }
-        };
+    // --- RENDER ---
 
-        document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
-    }, [isExpanded]);
+    // No roles at all
+    if (!effectiveRole) {
+        return (
+            <div className="user-role-switcher">
+                <div className="role-display disabled">
+                    <div className="role-indicator">
+                        <span className="role-text">
+                            {t("user.no_role", "sem função")}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
+    // At least one role
     return (
         <div className="user-role-switcher">
             {/* Current Role Display */}
-            <div 
-                className={`role-display ${isExpanded ? 'expanded' : ''}`}
-                onClick={() => setIsExpanded(!isExpanded)}
-                title={`${t('user.current_role', 'Current role')}: ${currentRoleConfig.description}\n${t('user.click_to_switch', 'Click to switch roles (demo feature)')}`}
+            <div
+                className={
+                    "role-display " +
+                    (hasMultipleRoles && isExpanded ? "expanded" : "") +
+                    (!hasMultipleRoles ? " single-role" : "")
+                }
+                onClick={toggleExpanded}
+                style={{ cursor: hasMultipleRoles ? "pointer" : "default" }}
+                title={
+                    hasMultipleRoles
+                        ? `${t("user.current_role", "Current role")}: ${effectiveRole}\n${t(
+                            "user.click_to_switch",
+                            "Click to switch roles"
+                        )}`
+                        : `${t("user.current_role", "Current role")}: ${effectiveRole}`
+                }
             >
                 <div className="role-indicator">
-                    <span 
-                        className="role-icon" 
-                        style={{ color: currentRoleConfig.color }}
-                    >
-                        {currentRoleConfig.icon}
-                    </span>
-                    <span className="role-text">{currentRoleConfig.shortName}</span>
+                    <span className="role-text">{effectiveRole}</span>
                 </div>
-                <span className={`expand-arrow ${isExpanded ? 'rotated' : ''}`}>
-                    ▼
-                </span>
+                {hasMultipleRoles && (
+                    <span className={`expand-arrow ${isExpanded ? "rotated" : ""}`}>
+                        ▼
+                    </span>
+                )}
             </div>
 
-            {/* Role Options Dropdown */}
-            {isExpanded && (
+            {/* Dropdown only if multiple roles */}
+            {hasMultipleRoles && isExpanded && (
                 <div className="role-options">
-                    {availableUsers.map(username => {
-                        const config = roleConfig[username];
-                        const isActive = currentUser?.username === username;
-                        
+                    {roles.map((role) => {
+                        const isActive = role === effectiveRole;
                         return (
                             <button
-                                key={username}
-                                className={`role-option ${isActive ? 'active' : ''}`}
-                                onClick={() => handleRoleSwitch(username)}
+                                key={role}
+                                className={`role-option ${isActive ? "active" : ""}`}
+                                onClick={() => handleSelectRole(role)}
                                 disabled={isActive}
                             >
-                                <span 
-                                    className="role-icon" 
-                                    style={{ color: config.color }}
-                                >
-                                    {config.icon}
-                                </span>
                                 <div className="role-info">
-                                    <span className="role-name">{config.shortName}</span>
-                                    <span className="role-desc">{config.description}</span>
+                                    <span className="role-name">{role}</span>
                                 </div>
-                                {isActive && (
-                                    <span className="active-indicator">✓</span>
-                                )}
+                                {isActive && <span className="active-indicator">✓</span>}
                             </button>
                         );
                     })}
@@ -109,4 +103,4 @@ const UserRoleSwitcher = () => {
     );
 };
 
-console.log('UserRoleSwitcher component loaded!');
+console.log("UserRoleSwitcher component loaded!");

@@ -8,7 +8,7 @@ using WebApp.Models.Application.Mappers;
 
 namespace WebApp.Controllers
 {
-    [Authorize]
+    [Authorize("RequireOpsRole")]
     [Route("api/[controller]")]
     [ApiController]
     public class ResourcesController : ControllerBase

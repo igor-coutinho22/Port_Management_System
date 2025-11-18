@@ -65,8 +65,5 @@ namespace WebApp.Models.Security
         }
 
     }
-
-
-
     public sealed record CreateUserResult(string Id, string TempPassword);
 }

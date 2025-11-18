@@ -1,5 +1,5 @@
 (function () {
-  
+
   function AuthGate({ children }) {
     const [ready, setReady] = React.useState(false);
 
@@ -15,7 +15,25 @@
           return;
         }
 
-        // Wait for redirect processing to complete
+        // 🔴 HARD BYPASS FOR ACTIVATION PAGE
+        // e.g. /index.html?token=...#activation-success
+        const href = window.location.href;
+        const hash = window.location.hash || ""; // "#activation-success"
+        const pageHash = hash.startsWith("#") ? hash.substring(1) : hash;
+        const basePage = pageHash.split("?")[0]; // "activation-success"
+        const isActivationPage =
+          basePage === "activation-success" || href.includes("activation-success");
+
+        if (isActivationPage) {
+          console.log("AuthGate: allowing anonymous access to activation-success route");
+          // Make sure no old login flags interfere
+          sessionStorage.removeItem("msal.login.started");
+          sessionStorage.removeItem("msal.preventLogin");
+          setReady(true);
+          return;
+        }
+
+        // Wait for redirect processing to complete for normal pages
         await msalReady;
         if (cancelled) return;
 
@@ -42,9 +60,12 @@
         try {
           await pca.loginRedirect(window.loginRequest);
         } catch (e) {
-          console.error("AuthGate: loginRedirect failed:", e && (e.errorCode || e.message), e);
+          console.error(
+            "AuthGate: loginRedirect failed:",
+            e && (e.errorCode || e.message),
+            e
+          );
           sessionStorage.removeItem("msal.login.started");
-
           sessionStorage.setItem("msal.preventLogin", "1");
 
           const root = document.getElementById("root");
@@ -65,7 +86,6 @@
           sessionStorage.removeItem("msal.login.started");
           sessionStorage.removeItem("msal.preventLogin");
 
-          
           pca.acquireTokenSilent(window.apiRequest).catch(e => {
             console.warn("Initial acquireTokenSilent failed, trying redirect", e);
             return pca.acquireTokenRedirect(window.apiRequest);
@@ -74,7 +94,6 @@
           if (!cancelled) setReady(true);
         }
         if (evt.eventType === msal.EventType.LOGIN_FAILURE) {
-
           sessionStorage.removeItem("msal.login.started");
           sessionStorage.setItem("msal.preventLogin", "1");
         }

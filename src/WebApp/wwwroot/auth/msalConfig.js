@@ -15,12 +15,12 @@
     cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
   };
 
-  // 👇 Keep login (interactive) lightweight: OIDC only
+  // Keep login (interactive) lightweight: OIDC only
   window.loginRequest = {
     scopes: ["openid", "profile", "email"]
   };
 
-  // 👇 Use this for API tokens (replace with your real GUID and scope name)
+  // Use this for API tokens (replace with your real GUID and scope name)
   window.apiRequest = {
     scopes: ["api://port-management/api.read"]
   };  

@@ -26,17 +26,19 @@ public sealed class ActivationController : ControllerBase
     public async Task<IActionResult> Confirm([FromQuery] Guid token)
     {
         var invite = await _db.ActivationInvites.FindAsync(token);
-        if (invite is null || invite.Used || invite.ExpiresUtc < DateTime.UtcNow)
+        if (invite is null || invite.ExpiresUtc < DateTime.UtcNow)
             return BadRequest("Invalid or expired activation link.");
 
-        await _graph.EnableUserAsync(invite.Email);
+        if(!invite.Used){
+            await _graph.EnableUserAsync(invite.Email);
 
-        invite.Used = true;
-        await _db.SaveChangesAsync();
+            invite.Used = true;
+            await _db.SaveChangesAsync();
+        }   
 
-        // Redirect to your styled success page (no password in URL)
         var successUrl = $"/index.html?token={token}#activation-success";
         return Redirect(successUrl);
+        
     }
 
     [HttpGet("getTempPassword")]

@@ -395,6 +395,12 @@ class ApiService {
     async deleteVesselVisitNotification(id) {
         return this.delete(`/vesselvisitnotification/${id}`);
     }
+
+    // ME
+    async getCurrentUser() {
+        return this.get('/me');
+    }
+    
 }
 
 const apiService = new ApiService();

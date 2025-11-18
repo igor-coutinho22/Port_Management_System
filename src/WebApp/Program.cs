@@ -29,6 +29,7 @@ using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
 using WebApp.Models.Security;
 using WebApp.Security;
+using Microsoft.AspNetCore.Mvc;
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
@@ -105,6 +106,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             var log = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
             log.LogWarning("JWT challenge: {Error} {Description}", ctx.Error, ctx.ErrorDescription);
+            return Task.CompletedTask;
+        },
+        OnForbidden = ctx =>
+        {
+            var log = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            log.LogWarning("Forbidden: user {User} tried to access {Path}",
+                ctx.Principal?.Identity?.Name,
+                ctx.HttpContext.Request.Path);
             return Task.CompletedTask;
         }
     };
@@ -213,8 +222,11 @@ builder.Services.AddSingleton<IClaimsTransformation>(sp =>
     new GraphRoleClaimsTransformation(
         sp.GetRequiredService<GraphServiceClient>(),
         issuerDomain!,
-        extAppNoDashes!)
+        extAppNoDashes!,
+        sp.GetRequiredService<ILogger<GraphRoleClaimsTransformation>>()
+    )
 );
+
 
 // user admin service
 builder.Services.AddScoped<IGraphUserService, GraphUserService>();
@@ -268,25 +280,66 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+app.MapGet("/api/admin/debug-user", async (
+    [FromQuery] string email,
+    GraphServiceClient graph,
+    IConfiguration cfg) =>
+{
+    var ciam = cfg.GetSection("AzureAdCiam");
+    var issuerDomain = ciam["IssuerDomain"];
+    var extAppNoDashes = ciam["ExtensionsAppIdNoDashes"];
+    var extRoleName = $"extension_{extAppNoDashes}_Role";
+
+    var users = await graph.Users.GetAsync(req =>
+    {
+        req.QueryParameters.Filter =
+            $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{issuerDomain}')";
+        req.QueryParameters.Select = new[] { "id", "displayName", extRoleName };
+    });
+
+    var user = users?.Value?.FirstOrDefault();
+    if (user == null)
+        return Results.NotFound("User not found");
+
+    return Results.Ok(new
+    {
+        user.Id,
+        user.DisplayName,
+        Extensions = user.AdditionalData    // should now contain the Role
+    });
+});
+
+
 // ---- Helper endpoint: who am I (from token/claims) ----
 app.MapGet("/api/me", (HttpContext http) =>
 {
     if (!http.User.Identity?.IsAuthenticated ?? true)
         return Results.Unauthorized();
 
-    var email = http.User.FindFirst("emails")?.Value ?? http.User.FindFirst("email")?.Value;
+    var email = http.User.FindFirst("emails")?.Value
+                ?? http.User.FindFirst("email")?.Value;
+
     var first = http.User.FindFirst("given_name")?.Value ?? "";
     var last = http.User.FindFirst("family_name")?.Value ?? "";
+    var rawName = http.User.FindFirst("name")?.Value ?? http.User.Identity?.Name;
+    var name = !string.IsNullOrWhiteSpace(rawName)
+        ? rawName
+        : $"{first} {last}".Trim();
 
-    // roles may come from token OR injected by claims transform
-    var roles = http.User.Claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "roles")
-                                .Select(c => c.Value).Distinct().ToArray();
+    var roles = http.User.Claims
+        .Where(c => c.Type == ClaimTypes.Role || c.Type == "roles")
+        .Select(c => c.Value)
+        .Distinct()
+        .ToArray();
 
     if (roles.Length == 0)
         return Results.StatusCode(StatusCodes.Status403Forbidden);
 
-    return Results.Ok(new { email, firstName = first, lastName = last, roles });
+    return Results.Ok(new { email, firstName = first, lastName = last, name, roles });
 }).RequireAuthorization();
+
+
 
 app.MapControllers();
 app.MapRazorPages();
