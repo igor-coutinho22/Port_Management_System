@@ -150,11 +150,20 @@ namespace WebApp.Models.Domain.Agents
 
         private static string ValidateTaxNumber(string value)
         {
-            if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Tax number is required.", nameof(value));
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentException("Tax number is required.", nameof(value));
+
             var v = value.Trim().ToUpperInvariant();
-            if (v.Length > 32) throw new ArgumentException("Tax number must be at most 32 characters.", nameof(value));
-            if (!Regex.IsMatch(v, @"^[A-Z0-9\-\.]{3,32}$"))
-                throw new ArgumentException("Tax number must be alphanumeric (may include '-' or '.') and 3–32 chars.", nameof(value));
+
+            if (v.Length < 3 || v.Length > 32)
+                throw new ArgumentException("Tax number must be between 3 and 32 characters.", nameof(value));
+
+            // Tem de começar por dígito e só pode ter dígitos, '-' ou '.'
+            if (!Regex.IsMatch(v, @"^[0-9][0-9\-\.]{2,31}$"))
+                throw new ArgumentException(
+                    "Tax number must start with a digit and contain only digits, '-' or '.', with 3–32 characters.",
+                    nameof(value));
+
             return v;
         }
     }

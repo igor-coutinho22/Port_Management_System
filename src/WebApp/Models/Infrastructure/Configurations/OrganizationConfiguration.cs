@@ -12,7 +12,11 @@ namespace WebApp.Models.Infrastructure.Configurations
             b.Property(x => x.LegalName).IsRequired().HasMaxLength(200);
             b.Property(x => x.Address).IsRequired().HasMaxLength(300);
             b.Property(x => x.TaxNumber).IsRequired().HasMaxLength(32);
+
+            // Unicidade
             b.HasIndex(x => x.TaxNumber).IsUnique();
+            b.HasIndex(x => x.LegalName).IsUnique();
+            b.HasIndex(x => x.AlternativeNames).IsUnique();
 
             b.HasMany(x => x.Representatives)
              .WithOne(r => r.Organization)
