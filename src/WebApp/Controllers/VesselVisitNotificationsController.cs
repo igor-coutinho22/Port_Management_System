@@ -82,6 +82,11 @@ namespace WebApp.Controllers
                 var created = await _service.GetByIdAsync(vesselvisitnotification.Id);
                 return CreatedAtRoute("GetByIdAsync", new { id = created!.Id }, VesselVisitNotificationMapper.ToDTO(created));
             }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Argument validation failed while creating Vessel Visit Notification.");
+                return BadRequest(ex.Message);
+            }
             catch (InvalidOperationException ex)
             {
                 _logger.LogWarning(ex, "Validation failed while creating Vessel Visit Notification.");

@@ -173,6 +173,29 @@ const VesselVisitNotificationsHubPage = () => {
 
 // Quick Table Component for Vessel Visit Notifications Data
 const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
+	const [vessels, setVessels] = React.useState([]);
+	const [docks, setDocks] = React.useState([]);
+
+	React.useEffect(() => {
+		// Fetch all vessels and docks once for name lookup
+		async function fetchMeta() {
+			const v = await apiService.getVessels();
+			const d = await apiService.getDocks();
+			setVessels(v || []);
+			setDocks(d || []);
+		}
+		fetchMeta();
+	}, []);
+
+	function getVesselName(imo) {
+		const vessel = vessels.find(v => v.imo === imo);
+		return vessel ? vessel.vesselName || vessel.name || 'N/A' : 'N/A';
+	}
+	function getDockName(id) {
+		const dock = docks.find(d => d.id === id);
+		return dock ? dock.name || 'N/A' : 'N/A';
+	}
+
 	return (
 		<div className="quick-table-container">
 			<div className="quick-table-header">
@@ -190,8 +213,8 @@ const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
 						<thead>
 							<tr>
 								<th>ID</th>
-								<th>Vessel IMO</th>
-								<th>Dock ID</th>
+								<th>Vessel IMO (Name)</th>
+								<th>Dock ID (Name)</th>
 								<th>Visit Date</th>
 								<th>Status</th>
 								<th>Purpose</th>
@@ -204,8 +227,8 @@ const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
 							{notifications.map((n) => (
 								<tr key={n.id}>
 									<td className="id-cell">{n.id || 'N/A'}</td>
-									<td>{n.vesselIMO || 'N/A'}</td>
-									<td>{n.dockId || 'N/A'}</td>
+									<td>{n.vesselIMO ? `${n.vesselIMO} (${getVesselName(n.vesselIMO)})` : 'N/A'}</td>
+									<td>{n.dockId ? `${n.dockId} (${getDockName(n.dockId)})` : 'N/A'}</td>
 									<td>{n.visitDate ? new Date(n.visitDate).toLocaleDateString() : 'N/A'}</td>
 									<td>
 										<span className={`status-badge status-${(n.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>

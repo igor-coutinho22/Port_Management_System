@@ -85,13 +85,20 @@ class ApiService {
                 const ct = response.headers.get('content-type') || '';
                 if (ct.includes('application/json')) {
                     const data = await response.json();
-                    errorMessage = data.message || data.error || data.title || errorMessage;
+                    errorMessage = data.message || data.error || data.title || JSON.stringify(data) || errorMessage;
                 } else {
                     const txt = await response.text();
                     if (txt && txt.trim()) errorMessage = txt;
                 }
             } catch (parseErr) {
                 console.warn('Could not parse error response:', parseErr);
+            }
+            // If errorMessage is still generic, try to get plain text again
+            if (errorMessage.startsWith('HTTP') || !errorMessage.trim()) {
+                try {
+                    const txt = await response.text();
+                    if (txt && txt.trim()) errorMessage = txt;
+                } catch {}
             }
             console.error(`API Error for ${url}:`, errorMessage);
             throw new Error(errorMessage);
