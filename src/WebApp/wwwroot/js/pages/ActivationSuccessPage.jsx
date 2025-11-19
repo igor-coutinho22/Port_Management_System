@@ -1,82 +1,41 @@
-console.log("ActivationSuccessPage.jsx loaded");
+const ActivationSuccessPage = () => {
+    const [tempPassword, setTempPassword] = React.useState(null);
 
-(function () {
-    const ActivationSuccessPage = () => {
-        const [password, setPassword] = React.useState('');
-        const [msg, setMsg] = React.useState('Your account has been successfully activated!');
-        const [copyMsg, setCopyMsg] = React.useState('');
-        const [isLoading, setIsLoading] = React.useState(true);
+    React.useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        if (!token) return;
 
-        // Get the token from the URL when the component mounts
-        React.useEffect(() => {
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get("token"); // Get the token from the URL
+        window.apiService
+            .get(`/activation/getTempPassword?token=${encodeURIComponent(token)}`)
+            .then(data => setTempPassword(data.password))
+            .catch(err => console.error(err));
+    }, []);
 
-            if (token) {
-                console.log("Received token: " + token);
-                fetch(`/api/activation/getTempPassword?token=${token}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.password) {
-                            setPassword(data.password);
-                        } else {
-                            setMsg('Unable to retrieve your temporary password.');
-                        }
-                    })
-                    .catch(error => {
-                        setMsg('An error occurred while retrieving your password.');
-                    })
-                    .finally(() => setIsLoading(false));
-            } else {
-                setMsg('Invalid activation token.');
-                setIsLoading(false);
-            }
-        }, []); // Empty dependency array means this runs only once when the component mounts
+    const handleLogin = () => {
+        const pca = window.__pca;
+        if (!pca) {
+            console.error("MSAL PCA not found");
+            return;
+        }
 
-        const copyToClipboard = () => {
-            navigator.clipboard.writeText(password).then(() => {
-                setCopyMsg('Password copied to clipboard!');
-            }).catch(() => {
-                setCopyMsg('Failed to copy password.');
-            });
-        };
-
-        return (
-            <div className="page-section" style={{ maxWidth: 640, margin: "0 auto", textAlign: 'center' }}>
-                <h2 className="page-title">Account Activated!</h2>
-                <p>{msg}</p>
-
-                {isLoading ? (
-                    <div className="loading">Loading...</div>
-                ) : (
-                    password && (
-                        <div style={{ marginTop: 20 }}>
-                            <h3>Your Temporary Password</h3>
-                            <div style={{ fontSize: '20px', fontWeight: 'bold', wordBreak: 'break-word' }}>
-                                {password}
-                            </div>
-
-                            <button className="btn-small" onClick={copyToClipboard} style={{ marginTop: 12 }}>
-                                Copy Password
-                            </button>
-
-                            {copyMsg && (
-                                <div className={`info ${copyMsg.includes("copied") ? "success" : "error"}`} style={{ marginTop: 12 }}>
-                                    {copyMsg}
-                                </div>
-                            )}
-                        </div>
-                    )
-                )}
-
-                <div style={{ marginTop: 20 }}>
-                    <button className="btn" onClick={() => window.location.href = "/login"}>
-                        Go to Login Page
-                    </button>
-                </div>
-            </div>
-        );
+        pca.loginRedirect(window.loginRequest);
     };
 
-    window.ActivationSuccessPage = ActivationSuccessPage;
-})();
+    return (
+        <div className="page-section">
+            <h2>Conta ativada com sucesso</h2>
+            <p>A sua conta foi ativada. Utilize o seu email e a palavra-passe temporária para iniciar sessão.</p>
+            {tempPassword && (
+                <p>
+                    <strong>Palavra-passe temporária:</strong> {tempPassword}
+                </p>
+            )}
+            <button className="btn" onClick={handleLogin}>
+                Ir para login
+            </button>
+        </div>
+    );
+};
+
+window.ActivationSuccessPage = ActivationSuccessPage;
