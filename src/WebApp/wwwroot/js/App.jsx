@@ -82,6 +82,25 @@ const AppWithGlobalNav = () => {
       "qualifications",
     ].includes(currentPage);
 
+  const PAGE_TO_MENU_ID = {
+    home: "home",
+    management: "management",
+    "admin-users": "admin-users",
+    "3d-view": "3d-view",
+    "api-docs": "api-docs",
+    resources: "resources",
+    vessels: "vessels",
+    "vessel-types": "vessel-types",
+    docks: "docks",
+    "storage-areas": "storage-areas",
+    organizations: "organizations",
+    representatives: "representatives",
+    staff: "staff",
+    "vessel-visit-notifications": "vessel-visit-notifications",
+    qualifications: "qualifications"
+  };
+
+
   React.useEffect(() => {
     window.appNavigate = handleNavigate;
     console.log("Global navigation function set");
@@ -209,6 +228,26 @@ const AppWithGlobalNav = () => {
     }
   };
 
+  const ProtectedPage = ({ currentPage, render }) => {
+    const { canAccessMenu, isAuthenticated } = useUser();
+    const basePage = typeof currentPage === "string" ? currentPage.split("?")[0] : "home";
+    const menuId = PAGE_TO_MENU_ID[basePage] || basePage;
+
+    // Always allow home
+    if (basePage === "home") return render();
+
+    if (!isAuthenticated) {
+      return <div className="page-section"><p>A autenticação é necessária.</p></div>;
+    }
+
+    if (!canAccessMenu(menuId)) {
+      return <AccessDeniedPage />;
+    }
+
+    return render();
+  };
+
+
   return (
     <div id="app">
       <Navigation
@@ -229,7 +268,10 @@ const AppWithGlobalNav = () => {
         className={`main-content ${isManagementSection && sidebarVisible ? "with-sidebar" : ""}`}
       >
         <Breadcrumb currentPage={currentPage} onNavigate={handleNavigate} />
-        {renderCurrentPage()}
+        <ProtectedPage
+          currentPage={currentPage}
+          render={renderCurrentPage}
+        />
       </main>
 
       <Footer currentPage={currentPage} onNavigate={handleNavigate} />
@@ -262,11 +304,11 @@ if (isActivationPage) {
   console.log("Root: rendering WITH AuthGate (normal secured app)");
   root.render(
     <I18nProvider>
-      <UserProvider>
-        <AuthGate>
+      <AuthGate>
+        <UserProvider>
           <AppWithGlobalNav />
-        </AuthGate>
-      </UserProvider>
+        </UserProvider>
+      </AuthGate>
     </I18nProvider>
   );
 }

@@ -2,27 +2,8 @@
 const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
     const [isDarkMode, setIsDarkMode] = React.useState(false);
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const { currentUser, activeRole, canAccessMenu } = useUser();
+    const { currentUser, activeRole, canAccessMenu, isLoadingUser, logout } = useUser();
     const { t } = useTranslation();
-
-    const handleLogout = async () => {
-        const pca = window.__pca;
-        if (!pca) {
-            console.error("Logout: MSAL PublicClientApplication (window.__pca) not found.");
-            return;
-        }
-
-        try {
-            const account = pca.getActiveAccount() || pca.getAllAccounts()[0] || null;
-
-            await pca.logoutRedirect({
-                account: account || undefined,
-                postLogoutRedirectUri: window.location.origin
-            });
-        } catch (e) {
-            console.error("Logout failed:", e && (e.errorCode || e.message), e);
-        }
-    };
 
     // Load saved theme preference
     React.useEffect(() => {
@@ -124,20 +105,6 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
 
                     {/* Header Actions - Right Side */}
                     <div className="header-actions">
-                        {/* User Section */}
-                        <div className="user-section">
-                            <div className="user-info">
-                                <span className="user-name">
-                                    {currentUser?.name || t('user.unknown_user', 'Unknown User')}
-                                </span>
-                                <span className="user-role">
-                                    ({activeRole || t('user.no_role', 'no role')})
-                                </span>
-                            </div>
-                            <UserRoleSwitcher />
-                        </div>
-
-
                         {/* Language Switcher */}
                         <LanguageSwitcher />
 
@@ -150,14 +117,34 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
                             </div>
                         </div>
 
+                        {/* User Section */}
+                        <div className="user-section">
+                            <div className="user-info">
+                                <span className="user-name">
+                                    {isLoadingUser
+                                        ? t("user.loading", "A carregar…")
+                                        : currentUser?.name || t("user.unknown_user", "Utilizador Desconhecido")}
+                                </span>
+                                <span className="user-role">
+                                    ({isLoadingUser
+                                        ? "…"
+                                        : (currentUser?.roles && currentUser.roles.length > 0
+                                            ? currentUser.roles.join(", ")
+                                            : t("user.no_role", "sem função"))})
+                                </span>
+                            </div>
+                            <UserRoleSwitcher />
+                        </div>
+
                         {/* Logout Button */}
                         <button
                             className="btn logout-button"
-                            onClick={handleLogout}
+                            onClick={logout}
                             title={t('nav.logout', 'Sign out')}
                         >
                             {t('nav.logout', 'Sign out')}
                         </button>
+
                     </div>
                 </div>
             </header>
