@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 using System.Collections.Generic;
+using WebApp.Models.Domain.StorageArea;
 
 public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
 {
@@ -24,12 +25,16 @@ public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsy
     [Fact]
     public async Task Post_And_Get_Warehouse_ShouldWork()
     {
-        var dto = new
+        var dto = new WebApp.Models.Application.DTOs.WarehouseDto
         {
-            name = $"Test Warehouse {_testRunId}",
-            maxCapacityTeu = 500,
-            currentOccupancyTeu = 100,
-            specializedCargoType = "Perishable"
+            StorageArea = new WebApp.Models.Application.DTOs.StorageAreaDTO
+            {
+                Name = $"Test Warehouse {_testRunId}",
+                MaxCapacityTeu = 500,
+                CurrentOccupancyTeu = 100,
+                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+            },
+            SpecializedCargoType = "Perishable"
         };
 
         var post = await CreateWarehouseWithCleanupAsync(dto);
@@ -45,12 +50,16 @@ public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsy
     [Fact]
     public async Task Post_Another_Warehouse_ShouldWork()
     {
-        var dto = new
+        var dto = new WebApp.Models.Application.DTOs.WarehouseDto
         {
-            name = $"Cold Storage {_testRunId}",
-            maxCapacityTeu = 300,
-            currentOccupancyTeu = 50,
-            specializedCargoType = "Frozen"
+            StorageArea = new WebApp.Models.Application.DTOs.StorageAreaDTO
+            {
+                Name = $"Cold Storage {_testRunId}",
+                MaxCapacityTeu = 300,
+                CurrentOccupancyTeu = 50,
+                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+            },
+            SpecializedCargoType = "Frozen"
         };
 
         var post = await CreateWarehouseWithCleanupAsync(dto);
@@ -68,12 +77,16 @@ public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsy
     {
         // First create a warehouse
         var warehouseName = $"Findable Warehouse {_testRunId}";
-        var dto = new
+        var dto = new WebApp.Models.Application.DTOs.WarehouseDto
         {
-            name = warehouseName,
-            maxCapacityTeu = 200,
-            currentOccupancyTeu = 0,
-            specializedCargoType = "General"
+            StorageArea = new WebApp.Models.Application.DTOs.StorageAreaDTO
+            {
+                Name = warehouseName,
+                MaxCapacityTeu = 200,
+                CurrentOccupancyTeu = 0,
+                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+            },
+            SpecializedCargoType = "General"
         };
 
         var post = await CreateWarehouseWithCleanupAsync(dto);
@@ -99,12 +112,16 @@ public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsy
 
         // Create a container yard
         var yardName = $"Container Yard {_testRunId}";
-        var dto = new
+        var dto = new WebApp.Models.Application.DTOs.ContainerYardDto
         {
-            name = yardName,
-            maxCapacityTeu = 1000,
-            currentOccupancyTeu = 200,
-            dockIds = new List<Guid> { firstDockId }
+            StorageArea = new WebApp.Models.Application.DTOs.StorageAreaDTO
+            {
+                Name = yardName,
+                MaxCapacityTeu = 1000,
+                CurrentOccupancyTeu = 200,
+                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+            },
+            DockIds = new List<Guid> { firstDockId }
         };
 
         var post = await CreateContainerYardWithCleanupAsync(dto);
@@ -129,12 +146,16 @@ public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsy
 
         // First create a container yard
         var yardName = $"Searchable Yard {_testRunId}";
-        var dto = new
+        var dto = new WebApp.Models.Application.DTOs.ContainerYardDto
         {
-            name = yardName,
-            maxCapacityTeu = 800,
-            currentOccupancyTeu = 100,
-            dockIds = new List<Guid> { firstDockId }
+            StorageArea = new WebApp.Models.Application.DTOs.StorageAreaDTO
+            {
+                Name = yardName,
+                MaxCapacityTeu = 800,
+                CurrentOccupancyTeu = 100,
+                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+            },
+            DockIds = new List<Guid> { firstDockId }
         };
 
         var post = await CreateContainerYardWithCleanupAsync(dto);
@@ -159,7 +180,19 @@ public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsy
     // Helper method to create a warehouse storage area and track it for cleanup
     private async Task<HttpResponseMessage> CreateWarehouseWithCleanupAsync(object warehouseDto)
     {
-        var response = await _client.PostAsJsonAsync("/api/storageareas/warehouse", warehouseDto);
+            // Patch: Ensure StorageArea property is set with required fields
+            dynamic dto = warehouseDto;
+            if (dto.StorageArea == null)
+            {
+                dto.StorageArea = new WebApp.Models.Application.DTOs.StorageAreaDTO
+                {
+                    Name = $"Test Warehouse {_testRunId}",
+                    MaxCapacityTeu = 100,
+                    CurrentOccupancyTeu = 0,
+                    DockConnections = new List<DockStorageAreaConnection>()
+                };
+            }
+            var response = await _client.PostAsJsonAsync("/api/storageareas/warehouse", (object)dto);
         
         // Only track for cleanup if creation was successful
         if (response.IsSuccessStatusCode && response.Headers.Location != null)
@@ -174,7 +207,19 @@ public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsy
     // Helper method to create a container yard storage area and track it for cleanup
     private async Task<HttpResponseMessage> CreateContainerYardWithCleanupAsync(object containerYardDto)
     {
-        var response = await _client.PostAsJsonAsync("/api/storageareas/containerYard", containerYardDto);
+            // Patch: Ensure StorageArea property is set with required fields
+            dynamic dto = containerYardDto;
+            if (dto.StorageArea == null)
+            {
+                dto.StorageArea = new WebApp.Models.Application.DTOs.StorageAreaDTO
+                {
+                    Name = $"Test Yard {_testRunId}",
+                    MaxCapacityTeu = 100,
+                    CurrentOccupancyTeu = 0,
+                    DockConnections = new List<DockStorageAreaConnection>()
+                };
+            }
+            var response = await _client.PostAsJsonAsync("/api/storageareas/containerYard", (object)dto);
         
         // Only track for cleanup if creation was successful
         if (response.IsSuccessStatusCode && response.Headers.Location != null)

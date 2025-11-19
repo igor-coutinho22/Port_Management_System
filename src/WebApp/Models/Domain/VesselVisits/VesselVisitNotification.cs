@@ -35,6 +35,7 @@ namespace WebApp.Models.Domain.VesselVisits
             Id = Guid.NewGuid();
             VesselIMO = vesselIMO;
             DockId = dockId;
+            CheckDateNotInPast(visitDate);
             VisitDate = visitDate;
             Purpose = purpose;
             Status = VesselVisitStatus.InProgress;
@@ -181,6 +182,12 @@ namespace WebApp.Models.Domain.VesselVisits
         {
             if (Status != VesselVisitStatus.InProgress)
                 throw new InvalidOperationException("Only 'InProgress' visits can be updated.");
+        }
+
+        private void CheckDateNotInPast(DateTime date)
+        {
+            if (date < DateTime.UtcNow.Date)
+                throw new ArgumentException("Visit date cannot be in the past.");
         }
     }
 }

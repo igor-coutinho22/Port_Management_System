@@ -7,34 +7,91 @@ namespace WebApp.Controllers
 {
     [Authorize("RequireOfficer")]
     [ApiController]
-    [Route("api")]
+    [Route("api/organizations/{orgId:guid}/[controller]")]
     public class RepresentativesController : ControllerBase
     {
-        private readonly IRepresentativeService _svc;
-        public RepresentativesController(IRepresentativeService svc) => _svc = svc;
+        private readonly IRepresentativeService _service;
 
-        [HttpPost("organizations/{orgId:guid}/representatives")]
+        public RepresentativesController(IRepresentativeService service)
+        {
+            _service = service;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<RepresentativeDto>>> GetByOrganization(Guid orgId)
+        {
+            var reps = await _service.GetByOrganizationAsync(orgId);
+            return Ok(reps);
+        }
+
+        [HttpPost]
         public async Task<ActionResult<RepresentativeDto>> Create(Guid orgId, [FromBody] CreateRepresentativeRequest req)
-            => Created("", await _svc.CreateAsync(orgId, req));
+        {
+            try
+            {
+                if (req is null) return BadRequest("Request body is required.");
 
-        [HttpPut("representatives/{id:guid}")]
-        public async Task<ActionResult<RepresentativeDto>> Update(Guid id, [FromBody] UpdateRepresentativeRequest req)
-            => Ok(await _svc.UpdateAsync(id, req));
+                var rep = await _service.CreateAsync(orgId, req);
+                return CreatedAtAction(nameof(GetByOrganization), new { orgId }, rep);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        [HttpPut("representatives/{id:guid}/deactivate")]
-        public async Task<IActionResult> Deactivate(Guid id) { await _svc.SetActiveAsync(id, false); return NoContent(); }
+        [HttpPut("{repId:guid}")]
+        public async Task<ActionResult<RepresentativeDto>> Update(Guid orgId, Guid repId, [FromBody] UpdateRepresentativeRequest req)
+        {
+            try
+            {
+                if (req is null) return BadRequest("Request body is required.");
 
-        [HttpPut("representatives/{id:guid}/activate")]
-        public async Task<IActionResult> Activate(Guid id) { await _svc.SetActiveAsync(id, true); return NoContent(); }
+                var rep = await _service.UpdateAsync(repId, req);
+                return Ok(rep);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        [HttpGet("organizations/{orgId:guid}/representatives")]
-        public async Task<ActionResult<IEnumerable<RepresentativeDto>>> List(Guid orgId, [FromQuery] bool? active)
-            => Ok(await _svc.ListAsync(orgId, active));
+        [HttpDelete("{repId:guid}")]
+        public async Task<IActionResult> Delete(Guid orgId, Guid repId)
+        {
+            try
+            {
+                await _service.DeleteAsync(repId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        [HttpGet("representatives")]
-        public async Task<ActionResult<IEnumerable<RepresentativeDto>>> ListAll(
-            [FromQuery] Guid? orgId, [FromQuery] bool? active)
-            => Ok(await _svc.ListAllAsync(orgId, active));
-
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<RepresentativeDto>>> GetAll(
+            [FromQuery] Guid? organizationId, [FromQuery] bool? active)
+        {
+            var reps = await _service.GetAllAsync(organizationId, active);
+            return Ok(reps);
+        }
     }
 }

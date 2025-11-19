@@ -1,5 +1,12 @@
+
 // Register Vessel Visit Notification Form Component
 console.log('📝 RegisterVesselVisitNotificationForm component loading...');
+
+// ISO 6346 container ID validation (format only)
+function isValidContainerId(id) {
+    const pattern = /^[A-Z]{3}[UJZ][0-9]{7}$/i;
+    return pattern.test(id);
+}
 
 const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -95,26 +102,34 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
             if (!formData.crew || formData.crew.length === 0 || formData.crew.some(c => !c.name.trim() || !c.citizenId.trim() || !c.nationality.trim())) {
                 throw new Error('All crew members must have name, citizen ID, and nationality');
             }
+            // Validate container IDs client-side (format only)
+            const allContainerIds = [...formData.loadingManifest, ...formData.unloadingManifest].filter(c => c.trim());
+            const invalidContainer = allContainerIds.find(c => !isValidContainerId(c.trim()));
+            if (invalidContainer) {
+                throw new Error(`Invalid container ID: ${invalidContainer}. Must follow format: 3 uppercase letters, 1 of U/J/Z, 7 digits.`);
+            }
             // If Commercial, require at least one manifest
-            if (formData.purpose === 'Commercial' && formData.loadingManifest.length === 0 && formData.unloadingManifest.length === 0) {
+            if (
+                formData.purpose === 'Commercial' &&
+                !(
+                    formData.loadingManifest.some(c => c.trim()) ||
+                    formData.unloadingManifest.some(c => c.trim())
+                )
+            ) {
                 throw new Error('Commercial visits require at least one cargo manifest (loading or unloading)');
             }
 
-
-            // Transform manifests to arrays of objects (DTO expects array)
-            const manifests = [];
-            if (formData.loadingManifest.length > 0) {
-                manifests.push({
-                    Type: 'Loading',
+            // Transform manifests to match backend DTO
+            const loadingManifest = formData.loadingManifest.length > 0
+                ? {
                     Containers: formData.loadingManifest.filter(c => c.trim()).map(c => ({ Identifier: c.trim() }))
-                });
-            }
-            if (formData.unloadingManifest.length > 0) {
-                manifests.push({
-                    Type: 'Unloading',
+                }
+                : null;
+            const unloadingManifest = formData.unloadingManifest.length > 0
+                ? {
                     Containers: formData.unloadingManifest.filter(c => c.trim()).map(c => ({ Identifier: c.trim() }))
-                });
-            }
+                }
+                : null;
 
             // Transform data to match backend DTO
             const notificationData = {
@@ -123,7 +138,8 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
                 VisitDate: formData.visitDate,
                 Purpose: formData.purpose,
                 Crew: formData.crew,
-                CargoManifests: manifests
+                LoadingManifest: loadingManifest,
+                UnloadingManifest: unloadingManifest
             };
 
             await apiService.createVesselVisitNotification(notificationData);
@@ -169,7 +185,7 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
                         >
                             <option value="">Select vessel...</option>
                             {vessels.map(vessel => (
-                                <option key={vessel.imo} value={vessel.imo}>{vessel.name} ({vessel.imo})</option>
+                                <option key={vessel.imo} value={vessel.imo}>{vessel.imo} - {vessel.vesselName}</option>
                             ))}
                         </select>
                         <small className="form-help">Select vessel by name/IMO</small>
@@ -223,72 +239,84 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
                     {/* Crew Members */}
                     <div className="form-group">
                         <label>Crew <span className="required">*</span></label>
+                        <div className="card-list">
                         {formData.crew.map((member, idx) => (
-                            <div key={idx} className="crew-row">
-                                <input
-                                    type="text"
-                                    placeholder="Name"
-                                    value={member.name}
-                                    onChange={e => handleCrewChange(idx, 'name', e.target.value)}
-                                    className="form-input crew-input"
-                                    required
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Citizen ID"
-                                    value={member.citizenId}
-                                    onChange={e => handleCrewChange(idx, 'citizenId', e.target.value)}
-                                    className="form-input crew-input"
-                                    required
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Nationality"
-                                    value={member.nationality}
-                                    onChange={e => handleCrewChange(idx, 'nationality', e.target.value)}
-                                    className="form-input crew-input"
-                                    required
-                                />
+                            <div key={idx} className="card crew-card">
+                                <div className="card-fields">
+                                    <input
+                                        type="text"
+                                        placeholder="Name"
+                                        value={member.name}
+                                        onChange={e => handleCrewChange(idx, 'name', e.target.value)}
+                                        className="form-input crew-input"
+                                        required
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Citizen ID"
+                                        value={member.citizenId}
+                                        onChange={e => handleCrewChange(idx, 'citizenId', e.target.value)}
+                                        className="form-input crew-input"
+                                        required
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Nationality"
+                                        value={member.nationality}
+                                        onChange={e => handleCrewChange(idx, 'nationality', e.target.value)}
+                                        className="form-input crew-input"
+                                        required
+                                    />
+                                </div>
                                 {formData.crew.length > 1 && (
                                     <button type="button" className="remove-btn" onClick={() => removeCrewMember(idx)}>✖</button>
                                 )}
                             </div>
                         ))}
+                        </div>
                         <button type="button" className="add-btn" onClick={addCrewMember}>Add Crew Member</button>
                         <small className="form-help">Add all crew members (name, citizen ID, nationality)</small>
                     </div>
                     {/* Manifests */}
                     <div className="form-group">
                         <label>Loading Manifest (Container IDs)</label>
+                        <div className="card-list">
                         {formData.loadingManifest.map((container, idx) => (
-                            <div key={idx} className="manifest-row">
-                                <input
-                                    type="text"
-                                    placeholder="Container ID (ISO 6346)"
-                                    value={container}
-                                    onChange={e => handleManifestChange('loadingManifest', idx, e.target.value)}
-                                    className="form-input manifest-input"
-                                />
+                            <div key={idx} className="card manifest-card">
+                                <div className="card-fields">
+                                    <input
+                                        type="text"
+                                        placeholder="Container ID (ISO 6346)"
+                                        value={container}
+                                        onChange={e => handleManifestChange('loadingManifest', idx, e.target.value)}
+                                        className="form-input manifest-input"
+                                    />
+                                </div>
                                 <button type="button" className="remove-btn" onClick={() => removeManifestContainer('loadingManifest', idx)}>✖</button>
                             </div>
                         ))}
+                        </div>
                         <button type="button" className="add-btn" onClick={() => addManifestContainer('loadingManifest')}>Add Container</button>
                         <small className="form-help">Add container IDs for loading manifest</small>
                     </div>
                     <div className="form-group">
                         <label>Unloading Manifest (Container IDs)</label>
+                        <div className="card-list">
                         {formData.unloadingManifest.map((container, idx) => (
-                            <div key={idx} className="manifest-row">
-                                <input
-                                    type="text"
-                                    placeholder="Container ID (ISO 6346)"
-                                    value={container}
-                                    onChange={e => handleManifestChange('unloadingManifest', idx, e.target.value)}
-                                    className="form-input manifest-input"
-                                />
+                            <div key={idx} className="card manifest-card">
+                                <div className="card-fields">
+                                    <input
+                                        type="text"
+                                        placeholder="Container ID (ISO 6346)"
+                                        value={container}
+                                        onChange={e => handleManifestChange('unloadingManifest', idx, e.target.value)}
+                                        className="form-input manifest-input"
+                                    />
+                                </div>
                                 <button type="button" className="remove-btn" onClick={() => removeManifestContainer('unloadingManifest', idx)}>✖</button>
                             </div>
                         ))}
+                        </div>
                         <button type="button" className="add-btn" onClick={() => addManifestContainer('unloadingManifest')}>Add Container</button>
                         <small className="form-help">Add container IDs for unloading manifest</small>
                     </div>

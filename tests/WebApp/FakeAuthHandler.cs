@@ -9,6 +9,7 @@ namespace WebApp.Tests.Auth
 {
     public class FakeAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
+        [System.Obsolete]
         public FakeAuthHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,

@@ -11,38 +11,91 @@ namespace WebApp.Controllers
     public class OrganizationsController : ControllerBase
     {
         private readonly IOrganizationService _service;
-        public OrganizationsController(IOrganizationService service) => _service = service;
 
-        // POST /api/organizations
+        public OrganizationsController(IOrganizationService service)
+        {
+            _service = service;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<OrganizationDto>>> GetAll()
+        {
+            var orgs = await _service.GetAllAsync();
+            return Ok(orgs);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<OrganizationDto>> GetById(Guid id)
+        {
+            var org = await _service.GetByIdAsync(id);
+            if (org is null) return NotFound();
+            return Ok(org);
+        }
+
         [HttpPost]
         public async Task<ActionResult<OrganizationDto>> Create([FromBody] CreateOrganizationRequest req)
         {
-            var org = await _service.CreateAsync(req);
-            return CreatedAtAction(nameof(GetById), new { id = org.Id }, org);
+            try
+            {
+                if (req is null) return BadRequest("Request body is required.");
+                
+                var created = await _service.CreateAsync(req);
+                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        // GET /api/organizations/{id}
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<OrganizationDto>> GetById(Guid id)
-            => Ok(await _service.GetAsync(id));
-
-        //  GET /api/organizations?name=&taxNumber=
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<OrganizationDto>>> List(
-            [FromQuery] string? name, [FromQuery] string? taxNumber)
-            => Ok(await _service.ListAsync(name, taxNumber));
-
-        //  PUT /api/organizations/{id}
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<OrganizationDto>> Update(Guid id, [FromBody] UpdateOrganizationRequest req)
-            => Ok(await _service.UpdateAsync(id, req));
+        {
+            try
+            {
+                if (req is null) return BadRequest("Request body is required.");
 
-        // DELETE /api/organizations/{id}
+                var updated = await _service.UpdateAsync(id, req);
+                return Ok(updated);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<OrganizationDto>>> Search(
+            [FromQuery] string? name, [FromQuery] string? taxNumber)
+        {
+            var results = await _service.SearchAsync(name, taxNumber);
+            return Ok(results);
+        }
+
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                await _service.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

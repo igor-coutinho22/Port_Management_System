@@ -45,14 +45,17 @@ namespace WebApp.Models.Application.Services
             if (dock == null)
                 throw new InvalidOperationException($"Dock with ID {vvn.DockId} not found.");
 
-            // Enforce rule: Commercial visits need manifests
-            if (vvn.Purpose == VisitPurpose.Commercial &&
-                vvn.LoadingManifest == null &&
-                vvn.UnloadingManifest == null)
+            // Enforce rule: Commercial visits need at least one manifest with at least one container
+            if (vvn.Purpose == VisitPurpose.Commercial)
             {
-                throw new InvalidOperationException(
-                    "Commercial visits must include at least one cargo manifest."
-                );
+                bool hasLoading = vvn.LoadingManifest != null && vvn.LoadingManifest.Containers != null && vvn.LoadingManifest.Containers.Any(c => !string.IsNullOrWhiteSpace(c.Identifier));
+                bool hasUnloading = vvn.UnloadingManifest != null && vvn.UnloadingManifest.Containers != null && vvn.UnloadingManifest.Containers.Any(c => !string.IsNullOrWhiteSpace(c.Identifier));
+                if (!hasLoading && !hasUnloading)
+                {
+                    throw new InvalidOperationException(
+                        "Commercial visits must include at least one cargo manifest."
+                    );
+                }
             }
 
             await _repository.AddAsync(vvn);
