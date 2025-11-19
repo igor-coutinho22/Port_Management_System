@@ -1,105 +1,80 @@
+// File: WebApp/Models/Application/Services/RepresentativeService.cs
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Mappers;
 using WebApp.Models.Domain.Agents;
 using WebApp.Models.Infrastructure.Repositories;
 
-namespace WebApp.Models.Application.Services.Agents
+namespace WebApp.Models.Application.Services
 {
     public class RepresentativeService : IRepresentativeService
     {
         private readonly IOrganizationRepository _orgRepo;
         private readonly IRepresentativeRepository _repRepo;
 
-        public RepresentativeService(
-            IOrganizationRepository orgRepo,
-            IRepresentativeRepository repRepo)
+        public RepresentativeService(IOrganizationRepository orgRepo, IRepresentativeRepository repRepo)
         {
             _orgRepo = orgRepo;
             _repRepo = repRepo;
         }
 
-
         public async Task<RepresentativeDto> CreateAsync(Guid orgId, CreateRepresentativeRequest req)
         {
-            var org = await _orgRepo.GetByIdAsync(orgId)
-                      ?? throw new KeyNotFoundException("Organization not found.");
+            // Check if organization exists
+            var org = await _orgRepo.GetByIdAsync(orgId);
+            if (org == null)
+                throw new KeyNotFoundException("Organization not found.");
 
-            var rep = new Representative(
-                orgId,
-                req.Name,
-                req.CitizenId,
-                req.Nationality,
-                req.Email,
-                req.Phone
-            );
-
-            // Usa as regras do domínio (unicidade de email/citizenId, etc.)
+            // Convert DTO to Domain
+            var rep = RepresentativeMapper.ToDomain(orgId, req);
+            
+            // Add to organization (this will validate uniqueness)
             org.AddRepresentative(rep);
-            org.EnsureHasAtLeastOneRepresentative();
+            
+            await _repRepo.AddAsync(rep);
+            await _orgRepo.UpdateAsync(org); // Update organization to reflect the new representative
 
-            await _orgRepo.UpdateAsync(org);
-
-            return RepresentativeMapper.ToDTO(rep);
+            return RepresentativeMapper.ToDto(rep);
         }
-
 
         public async Task<RepresentativeDto> UpdateAsync(Guid repId, UpdateRepresentativeRequest req)
         {
-            var rep = await _repRepo.GetByIdAsync(repId)
-                      ?? throw new KeyNotFoundException("Representative not found.");
+            var rep = await _repRepo.GetByIdAsync(repId);
+            if (rep == null)
+                throw new KeyNotFoundException("Representative not found.");
 
-            var org = await _orgRepo.GetByIdAsync(rep.OrganizationId)
-                      ?? throw new KeyNotFoundException("Organization not found.");
+            RepresentativeMapper.UpdateDomain(rep, req);
+            await _repRepo.UpdateAsync(rep);
 
-            org.UpdateRepresentative(
-                repId,
-                req.Name,
-                req.CitizenId,
-                req.Nationality,
-                req.Email,
-                req.Phone
-            );
-
-            await _orgRepo.UpdateAsync(org);
-
-            var updated = await _repRepo.GetByIdAsync(repId);
-            return RepresentativeMapper.ToDTO(updated!);
+            return RepresentativeMapper.ToDto(rep);
         }
 
-
-        public async Task SetActiveAsync(Guid repId, bool isActive)
+        public async Task<IEnumerable<RepresentativeDto>> GetByOrganizationAsync(Guid orgId)
         {
-            var rep = await _repRepo.GetByIdAsync(repId)
-                      ?? throw new KeyNotFoundException("Representative not found.");
-
-            var org = await _orgRepo.GetByIdAsync(rep.OrganizationId)
-                      ?? throw new KeyNotFoundException("Organization not found.");
-
-            if (isActive)
-                org.ActivateRepresentative(repId);
-            else
-                org.DeactivateRepresentative(repId);
-
-            await _orgRepo.UpdateAsync(org);
+            var reps = await _repRepo.GetByOrganizationAsync(orgId);
+            return reps.Select(RepresentativeMapper.ToDto);
         }
 
-
-        public async Task<IEnumerable<RepresentativeDto>> ListAsync(Guid orgId, bool? active)
+        public async Task<IEnumerable<RepresentativeDto>> GetAllAsync(Guid? orgId = null, bool? active = null)
         {
-            var reps = await _repRepo.ListByOrganizationAsync(orgId, active);
-            return reps.Select(RepresentativeMapper.ToDTO);
+            var reps = await _repRepo.GetAllAsync(orgId, active);
+            return reps.Select(RepresentativeMapper.ToDto);
         }
 
-        public async Task<IEnumerable<RepresentativeDto>> ListByOrganizationAsync(Guid orgId, bool? active)
+        public async Task DeleteAsync(Guid repId)
         {
-            var reps = await _repRepo.ListByOrganizationAsync(orgId, active);
-            return reps.Select(RepresentativeMapper.ToDTO);
-        }
+            var rep = await _repRepo.GetByIdAsync(repId);
+            if (rep == null)
+                throw new KeyNotFoundException("Representative not found.");
 
-        public async Task<IEnumerable<RepresentativeDto>> ListAllAsync(Guid? orgId, bool? active)
-        {
-            var reps = await _repRepo.ListAllAsync(orgId, active);
-            return reps.Select(RepresentativeMapper.ToDTO);
+            // Get organization to check business rules
+            var org = await _orgRepo.GetByIdAsync(rep.OrganizationId);
+            if (org != null)
+            {
+                org.RemoveRepresentative(repId);
+                await _orgRepo.UpdateAsync(org);
+            }
+
+            await _repRepo.DeleteAsync(rep);
         }
     }
 }

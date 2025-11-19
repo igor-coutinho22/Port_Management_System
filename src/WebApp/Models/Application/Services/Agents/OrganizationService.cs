@@ -1,3 +1,4 @@
+// File: WebApp/Models/Application/Services/OrganizationService.cs
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Mappers;
 using WebApp.Models.Domain.Agents;
@@ -7,111 +8,69 @@ namespace WebApp.Models.Application.Services
 {
     public class OrganizationService : IOrganizationService
     {
-        private readonly OrganizationRepository _orgRepo;
+        private readonly IOrganizationRepository _orgRepo;
+        private readonly IRepresentativeRepository _repRepo;
 
-        public OrganizationService(OrganizationRepository orgRepo)
+        public OrganizationService(IOrganizationRepository orgRepo, IRepresentativeRepository repRepo)
         {
             _orgRepo = orgRepo;
+            _repRepo = repRepo;
         }
 
         public async Task<OrganizationDto> CreateAsync(CreateOrganizationRequest req)
         {
-            if (req.Representatives == null || !req.Representatives.Any())
-                throw new ArgumentException("At least one representative is required.");
+            // Convert DTO to Domain
+            var org = OrganizationMapper.ToDomain(req);
 
-            // ----- VALIDAÇÕES DE UNICIDADE (Usando o repositorio) -----
-
-            if (await _orgRepo.ExistsWithLegalNameAsync(req.LegalName))
-                throw new ArgumentException("An organization with the same legal name already exists.");
-
-            if (!string.IsNullOrWhiteSpace(req.AlternativeNames)
-                && await _orgRepo.ExistsWithAlternativeNamesAsync(req.AlternativeNames))
-                throw new ArgumentException("An organization with the same alternative names already exists.");
-
-            if (await _orgRepo.ExistsWithTaxNumberAsync(req.TaxNumber))
-                throw new ArgumentException("An organization with the same tax number already exists.");
-
-            // ----- CRIAR DOMÍNIO (Validações do domínio são aplicadas aqui) -----
-            var org = new ShippingAgentOrganization(
-                req.LegalName,
-                req.AlternativeNames,
-                req.Address,
-                req.TaxNumber);
-
-            // Representatives enviados vêm do DTO → mapear para domínio
-            foreach (var r in req.Representatives)
+            // Add representatives if any
+            foreach (var repReq in req.Representatives)
             {
-                var rep = new Representative(
-                    org.Id,
-                    r.Name,
-                    r.CitizenId,
-                    r.Nationality,
-                    r.Email,
-                    r.Phone
-                );
-
+                var rep = RepresentativeMapper.ToDomain(org.Id, repReq);
                 org.AddRepresentative(rep);
             }
 
-            // Garantir que tem pelo menos 1 representante ativo
+            // Ensure at least one representative (business rule from US 2.2.5)
             org.EnsureHasAtLeastOneRepresentative();
 
             await _orgRepo.AddAsync(org);
-
-            return OrganizationMapper.ToDTO(org);
+            return OrganizationMapper.ToDto(org);
         }
 
         public async Task<OrganizationDto> UpdateAsync(Guid id, UpdateOrganizationRequest req)
         {
-            var org = await _orgRepo.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException("Organization not found.");
+            var org = await _orgRepo.GetByIdAsync(id);
+            if (org == null)
+                throw new KeyNotFoundException("Organization not found.");
 
-            // ----- Validar duplicados (ignorar esta própria organização) -----
-
-            if (!string.Equals(org.LegalName, req.LegalName, StringComparison.OrdinalIgnoreCase) &&
-                await _orgRepo.ExistsWithLegalNameAsync(req.LegalName))
-                throw new ArgumentException("Another organization already uses this legal name.");
-
-            if (!string.IsNullOrWhiteSpace(req.AlternativeNames) &&
-                !string.Equals(org.AlternativeNames, req.AlternativeNames, StringComparison.OrdinalIgnoreCase) &&
-                await _orgRepo.ExistsWithAlternativeNamesAsync(req.AlternativeNames))
-                throw new ArgumentException("Another organization already uses these alternative names.");
-
-            if (!string.Equals(org.TaxNumber, req.TaxNumber, StringComparison.OrdinalIgnoreCase) &&
-                await _orgRepo.ExistsWithTaxNumberAsync(req.TaxNumber))
-                throw new ArgumentException("Another organization already uses this tax number.");
-
-            // ----- Atualizar (domínio volta a validar tudo) -----
-            org.UpdateProfile(
-                req.LegalName,
-                req.AlternativeNames,
-                req.Address,
-                req.TaxNumber
-            );
-
+            OrganizationMapper.UpdateDomain(org, req);
             await _orgRepo.UpdateAsync(org);
 
-            return OrganizationMapper.ToDTO(org);
+            return OrganizationMapper.ToDto(org);
         }
 
-        public async Task<OrganizationDto> GetAsync(Guid id)
+        public async Task<OrganizationDto?> GetByIdAsync(Guid id)
         {
-            var org = await _orgRepo.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException("Organization not found.");
-
-            return OrganizationMapper.ToDTO(org);
+            var org = await _orgRepo.GetByIdAsync(id);
+            return org == null ? null : OrganizationMapper.ToDto(org);
         }
 
-        public async Task<IEnumerable<OrganizationDto>> ListAsync(string? name, string? taxNumber)
+        public async Task<IEnumerable<OrganizationDto>> GetAllAsync()
         {
-            var list = await _orgRepo.ListAsync(name, taxNumber);
-            return list.Select(OrganizationMapper.ToDTO);
+            var orgs = await _orgRepo.GetAllAsync();
+            return orgs.Select(OrganizationMapper.ToDto);
+        }
+
+        public async Task<IEnumerable<OrganizationDto>> SearchAsync(string? name, string? taxNumber)
+        {
+            var orgs = await _orgRepo.SearchAsync(name, taxNumber);
+            return orgs.Select(OrganizationMapper.ToDto);
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var org = await _orgRepo.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException("Organization not found.");
+            var org = await _orgRepo.GetByIdAsync(id);
+            if (org == null)
+                throw new KeyNotFoundException("Organization not found.");
 
             await _orgRepo.DeleteAsync(org);
         }

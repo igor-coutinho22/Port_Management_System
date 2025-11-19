@@ -1,3 +1,4 @@
+// File: WebApp/Models/Infrastructure/Repositories/RepresentativeRepository.cs
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models.Context;
 using WebApp.Models.Domain.Agents;
@@ -6,41 +7,59 @@ namespace WebApp.Models.Infrastructure.Repositories
 {
     public class RepresentativeRepository : IRepresentativeRepository
     {
-        private readonly PortManagementContext _ctx;
-        public RepresentativeRepository(PortManagementContext ctx) => _ctx = ctx;
+        private readonly PortManagementContext _context;
 
-        public Task<Representative?> GetByIdAsync(Guid id) =>
-            _ctx.Representatives.FirstOrDefaultAsync(r => r.Id == id);
-
-        public async Task<IEnumerable<Representative>> ListByOrganizationAsync(Guid orgId, bool? active)
+        public RepresentativeRepository(PortManagementContext context)
         {
-            var q = _ctx.Representatives.AsQueryable().Where(r => r.OrganizationId == orgId);
-            if (active.HasValue) q = q.Where(r => r.IsActive == active.Value);
-            return await q.OrderBy(r => r.Name).ToListAsync();
+            _context = context;
         }
 
-        //  lista global (com filtros opcionais)
-        public async Task<IEnumerable<Representative>> ListAllAsync(Guid? orgId, bool? active)
+        public async Task<Representative?> GetByIdAsync(Guid id)
         {
-            var q = _ctx.Representatives.AsQueryable();
-            if (orgId.HasValue && orgId.Value != Guid.Empty)
-                q = q.Where(r => r.OrganizationId == orgId.Value);
-            if (active.HasValue)
-                q = q.Where(r => r.IsActive == active.Value);
+            return await _context.Representatives
+                .Include(r => r.Organization)
+                .FirstOrDefaultAsync(r => r.Id == id);
+        }
 
-            return await q.OrderBy(r => r.Name).ToListAsync();
+        public async Task<IEnumerable<Representative>> GetByOrganizationAsync(Guid orgId)
+        {
+            return await _context.Representatives
+                .Where(r => r.OrganizationId == orgId)
+                .OrderBy(r => r.Name)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Representative>> GetAllAsync(Guid? orgId = null, bool? active = null)
+        {
+            var query = _context.Representatives.AsQueryable();
+
+            if (orgId.HasValue)
+                query = query.Where(r => r.OrganizationId == orgId.Value);
+
+            if (active.HasValue)
+                query = query.Where(r => r.IsActive == active.Value);
+
+            return await query
+                .OrderBy(r => r.Name)
+                .ToListAsync();
         }
 
         public async Task AddAsync(Representative rep)
         {
-            await _ctx.Representatives.AddAsync(rep);
-            await _ctx.SaveChangesAsync();
+            await _context.Representatives.AddAsync(rep);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Representative rep)
         {
-            _ctx.Representatives.Update(rep);
-            await _ctx.SaveChangesAsync();
+            _context.Representatives.Update(rep);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(Representative rep)
+        {
+            _context.Representatives.Remove(rep);
+            await _context.SaveChangesAsync();
         }
     }
 }
