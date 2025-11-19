@@ -1,4 +1,12 @@
 
+const KNOWN_ROLES = ["Admin", "Officer", "Operator", "Representative"];
+const INVITE_URL = "/admin/users/invite";
+const LIST_URL = "/admin/users";
+const UPDATE_ROLES_URL = "/admin/users";
+
+window.KNOWN_ROLES = KNOWN_ROLES;
+
+
 const AdminUsersPage = () => {
     const [expandedSection, setExpandedSection] = React.useState(null);
     const [users, setUsers] = React.useState([]);
@@ -25,13 +33,6 @@ const AdminUsersPage = () => {
 
     const sections = [
         {
-            id: "add",
-            title: "Add User",
-            description: "Send an invitation to a new user with an activation link.",
-            color: "#27ae60",
-            component: <InviteUserForm onDone={loadUsers} />
-        },
-        {
             id: "list",
             title: "Users List",
             description: "View, search, and manage users.",
@@ -51,6 +52,20 @@ const AdminUsersPage = () => {
                     )}
                 </div>
             )
+        },
+        {
+            id: "add",
+            title: "Add User",
+            description: "Send an invitation to a new user with an activation link.",
+            color: "#27ae60",
+            component: <InviteUserForm onDone={loadUsers} />
+        },
+        {
+            id: "roles",
+            title: "Update User Roles",
+            description: "Assign or update internal roles for an existing user.",
+            color: "#f39c12",
+            component: <UpdateUserRolesForm onDone={loadUsers} />
         }
     ];
 
