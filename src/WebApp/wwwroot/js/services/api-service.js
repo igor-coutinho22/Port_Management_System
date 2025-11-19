@@ -40,6 +40,14 @@ class ApiService {
         } catch (e) {
             // Don’t redirect here inside the request pipeline; just log and continue without a token.
             console.warn("acquireTokenSilent for API failed (no Authorization header will be sent):", e);
+
+            const code = e.errorCode || e.code || "";
+
+            if (code.includes("interaction_required") || code.includes("login_required")) {
+                pca.loginRedirect(window.apiRequest)
+                console.warn("Token needs interaction. Consider redirecting to login.");
+            }
+
             return null;
         }
     }
