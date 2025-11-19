@@ -99,17 +99,34 @@ public sealed class GraphRoleClaimsTransformation : IClaimsTransformation
 
     private bool TryAddRoleFromUser(Microsoft.Graph.Models.User? user, ClaimsIdentity identity)
     {
-        if (user?.AdditionalData != null &&
-            user.AdditionalData.TryGetValue(_extRoleName, out var val) &&
-            val is string role &&
-            !string.IsNullOrWhiteSpace(role))
+        if (user?.AdditionalData == null) return false;
+
+        if (!user.AdditionalData.TryGetValue(_extRoleName, out var val))
+            return false;
+
+        var roles = DecodeRoles(val);
+        if (roles.Length == 0) return false;
+
+        foreach (var role in roles)
         {
             identity.AddClaim(new Claim(ClaimTypes.Role, role));
             identity.AddClaim(new Claim("roles", role));
-            _logger.LogInformation("Role transform: added role '{Role}' for user {UserId}", role, user.Id);
-            return true;
+            _logger.LogInformation("Role transform: added role '{Role}' for user {UserId}",
+                role, user.Id);
         }
 
-        return false;
+        return true;
     }
+
+
+    private string[] DecodeRoles(object? raw)
+    {
+        if (raw is not string s || string.IsNullOrWhiteSpace(s))
+            return Array.Empty<string>();
+
+        return s.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+    }
+
 }
