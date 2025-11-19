@@ -123,13 +123,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // ---------- Authorization ----------
 builder.Services.AddAuthorization(options =>
 {
-    // Example: anything that requires an operational role
     options.AddPolicy("RequireOpsRole", policy =>
         policy.RequireRole(Roles.Ops));
 
-    // Example: admin-only
     options.AddPolicy("RequireAdmin", policy =>
         policy.RequireRole(Roles.Admin));
+
+    options.AddPolicy("RequireOperator", policy =>
+        policy.RequireRole(Roles.Operator, Roles.Admin));
+
+    options.AddPolicy("RequireOfficer", policy =>
+    policy.RequireRole(Roles.Officer, Roles.Admin));
+
+    options.AddPolicy("RequireRepresentative", policy =>
+        policy.RequireRole(Roles.Representative, Roles.Admin));
+
+    options.AddPolicy("RequireRole", policy =>
+    policy.RequireRole(Roles.All));
 });
 
 // ---------- MVC / JSON ----------
