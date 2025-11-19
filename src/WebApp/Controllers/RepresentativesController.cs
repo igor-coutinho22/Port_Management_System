@@ -5,7 +5,7 @@ using WebApp.Models.Application.Services;
 
 namespace WebApp.Controllers
 {
-    [Authorize]
+    [Authorize("RequireOfficer")]
     [ApiController]
     [Route("api")]
     public class RepresentativesController : ControllerBase

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace WebApp.Controllers
 {
-    [Authorize]
+    [Authorize("RequireOperator")]
     [Route("api/[controller]")]
     [ApiController]
     public class StaffController : ControllerBase
@@ -80,12 +80,7 @@ namespace WebApp.Controllers
 
                 foreach (var q in dto.Qualifications)
                 {
-                    existing.QualificationLinks.Add(new QualificationLink(
-                        existing.MecanographicNumber,
-                        q.Code,
-                        q.DateObtained,
-                        q.ExpiryDate
-                    ));
+
                 }
             }
 

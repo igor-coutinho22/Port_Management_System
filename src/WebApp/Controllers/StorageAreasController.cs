@@ -9,7 +9,7 @@ using WebApp.Models.Domain.StorageArea;
 
 namespace WebApp.Controllers
 {
-    [Authorize]
+    [Authorize("RequireOfficer")]
     [ApiController]
     [Route("api/[controller]")]
     public class StorageAreasController : ControllerBase
@@ -49,7 +49,7 @@ namespace WebApp.Controllers
                 var yard = await _storageAreaService.GetStorageAreaByNameAsync(dto.StorageArea!.Name) as ContainerYard;
                 if (yard != null)
                     return BadRequest($"Container yard with name '{dto.StorageArea!.Name}' already exists.");
-                
+
                 yard = ContainerYardMapper.MapToDomain(dto, docks);
                 await _storageAreaService.AddContainerYardAsync(yard);
 
@@ -95,7 +95,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> UpdateContainerYard(int id, [FromBody] ContainerYardDto dto)
         {
             var existing = await _storageAreaService.GetStorageAreaByIdAsync(id) as ContainerYard;
-            if (existing == null) 
+            if (existing == null)
                 return NotFound($"Container yard with ID {id} not found.");
 
             try
@@ -132,7 +132,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> UpdateWarehouse(int id, [FromBody] WarehouseDto dto)
         {
             var existing = await _storageAreaService.GetStorageAreaByIdAsync(id) as Warehouse;
-            if (existing == null) 
+            if (existing == null)
                 return NotFound($"Warehouse with ID {id} not found.");
 
             try
@@ -157,7 +157,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> GetByName(string name)
         {
             var sa = await _storageAreaService.GetStorageAreaByNameAsync(name);
-            if (sa == null) 
+            if (sa == null)
                 return NotFound($"Storage area with name {name} not found.");
             return Ok(sa);
         }
@@ -166,7 +166,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var sa = await _storageAreaService.GetStorageAreaByIdAsync(id);
-            if (sa == null) 
+            if (sa == null)
                 return NotFound($"Storage area with ID {id} not found.");
             return Ok(sa);
         }
@@ -175,7 +175,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> GetAll()
         {
             var list = await _storageAreaService.GetAllStorageAreasAsync();
-            var dtoList = list.Select(sa => 
+            var dtoList = list.Select(sa =>
             {
                 if (sa is ContainerYard yard)
                     return (object)ContainerYardMapper.MapToDto(yard);
@@ -196,7 +196,7 @@ namespace WebApp.Controllers
                 var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
-                    
+
                 var dock = await _dockService.GetByIdAsync(dto.DockId);
                 if (dock == null)
                     return NotFound($"Dock with ID {dto.DockId} not found.");
@@ -223,7 +223,7 @@ namespace WebApp.Controllers
                 var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
-                
+
                 var connection = await _storageAreaService.GetConnectionAsync(storageAreaId, dockId);
                 if (connection == null)
                     return NotFound($"Connection between storage area ID {storageAreaId} and dock ID {dockId} not found.");
@@ -249,7 +249,7 @@ namespace WebApp.Controllers
                 var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
                 if (storageArea == null)
                     return NotFound($"Storage area with ID {storageAreaId} not found.");
-                
+
                 await _storageAreaService.RemoveConnectionAsync(storageAreaId, dockId);
                 return NoContent();
             }
@@ -265,7 +265,7 @@ namespace WebApp.Controllers
             var connection = await _storageAreaService.GetConnectionAsync(storageAreaId, dockId);
             if (connection == null)
                 return NotFound($"Connection between storage area ID {storageAreaId} and dock ID {dockId} not found.");
-            
+
             return Ok(DockStorageAreaConnectionMapper.MapToDto(connection));
         }
 
@@ -276,7 +276,7 @@ namespace WebApp.Controllers
             var storageArea = await _storageAreaService.GetStorageAreaByIdAsync(storageAreaId);
             if (storageArea == null)
                 return NotFound($"Storage area with ID {storageAreaId} not found.");
-            
+
             var list = await _storageAreaService.GetConnectionsForStorageAreaAsync(storageAreaId);
             return Ok(list);
         }

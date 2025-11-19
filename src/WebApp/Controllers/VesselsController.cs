@@ -6,7 +6,7 @@ using WebApp.Models.Application.Mappers;
 
 namespace WebApp.Controllers
 {
-    [Authorize]
+    [Authorize("RequireOfficer")]
     [ApiController]
     [Route("api/[controller]")]
     public class VesselsController : ControllerBase

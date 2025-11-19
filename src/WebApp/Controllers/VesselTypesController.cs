@@ -7,7 +7,7 @@ using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Controllers
 {
-    [Authorize]
+    [Authorize("RequireOfficer")]
     [ApiController]
     [Route("api/[controller]")]
     public class VesselTypesController : ControllerBase

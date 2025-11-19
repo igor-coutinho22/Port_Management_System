@@ -7,7 +7,7 @@ using WebApp.Models.Domain.Qualifications.Interfaces;
 
 namespace WebApp.Controllers
 {
-    [Authorize]
+    [Authorize("RequireOperator")]
     [Route("api/[controller]")]
     [ApiController]
     public class QualificationsController : ControllerBase
