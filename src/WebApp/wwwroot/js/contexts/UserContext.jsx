@@ -2,6 +2,12 @@
 
 const UserContext = React.createContext(null);
 
+// ----------------------
+// Constants
+// ----------------------
+const USER_STORAGE_KEY = "pm.currentUser.v1";
+const ACTIVE_ROLE_KEY = "pm.activeRole.v1";
+
 // ---- Roles from backend ----
 const APP_ROLES = {
     Admin: "Admin",
@@ -110,56 +116,110 @@ function computePermissionsForRole(role) {
 }
 
 const UserProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = React.useState(null);
-    const [activeRole, setActiveRole] = React.useState(null);
-    const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+    // 1) Initial state comes from localStorage (optimistic)
+    const [currentUser, setCurrentUser] = React.useState(() => {
+        try {
+            const raw = localStorage.getItem(USER_STORAGE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    });
+
+    const [activeRoleState, setActiveRoleState] = React.useState(() => {
+        try {
+            const raw = localStorage.getItem(ACTIVE_ROLE_KEY);
+            return raw || null;
+        } catch {
+            return null;
+        }
+    });
+
+    const [isAuthenticated, setIsAuthenticated] = React.useState(
+        !!currentUser
+    );
     const [isLoadingUser, setIsLoadingUser] = React.useState(true);
     const [error, setError] = React.useState(null);
 
-    React.useEffect(() => {
-        let cancelled = false;
-
-        async function loadUser() {
-            setIsLoadingUser(true);
-            setError(null);
-            try {
-                const me = await window.apiService.getCurrentUser(); // GET /api/me
-
-                if (cancelled) return;
-
-                const roles = me.roles || [];
-                const primaryRole = roles[0] || null;
-                const name =
-                    me.name ||
-                    [me.firstName, me.lastName].filter(Boolean).join(" ") ||
-                    me.email ||
-                    "Unknown User";
-
-                setCurrentUser({
-                    ...me, // email, firstName, lastName, roles[]
-                    name,
-                    roles: me.roles || [],
-                });
-                setActiveRole(primaryRole);
-                setIsAuthenticated(true);
-            } catch (e) {
-                if (cancelled) return;
-                console.warn("Failed to load /api/me:", e);
-                setCurrentUser(null);
-                setActiveRole(null);
-                setIsAuthenticated(false);
-                setError(e);
-            } finally {
-                if (!cancelled) setIsLoadingUser(false);
-            }
+    // Wrapper so we always persist activeRole
+    const setActiveRole = React.useCallback((role) => {
+        setActiveRoleState(role);
+        try {
+            if (role) localStorage.setItem(ACTIVE_ROLE_KEY, role);
+            else localStorage.removeItem(ACTIVE_ROLE_KEY);
+        } catch {
+            // ignore storage errors
         }
-
-        loadUser();
-        return () => {
-            cancelled = true;
-        };
     }, []);
 
+    const activeRole = activeRoleState;
+
+    // ---- Load /api/me and sync with storage ----
+    const loadUser = React.useCallback(async () => {
+        setIsLoadingUser(true);
+        setError(null);
+
+        try {
+            const me = await window.apiService.getCurrentUser(); // GET /api/me
+
+            const roles = me.roles || [];
+            const primaryRole = roles[0] || null;
+
+            const name =
+                me.name ||
+                [me.firstName, me.lastName].filter(Boolean).join(" ") ||
+                me.email ||
+                "Unknown User";
+
+            // Prefer stored role if still valid
+            let chosenRole = activeRole;
+            if (!chosenRole || !roles.includes(chosenRole)) {
+                chosenRole = primaryRole;
+            }
+
+            const userObj = {
+                ...me,
+                name,
+                roles,
+            };
+
+            setCurrentUser(userObj);
+            setActiveRole(chosenRole);
+            setIsAuthenticated(true);
+
+            try {
+                localStorage.setItem(
+                    USER_STORAGE_KEY,
+                    JSON.stringify(userObj)
+                );
+            } catch {
+                // ignore storage errors
+            }
+        } catch (e) {
+            console.warn("Failed to load /api/me:", e);
+            const message = e?.message || "";
+            const isNoRole = message.includes("403");
+
+            setCurrentUser(null);
+            setActiveRole(null);
+            setIsAuthenticated(false);
+            setError(isNoRole ? { code: "NO_ROLE", raw: e } : e);
+
+            try {
+                localStorage.removeItem(USER_STORAGE_KEY);
+            } catch {
+                // ignore
+            }
+        } finally {
+            setIsLoadingUser(false);
+        }
+    }, [activeRole, setActiveRole]);
+
+    React.useEffect(() => {
+        loadUser();
+    }, [loadUser]);
+
+    // ---- Permissions derived from activeRole ----
     const permissions = React.useMemo(() => {
         if (!currentUser || !activeRole) return [];
         if (ROLE_PERMISSIONS[activeRole]?.includes("*")) return ["*"];
@@ -189,23 +249,57 @@ const UserProvider = ({ children }) => {
     );
 
     const logout = React.useCallback(async () => {
+        const origin = window.location.origin;
+
+        // 1. Clear app-level auth state first
+        setCurrentUser(null);
+        setActiveRole(null);
+        setIsAuthenticated(false);
+
+        try {
+            localStorage.removeItem(USER_STORAGE_KEY);
+            localStorage.removeItem(ACTIVE_ROLE_KEY);
+        } catch {
+            // ignore storage errors
+        }
+
         const pca = window.__pca;
         if (!pca) {
             console.error("Logout: MSAL PublicClientApplication (window.__pca) not found.");
+            // Hard reload as a fallback
+            window.location.href = origin;
             return;
         }
-        const account = pca.getActiveAccount() || pca.getAllAccounts()[0] || null;
-        await pca.logoutRedirect({
-            account: account || undefined,
-            postLogoutRedirectUri: window.location.origin,
-        });
-    }, []);
+
+        try {
+            // IMPORTANT: do NOT pass `account` here.
+            // Let CIAM sign out the current session and redirect back.
+            await pca.logoutRedirect({
+                postLogoutRedirectUri: origin
+            });
+
+            // Browser will navigate away, so code after this may not run.
+        } catch (e) {
+            console.error("logoutRedirect failed, falling back to local cleanup:", e);
+
+            // Fallback: just clear MSAL cache and reload.
+            try {
+                const accounts = pca.getAllAccounts();
+                for (const acc of accounts) {
+                    try { await pca.removeAccount(acc); } catch { /* ignore */ }
+                }
+            } catch { /* ignore */ }
+
+            window.location.href = origin;
+        }
+    }, []); 
+
 
     const value = {
-        currentUser,               // { name, email, roles: [...] }
+        currentUser, // { name, email, roles: [...] }
         roles: currentUser?.roles || [],
-        activeRole,                // string | null
-        setActiveRole,             // function(role)
+        activeRole,
+        setActiveRole, // function(role)
         isAuthenticated,
         isLoadingUser,
         error,
@@ -213,10 +307,13 @@ const UserProvider = ({ children }) => {
         hasPermission,
         canAccessMenu,
         logout,
+        refreshUser: loadUser, 
     };
 
     return (
-        <UserContext.Provider value={value}>{children}</UserContext.Provider>
+        <UserContext.Provider value={value}>
+            {children}
+        </UserContext.Provider>
     );
 };
 
@@ -226,4 +323,4 @@ const useUser = () => {
     return ctx;
 };
 
-console.log("UserContext (with activeRole) loaded!");
+console.log("UserContext (with activeRole + persistence) loaded!");
