@@ -41,9 +41,6 @@ namespace WebApp.Models.Application.DTOs
         public Guid DockId { get; set; }
         public DateTime VisitDate { get; set; }
         public string Purpose { get; set; } = string.Empty;
-        public CargoManifestDTO? LoadingManifest { get; set; }
-        public CargoManifestDTO? UnloadingManifest { get; set; }
-        public List<CrewMemberDTO> Crew { get; set; } = new();
     }
 
     public class VesselVisitNotificationFilterDTO

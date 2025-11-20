@@ -6,14 +6,10 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
     const [searchData, setSearchData] = React.useState({ id: '' });
     const [formData, setFormData] = React.useState({
         id: '',
-        vesselIMO: '',
         dockId: '',
         visitDate: '',
         status: '',
-        purpose: '',
-        crew: [{ name: '', citizenId: '', nationality: '' }],
-        loadingManifest: [],
-        unloadingManifest: []
+        purpose: ''
     });
     const [notification, setNotification] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -91,14 +87,10 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
                 setNotification(data);
                 setFormData({
                     id: searchData.id.trim(),
-                    vesselIMO: data.vesselIMO || '',
                     dockId: data.dockId || '',
                     visitDate: data.visitDate ? data.visitDate.substring(0, 10) : '',
                     status: data.status || '',
-                    purpose: data.purpose || '',
-                    crew: Array.isArray(data.crew) && data.crew.length > 0 ? data.crew : [{ name: '', citizenId: '', nationality: '' }],
-                    loadingManifest: data.loadingManifest && data.loadingManifest.containers ? data.loadingManifest.containers.map(c => c.identifier) : [],
-                    unloadingManifest: data.unloadingManifest && data.unloadingManifest.containers ? data.unloadingManifest.containers.map(c => c.identifier) : []
+                    purpose: data.purpose || ''
                 });
 
                 if (data.status !== 'InProgress') {
@@ -134,29 +126,28 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
         setMessage({ type: '', text: '' });
         try {
             // Validate required fields
-            if (!formData.vesselIMO?.trim() || !formData.dockId?.trim() || !formData.visitDate?.trim() || !formData.status?.trim() || !formData.purpose?.trim()) {
+            if (!formData.dockId?.trim() || !formData.visitDate?.trim() || !formData.purpose?.trim()) {
                 throw new Error('All fields are required');
             }
-            // Transform manifests to match backend DTO
-            const loadingManifest = formData.loadingManifest && formData.loadingManifest.length > 0
-                ? {
-                    containers: formData.loadingManifest.filter(c => c.trim()).map(c => ({ identifier: c.trim() }))
-                }
-                : null;
-            const unloadingManifest = formData.unloadingManifest && formData.unloadingManifest.length > 0
-                ? {
-                    containers: formData.unloadingManifest.filter(c => c.trim()).map(c => ({ identifier: c.trim() }))
-                }
-                : null;
+
+            // Purpose change validation: if changing from Maintenance to Commercial, must have at least one manifest
+            if (
+                notification &&
+                notification.purpose === 'Maintenance' &&
+                formData.purpose === 'Commercial' &&
+                (!notification.loadingManifest || !notification.loadingManifest.containers || notification.loadingManifest.containers.length === 0) &&
+                (!notification.unloadingManifest || !notification.unloadingManifest.containers || notification.unloadingManifest.containers.length === 0)
+            ) {
+                setMessage({ type: 'error', text: 'Cannot change purpose to Commercial: at least one manifest is required. Please add a manifest first.' });
+                setIsUpdating(false);
+                return;
+            }
 
             // Prepare DTO for backend (only updatable fields)
             const updateData = {
                 dockId: formData.dockId,
                 visitDate: formData.visitDate,
-                purpose: formData.purpose,
-                crew: formData.crew,
-                loadingManifest: loadingManifest,
-                unloadingManifest: unloadingManifest
+                purpose: formData.purpose
             };
             await apiService.editVesselVisitNotificationWhileInProgress(formData.id, updateData);
             setMessage({ type: 'success', text: 'Notification updated successfully' });
@@ -246,23 +237,6 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
                 <form onSubmit={handleUpdate} className="edit-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="editVesselIMO">Vessel <span className="required">*</span></label>
-                            <select
-                                id="editVesselIMO"
-                                name="vesselIMO"
-                                value={formData.vesselIMO}
-                                onChange={handleFormInputChange}
-                                className="form-input"
-                                required
-                            >
-                                <option value="">Select vessel...</option>
-                                {vessels.map(vessel => (
-                                    <option key={vessel.imo} value={vessel.imo}>{vessel.imo} - {vessel.vesselName}</option>
-                                ))}
-                            </select>
-                            <small className="form-help">Select vessel by name/IMO</small>
-                        </div>
-                        <div className="form-group">
                             <label htmlFor="editDockId">Dock <span className="required">*</span></label>
                             <select
                                 id="editDockId"
@@ -317,90 +291,6 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
                                 <option value="Maintenance">Maintenance</option>
                             </select>
                             <small className="form-help">Purpose of visit</small>
-                        </div>
-                        {/* Crew Members (RegisterForm logic) */}
-                        <div className="form-group">
-                            <label>Crew <span className="required">*</span></label>
-                            <div className="card-list">
-                            {formData.crew.map((member, idx) => (
-                                <div key={idx} className="card crew-card">
-                                    <div className="card-fields">
-                                        <input
-                                            type="text"
-                                            placeholder="Name"
-                                            value={member.name}
-                                            onChange={e => handleCrewChange(idx, 'name', e.target.value)}
-                                            className="form-input crew-input"
-                                            required
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Citizen ID"
-                                            value={member.citizenId}
-                                            onChange={e => handleCrewChange(idx, 'citizenId', e.target.value)}
-                                            className="form-input crew-input"
-                                            required
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Nationality"
-                                            value={member.nationality}
-                                            onChange={e => handleCrewChange(idx, 'nationality', e.target.value)}
-                                            className="form-input crew-input"
-                                            required
-                                        />
-                                    </div>
-                                    {formData.crew.length > 1 && (
-                                        <button type="button" className="remove-btn" onClick={() => removeCrewMember(idx)}>✖</button>
-                                    )}
-                                </div>
-                            ))}
-                            </div>
-                            <button type="button" className="add-btn" onClick={addCrewMember}>Add Crew Member</button>
-                            <small className="form-help">Add all crew members (name, citizen ID, nationality)</small>
-                        </div>
-                        {/* Manifests (RegisterForm logic) */}
-                        <div className="form-group">
-                            <label>Loading Manifest (Container IDs)</label>
-                            <div className="card-list">
-                            {(formData.loadingManifest || []).map((container, idx) => (
-                                <div key={idx} className="card manifest-card">
-                                    <div className="card-fields">
-                                        <input
-                                            type="text"
-                                            placeholder="Container ID (ISO 6346)"
-                                            value={container}
-                                            onChange={e => handleManifestChange('loadingManifest', idx, e.target.value)}
-                                            className="form-input manifest-input"
-                                        />
-                                    </div>
-                                    <button type="button" className="remove-btn" onClick={() => removeManifestContainer('loadingManifest', idx)}>✖</button>
-                                </div>
-                            ))}
-                            </div>
-                            <button type="button" className="add-btn" onClick={() => addManifestContainer('loadingManifest')}>Add Container</button>
-                            <small className="form-help">Add container IDs for loading manifest</small>
-                        </div>
-                        <div className="form-group">
-                            <label>Unloading Manifest (Container IDs)</label>
-                            <div className="card-list">
-                            {(formData.unloadingManifest || []).map((container, idx) => (
-                                <div key={idx} className="card manifest-card">
-                                    <div className="card-fields">
-                                        <input
-                                            type="text"
-                                            placeholder="Container ID (ISO 6346)"
-                                            value={container}
-                                            onChange={e => handleManifestChange('unloadingManifest', idx, e.target.value)}
-                                            className="form-input manifest-input"
-                                        />
-                                    </div>
-                                    <button type="button" className="remove-btn" onClick={() => removeManifestContainer('unloadingManifest', idx)}>✖</button>
-                                </div>
-                            ))}
-                            </div>
-                            <button type="button" className="add-btn" onClick={() => addManifestContainer('unloadingManifest')}>Add Container</button>
-                            <small className="form-help">Add container IDs for unloading manifest</small>
                         </div>
                     </div>
                     <div className="form-actions">

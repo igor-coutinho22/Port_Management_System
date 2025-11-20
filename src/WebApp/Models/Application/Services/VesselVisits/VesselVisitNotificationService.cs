@@ -180,9 +180,6 @@ namespace WebApp.Models.Application.Services
             existingVisit.UpdateDockId(vvn.DockId);
             existingVisit.UpdateVisitDate(vvn.VisitDate);
             existingVisit.UpdatePurpose(vvn.Purpose);
-            existingVisit.UpdateLoadingManifest(vvn.LoadingManifest);
-            existingVisit.UpdateUnloadingManifest(vvn.UnloadingManifest);
-            existingVisit.UpdateCrew(vvn.Crew);
             await _repository.UpdateAsync(existingVisit);
         }
 
