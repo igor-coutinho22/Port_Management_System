@@ -128,7 +128,7 @@ namespace WebApp.Seeding
                     legalName: "Atlantic Shipping SA",
                     alternativeNames: "Atlantic; ASL",
                     address: "Av. do Porto 100, 4050-123 Porto, PT",
-                    taxNumber: "PT-ATL-0001"
+                    taxNumber: "1-0001"
                 );
 
                 var rep1 = new Representative(
@@ -158,7 +158,7 @@ namespace WebApp.Seeding
                     legalName: "BlueOcean Logistics GmbH",
                     alternativeNames: "BlueOcean; BOL",
                     address: "Hafenstrasse 12, 20457 Hamburg, DE",
-                    taxNumber: "DE-BO-2025"
+                    taxNumber: "2-2025"
                 );
 
                 var rep3 = new Representative(
@@ -291,19 +291,19 @@ namespace WebApp.Seeding
                     var dock1 = docks[0].Id;
                     var dock2 = docks[1].Id;
 
-                    var visit1 = new VesselVisitNotification(vesselIMO1, dock1, DateTime.UtcNow.AddDays(-1), VisitPurpose.Maintenance);
-                    visit1.AddCrewMember("John Doe", "C123", "PT");
+                    var visit1 = new VesselVisitNotification(vesselIMO1, dock1, DateTime.UtcNow.AddDays(4), VisitPurpose.Maintenance);
+                    visit1.AddCrewMember("John Doe", "C1234", "PT");
 
                     var visit2 = new VesselVisitNotification(vesselIMO2, dock1, DateTime.UtcNow.AddDays(1), VisitPurpose.Commercial);
-                    visit2.AddCrewMember("Maria Silva", "C456", "ES");
+                    visit2.AddCrewMember("Maria Silva", "C4567", "ES");
                     visit2.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
 
                     var visit3 = new VesselVisitNotification(vesselIMO3, dock2, DateTime.UtcNow.AddDays(2), VisitPurpose.Commercial);
-                    visit3.AddCrewMember("Carlos Mendes", "C789", "BR");
+                    visit3.AddCrewMember("Carlos Mendes", "C78910", "BR");
                     visit3.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
 
                     var visit4 = new VesselVisitNotification(vesselIMO4, dock2, DateTime.UtcNow.AddDays(3), VisitPurpose.Commercial);
-                    visit4.AddCrewMember("Eva Liu", "C999", "CN");
+                    visit4.AddCrewMember("Eva Liu", "C9999", "CN");
                     visit4.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
                     visit4.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
 
