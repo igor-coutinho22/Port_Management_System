@@ -1,32 +1,29 @@
-// File: WebApp/Models/Application/DTOs/OrganizationDtos.cs
 namespace WebApp.Models.Application.DTOs
 {
-    public record OrganizationDto(
-        Guid Id,
-        string Identifier,
-        string LegalName,
-        string? AlternativeName,
-        string Address,
-        string TaxNumber,
-        bool IsActive
-    );
+    public class OrganizationDto
+    {
+        public Guid Id { get; set; }
+        public string? Identifier { get; set; }
+        public string? LegalName { get; set; }
+        public string? AlternativeNames { get; set; }
+        public string? Address { get; set; }
+        public string? TaxNumber { get; set; }
+        public bool IsActive { get; set; }
+    };
 
-    public class CreateOrganizationRequest
+    public class CreateOrganizationDto
     {
         public string Identifier { get; set; } = string.Empty;
         public string LegalName { get; set; } = string.Empty;
         public string? AlternativeName { get; set; }
         public string Address { get; set; } = string.Empty;
         public string TaxNumber { get; set; } = string.Empty;
-        public List<CreateRepresentativeRequest> Representatives { get; set; } = new();
+        public List<CreateRepresentativeDto> Representatives { get; set; } = new();
     }
 
-    public class UpdateOrganizationRequest
+    public class UpdateOrganizationDto
     {
-        public string LegalName { get; set; } = string.Empty;
-        public string? AlternativeName { get; set; }
+        public string? AlternativeNames { get; set; }
         public string Address { get; set; } = string.Empty;
-        public string TaxNumber { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
     }
 }

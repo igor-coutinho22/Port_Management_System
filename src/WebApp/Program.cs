@@ -30,7 +30,6 @@ using WebApp.Models.Domain.VesselVisits.Services;
 using WebApp.Models.Security;
 using WebApp.Security;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Models.Application.Services.Agents;
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 

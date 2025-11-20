@@ -1,12 +1,12 @@
 // File: WebApp/Models/Domain/Agents/Representative.cs
 using System.Net.Mail;
 using System.Text.RegularExpressions;
-using WebApp.Models.Domain.Common;
 
 namespace WebApp.Models.Domain.Agents
 {
-    public class Representative : BaseEntity
+    public class Representative
     {
+        public Guid Id { get; private set; }
         public Guid OrganizationId { get; private set; }
         public ShippingAgentOrganization Organization { get; private set; } = default!;
         public string Name { get; private set; } = default!;
@@ -32,16 +32,15 @@ namespace WebApp.Models.Domain.Agents
             Phone = ValidatePhone(phone);
         }
 
-        public void UpdateProfile(string name, string citizenId, string nationality, string email, string phone)
+        public void UpdateProfile(string nationality, string email, string phone)
         {
-            Name = ValidateName(name);
-            CitizenId = ValidateCitizenId(citizenId);
             Nationality = ValidateNationality(nationality);
             Email = ValidateEmail(email);
             Phone = ValidatePhone(phone);
         }
 
-        public void SetActive(bool active) => IsActive = active;
+        public void Activate() => IsActive = true;
+        public void Deactivate() => IsActive = false;
 
         // ===== Validations =====
         private static string ValidateName(string value)
@@ -98,6 +97,21 @@ namespace WebApp.Models.Domain.Agents
             if (!Regex.IsMatch(v, @"^\+?[0-9]{6,15}$"))
                 throw new ArgumentException("Phone must follow E.164 format (e.g., +351912345678).", nameof(value));
             return v;
+        }
+
+        public void UpdateEmail(string email)
+        {
+            Email = ValidateEmail(email);
+        }
+
+        public void UpdatePhone(string phone)
+        {
+            Phone = ValidatePhone(phone);
+        }
+
+        public void UpdateNationality(string nationality)
+        {
+            Nationality = ValidateNationality(nationality);
         }
     }
 }

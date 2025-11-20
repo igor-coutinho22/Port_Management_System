@@ -124,6 +124,7 @@ namespace WebApp.Seeding
             {
                 // Organization 1
                 var org1 = new ShippingAgentOrganization(
+                    identifier: "MSC-PT - Mediterranean Shipping Company Portugal",
                     legalName: "Atlantic Shipping SA",
                     alternativeNames: "Atlantic; ASL",
                     address: "Av. do Porto 100, 4050-123 Porto, PT",
@@ -153,6 +154,7 @@ namespace WebApp.Seeding
 
                 // Organization 2
                 var org2 = new ShippingAgentOrganization(
+                    identifier: "BOL-DE - BlueOcean Logistics Germany",
                     legalName: "BlueOcean Logistics GmbH",
                     alternativeNames: "BlueOcean; BOL",
                     address: "Hafenstrasse 12, 20457 Hamburg, DE",

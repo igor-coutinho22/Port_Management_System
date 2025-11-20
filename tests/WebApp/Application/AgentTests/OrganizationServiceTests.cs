@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Services;
-using WebApp.Models.Context;
 using WebApp.Models.Domain.Agents;
 using WebApp.Models.Infrastructure.Repositories;
 using Xunit;
@@ -15,134 +12,220 @@ namespace WebApp.Tests.Agents
 {
     public class OrganizationServiceTests
     {
-        private static PortManagementContext NewContext()
+        private readonly StubOrganizationRepository _orgRepository;
+        private readonly OrganizationService _service;
+
+        public OrganizationServiceTests()
         {
-            var options = new DbContextOptionsBuilder<PortManagementContext>()
-                .UseInMemoryDatabase(databaseName: $"OrgSvc_{Guid.NewGuid()}")
-                .Options;
-            return new PortManagementContext(options);
+            _orgRepository = new StubOrganizationRepository();
+            _service = new OrganizationService(_orgRepository);
         }
 
-        private static OrganizationRepository NewOrgRepo(PortManagementContext ctx) => new(ctx);
-        private static RepresentativeRepository NewRepRepo(PortManagementContext ctx) => new(ctx);
-
-        private static IOrganizationService NewService(PortManagementContext ctx)
+        private static ShippingAgentOrganization CreateTestOrg(string identifier = "ORG001", string legalName = "Alpha Org", string taxNumber = "PT123456789")
         {
-            var orgRepo = NewOrgRepo(ctx);
-            return new OrganizationService(orgRepo);
-        }
-
-        private static ShippingAgentOrganization SeedOrg(PortManagementContext ctx, string tax = "PT123456789", string name = "Alpha SA")
-        {
-            var alternativeNames = name.Replace("Port", "").Replace("SA", "Inc"); // Generate unique alternative names
-            var org = new ShippingAgentOrganization(name, alternativeNames, "Rua A, 1", tax);
+            var org = new ShippingAgentOrganization(identifier, legalName, "AltName", "Rua A, 1", taxNumber);
             var rep = new Representative(org.Id, "John Doe", "CIT123", "PRT", "john@alpha.com", "+351911111111");
             org.AddRepresentative(rep);
-            ctx.Organizations.Add(org);
-            ctx.Representatives.Add(rep);
-            ctx.SaveChanges();
             return org;
         }
 
         [Fact]
-        public async Task CreateAsync_WithOneRepresentative_Succeeds()
+        public async Task CreateAsync_ShouldCreate_WhenValidOrg()
         {
-            using var ctx = NewContext();
-            var svc = NewService(ctx);
-
-            var req = new CreateOrganizationRequest(
-                LegalName: "TransPorts SA",
-                AlternativeNames: "TransPorts",
-                Address: "Av. Porto, 10",
-                TaxNumber: "PT999000111",
-                Representatives: new[]
-                {
-                    new CreateRepresentativeRequest("Ana Silva","CID1","PRT","ana@tp.com","+351912345678")
-                });
-
-            var dto = await svc.CreateAsync(req);
-
-            dto.Should().NotBeNull();
-            dto.LegalName.Should().Be("TransPorts SA");
-            var stored = await ctx.Organizations.Include(o => o.Representatives)
-                .FirstAsync(o => o.Id == dto.Id);
-            stored.Representatives.Should().HaveCount(1);
+            var org = CreateTestOrg();
+            await _service.CreateAsync(org);
+            var created = await _orgRepository.GetByIdAsync(org.Id);
+            created.Should().NotBeNull();
+            created!.LegalName.Should().Be(org.LegalName);
+            created.TaxNumber.Should().Be(org.TaxNumber);
+            created.Representatives.Should().HaveCount(1);
         }
 
         [Fact]
-        public async Task CreateAsync_WithoutRepresentatives_Throws()
+        public async Task CreateAsync_ShouldThrow_WhenOrgIsNull()
         {
-            using var ctx = NewContext();
-            var svc = NewService(ctx);
+            var act = async () => await _service.CreateAsync(null!);
+            await act.Should().ThrowAsync<ArgumentNullException>();
+        }
 
-            var req = new CreateOrganizationRequest(
-                "NoReps SA", "", "Addr", "PT000111222",
-                Representatives: Array.Empty<CreateRepresentativeRequest>());
-
-            await FluentActions.Invoking(() => svc.CreateAsync(req))
-                .Should().ThrowAsync<ArgumentException>()
+        [Fact]
+        public async Task CreateAsync_ShouldThrow_WhenNoRepresentatives()
+        {
+            var org = new ShippingAgentOrganization("ORG002", "NoReps Org", "AltName", "Rua B, 2", "PT000111222");
+            var act = async () => await _service.CreateAsync(org);
+            await act.Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage("*At least one representative*");
         }
 
         [Fact]
-        public async Task CreateAsync_WithDuplicateTaxNumber_Throws()
+        public async Task CreateAsync_ShouldThrow_WhenDuplicateTaxNumber()
         {
-            using var ctx = NewContext();
-            SeedOrg(ctx, tax:"PTDUP001", name:"Exists SA");
-            var svc = NewService(ctx);
-
-            var req = new CreateOrganizationRequest(
-                "Other SA", "", "Addr", "PTDUP001",
-                new []{ new CreateRepresentativeRequest("Mary","X1","PRT","m@o.com","+351912000000") });
-
-            await FluentActions.Invoking(() => svc.CreateAsync(req))
-                .Should().ThrowAsync<ArgumentException>()
+            var org1 = CreateTestOrg("ORG001", "Alpha Org", "PTDUP001");
+            var org2 = CreateTestOrg("ORG002", "Beta Org", "PTDUP001");
+            await _service.CreateAsync(org1);
+            await _orgRepository.AddAsync(org1); // Direct add to simulate duplicate
+            var act = async () => await _service.CreateAsync(org2);
+            await act.Should().ThrowAsync<ArgumentException>()
                 .WithMessage("*Tax number already exists*");
         }
 
         [Fact]
-        public async Task ListAsync_ByNameAndTax_FiltersCorrectly()
+        public async Task GetByIdAsync_ShouldReturn_WhenExists()
         {
-            using var ctx = NewContext();
-            SeedOrg(ctx, tax: "PT100", name: "PortAlpha");
-            SeedOrg(ctx, tax: "PT200", name: "PortBeta");
-            var svc = NewService(ctx);
+            var org = CreateTestOrg();
+            await _orgRepository.AddAsync(org);
+            var result = await _service.GetByIdAsync(org.Id);
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(org.Id);
+        }
 
-            var listByName = await svc.ListAsync("Alpha", null);
-            listByName.Should().HaveCount(1).And.OnlyContain(o => o.LegalName.Contains("Alpha"));
+        [Fact]
+        public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
+        {
+            var result = await _service.GetByIdAsync(Guid.NewGuid());
+            result.Should().BeNull();
+        }
 
-            var listByTax = await svc.ListAsync(null, "PT200");
+        [Fact]
+        public async Task GetAllAsync_ShouldReturnAll_Organizations()
+        {
+            var org1 = CreateTestOrg("ORG001", "Alpha Org", "PT100");
+            var org2 = CreateTestOrg("ORG002", "Beta Org", "PT200");
+            await _orgRepository.AddAsync(org1);
+            await _orgRepository.AddAsync(org2);
+            var result = await _service.GetAllAsync();
+            result.Should().HaveCount(2);
+            result.Should().Contain(o => o.LegalName == "Alpha Org");
+            result.Should().Contain(o => o.LegalName == "Beta Org");
+        }
+
+        [Fact]
+        public async Task GetAllAsync_ShouldReturnEmpty_WhenNoOrganizations()
+        {
+            var result = await _service.GetAllAsync();
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task SearchAsync_ShouldReturn_ByNameAndTax()
+        {
+            var org1 = CreateTestOrg("ORG001", "PortAlpha", "PT100");
+            var org2 = CreateTestOrg("ORG002", "PortBeta", "PT200");
+            await _orgRepository.AddAsync(org1);
+            await _orgRepository.AddAsync(org2);
+            var listByName = await _service.SearchAsync("Alpha", null);
+            listByName.Should().HaveCount(1).And.OnlyContain(o => o.LegalName != null && o.LegalName.Contains("Alpha"));
+            var listByTax = await _service.SearchAsync(null, "PT200");
             listByTax.Should().HaveCount(1).And.OnlyContain(o => o.TaxNumber == "PT200");
         }
 
         [Fact]
-        public async Task UpdateAsync_ChangeFields_Succeeds()
+        public async Task UpdateAsync_ShouldUpdate_WhenExists()
         {
-            using var ctx = NewContext();
-            var org = SeedOrg(ctx, tax: "PT300", name:"Org300");
-            var svc = NewService(ctx);
-
-            var updated = await svc.UpdateAsync(org.Id,
-                new UpdateOrganizationRequest("Org300 Updated","O300","New Address","PT300"));
-
-            updated.LegalName.Should().Be("Org300 Updated");
-            updated.Address.Should().Be("New Address");
-            var reloaded = await ctx.Organizations.FindAsync(org.Id);
-            reloaded!.LegalName.Should().Be("Org300 Updated");
+            var org = CreateTestOrg();
+            await _orgRepository.AddAsync(org);
+            var updatedOrg = new ShippingAgentOrganization(org.Identifier, "Updated Org", "UpdatedAlt", "New Address", org.TaxNumber);
+            foreach (var rep in org.Representatives)
+                updatedOrg.AddRepresentative(rep);
+            await _service.UpdateAsync(org.Id, updatedOrg);
+            var result = await _orgRepository.GetByIdAsync(org.Id);
+            result!.LegalName.Should().Be("Updated Org");
+            result.Address.Should().Be("New Address");
+            result.AlternativeNames.Should().Be("UpdatedAlt");
         }
 
         [Fact]
-        public async Task UpdateAsync_ChangeTaxToExisting_Throws()
+        public async Task UpdateAsync_ShouldThrow_WhenNotFound()
         {
-            using var ctx = NewContext();
-            var a = SeedOrg(ctx, tax: "PT400", name:"A");
-            var b = SeedOrg(ctx, tax: "PT500", name:"B");
-            var svc = NewService(ctx);
+            var org = CreateTestOrg();
+            var act = async () => await _service.UpdateAsync(Guid.NewGuid(), org);
+            await act.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*Organization not found*");
+        }
 
-            await FluentActions.Invoking(() => svc.UpdateAsync(a.Id,
-                new UpdateOrganizationRequest("A","A","Addr","PT500")))
-                .Should().ThrowAsync<ArgumentException>()
-                .WithMessage("*Tax number already exists*");
+        [Fact]
+        public async Task ActivateAsync_ShouldSetActive()
+        {
+            var org = CreateTestOrg();
+            await _orgRepository.AddAsync(org);
+            await _service.DeactivateAsync(org.Id);
+            var deactivated = await _orgRepository.GetByIdAsync(org.Id);
+            deactivated!.IsActive.Should().BeFalse();
+            await _service.ActivateAsync(org.Id);
+            var activated = await _orgRepository.GetByIdAsync(org.Id);
+            activated!.IsActive.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ActivateAsync_ShouldThrow_WhenNotFound()
+        {
+            var act = async () => await _service.ActivateAsync(Guid.NewGuid());
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("*Organization not found*");
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ShouldDelete_WhenExists()
+        {
+            var org = CreateTestOrg();
+            await _orgRepository.AddAsync(org);
+            await _service.DeleteAsync(org.Id);
+            var result = await _orgRepository.GetByIdAsync(org.Id);
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ShouldThrow_WhenNotExists()
+        {
+            var act = async () => await _service.DeleteAsync(Guid.NewGuid());
+            await act.Should().ThrowAsync<KeyNotFoundException>()
+                .WithMessage("*Organization not found*");
+        }
+
+        // Nested Stub Repository for testing
+        private class StubOrganizationRepository : IOrganizationRepository
+        {
+            private readonly List<ShippingAgentOrganization> _orgs = new();
+
+            public Task<ShippingAgentOrganization?> GetByIdAsync(Guid id)
+                => Task.FromResult(_orgs.FirstOrDefault(o => o.Id == id));
+
+            public Task<ShippingAgentOrganization?> GetByTaxNumberAsync(string taxNumber)
+                => Task.FromResult(_orgs.FirstOrDefault(o => o.TaxNumber == taxNumber));
+
+            public Task AddAsync(ShippingAgentOrganization org)
+            {
+                if (_orgs.Any(o => o.TaxNumber == org.TaxNumber))
+                    throw new ArgumentException("Tax number already exists");
+                _orgs.Add(org);
+                return Task.CompletedTask;
+            }
+
+            public Task UpdateAsync(ShippingAgentOrganization org)
+            {
+                var idx = _orgs.FindIndex(o => o.Id == org.Id);
+                if (idx >= 0) _orgs[idx] = org;
+                return Task.CompletedTask;
+            }
+
+            public Task DeleteAsync(ShippingAgentOrganization org)
+            {
+                _orgs.RemoveAll(o => o.Id == org.Id);
+                return Task.CompletedTask;
+            }
+
+            public Task<List<ShippingAgentOrganization>> GetAllAsync()
+                => Task.FromResult(_orgs.ToList());
+
+            public Task<List<ShippingAgentOrganization>> SearchAsync(string? name, string? taxNumber)
+            {
+                var query = _orgs.AsQueryable();
+                if (!string.IsNullOrWhiteSpace(name))
+                    query = query.Where(o => o.LegalName.Contains(name, StringComparison.OrdinalIgnoreCase));
+                if (!string.IsNullOrWhiteSpace(taxNumber))
+                    query = query.Where(o => o.TaxNumber == taxNumber);
+                return Task.FromResult(query.ToList());
+            }
         }
     }
 }
