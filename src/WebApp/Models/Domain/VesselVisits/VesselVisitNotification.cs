@@ -84,7 +84,7 @@ namespace WebApp.Models.Domain.VesselVisits
             Status = VesselVisitStatus.Submitted;
         }
 
-        public void Approve(Guid officerId, Guid dockId)
+        public void Approve(Guid dockId)
         {
             if (Status != VesselVisitStatus.Submitted)
                 throw new InvalidOperationException("Only submitted visits can be approved.");
@@ -98,10 +98,10 @@ namespace WebApp.Models.Domain.VesselVisits
             DockId = dockId;
             Status = VesselVisitStatus.Approved;
 
-            LogDecision(officerId, DecisionOutcome.Approved, "Approved with valid crew data and dock assigned.");
+            LogDecision(DecisionOutcome.Approved, "Approved with valid crew data and dock assigned.");
         }
 
-        public void Reject(Guid officerId, string reason)
+        public void Reject(string reason)
         {
             if (Status != VesselVisitStatus.Submitted)
                 throw new InvalidOperationException("Only submitted visits can be rejected.");
@@ -111,13 +111,13 @@ namespace WebApp.Models.Domain.VesselVisits
 
             Status = VesselVisitStatus.Rejected;
 
-            LogDecision(officerId, DecisionOutcome.Rejected, reason);
+            LogDecision(DecisionOutcome.Rejected, reason);
         }
 
-        private void LogDecision(Guid officerId, DecisionOutcome outcome, string message)
+        private void LogDecision(DecisionOutcome outcome, string message)
         {
             var details = $"{message} (Crew verified: {Crew.Count}).";
-            DecisionLogs.Add(new DecisionLog(officerId, outcome, details));
+            DecisionLogs.Add(new DecisionLog(outcome, details));
         }
 
         public List<DecisionLog> DecisionLogs { get; private set; } = new();

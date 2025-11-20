@@ -125,11 +125,11 @@ namespace WebApp.Controllers
 
         // PUT: api/vesselvisitnotification/{id}/approve
         [HttpPut("{id:guid}/approve")]
-        public async Task<IActionResult> ApproveAsync(Guid id, [FromQuery] Guid officerId, [FromQuery] Guid dockId)
+        public async Task<IActionResult> ApproveAsync(Guid id, [FromQuery] Guid dockId)
         {
             try
             {
-                await _service.ApproveAsync(id, officerId, dockId);
+                await _service.ApproveAsync(id,dockId);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
@@ -144,11 +144,11 @@ namespace WebApp.Controllers
 
         // PUT: api/vesselvisitnotification/{id}/reject
         [HttpPut("{id:guid}/reject")]
-        public async Task<IActionResult> RejectAsync(Guid id, [FromQuery] Guid officerId, [FromBody] string reason)
+        public async Task<IActionResult> RejectAsync(Guid id, [FromBody] string reason)
         {
             try
             {
-                await _service.RejectAsync(id, officerId, reason);
+                await _service.RejectAsync(id,reason);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)

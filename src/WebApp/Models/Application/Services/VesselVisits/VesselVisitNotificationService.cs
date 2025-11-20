@@ -74,7 +74,7 @@ namespace WebApp.Models.Application.Services
             await _repository.UpdateAsync(notification);
         }
 
-        public async Task ApproveAsync(Guid id, Guid officerId, Guid dockId)
+        public async Task ApproveAsync(Guid id, Guid dockId)
         {
             var visit = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
@@ -84,16 +84,16 @@ namespace WebApp.Models.Application.Services
             if (dock == null)
                 throw new InvalidOperationException("Dock not found.");
 
-            visit.Approve(officerId, dockId);
+            visit.Approve(dockId);
             await _repository.UpdateAsync(visit);
         }
 
-        public async Task RejectAsync(Guid id, Guid officerId, string reason)
+        public async Task RejectAsync(Guid id, string reason)
         {
             var visit = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
 
-            visit.Reject(officerId, reason);
+            visit.Reject(reason);
             await _repository.UpdateAsync(visit);
         }
 
