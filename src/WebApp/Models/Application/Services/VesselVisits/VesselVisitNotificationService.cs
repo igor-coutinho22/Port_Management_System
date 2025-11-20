@@ -103,8 +103,7 @@ namespace WebApp.Models.Application.Services
             bool hasAnyFilter = !string.IsNullOrEmpty(filter.VesselIMO) ||
                                !string.IsNullOrEmpty(filter.Status) ||
                                filter.FromDate.HasValue ||
-                               filter.ToDate.HasValue ||
-                               !string.IsNullOrEmpty(filter.Representative);
+                               filter.ToDate.HasValue;
 
             if (!hasAnyFilter)
             {
@@ -156,9 +155,6 @@ namespace WebApp.Models.Application.Services
             if (filter.ToDate.HasValue)
                 criteria.Add($"To Date: {filter.ToDate.Value:yyyy-MM-dd}");
             
-            if (!string.IsNullOrEmpty(filter.Representative))
-                criteria.Add($"Representative: {filter.Representative}");
-            
             return string.Join(", ", criteria);
         }
 
@@ -180,12 +176,10 @@ namespace WebApp.Models.Application.Services
             var dock = await _dockRepository.GetByIdAsync(vvn.DockId);
             if (dock == null)
                 throw new InvalidOperationException("Dock not found.");
-
-            if (existingVisit.VesselIMO != vvn.VesselIMO)
-                throw new InvalidOperationException("Vessel IMO cannot be changed.");
-            existingVisit.UpdatePurpose(vvn.Purpose);
+            
             existingVisit.UpdateDockId(vvn.DockId);
             existingVisit.UpdateVisitDate(vvn.VisitDate);
+            existingVisit.UpdatePurpose(vvn.Purpose);
             existingVisit.UpdateLoadingManifest(vvn.LoadingManifest);
             existingVisit.UpdateUnloadingManifest(vvn.UnloadingManifest);
             existingVisit.UpdateCrew(vvn.Crew);

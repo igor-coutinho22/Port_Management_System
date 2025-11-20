@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Mappers;
 using WebApp.Models.Application.Services;
+using WebApp.Models.Domain.VesselVisits;
 using WebApp.Models.Domain.VesselVisits.Services;
 
 namespace WebApp.Controllers
@@ -37,21 +38,20 @@ namespace WebApp.Controllers
             [FromQuery] string? vesselIMO,
             [FromQuery] string? status,
             [FromQuery] DateTime? fromDate,
-            [FromQuery] DateTime? toDate,
-            [FromQuery] string? representative)
+            [FromQuery] DateTime? toDate)
         {
             try
             {
                 var filter = VesselVisitNotificationMapper.ToFilterDTO(
-                    vesselIMO, status, fromDate, toDate, representative);
+                    vesselIMO, status, fromDate, toDate);
 
                 var visits = await _service.SearchAsync(filter);
                 return Ok(visits);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 _logger.LogError(ex, "Unexpected error while searching Vessel Visit Notifications.");
-                return StatusCode(500, "Internal server error");
+                return BadRequest(ex.Message);
             }
         }
 
@@ -162,7 +162,7 @@ namespace WebApp.Controllers
         }
         
         [HttpPut("{id:guid}/updateWhileInProgress")]
-        public async Task<IActionResult> UpdateWhileInProgress(Guid id, [FromBody] VesselVisitNotificationDTO dto)
+        public async Task<IActionResult> UpdateWhileInProgress(Guid id, [FromBody] VesselVisitNotificationUpdateDTO dto)
         {
             if (dto == null)
                 return BadRequest("Request body cannot be empty.");
@@ -173,9 +173,15 @@ namespace WebApp.Controllers
                 if (existing == null)
                     return NotFound("Vessel Visit Notification not found.");
 
-                var updated = VesselVisitNotificationMapper.ToEntity(dto);
-                await _service.UpdateAsync(id, updated);
-                
+                // Only allow update if status is InProgress
+                if (existing.Status != VesselVisitStatus.InProgress)
+                {
+                    throw new InvalidOperationException("Vessel Visit Notification can only be edited while status is 'InProgress'.");
+                }
+
+                VesselVisitNotificationMapper.UpdateFromDto(existing, dto);
+                await _service.UpdateAsync(id, existing);
+
                 // Return the updated entity
                 var result = await _service.GetByIdAsync(id);
                 return Ok(VesselVisitNotificationMapper.ToDTO(result!));
@@ -191,7 +197,7 @@ namespace WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while updating Vessel Visit Notification.");
-                return StatusCode(500, "Internal server error");
+                return BadRequest(ex.Message);
             }
         }
 

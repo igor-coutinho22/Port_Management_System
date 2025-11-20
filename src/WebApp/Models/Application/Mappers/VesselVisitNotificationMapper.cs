@@ -81,12 +81,54 @@ namespace WebApp.Models.Application.Mappers
             return entity;
         }
 
+        public static void UpdateFromDto(VesselVisitNotification entity, VesselVisitNotificationUpdateDTO dto)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+           CargoManifest? loadingManifest = null;
+            if (dto.LoadingManifest != null)
+            {
+                loadingManifest = new CargoManifest(CargoManifestType.Loading);
+                if (dto.LoadingManifest.Containers != null)
+                {
+                    var containers = dto.LoadingManifest.Containers
+                        .Select(c => new Container(c.Identifier))
+                        .ToList();
+                    loadingManifest.UpdateContainers(containers); // Use your method here
+                }
+            }
+
+            CargoManifest? unloadingManifest = null;
+            if (dto.UnloadingManifest != null)
+            {
+                unloadingManifest = new CargoManifest(CargoManifestType.Unloading);
+                if (dto.UnloadingManifest.Containers != null)
+                {
+                    var containers = dto.UnloadingManifest.Containers
+                        .Select(c => new Container(c.Identifier))
+                        .ToList();
+                    unloadingManifest.UpdateContainers(containers); // Use your method here
+                }
+            }
+
+            entity.Update(
+                dockId: dto.DockId,
+                visitDate: dto.VisitDate,
+                purpose: Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true),
+                loadingManifest: loadingManifest,
+                unloadingManifest: unloadingManifest,
+                crew: dto.Crew.Select(c => new CrewMember(c.Name, c.CitizenId, c.Nationality))
+            );
+        }
+
         public static VesselVisitNotificationFilterDTO ToFilterDTO(
             string? vesselIMO, 
             string? status, 
             DateTime? fromDate, 
-            DateTime? toDate, 
-            string? representative)
+            DateTime? toDate)
         {
             return new VesselVisitNotificationFilterDTO
             {
@@ -94,7 +136,6 @@ namespace WebApp.Models.Application.Mappers
                 Status = status,
                 FromDate = fromDate,
                 ToDate = toDate,
-                Representative = representative
             };
         }
     }

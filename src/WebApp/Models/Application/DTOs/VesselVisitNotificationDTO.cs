@@ -35,12 +35,22 @@ namespace WebApp.Models.Application.DTOs
         public string CitizenId { get; set; } = string.Empty;
         public string Nationality { get; set; } = string.Empty;
     }
+
+    public class VesselVisitNotificationUpdateDTO
+    {
+        public Guid DockId { get; set; }
+        public DateTime VisitDate { get; set; }
+        public string Purpose { get; set; } = string.Empty;
+        public CargoManifestDTO? LoadingManifest { get; set; }
+        public CargoManifestDTO? UnloadingManifest { get; set; }
+        public List<CrewMemberDTO> Crew { get; set; } = new();
+    }
+
     public class VesselVisitNotificationFilterDTO
     {
         public string? VesselIMO { get; set; }
         public string? Status { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
-        public string? Representative { get; set; }
     }
 }
