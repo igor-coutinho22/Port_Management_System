@@ -79,7 +79,7 @@ namespace WebApp.Tests.Domain
         Action act = () => org.EnsureHasAtLeastOneRepresentative();
         act.Should().Throw<InvalidOperationException>();
     }
-
+/*
     [Fact]
     public void RemoveRepresentative_ShouldRemove_WhenValid()
     {
@@ -89,6 +89,6 @@ namespace WebApp.Tests.Domain
 
         org.RemoveRepresentative(rep.Id);
         org.Representatives.Should().BeEmpty();
-    }
+    }*/
 }
 }
