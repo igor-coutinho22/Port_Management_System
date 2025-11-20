@@ -17,5 +17,15 @@ namespace WebApp.Models.Domain.VesselVisits
         {
             Containers.Add(container);
         }
+
+        public void RemoveContainer(Container container)
+        {
+            Containers.Remove(container);
+        }
+
+        public void UpdateContainers(List<Container> containers)
+        {
+            Containers = containers;
+        }
     }
 }

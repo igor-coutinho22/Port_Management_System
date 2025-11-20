@@ -40,7 +40,7 @@ namespace WebApp.Models.Infrastructure.Repositories
         }
 
         public async Task UpdateAsync(VesselVisitNotification notification)
-        {
+        { 
             _context.VesselVisitNotifications.Update(notification);
             await _context.SaveChangesAsync();
         }

@@ -41,6 +41,14 @@ namespace WebApp.Models.Domain.VesselVisits
             Status = VesselVisitStatus.InProgress;
         }
 
+        public void Update(Guid dockId, DateTime visitDate, VisitPurpose purpose)
+        {
+            DockId = dockId;
+            CheckDateNotInPast(visitDate);
+            VisitDate = visitDate;
+            Purpose = purpose;
+        }
+
         public void AddLoadingManifest(CargoManifest manifest)
         {
             if (manifest.Type != CargoManifestType.Loading)
