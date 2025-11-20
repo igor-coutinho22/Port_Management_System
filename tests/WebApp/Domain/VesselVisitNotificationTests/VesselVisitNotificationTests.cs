@@ -92,13 +92,13 @@ public class VesselVisitNotificationTests
         var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
 
         // Act
-        vvn.AddCrewMember("John Doe", "CIT123", "Portuguese");
+        vvn.AddCrewMember("John Doe", "CIT123", "PT");
 
         // Assert
         vvn.Crew.Should().ContainSingle(c =>
             c.Name == "John Doe" &&
             c.CitizenId == "CIT123" &&
-            c.Nationality == "Portuguese");
+            c.Nationality == "PT");
     }
 
     [Fact]
@@ -254,12 +254,12 @@ public class VesselVisitNotificationTests
     {
         // Arrange
         var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
-        vvn.AddCrewMember("Original", "CIT001", "Portuguese");
+        vvn.AddCrewMember("Original", "CIT001", "PT");
         
         var newCrew = new List<CrewMember>
         {
-            new CrewMember("John Doe", "CIT123", "American"),
-            new CrewMember("Jane Smith", "CIT456", "British")
+            new CrewMember("John Doe", "CIT123", "US"),
+            new CrewMember("Jane Smith", "CIT456", "UK")
         };
 
         // Act
@@ -277,7 +277,7 @@ public class VesselVisitNotificationTests
     {
         // Arrange
         var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
-        vvn.AddCrewMember("John Doe", "CIT123", "Portuguese");
+        vvn.AddCrewMember("John Doe", "CIT123", "PT");
 
         // Act
         vvn.UpdateCrew(new List<CrewMember>());
