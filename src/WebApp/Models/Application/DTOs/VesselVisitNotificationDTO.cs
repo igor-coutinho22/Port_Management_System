@@ -36,6 +36,11 @@ namespace WebApp.Models.Application.DTOs
         public string Nationality { get; set; } = string.Empty;
     }
 
+    public class RejectReasonDTO
+    {
+        public string Reason { get; set; } = string.Empty;
+    }
+
     public class VesselVisitNotificationUpdateDTO
     {
         public Guid DockId { get; set; }

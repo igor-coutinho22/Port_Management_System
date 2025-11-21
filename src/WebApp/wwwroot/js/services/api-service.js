@@ -391,10 +391,9 @@ class ApiService {
         return this.put(`/vesselvisitnotification/${id}/approve${query}`);
     }
 
-    async rejectVesselVisitNotification(id, officerId, reason) {
-        const params = officerId ? `?officerId=${encodeURIComponent(officerId)}` : '';
-        // Reason is sent as raw string body
-        return this.put(`/vesselvisitnotification/${id}/reject${params}`, reason, { 'Content-Type': 'application/json' });
+    async rejectVesselVisitNotification(id, reasonObj) {
+        // Reason is sent as JSON object: { reason: "..." }
+        return this.put(`/vesselvisitnotification/${id}/reject`, reasonObj, { 'Content-Type': 'application/json' });
     }
 
 

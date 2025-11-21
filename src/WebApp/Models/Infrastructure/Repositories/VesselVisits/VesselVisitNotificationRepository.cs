@@ -94,5 +94,12 @@ namespace WebApp.Models.Infrastructure.Repositories
             _context.VesselVisitNotifications.Update(notification);
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdateStatusToRejectedAsync(VesselVisitNotification notification, DecisionLog decisionLog)
+        {
+            await _context.DecisionLogs.AddAsync(decisionLog);
+            _context.VesselVisitNotifications.Update(notification);
+            await _context.SaveChangesAsync();
+        }
     }
 }

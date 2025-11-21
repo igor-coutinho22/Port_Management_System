@@ -109,7 +109,7 @@ namespace WebApp.Models.Domain.VesselVisits
             return log;
         }
 
-        public void Reject(string reason)
+        public DecisionLog Reject(string reason)
         {
             if (Status != VesselVisitStatus.Submitted)
                 throw new InvalidOperationException("Only submitted visits can be rejected.");
@@ -118,8 +118,9 @@ namespace WebApp.Models.Domain.VesselVisits
                 throw new ArgumentException("A rejection reason is required.");
 
             Status = VesselVisitStatus.Rejected;
-
-            LogDecision(DecisionOutcome.Rejected, reason);
+            var log = new DecisionLog(DecisionOutcome.Rejected, reason);
+            DecisionLogs.Add(log);
+            return log;
         }
 
         private void LogDecision(DecisionOutcome outcome, string message)

@@ -368,6 +368,18 @@ public class VesselVisitNotificationServiceTests
             // Stub: do nothing
             return Task.CompletedTask;
         }
+
+        public Task UpdateStatusToApprovedAsync(VesselVisitNotification notification, DecisionLog decisionLog)
+        {
+            // Stub: do nothing
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateStatusToRejectedAsync(VesselVisitNotification notification, DecisionLog decisionLog)
+        {
+            // Stub: do nothing
+            return Task.CompletedTask;
+        }
     }
 
     private class StubVesselRepository : IVesselRepository

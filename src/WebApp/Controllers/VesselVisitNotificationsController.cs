@@ -144,11 +144,11 @@ namespace WebApp.Controllers
 
         // PUT: api/vesselvisitnotification/{id}/reject
         [HttpPut("{id:guid}/reject")]
-        public async Task<IActionResult> RejectAsync(Guid id, [FromBody] string reason)
+        public async Task<IActionResult> RejectAsync(Guid id, [FromBody] RejectReasonDTO dto)
         {
             try
             {
-                await _service.RejectAsync(id, reason);
+                await _service.RejectAsync(id, dto.Reason);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)

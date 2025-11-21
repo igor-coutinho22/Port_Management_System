@@ -99,8 +99,12 @@ namespace WebApp.Models.Application.Services
             var visit = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
 
-            visit.Reject(reason);
-            await _repository.UpdateAsync(visit);
+            if (visit.Status != VesselVisitStatus.Submitted)
+                throw new InvalidOperationException("Only 'Submitted' visits can be rejected.");
+
+
+            DecisionLog log = visit.Reject(reason);
+            await _repository.UpdateStatusToRejectedAsync(visit, log);
         }
 
         public async Task AddLoadingManifestAsync(Guid id, CargoManifest manifest)
