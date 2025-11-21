@@ -176,8 +176,8 @@ public class VesselVisitNotificationRepositoryTest
         var vvn = new VesselVisitNotification(ValidIMO, dockId, visitDate, VisitPurpose.Commercial);
         vvn.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
         vvn.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
-        vvn.AddCrewMember("Captain", "CIT001", "PT");
-        vvn.AddCrewMember("Engineer", "CIT002", "ES");
+        vvn.AddCrewMember(new CrewMember("Captain", "CIT001", "PT"));
+        vvn.AddCrewMember(new CrewMember("Engineer", "CIT002", "ES"));
         
         await _repository.AddAsync(vvn);
         await _context.SaveChangesAsync();
