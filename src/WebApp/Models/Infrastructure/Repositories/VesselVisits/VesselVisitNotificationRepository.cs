@@ -40,7 +40,7 @@ namespace WebApp.Models.Infrastructure.Repositories
         }
 
         public async Task UpdateAsync(VesselVisitNotification notification)
-        { 
+        {
             _context.VesselVisitNotifications.Update(notification);
             await _context.SaveChangesAsync();
         }
@@ -48,6 +48,43 @@ namespace WebApp.Models.Infrastructure.Repositories
         public async Task DeleteAsync(VesselVisitNotification notification)
         {
             _context.VesselVisitNotifications.Remove(notification);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SaveLMAsync(CargoManifest manifest)
+        {
+            await _context.CargoManifests.AddAsync(manifest);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteLMAsync(CargoManifest manifest)
+        {
+            _context.CargoManifests.Attach(manifest);
+            _context.CargoManifests.Remove(manifest);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteUMAsync(CargoManifest manifest)
+        {
+            _context.CargoManifests.Remove(manifest);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SaveUMAsync(CargoManifest manifest)
+        {
+            await _context.CargoManifests.AddAsync(manifest);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SaveCMAsync(CrewMember crewMember)
+        {
+            await _context.CrewMembers.AddAsync(crewMember);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteCMAsync(CrewMember crewMember)
+        {
+            _context.CrewMembers.Remove(crewMember);
             await _context.SaveChangesAsync();
         }
     }
