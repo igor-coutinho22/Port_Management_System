@@ -1,24 +1,29 @@
-/*using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Domain.Scheduling.Interfaces;
-namespace PortApi.Controllers;
+using WebApp.Models.Application.Mappers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class SchedulingController{
-    private readonly IHeuristicScheduleService _heuristicService;
-    public SchedulingController(
-        IHeuristicScheduleService heuristicService
-        )
+namespace WebApp.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class SchedulingController : ControllerBase
     {
-        _heuristicService = heuristicService;
-    }
+        private readonly IHeuristicScheduleService _heuristicService;
 
-    [HttpGet]
-    public IActionResult GetSchedule([FromQuery] string mode = "heuristic")
-    {
-        var vessels = GetTodayVessels();
-        var result = _heuristicService.ComputeSchedule(vessels);
-        return Ok(result);
+        public SchedulingController(IHeuristicScheduleService heuristicService)
+        {
+            _heuristicService = heuristicService;
+        }
+
+        [HttpGet("heuristic")]
+        [AllowAnonymous]  // Allow testing without authentication
+        public IActionResult GetHeuristicSchedule()
+        {
+            // Use demo data from Prolog file (vessels parameter = null)
+            var result = _heuristicService.ComputeSchedule(null);
+            var dto = SchedulingResultMapper.ToDTO(result);
+            return Ok(dto);
+        }
     }
-}*/
+}
