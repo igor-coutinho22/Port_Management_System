@@ -9,6 +9,7 @@ namespace WebApp.Models.Application.DTOs
         public string? Address { get; set; }
         public string? TaxNumber { get; set; }
         public bool IsActive { get; set; }
+        public List<RepresentativeDto> Representatives { get; set; } = new();
     };
 
     public class CreateOrganizationDto

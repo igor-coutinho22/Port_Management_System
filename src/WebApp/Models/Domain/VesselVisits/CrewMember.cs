@@ -73,9 +73,9 @@ namespace WebApp.Models.Domain.VesselVisits
                 throw new ArgumentException("Nationality cannot be null or empty.");
             }
 
-            if (nationality.Length != 2)
+            if (nationality.Length != 2 && nationality.Length != 3)
             {
-                throw new ArgumentException("Nationality must be a valid 2-letter country code (eg: PT).");
+                throw new ArgumentException("Nationality must be a valid 2-letter or 3-letter country code (eg: PT or PRT).");
             }
 
             if (nationality.Any(c => !char.IsUpper(c)))

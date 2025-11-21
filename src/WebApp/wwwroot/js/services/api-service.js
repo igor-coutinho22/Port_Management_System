@@ -1,28 +1,5 @@
 // HTTP Client Service - Handles all API communications
 class ApiService {
-    // Qualifications
-    async getQualifications() {
-        return this.get('/qualifications');
-    }
-    async getQualificationByCode(code) {
-        return this.get(`/qualifications/${encodeURIComponent(code)}`);
-    }
-    async registerQualification(qualificationData) {
-        return this.post('/qualifications', qualificationData);
-    }
-    async updateQualification(code, qualificationData) {
-        return this.put(`/qualifications/${encodeURIComponent(code)}`, qualificationData);
-    }
-    async deleteQualification(code) {
-        return this.delete(`/qualifications/${encodeURIComponent(code)}`);
-    }
-    constructor(baseUrl = '/api') {
-        this.baseUrl = baseUrl;
-        this.defaultHeaders = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        };
-    }
 
     async _getApiAccessToken() {
         try {
@@ -349,7 +326,7 @@ class ApiService {
 
     // Representatives
     async getRepresentatives() {
-        return this.get('/representatives');
+        return this.get('/representatives/all');
     }
     async getRepresentativeById(id) {
         return this.get(`/representatives/${id}`);
@@ -359,8 +336,24 @@ class ApiService {
     async getQualifications() {
         return this.get('/qualifications');
     }
-    async getQualificationById(id) {
-        return this.get(`/qualifications/${id}`);
+    async getQualificationByCode(code) {
+        return this.get(`/qualifications/${encodeURIComponent(code)}`);
+    }
+    async registerQualification(qualificationData) {
+        return this.post('/qualifications', qualificationData);
+    }
+    async updateQualification(code, qualificationData) {
+        return this.put(`/qualifications/${encodeURIComponent(code)}`, qualificationData);
+    }
+    async deleteQualification(code) {
+        return this.delete(`/qualifications/${encodeURIComponent(code)}`);
+    }
+    constructor(baseUrl = '/api') {
+        this.baseUrl = baseUrl;
+        this.defaultHeaders = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
     }
 
     // Vessel Visit Notifications

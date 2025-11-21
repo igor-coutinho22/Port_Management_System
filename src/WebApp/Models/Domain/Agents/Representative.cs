@@ -69,10 +69,11 @@ namespace WebApp.Models.Domain.Agents
         {
             if (string.IsNullOrWhiteSpace(value)) 
                 throw new ArgumentException("Nationality is required (ISO3).", nameof(value));
-            var v = value.Trim().ToUpperInvariant();
-            if (v.Length != 3 || !Regex.IsMatch(v, @"^[A-Z]{3}$"))
-                throw new ArgumentException("Nationality must be ISO 3166-1 alpha-3 (3 letters).", nameof(value));
-            return v;
+            if (value.Length != 2 && value.Length != 3)
+            {
+                throw new ArgumentException("Nationality must be a valid 2-letter or 3-letter country code (eg: PT or PRT).");
+            }
+            return value.ToUpperInvariant();
         }
 
         private static string ValidateEmail(string value)

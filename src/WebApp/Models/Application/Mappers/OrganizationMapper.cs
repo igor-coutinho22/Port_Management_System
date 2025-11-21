@@ -19,7 +19,8 @@ namespace WebApp.Models.Application.Mappers
                 AlternativeNames = org.AlternativeNames,
                 Address = org.Address,
                 TaxNumber = org.TaxNumber,
-                IsActive = org.IsActive
+                IsActive = org.IsActive,
+                Representatives = org.Representatives.Select(RepresentativeMapper.ToDto).ToList()
             };
         }
 
