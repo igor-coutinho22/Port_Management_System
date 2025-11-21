@@ -76,7 +76,7 @@ namespace WebApp.Models.Application.Mappers
                 entity.AddUnloadingManifest(manifest);
             }
             foreach (var member in dto.Crew)
-                entity.AddCrewMember(member.Name, member.CitizenId, member.Nationality);
+                entity.AddCrewMember(CrewMapper.ToEntity(member));
 
             return entity;
         }
