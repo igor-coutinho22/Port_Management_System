@@ -221,6 +221,8 @@ class PortVisualization {
             this.buildDocks(layout.docks);
             this.buildStorageAreas(layout.storageAreas);
             this.buildResources(layout.resources);
+            this.buildVessels(layout.vessels);
+            this.buildStaff(layout.staff);
 
             console.log("PortVisualization: Scene built with objects", this.objects.length);
 
@@ -322,6 +324,8 @@ class PortVisualization {
             else if (d.subtype === "Warehouse") text = `Warehouse: ${d.name}`;
             else if (d.subtype === "ContainerYard") text = `Yard: ${d.name}`;
             else if (d.type === "resource") text = `Resource: ${d.name}`;
+            else if (d.type === "Vessel") text = `Vessel: ${d.name} (${d.vesselType})`;
+            else if (d.type === "Staff") text = `Staff: ${d.name} (${d.status})`;
             else text = d.name || "Object";
 
             this.showTooltip(text, e.clientX, e.clientY);
@@ -436,6 +440,38 @@ class PortVisualization {
             const mesh = this.geometryBuilder.createResource(r);
             mesh.position.set(r.x, r.y, r.z);
             mesh.userData = { type: "resource", ...r };
+
+            this.scene.add(mesh);
+            this.objects.push(mesh);
+        });
+    }
+
+    // -----------------------------------------------------------------------------
+    // VESSELS
+    // -----------------------------------------------------------------------------
+    buildVessels(vessels) {
+        vessels.forEach(v => {
+            const mesh = this.geometryBuilder.createVessel(v);
+            mesh.position.set(v.x, v.y, v.z);
+            mesh.userData = { type: "Vessel", ...v };
+
+            this.scene.add(mesh);
+            this.objects.push(mesh);
+
+            const label = this.geometryBuilder.createLabel(v.name);
+            label.position.set(v.x, v.y + v.height + 20, v.z);
+            this.scene.add(label);
+        });
+    }
+
+    // -----------------------------------------------------------------------------
+    // STAFF
+    // -----------------------------------------------------------------------------
+    buildStaff(staffList) {
+        staffList.forEach(s => {
+            const mesh = this.geometryBuilder.createStaff(s);
+            mesh.position.set(s.x, s.y, s.z);
+            mesh.userData = { type: "Staff", ...s };
 
             this.scene.add(mesh);
             this.objects.push(mesh);

@@ -18,9 +18,74 @@ class PortGeometryBuilder {
             warehouseRoof: new THREE.MeshPhongMaterial({ color: 0x8B0000 }), // Red roof like placeholder
 
             craneBody: new THREE.MeshPhongMaterial({ color: 0xFFD700 }),
-            vehicleBody: new THREE.MeshPhongMaterial({ color: 0x607D8B })
+            vehicleBody: new THREE.MeshPhongMaterial({ color: 0x607D8B }),
+
+            vesselHull: new THREE.MeshPhongMaterial({ color: 0x333333 }),
+            vesselBridge: new THREE.MeshPhongMaterial({ color: 0xEEEEEE }),
+
+            staffBody: new THREE.MeshPhongMaterial({ color: 0xFFA500 }) // Orange for staff
         };
     }
+
+    // ... (existing methods)
+
+    // -----------------------------------------------------------------------------
+    // VESSEL GEOMETRY
+    // -----------------------------------------------------------------------------
+    createVessel(vessel) {
+        const { length, width, height } = vessel;
+
+        const group = new THREE.Group();
+
+        // Hull
+        const hullHeight = height * 0.7;
+        const hullGeo = new THREE.BoxGeometry(length, hullHeight, width);
+        const hull = new THREE.Mesh(hullGeo, this.materials.vesselHull);
+        hull.position.y = hullHeight / 2;
+        hull.castShadow = true;
+        hull.receiveShadow = true;
+        group.add(hull);
+
+        // Bridge/Superstructure
+        const bridgeLength = length * 0.2;
+        const bridgeHeight = height * 0.5;
+        const bridgeWidth = width * 0.8;
+        const bridgeGeo = new THREE.BoxGeometry(bridgeLength, bridgeHeight, bridgeWidth);
+        const bridge = new THREE.Mesh(bridgeGeo, this.materials.vesselBridge);
+        bridge.position.set(-length / 2 + bridgeLength, hullHeight + bridgeHeight / 2, 0); // Stern
+        bridge.castShadow = true;
+        bridge.receiveShadow = true;
+        group.add(bridge);
+
+        return group;
+    }
+
+    // -----------------------------------------------------------------------------
+    // STAFF GEOMETRY
+    // -----------------------------------------------------------------------------
+    createStaff(staff) {
+        // Simple capsule/cylinder for human
+        const height = 10; // 1.8m scaled? No, scale is 1.0, so 10 units is tall. 
+        // Wait, dock height is 10. So staff should be smaller, maybe 2-3 units?
+        // But previous conversation said scale is 1.0. If dock is 10 units high, that's 10 meters?
+        // If so, human is ~2 units.
+        // Let's make them visible: 5 units high.
+
+        const radius = 1.5;
+        const h = 5;
+
+        const geo = new THREE.CylinderGeometry(radius, radius, h, 8);
+        const mesh = new THREE.Mesh(geo, this.materials.staffBody);
+
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+
+        return mesh;
+    }
+
+    // -----------------------------------------------------------------------------
+    // LABEL CREATION (CanvasTexture)
+    // -----------------------------------------------------------------------------
 
     // -----------------------------------------------------------------------------
     // DOCK GEOMETRY

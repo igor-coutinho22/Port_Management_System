@@ -22,15 +22,19 @@ class PortLayoutEngine {
     // -----------------------------------------------------------------------------
     // MAIN ENTRY — compute positions for all port objects
     // -----------------------------------------------------------------------------
-    computeLayout({ docks, storageAreas, resources }) {
+    computeLayout({ docks, storageAreas, resources, vessels, staff }) {
         const dockLayouts = this.layoutDocks(docks);
         const storageLayouts = this.layoutStorageAreas(storageAreas, dockLayouts);
         const resourceLayouts = this.layoutResources(resources, storageLayouts);
+        const vesselLayouts = this.layoutVessels(vessels || []);
+        const staffLayouts = this.layoutStaff(staff || []);
 
         return {
             docks: dockLayouts,
             storageAreas: storageLayouts,
-            resources: resourceLayouts
+            resources: resourceLayouts,
+            vessels: vesselLayouts,
+            staff: staffLayouts
         };
     }
 
@@ -153,6 +157,68 @@ class PortLayoutEngine {
                 y: 15,
                 z: z + Math.floor(i / 5) * 40
             });
+        });
+
+        return layouts;
+    }
+    // -----------------------------------------------------------------------------
+    // VESSELS LAYOUT
+    // -----------------------------------------------------------------------------
+    layoutVessels(vessels) {
+        const layouts = [];
+        let currentX = -200;
+
+        vessels.forEach(v => {
+            const length = (v.length || 100) * this.scale;
+
+            layouts.push({
+                id: v.id,
+                name: v.name,
+                type: "Vessel",
+                vesselType: v.type,
+                length: length,
+                width: (v.width || 30) * this.scale,
+                height: (v.height || 20) * this.scale,
+                x: currentX,
+                y: 0, // On water surface
+                z: -150 // In the water
+            });
+
+            currentX += length + 50; // Spacing
+        });
+
+        return layouts;
+    }
+
+    // -----------------------------------------------------------------------------
+    // STAFF LAYOUT
+    // -----------------------------------------------------------------------------
+    layoutStaff(staffList) {
+        const layouts = [];
+
+        // Place staff in a grid near the docks
+        let startX = -100;
+        let startZ = 80; // Between docks and storage
+        let col = 0;
+        let row = 0;
+        const spacing = 10;
+
+        staffList.forEach(s => {
+            layouts.push({
+                id: s.id,
+                name: s.name,
+                type: "Staff",
+                status: s.status,
+                x: startX + col * spacing,
+                y: 5, // Standing on ground
+                z: startZ + row * spacing
+            });
+
+            col++;
+            if (col > 10) {
+                col = 0;
+                row++;
+            }
         });
 
         return layouts;
