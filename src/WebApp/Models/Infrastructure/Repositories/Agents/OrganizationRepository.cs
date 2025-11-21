@@ -79,5 +79,11 @@ namespace WebApp.Models.Infrastructure.Repositories
                 .OrderBy(o => o.LegalName)
                 .ToListAsync();
         }
+
+        public async Task AddRepresentativeAsync(Representative rep)
+        {
+            _context.Representatives.Add(rep);
+            await _context.SaveChangesAsync();
+        }
     }
 }

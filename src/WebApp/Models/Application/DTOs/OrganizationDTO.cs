@@ -14,12 +14,13 @@ namespace WebApp.Models.Application.DTOs
 
     public class CreateOrganizationDto
     {
+        public Guid Id { get; set; }
         public string Identifier { get; set; } = string.Empty;
         public string LegalName { get; set; } = string.Empty;
         public string? AlternativeName { get; set; }
         public string Address { get; set; } = string.Empty;
         public string TaxNumber { get; set; } = string.Empty;
-        public List<CreateRepresentativeDto> Representatives { get; set; } = new();
+        public List<GetRepresentativeToAddDto> Representatives { get; set; } = new();
     }
 
     public class UpdateOrganizationDto

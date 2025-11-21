@@ -12,13 +12,13 @@ namespace WebApp.Models.Application.Services
             _orgRepo = orgRepo;
         }
 
-        public async Task CreateAsync(ShippingAgentOrganization org)
+        public async Task CreateAsync(ShippingAgentOrganization org, List<Representative> representatives)
         {
             if (org == null)
                 throw new ArgumentNullException(nameof(org));
             
             // Add representatives if any
-            foreach (var repReq in org.Representatives)
+            foreach (var repReq in representatives)
             {
                 org.AddRepresentative(repReq);
             }
@@ -77,6 +77,16 @@ namespace WebApp.Models.Application.Services
 
             org.Deactivate();
             await _orgRepo.UpdateAsync(org);
+        }
+
+        public async Task AddRepresentativeAsync(Guid id, Representative rep)
+        {
+            var org = await _orgRepo.GetByIdAsync(id);
+            if (org == null)
+                throw new KeyNotFoundException("Organization not found.");
+
+            org.AddRepresentative(rep);
+            await _orgRepo.AddRepresentativeAsync(rep);
         }
 
         public async Task DeleteAsync(Guid id)
