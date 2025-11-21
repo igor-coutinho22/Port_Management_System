@@ -72,7 +72,7 @@ public class VesselVisitNotificationServiceTests
         var created = VesselVisitNotificationMapper.ToEntity(dto);
         var act = async () => await _service.CreateAsync(created);
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Vessel with IMO*not found");
+            .WithMessage("Vessel with IMO*not found.");
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class VesselVisitNotificationServiceTests
         var created = VesselVisitNotificationMapper.ToEntity(dto);
         var act = async () => await _service.CreateAsync(created);
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Dock with ID*not found");
+            .WithMessage("Dock with ID*not found.");
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class VesselVisitNotificationServiceTests
         // Act & Assert
         var act = async () => await _service.UpdateAsync(Guid.NewGuid(), updatedVvn);
         await act.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("not found");
+            .WithMessage("Vessel Visit Notification not found.");
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class VesselVisitNotificationServiceTests
         // Act & Assert
         var act = async () => await _service.SubmitAsync(Guid.NewGuid());
         await act.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("not found");
+            .WithMessage("Vessel Visit Notification not found.");
     }
 
     [Fact]
@@ -279,7 +279,7 @@ public class VesselVisitNotificationServiceTests
         // Act & Assert
         var act = async () => await _service.SearchAsync(filter);
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("At least one search parameter must be provided");
+            .WithMessage("At least one search parameter must be provided.");
     }
 
     [Fact]
@@ -291,7 +291,7 @@ public class VesselVisitNotificationServiceTests
         // Act & Assert
         var act = async () => await _service.SearchAsync(filter);
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("No vessel visit notifications found");
+            .WithMessage("No vessel visit notifications found with the specified criteria.");
     }
 
     // Stub implementations

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class MigrationAfterFixes : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -508,7 +508,6 @@ namespace WebApp.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OfficerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Outcome = table.Column<int>(type: "int", nullable: false),
                     Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),

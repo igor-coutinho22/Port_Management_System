@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251120155125_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251121124415_MigrationAfterFixes")]
+    partial class MigrationAfterFixes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -664,9 +664,6 @@ namespace WebApp.Migrations
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("OfficerId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Outcome")
                         .HasColumnType("int");

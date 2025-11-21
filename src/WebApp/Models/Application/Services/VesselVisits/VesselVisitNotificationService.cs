@@ -183,7 +183,7 @@ namespace WebApp.Models.Application.Services
             if (!result.Any())
             {
                 var filterDescription = BuildFilterDescription(filter);
-                throw new InvalidOperationException($"No vessel visit notifications found with the specified criteria: {filterDescription}");
+                throw new InvalidOperationException($"No vessel visit notifications found with the specified criteria.");
             }
 
             return result.Select(VesselVisitNotificationMapper.ToDTO);

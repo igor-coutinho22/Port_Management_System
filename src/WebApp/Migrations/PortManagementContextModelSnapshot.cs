@@ -662,9 +662,6 @@ namespace WebApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("OfficerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Outcome")
                         .HasColumnType("int");
 
