@@ -129,7 +129,11 @@ namespace WebApp.Controllers
         {
             try
             {
+<<<<<<< Updated upstream
                 await _service.ApproveAsync(id,dockId);
+=======
+                await _service.ApproveAsync(id, dockId);
+>>>>>>> Stashed changes
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
@@ -148,7 +152,11 @@ namespace WebApp.Controllers
         {
             try
             {
+<<<<<<< Updated upstream
                 await _service.RejectAsync(id,reason);
+=======
+                await _service.RejectAsync(id, reason);
+>>>>>>> Stashed changes
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
@@ -160,7 +168,190 @@ namespace WebApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
+        [HttpPost("{id:guid}/addLoadingManifest")]
+        public async Task<ActionResult> AddLoadingManifestAsync(Guid id, [FromBody] CargoManifestDTO dto)
+        {
+            if (dto == null)
+                return BadRequest("Request body cannot be empty.");
+
+            if (dto.Type != CargoManifestType.Loading.ToString())
+                return BadRequest("Only Loading Manifests can be added via this endpoint.");
+
+            try
+            {
+                var manifest = CargoManifestsMapper.ToEntity(dto);
+                await _service.AddLoadingManifestAsync(id, manifest);
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while adding Loading Manifest to Vessel Visit Notification.");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id:guid}/removeLoadingManifest")]
+        public async Task<ActionResult> RemoveLoadingManifestAsync(Guid id)
+        {
+            var vvn = await _service.GetByIdAsync(id);
+            if (vvn == null)
+                return NotFound("Vessel Visit Notification not found.");
+            
+            if (vvn.LoadingManifest == null)
+                return BadRequest("No Loading Manifest to remove.");
+
+            try
+            {
+                await _service.RemoveLoadingManifestAsync(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while removing Loading Manifest from Vessel Visit Notification.");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("{id:guid}/addUnloadingManifest")]
+        public async Task<ActionResult> AddUnloadingManifestAsync(Guid id, [FromBody] CargoManifestDTO dto)
+        {
+            if (dto == null)
+                return BadRequest("Request body cannot be empty.");
+
+            if (dto.Type != CargoManifestType.Unloading.ToString())
+                return BadRequest("Only Unloading Manifests can be added via this endpoint.");
+
+            try
+            {
+                var manifest = CargoManifestsMapper.ToEntity(dto);
+                await _service.AddUnloadingManifestAsync(id, manifest);
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while adding Unloading Manifest to Vessel Visit Notification.");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id:guid}/removeUnloadingManifest")]
+        public async Task<ActionResult> RemoveUnloadingManifestAsync(Guid id)
+        {
+            var vvn = await _service.GetByIdAsync(id);
+            if (vvn == null)
+                return NotFound("Vessel Visit Notification not found.");
+            
+            if (vvn.UnloadingManifest == null)
+                return BadRequest("No Unloading Manifest to remove.");
+
+            try
+            {
+                await _service.RemoveUnloadingManifestAsync(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while removing Unloading Manifest from Vessel Visit Notification.");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("{id:guid}/addCrewMember")]
+        public async Task<ActionResult> AddCrewMemberAsync(Guid id, [FromBody] CrewMemberDTO dto)
+        {
+            if (dto == null)
+                return BadRequest("Request body cannot be empty.");
+
+            try
+            {
+                var crewMember = CrewMapper.ToEntity(dto);
+                await _service.AddCrewMemberAsync(id, crewMember);
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while adding Crew Member to Vessel Visit Notification.");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id:guid}/removeCrewMember/{citizenId}")]
+        public async Task<ActionResult> RemoveCrewMemberAsync(Guid id, string citizenId)
+        {
+            if (string.IsNullOrEmpty(citizenId))
+                return BadRequest("Citizen ID cannot be empty.");
+
+            var vvn = await _service.GetByIdAsync(id);
+            if (vvn == null)
+                return NotFound("Vessel Visit Notification not found.");
+
+            if (vvn.Crew.Count == 0)
+                return BadRequest("No Crew Members to remove.");
+
+            try
+            {
+                await _service.RemoveCrewMemberAsync(id, citizenId);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while removing Crew Member from Vessel Visit Notification.");
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPut("{id:guid}/updateWhileInProgress")]
         public async Task<IActionResult> UpdateWhileInProgress(Guid id, [FromBody] VesselVisitNotificationUpdateDTO dto)
         {

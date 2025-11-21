@@ -71,9 +71,12 @@ namespace WebApp.Models.Domain.VesselVisits
             UnloadingManifest = manifest;
         }
 
-        public void AddCrewMember(string name, string citizenId, string nationality)
+        public void AddCrewMember(CrewMember member)
         {
-            Crew.Add(new CrewMember(name, citizenId, nationality));
+            if (Crew.Any(cm => cm.CitizenId == member.CitizenId))
+                throw new InvalidOperationException("Crew member with the same Citizen ID already exists.");
+
+            Crew.Add(member);
         }
 
         public void MarkAsSubmitted()

@@ -97,6 +97,56 @@ namespace WebApp.Models.Application.Services
             await _repository.UpdateAsync(visit);
         }
 
+        public async Task AddLoadingManifestAsync(Guid id, CargoManifest manifest)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.AddLoadingManifest(manifest);
+            await _repository.SaveLMAsync(manifest);
+        }
+
+        public async Task AddUnloadingManifestAsync(Guid id, CargoManifest manifest)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.AddUnloadingManifest(manifest);
+            await _repository.SaveUMAsync(manifest);
+        }
+
+        public async Task RemoveLoadingManifestAsync(Guid id)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            await _repository.DeleteLMAsync(visit.LoadingManifest!);
+        }
+
+        public async Task RemoveUnloadingManifestAsync(Guid id)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+            await _repository.DeleteUMAsync(visit.UnloadingManifest!);
+        }
+
+        public async Task AddCrewMemberAsync(Guid id, CrewMember crewMember)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.AddCrewMember(crewMember);
+            await _repository.SaveCMAsync(crewMember);
+        }
+
+        public async Task RemoveCrewMemberAsync(Guid id, string citizenId)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            await _repository.DeleteCMAsync(visit.Crew.FirstOrDefault(cm => cm.CitizenId == citizenId)!);
+        }
+
         public async Task<IEnumerable<VesselVisitNotificationDTO>> SearchAsync(VesselVisitNotificationFilterDTO filter)
         {
             // Validate that at least one filter parameter is provided
