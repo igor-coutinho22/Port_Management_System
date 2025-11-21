@@ -83,6 +83,27 @@ const VesselVisitNotificationsHubPage = () => {
 			component: 'RejectVesselVisitNotificationForm'
 		},
 		{
+			id: 'manage LM',
+			title: `Manage Loading Manifests`,
+			description: 'Add or remove the loading cargo manifest from a notification',
+			color: '#8e44ad',
+			component: 'ManageLoadingManifestsForm'
+		},
+		{
+			id: 'manage UM',
+			title: `Manage Unloading Manifests`,
+			description: 'Add or remove the unloading cargo manifest from a notification',
+			color: '#9b59b6',
+			component: 'ManageUnloadingManifestsForm'
+		},
+		{
+			id: 'manage CM',
+			title: `Manage Crew Members`,
+			description: 'Add or remove crew members associated with a notification',
+			color: '#d35400',
+			component: 'ManageCrewMembersForm'
+		},
+		{
 			id: 'delete',
 			title: `🗑️ Delete Notification`,
 			description: 'Remove a vessel visit notification from the system',
@@ -160,6 +181,9 @@ const VesselVisitNotificationsHubPage = () => {
 									{section.component === 'SubmitVesselVisitNotificationForm' && <SubmitVesselVisitNotificationForm onSuccess={loadNotifications} />}
 									{section.component === 'ApproveVesselVisitNotificationForm' && <ApproveVesselVisitNotificationForm onSuccess={loadNotifications} />}
 									{section.component === 'RejectVesselVisitNotificationForm' && <RejectVesselVisitNotificationForm onSuccess={loadNotifications} />}
+									{section.component === 'ManageLoadingManifestsForm' && <ManageLoadingManifestsForm onSuccess={loadNotifications} />}
+									{section.component === 'ManageUnloadingManifestsForm' && <ManageUnloadingManifestsForm onSuccess={loadNotifications} />}
+									{section.component === 'ManageCrewMembersForm' && <ManageCrewMembersForm onSuccess={loadNotifications} />}
 									{section.component === 'DeleteVesselVisitNotificationForm' && <DeleteVesselVisitNotificationForm onSuccess={loadNotifications} />}
 								</div>
 							</div>
