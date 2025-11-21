@@ -12,6 +12,11 @@ const HomePage = () => {
             route: "management",
         },
         {
+            titleKey: "home.feature.scheduling.title",
+            descKey: "home.feature.scheduling.desc",
+            route: "scheduling",
+        },
+        {
             titleKey: "home.feature.admin_users.title",
             descKey: "home.feature.admin_users.desc",
             route: "admin-users",
