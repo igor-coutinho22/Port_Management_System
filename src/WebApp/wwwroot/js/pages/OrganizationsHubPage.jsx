@@ -60,6 +60,13 @@ const OrganizationsHubPage = () => {
             description: 'Remove an organization from the system',
             color: '#e74c3c',
             component: 'DeleteOrganizationForm'
+        },
+        {
+            id: 'add',
+            title: `Add Representatives`,
+            description: 'Add organization representatives',
+            color: '#8e44ad',
+            component: 'AddRepresentativeToOrganizationForm'
         }
     ];
 
@@ -129,6 +136,7 @@ const OrganizationsHubPage = () => {
                                     {section.component === 'GetOrganizationByIdForm' && <GetOrganizationByIdForm />}
                                     {section.component === 'EditOrganizationForm' && <EditOrganizationForm onSuccess={loadOrganizations} />}
                                     {section.component === 'DeleteOrganizationForm' && <DeleteOrganizationForm onSuccess={loadOrganizations} />}
+                                    {section.component === 'AddRepresentativeToOrganizationForm' && <AddRepresentativeToOrganizationForm onSuccess={loadOrganizations} />}
                                 </div>
                             </div>
                         )}
@@ -158,6 +166,7 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
                         <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Identifier</th>
                                 <th>Legal Name</th>
                                 <th>Alternative Names</th>
                                 <th>Address</th>
@@ -169,6 +178,7 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
                             {organizations.map((org) => (
                                 <tr key={org.id || org.legalName}>
                                     <td className="id-cell">{org.id || 'N/A'}</td>
+                                    <td className="identifier-cell">{org.identifier || 'N/A'}</td>
                                     <td className="name-cell">{org.legalName || 'N/A'}</td>
                                     <td>{org.alternativeNames || 'N/A'}</td>
                                     <td>{org.address || 'N/A'}</td>
@@ -193,4 +203,4 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
     );
 };
 
-console.log('OrganizationsHubPage component loaded! 🏢');
+console.log('OrganizationsHubPage component loaded!');

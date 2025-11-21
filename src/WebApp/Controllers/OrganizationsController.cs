@@ -1,8 +1,11 @@
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Mappers;
 using WebApp.Models.Application.Services;
+using WebApp.Models.Domain.Agents;
 
 namespace WebApp.Controllers
 {
@@ -12,10 +15,12 @@ namespace WebApp.Controllers
     public class OrganizationsController : ControllerBase
     {
         private readonly IOrganizationService _service;
+        private readonly IRepresentativeService _representativeService;
 
-        public OrganizationsController(IOrganizationService service)
+        public OrganizationsController(IOrganizationService service, IRepresentativeService representativeService)
         {
             _service = service;
+            _representativeService = representativeService;
         }
 
         [HttpGet]
@@ -38,7 +43,17 @@ namespace WebApp.Controllers
             try
             {
                 var org = OrganizationMapper.ToDomain(dto);
-                await _service.CreateAsync(org);
+
+                List<Representative> representatives = new List<Representative>();
+
+                foreach (var repDto in dto.Representatives)
+                {
+                    var rep = await _representativeService.GetByIdAsync(repDto.Id);
+                    RepresentativeMapper.GetFromDto(rep!, org.Id, repDto);
+                    representatives.Add(rep!);
+                }
+
+                await _service.CreateAsync(org, representatives);
 
                 var created = await _service.GetByIdAsync(org.Id);
                 return CreatedAtAction(nameof(GetById), new { id = created!.Id }, OrganizationMapper.ToDto(created));
@@ -135,6 +150,29 @@ namespace WebApp.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("{id:guid}/add")]
+        public async Task<IActionResult> AddRepresentative(Guid id, [FromBody] CreateRepresentativeDto dto)
+        {
+            try
+            {
+                var org = await _service.GetByIdAsync(id);
+                if (org == null)
+                    return NotFound($"Organization with ID {id} not found.");
+
+                var rep = RepresentativeMapper.ToDomain(id, dto);
+
+                // Assuming there's a method to add a representative in the service
+                await _service.AddRepresentativeAsync(id, rep);
+
+                var updated = await _service.GetByIdAsync(id);
+                return Ok(OrganizationMapper.ToDto(updated!));
             }
             catch (ArgumentException ex)
             {

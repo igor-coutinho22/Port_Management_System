@@ -39,6 +39,21 @@ namespace WebApp.Models.Application.Mappers
             );
         }
 
+        public static void GetFromDto(Representative rep, Guid organizationId, GetRepresentativeToAddDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            rep.GetRepresentativeToAdd(
+                organizationId,
+                dto.Name,
+                dto.CitizenId,
+                dto.Nationality,
+                dto.Email,
+                dto.Phone
+            );
+        }
+
         public static void UpdateFromDto(Representative rep, UpdateRepresentativeDto dto)
         {
             if (rep == null || dto == null)

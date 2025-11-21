@@ -1,6 +1,5 @@
 // HTTP Client Service - Handles all API communications
 class ApiService {
-
     async _getApiAccessToken() {
         try {
             const pca = window.__pca;
@@ -296,6 +295,10 @@ class ApiService {
     }
     async deleteOrganization(id) {
         return this.delete(`/organizations/${id}`);
+    }
+    async addRepresentativeToOrganization(orgId, repData) {
+        // POST /organizations/{id}/add
+        return this.post(`/organizations/${orgId}/add`, repData);
     }
 
     // Vessel Types

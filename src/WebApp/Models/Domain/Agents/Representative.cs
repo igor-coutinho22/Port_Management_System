@@ -32,6 +32,19 @@ namespace WebApp.Models.Domain.Agents
             Phone = ValidatePhone(phone);
         }
 
+        public void GetRepresentativeToAdd(Guid organizationId, string name, string citizenId, string nationality, string email, string phone)
+        {
+            OrganizationId = organizationId != Guid.Empty
+                ? organizationId
+                : throw new ArgumentException("OrganizationId is required.", nameof(organizationId));
+
+            Name = ValidateName(name);
+            CitizenId = ValidateCitizenId(citizenId);
+            Nationality = ValidateNationality(nationality);
+            Email = ValidateEmail(email);
+            Phone = ValidatePhone(phone);
+        }
+
         public void UpdateProfile(string nationality, string email, string phone)
         {
             Nationality = ValidateNationality(nationality);
