@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251120155125_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251121160126_FixedDbContext")]
+    partial class FixedDbContext
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -665,9 +665,6 @@ namespace WebApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("OfficerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Outcome")
                         .HasColumnType("int");
 
@@ -681,7 +678,7 @@ namespace WebApp.Migrations
 
                     b.HasIndex("VesselVisitNotificationId");
 
-                    b.ToTable("DecisionLog");
+                    b.ToTable("DecisionLogs");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
@@ -958,7 +955,8 @@ namespace WebApp.Migrations
                 {
                     b.HasOne("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", null)
                         .WithMany("DecisionLogs")
-                        .HasForeignKey("VesselVisitNotificationId");
+                        .HasForeignKey("VesselVisitNotificationId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>

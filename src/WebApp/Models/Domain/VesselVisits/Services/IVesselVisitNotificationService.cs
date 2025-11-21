@@ -11,7 +11,13 @@ namespace WebApp.Models.Domain.VesselVisits.Services
         Task UpdateAsync(Guid id, VesselVisitNotification vvn);
         Task SubmitAsync(Guid id);
         Task ApproveAsync(Guid id, Guid dockId);
-        Task RejectAsync(Guid id,string reason);
+        Task AddLoadingManifestAsync(Guid id, CargoManifest manifest);
+        Task AddUnloadingManifestAsync(Guid id, CargoManifest manifest);
+        Task RemoveLoadingManifestAsync(Guid id);
+        Task RemoveUnloadingManifestAsync(Guid id);
+        Task AddCrewMemberAsync(Guid id, CrewMember crewMember);
+        Task RemoveCrewMemberAsync(Guid id, string citizenId);  
+        Task RejectAsync(Guid id, string reason);
         Task DeleteVesselAsync(Guid id);
     }
 }

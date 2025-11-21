@@ -31,6 +31,7 @@ namespace WebApp.Models.Context
         public DbSet<Resource> Resources { get; set; } = default!;
         public DbSet<StorageArea> StorageAreas { get; set; } = default!;
         public DbSet<VesselVisitNotification> VesselVisitNotifications { get; set; } = default!;
+        public DbSet<DecisionLog> DecisionLogs { get; set; } = default!;
         public DbSet<CargoManifest> CargoManifests { get; set; } = default!;
         public DbSet<Container> Containers { get; set; } = default!;
         public DbSet<CrewMember> CrewMembers { get; set; } = default!;
@@ -38,7 +39,7 @@ namespace WebApp.Models.Context
         public DbSet<ShippingAgentOrganization> Organizations { get; set; } = default!;
         public DbSet<Representative> Representatives { get; set; } = default!;
         public DbSet<Dock> Docks { get; set; } = default!;
-        public DbSet<ActivationInvite> ActivationInvites => Set<ActivationInvite>();
+        public DbSet<ActivationInvite> ActivationInvites { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -8,7 +8,7 @@ namespace WebApp.Controllers
 {
     [Authorize("RequireOfficer")]
     [ApiController]
-    [Route("api/organizations/{orgId:guid}/[controller]")]
+    [Route("api/[controller]")]
     public class RepresentativesController : ControllerBase
     {
         private readonly IRepresentativeService _service;
@@ -22,7 +22,7 @@ namespace WebApp.Controllers
         public async Task<ActionResult> GetByOrganizationId(Guid orgId)
         {
             var reps = await _service.GetByOrganizationIdAsync(orgId);
-            return Ok(reps);
+            return Ok(reps.Select(RepresentativeMapper.ToDto));
         }
 
         [HttpGet("{id}")]
@@ -106,7 +106,7 @@ namespace WebApp.Controllers
         public async Task<ActionResult> GetAll()
         {
             var reps = await _service.GetAllAsync();
-            return Ok(reps);
+            return Ok(reps.Select(RepresentativeMapper.ToDto));
         }
 
         [HttpPatch("{repId:guid}/activate")]

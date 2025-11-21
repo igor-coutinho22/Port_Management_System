@@ -22,7 +22,7 @@ namespace WebApp.Controllers
         public async Task<ActionResult> GetAll()
         {
             var orgs = await _service.GetAllAsync();
-            return Ok(orgs);
+            return Ok(orgs.Select(OrganizationMapper.ToDto));
         }
 
         [HttpGet("{id:guid}")]

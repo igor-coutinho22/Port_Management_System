@@ -1,4 +1,3 @@
-// File: WebApp/Seeding/DataSeeder.cs 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -292,24 +291,33 @@ namespace WebApp.Seeding
                     var dock2 = docks[1].Id;
 
                     var visit1 = new VesselVisitNotification(vesselIMO1, dock1, DateTime.UtcNow.AddDays(4), VisitPurpose.Maintenance);
-                    visit1.AddCrewMember("John Doe", "C1234", "PT");
+                    visit1.AddCrewMember(new CrewMember("John Doe", "C1234", "PT"));
 
+                    var loadingManifest2 = new CargoManifest(CargoManifestType.Loading);
+                    loadingManifest2.AddContainer(new Container("MSGU8109878"));
+                    loadingManifest2.AddContainer(new Container("LSGU8109878"));
                     var visit2 = new VesselVisitNotification(vesselIMO2, dock1, DateTime.UtcNow.AddDays(1), VisitPurpose.Commercial);
-                    visit2.AddCrewMember("Maria Silva", "C4567", "ES");
-                    visit2.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
+                    visit2.AddCrewMember(new CrewMember("Maria Silva", "C4567", "ES"));
+                    visit2.AddLoadingManifest(loadingManifest2);
 
+                    var unloadingManifest3 = new CargoManifest(CargoManifestType.Unloading);
+                    unloadingManifest3.AddContainer(new Container("KKGU8109878"));
                     var visit3 = new VesselVisitNotification(vesselIMO3, dock2, DateTime.UtcNow.AddDays(2), VisitPurpose.Commercial);
-                    visit3.AddCrewMember("Carlos Mendes", "C78910", "BR");
-                    visit3.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
+                    visit3.AddCrewMember(new CrewMember("Carlos Mendes", "C78910", "BR"));
+                    visit3.AddUnloadingManifest(unloadingManifest3);
 
+                    var loadingManifest4 = new CargoManifest(CargoManifestType.Loading);
+                    loadingManifest4.AddContainer(new Container("AAWU8109878"));
+                    var unloadingManifest4 = new CargoManifest(CargoManifestType.Unloading);
+                    unloadingManifest4.AddContainer(new Container("MSGU8109978"));
                     var visit4 = new VesselVisitNotification(vesselIMO4, dock2, DateTime.UtcNow.AddDays(3), VisitPurpose.Commercial);
-                    visit4.AddCrewMember("Eva Liu", "C9999", "CN");
-                    visit4.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
-                    visit4.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
+                    visit4.AddCrewMember(new CrewMember("Eva Liu", "C9999", "CN"));
+                    visit4.AddLoadingManifest(loadingManifest4);
+                    visit4.AddUnloadingManifest(unloadingManifest4);
 
                     await context.AddRangeAsync(visit1, visit2, visit3, visit4);
                     await context.SaveChangesAsync();
-                    logger.LogInformation("Seeded {Count} Vessel Visit Notifications.", 4);
+                    logger.LogInformation("Seeded {Count} Vessel Visit Notifications with containers.", 4);
                 }
                 else
                 {

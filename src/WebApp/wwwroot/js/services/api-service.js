@@ -1,28 +1,5 @@
 // HTTP Client Service - Handles all API communications
 class ApiService {
-    // Qualifications
-    async getQualifications() {
-        return this.get('/qualifications');
-    }
-    async getQualificationByCode(code) {
-        return this.get(`/qualifications/${encodeURIComponent(code)}`);
-    }
-    async registerQualification(qualificationData) {
-        return this.post('/qualifications', qualificationData);
-    }
-    async updateQualification(code, qualificationData) {
-        return this.put(`/qualifications/${encodeURIComponent(code)}`, qualificationData);
-    }
-    async deleteQualification(code) {
-        return this.delete(`/qualifications/${encodeURIComponent(code)}`);
-    }
-    constructor(baseUrl = '/api') {
-        this.baseUrl = baseUrl;
-        this.defaultHeaders = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        };
-    }
 
     async _getApiAccessToken() {
         try {
@@ -349,7 +326,7 @@ class ApiService {
 
     // Representatives
     async getRepresentatives() {
-        return this.get('/representatives');
+        return this.get('/representatives/all');
     }
     async getRepresentativeById(id) {
         return this.get(`/representatives/${id}`);
@@ -359,8 +336,24 @@ class ApiService {
     async getQualifications() {
         return this.get('/qualifications');
     }
-    async getQualificationById(id) {
-        return this.get(`/qualifications/${id}`);
+    async getQualificationByCode(code) {
+        return this.get(`/qualifications/${encodeURIComponent(code)}`);
+    }
+    async registerQualification(qualificationData) {
+        return this.post('/qualifications', qualificationData);
+    }
+    async updateQualification(code, qualificationData) {
+        return this.put(`/qualifications/${encodeURIComponent(code)}`, qualificationData);
+    }
+    async deleteQualification(code) {
+        return this.delete(`/qualifications/${encodeURIComponent(code)}`);
+    }
+    constructor(baseUrl = '/api') {
+        this.baseUrl = baseUrl;
+        this.defaultHeaders = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
     }
 
     // Vessel Visit Notifications
@@ -393,18 +386,39 @@ class ApiService {
         return this.put(`/vesselvisitnotification/${id}/submit`);
     }
 
-    async approveVesselVisitNotification(id, officerId, dockId) {
-        const params = [];
-        if (officerId) params.push(`officerId=${encodeURIComponent(officerId)}`);
-        if (dockId) params.push(`dockId=${encodeURIComponent(dockId)}`);
-        const query = params.length ? `?${params.join('&')}` : '';
+    async approveVesselVisitNotification(id, dockId) {
+        const query = dockId ? `?dockId=${encodeURIComponent(dockId)}` : '';
         return this.put(`/vesselvisitnotification/${id}/approve${query}`);
     }
 
-    async rejectVesselVisitNotification(id, officerId, reason) {
-        const params = officerId ? `?officerId=${encodeURIComponent(officerId)}` : '';
-        // Reason is sent as raw string body
-        return this.put(`/vesselvisitnotification/${id}/reject${params}`, reason, { 'Content-Type': 'application/json' });
+    async rejectVesselVisitNotification(id, reasonObj) {
+        // Reason is sent as JSON object: { reason: "..." }
+        return this.put(`/vesselvisitnotification/${id}/reject`, reasonObj, { 'Content-Type': 'application/json' });
+    }
+
+
+    async addLoadingManifestToVesselVisitNotification(id, manifestDto) {
+        return this.post(`/vesselvisitnotification/${id}/addLoadingManifest`, manifestDto);
+    }
+
+    async removeLoadingManifestFromVesselVisitNotification(id) {
+        return this.delete(`/vesselvisitnotification/${id}/removeLoadingManifest`);
+    }
+
+    async addUnloadingManifestToVesselVisitNotification(id, manifestDto) {
+        return this.put(`/vesselvisitnotification/${id}/addUnloadingManifest`, manifestDto);
+    }
+
+    async removeUnloadingManifestFromVesselVisitNotification(id) {
+        return this.delete(`/vesselvisitnotification/${id}/removeUnloadingManifest`);
+    }
+
+    async addCrewMemberToVesselVisitNotification(id, crewMemberDto) {
+        return this.post(`/vesselvisitnotification/${id}/addCrewMember`, crewMemberDto);
+    }
+
+    async removeCrewMemberFromVesselVisitNotification(id, citizenId) {
+        return this.delete(`/vesselvisitnotification/${id}/removeCrewMember/${encodeURIComponent(citizenId)}`);
     }
 
     async deleteVesselVisitNotification(id) {
