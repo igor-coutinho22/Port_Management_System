@@ -10,7 +10,7 @@ class PortVisualization {
 
         // Main scene
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x87ceeb);
+        this.scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
         // Main camera
         const aspect = this.container.clientWidth / this.container.clientHeight;
@@ -21,11 +21,14 @@ class PortVisualization {
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.container.appendChild(this.renderer.domElement);
 
         // OrbitControls
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+        this.controls.maxPolarAngle = Math.PI / 2 - 0.1; // Don't go below ground
 
         // Object registry
         this.objects = [];
@@ -66,6 +69,9 @@ class PortVisualization {
         // Bind animation loop
         this.animate = this.animate.bind(this);
         requestAnimationFrame(this.animate);
+
+        // Handle resize
+        window.addEventListener('resize', () => this.onWindowResize());
     }
 
     // -----------------------------------------------------------------------------
@@ -105,12 +111,24 @@ class PortVisualization {
     // LIGHTING
     // -----------------------------------------------------------------------------
     addLights() {
-        const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+        const ambient = new THREE.AmbientLight(0xffffff, 0.6);
         this.scene.add(ambient);
 
-        const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+        const sun = new THREE.DirectionalLight(0xffffff, 0.8);
         sun.position.set(300, 800, 300);
         sun.castShadow = true;
+        sun.shadow.mapSize.width = 2048;
+        sun.shadow.mapSize.height = 2048;
+        sun.shadow.camera.near = 0.5;
+        sun.shadow.camera.far = 2000;
+
+        // Increase shadow camera size to cover port
+        const d = 1000;
+        sun.shadow.camera.left = -d;
+        sun.shadow.camera.right = d;
+        sun.shadow.camera.top = d;
+        sun.shadow.camera.bottom = -d;
+
         this.scene.add(sun);
     }
 
@@ -140,7 +158,8 @@ class PortVisualization {
             borderRadius: "4px",
             overflow: "hidden",
             pointerEvents: "none", // do not block normal interaction
-            zIndex: 900
+            zIndex: 900,
+            backgroundColor: 'rgba(255, 255, 255, 0.1)'
         });
         this.container.appendChild(this.minimap);
 
@@ -188,25 +207,31 @@ class PortVisualization {
     // LOAD PORT DATA
     // -----------------------------------------------------------------------------
     async loadPortData() {
+        console.log("PortVisualization: loadPortData called");
         this.clearScene();
         this.addWaterPlane();
 
         try {
             const raw = await this.dataFetcher.loadAll();
+            console.log("PortVisualization: Data fetched", raw);
+
             const layout = this.layoutEngine.computeLayout(raw);
+            console.log("PortVisualization: Layout computed", layout);
 
             this.buildDocks(layout.docks);
             this.buildStorageAreas(layout.storageAreas);
             this.buildResources(layout.resources);
 
+            console.log("PortVisualization: Scene built with objects", this.objects.length);
+
             this.frameCamera();
         } catch (err) {
-            console.error("❌ Error loading port data:", err);
+            console.error("Error loading port data:", err);
         }
     }
 
     // -----------------------------------------------------------------------------
-    // CAMERA FLY-TO (Style A)
+    // CAMERA FLY-TO
     // -----------------------------------------------------------------------------
     flyToObject(pos) {
         this.flyToActive = true;
@@ -252,14 +277,20 @@ class PortVisualization {
             this.selectedObject.material.emissive.setHex(0x000000);
         }
 
+        // Handle groups (like warehouses)
+        let target = obj;
+        if (obj.parent instanceof THREE.Group) {
+            target = obj.parent; // Select the group logic if needed, but visual highlight is on mesh
+        }
+
         this.selectedObject = obj;
 
         if (obj.material?.emissive) {
             obj.material.emissive.setHex(0x333333);
         }
 
-        if (this.onSelect && obj.userData) {
-            this.onSelect(obj.userData);
+        if (this.onSelect && (obj.userData || target.userData)) {
+            this.onSelect(obj.userData || target.userData);
         }
     }
 
@@ -278,17 +309,20 @@ class PortVisualization {
         if (obj !== this.hoveredObject) {
             this.hoveredObject = obj;
 
-            const d = obj.userData;
+            // Check userData on object or its parent group
+            const d = obj.userData && Object.keys(obj.userData).length > 0 ? obj.userData : obj.parent.userData;
+
             if (!d) {
                 this.hideTooltip();
                 return;
             }
 
             let text = "";
-            if (d.type === "dock") text = `Dock: ${d.dock.name}`;
-            else if (d.type === "Warehouse") text = `Warehouse: ${d.area.name}`;
-            else if (d.type === "ContainerYard") text = `Yard: ${d.area.name}`;
-            else if (d.type === "resource") text = `Resource: ${d.resource.name}`;
+            if (d.type === "Dock") text = `Dock: ${d.name}`;
+            else if (d.subtype === "Warehouse") text = `Warehouse: ${d.name}`;
+            else if (d.subtype === "ContainerYard") text = `Yard: ${d.name}`;
+            else if (d.type === "resource") text = `Resource: ${d.name}`;
+            else text = d.name || "Object";
 
             this.showTooltip(text, e.clientX, e.clientY);
         } else {
@@ -306,7 +340,7 @@ class PortVisualization {
         this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
         this.raycaster.setFromCamera(this.pointer, this.camera);
-        const hits = this.raycaster.intersectObjects(this.objects, false);
+        const hits = this.raycaster.intersectObjects(this.objects, true); // recursive for groups
 
         return hits.length ? hits[0].object : null;
     }
@@ -315,8 +349,10 @@ class PortVisualization {
     // CLEANUP
     // -----------------------------------------------------------------------------
     clearScene() {
+        // Remove all added objects
         this.objects.forEach(o => {
             this.scene.remove(o);
+            // Dispose logic
             if (o.geometry) o.geometry.dispose();
             if (o.material) {
                 if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
@@ -324,25 +360,30 @@ class PortVisualization {
             }
         });
         this.objects = [];
+
+        // Keep lights? For now, let's just clear objects list but scene.remove might need to be selective
+        // Actually, better to remove everything except lights/camera if possible, 
+        // or just remove what we tracked in this.objects
     }
 
     // -----------------------------------------------------------------------------
     // WATER
     // -----------------------------------------------------------------------------
     addWaterPlane() {
-        const geo = new THREE.PlaneGeometry(6000, 6000);
+        const geo = new THREE.PlaneGeometry(10000, 10000);
         const mat = new THREE.MeshPhongMaterial({
-            color: 0x1ca3ec,
+            color: 0x006994, // Darker blue from placeholder
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.8,
             side: THREE.DoubleSide
         });
 
         const water = new THREE.Mesh(geo, mat);
         water.rotation.x = -Math.PI / 2;
+        water.position.y = -0.5; // Slightly below 0
 
         this.scene.add(water);
-        this.objects.push(water);
+        // We don't push water to this.objects if we don't want to interact with it
     }
 
     // -----------------------------------------------------------------------------
@@ -352,15 +393,15 @@ class PortVisualization {
         docks.forEach(d => {
             const mesh = this.geometryBuilder.createDock(d);
             mesh.position.set(d.x, d.y, d.z);
-            mesh.userData = { type: "dock", dock: d };
+            mesh.userData = { type: "Dock", ...d };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
 
             const label = this.geometryBuilder.createLabel(d.name);
-            label.position.set(d.x, d.y + 50, d.z);
+            label.position.set(d.x, d.y + 30, d.z);
             this.scene.add(label);
-            this.objects.push(label);
+            // Labels not interactive usually
         });
     }
 
@@ -375,15 +416,15 @@ class PortVisualization {
                     : this.geometryBuilder.createContainerYard(a);
 
             mesh.position.set(a.x, a.y, a.z);
-            mesh.userData = { type: a.subtype, area: a };
+            // UserData on group
+            mesh.userData = { ...a };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
 
             const label = this.geometryBuilder.createLabel(a.name);
-            label.position.set(a.x, a.y + a.height + 30, a.z);
+            label.position.set(a.x, a.y + a.height + 20, a.z);
             this.scene.add(label);
-            this.objects.push(label);
         });
     }
 
@@ -394,15 +435,10 @@ class PortVisualization {
         resources.forEach(r => {
             const mesh = this.geometryBuilder.createResource(r);
             mesh.position.set(r.x, r.y, r.z);
-            mesh.userData = { type: "resource", resource: r };
+            mesh.userData = { type: "resource", ...r };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
-
-            const label = this.geometryBuilder.createLabel(r.name);
-            label.position.set(r.x, r.y + 50, r.z);
-            this.scene.add(label);
-            this.objects.push(label);
         });
     }
 
@@ -414,10 +450,21 @@ class PortVisualization {
         this.controls.update();
     }
 
+    onWindowResize() {
+        if (!this.camera || !this.renderer) return;
+        const width = this.container.clientWidth;
+        const height = this.container.clientHeight;
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height);
+    }
+
     // -----------------------------------------------------------------------------
     // ANIMATION LOOP
     // -----------------------------------------------------------------------------
     animate() {
+        if (!this.renderer) return; // Stopped
+
         requestAnimationFrame(this.animate);
 
         this.updateFlyTo();
@@ -457,6 +504,7 @@ class PortVisualization {
         this.clearScene();
         this.renderer.dispose();
         this.hideTooltip();
+        this.renderer = null; // Stop loop
     }
 }
 

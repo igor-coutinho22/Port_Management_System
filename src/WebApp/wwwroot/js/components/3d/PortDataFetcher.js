@@ -1,29 +1,36 @@
 class PortDataFetcher {
 
-    async loadAll() {
-        try {
-            const [docks, storageAreas, resources] = await Promise.all([
-                this.fetchDocks(),
-                this.fetchStorageAreas(),
-                this.fetchResources()
-            ]);
 
-            return {
-                docks,
-                storageAreas,
-                resources
-            };
-        } catch (err) {
-            console.error("PortDataFetcher.loadAll() failed:", err);
-            throw new Error("Failed to load port data from server.");
-        }
+    async loadAll() {
+        const errors = [];
+
+        const safeFetch = async (name, fn) => {
+            try {
+                return await fn();
+            } catch (err) {
+                console.error(`PortDataFetcher: Failed to load ${name}:`, err);
+                errors.push(`${name}: ${err.message}`);
+                return [];
+            }
+        };
+
+        const docks = await safeFetch("docks", () => this.fetchDocks());
+        const storageAreas = await safeFetch("storageAreas", () => this.fetchStorageAreas());
+        const resources = await safeFetch("resources", () => this.fetchResources());
+
+        return {
+            docks,
+            storageAreas,
+            resources,
+            errors
+        };
     }
 
     // -------------------------------------------------------------------------
     // DOCKS
     // -------------------------------------------------------------------------
     async fetchDocks() {
-        const resp = await fetch("/api/docks");
+        const resp = await fetch("/api/docks", { credentials: 'include' });
         if (!resp.ok) throw new Error("Failed to fetch docks");
 
         const docks = await resp.json();
@@ -43,37 +50,37 @@ class PortDataFetcher {
     // STORAGE AREAS (Warehouses + Container Yards)
     // -------------------------------------------------------------------------
     async fetchStorageAreas() {
-        const resp = await fetch("/api/storageAreas");
+        const resp = await fetch("/api/storageAreas", { credentials: 'include' });
         if (!resp.ok) throw new Error("Failed to fetch storage areas");
 
         const rawList = await resp.json();
 
         return rawList.map(sa => {
-            const common = sa.storageArea || sa;
+            const common = sa.storageArea || sa.StorageArea || sa;
 
             const base = {
-                id: common.id,
-                name: common.name,
-                type: common.type || common.storageAreaType,
-                maxCapacityTeu: common.maxCapacityTeu,
-                currentOccupancyTeu: common.currentOccupancyTeu || 0
+                id: common.id || common.Id,
+                name: common.name || common.Name,
+                type: common.type || common.Type || common.storageAreaType,
+                maxCapacityTeu: common.maxCapacityTeu || common.MaxCapacityTeu,
+                currentOccupancyTeu: common.currentOccupancyTeu || common.CurrentOccupancyTeu || 0
             };
 
             // Detect subtype
-            if (sa.specializedCargoType) {
+            if (sa.specializedCargoType || sa.SpecializedCargoType) {
                 return {
                     ...base,
                     subtype: "Warehouse",
-                    specializedCargoType: sa.specializedCargoType
+                    specializedCargoType: sa.specializedCargoType || sa.SpecializedCargoType
                 };
             }
 
-            if (sa.dockIds || (common.dockConnections && common.dockConnections.length > 0)) {
+            if (sa.dockIds || sa.DockIds || (common.dockConnections && common.dockConnections.length > 0)) {
                 return {
                     ...base,
                     subtype: "ContainerYard",
-                    dockIds: sa.dockIds || [],
-                    dockConnections: common.dockConnections || []
+                    dockIds: sa.dockIds || sa.DockIds || [],
+                    dockConnections: common.dockConnections || common.DockConnections || []
                 };
             }
 
@@ -85,7 +92,7 @@ class PortDataFetcher {
     // RESOURCES (Cranes, trucks, tractors, etc.)
     // -------------------------------------------------------------------------
     async fetchResources() {
-        const resp = await fetch("/api/resources");
+        const resp = await fetch("/api/resources", { credentials: 'include' });
         if (!resp.ok) throw new Error("Failed to fetch resources");
 
         const list = await resp.json();

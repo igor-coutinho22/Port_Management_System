@@ -171,6 +171,7 @@ namespace WebApp.Controllers
             return Ok(sa);
         }
 
+        [AllowAnonymous]
         [HttpGet()]
         public async Task<IActionResult> GetAll()
         {
