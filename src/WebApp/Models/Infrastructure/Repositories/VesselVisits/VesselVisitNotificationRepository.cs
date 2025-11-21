@@ -87,5 +87,12 @@ namespace WebApp.Models.Infrastructure.Repositories
             _context.CrewMembers.Remove(crewMember);
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdateStatusToApprovedAsync(VesselVisitNotification notification, DecisionLog decisionLog)
+        {
+            await _context.DecisionLogs.AddAsync(decisionLog);
+            _context.VesselVisitNotifications.Update(notification);
+            await _context.SaveChangesAsync();
+        }
     }
 }

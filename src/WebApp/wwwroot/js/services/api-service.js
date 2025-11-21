@@ -386,11 +386,8 @@ class ApiService {
         return this.put(`/vesselvisitnotification/${id}/submit`);
     }
 
-    async approveVesselVisitNotification(id, officerId, dockId) {
-        const params = [];
-        if (officerId) params.push(`officerId=${encodeURIComponent(officerId)}`);
-        if (dockId) params.push(`dockId=${encodeURIComponent(dockId)}`);
-        const query = params.length ? `?${params.join('&')}` : '';
+    async approveVesselVisitNotification(id, dockId) {
+        const query = dockId ? `?dockId=${encodeURIComponent(dockId)}` : '';
         return this.put(`/vesselvisitnotification/${id}/approve${query}`);
     }
 

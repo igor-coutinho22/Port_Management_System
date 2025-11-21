@@ -84,8 +84,14 @@ namespace WebApp.Models.Application.Services
             if (dock == null)
                 throw new InvalidOperationException("Dock not found.");
 
-            visit.Approve(dockId);
-            await _repository.UpdateAsync(visit);
+            if (visit.Status != VesselVisitStatus.Submitted)
+                throw new InvalidOperationException("Only 'Submitted' visits can be approved.");
+
+            if (visit.DockId != dockId)
+                throw new InvalidOperationException("Dock ID must match the assigned dock for approval.");
+
+            DecisionLog log =  visit.Approve();
+            await _repository.UpdateStatusToApprovedAsync(visit, log);
         }
 
         public async Task RejectAsync(Guid id, string reason)

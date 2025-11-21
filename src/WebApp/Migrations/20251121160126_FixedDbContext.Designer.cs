@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251121124415_MigrationAfterFixes")]
-    partial class MigrationAfterFixes
+    [Migration("20251121160126_FixedDbContext")]
+    partial class FixedDbContext
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -678,7 +678,7 @@ namespace WebApp.Migrations
 
                     b.HasIndex("VesselVisitNotificationId");
 
-                    b.ToTable("DecisionLog");
+                    b.ToTable("DecisionLogs");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
@@ -955,7 +955,8 @@ namespace WebApp.Migrations
                 {
                     b.HasOne("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", null)
                         .WithMany("DecisionLogs")
-                        .HasForeignKey("VesselVisitNotificationId");
+                        .HasForeignKey("VesselVisitNotificationId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>

@@ -16,5 +16,6 @@ namespace WebApp.Models.Domain.VesselVisits
         Task DeleteLMAsync(CargoManifest manifest);
         Task DeleteUMAsync(CargoManifest manifest);
         Task DeleteCMAsync(CrewMember crewMember);
+        Task UpdateStatusToApprovedAsync(VesselVisitNotification notification, DecisionLog decisionLog);
     }
 }
