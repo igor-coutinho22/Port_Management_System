@@ -1,11 +1,5 @@
-// -----------------------------------------------------------------------------
-// PortDataFetcher.js
-// Centralized data fetching & normalization for the 3D Port Visualization
-// -----------------------------------------------------------------------------
-
 class PortDataFetcher {
 
-    // Fetch ALL data required for the 3D port visualization
     async loadAll() {
         try {
             const [docks, storageAreas, resources] = await Promise.all([
@@ -55,12 +49,14 @@ class PortDataFetcher {
         const rawList = await resp.json();
 
         return rawList.map(sa => {
+            const common = sa.storageArea || sa;
+
             const base = {
-                id: sa.id,
-                name: sa.storageArea?.name || sa.name,
-                type: sa.type || sa.storageAreaType,
-                maxCapacityTeu: sa.maxCapacityTeu,
-                currentOccupancyTeu: sa.currentOccupancyTeu || 0
+                id: common.id,
+                name: common.name,
+                type: common.type || common.storageAreaType,
+                maxCapacityTeu: common.maxCapacityTeu,
+                currentOccupancyTeu: common.currentOccupancyTeu || 0
             };
 
             // Detect subtype
@@ -72,12 +68,12 @@ class PortDataFetcher {
                 };
             }
 
-            if (sa.dockIds || sa.dockConnections) {
+            if (sa.dockIds || (common.dockConnections && common.dockConnections.length > 0)) {
                 return {
                     ...base,
                     subtype: "ContainerYard",
                     dockIds: sa.dockIds || [],
-                    dockConnections: sa.dockConnections || []
+                    dockConnections: common.dockConnections || []
                 };
             }
 
