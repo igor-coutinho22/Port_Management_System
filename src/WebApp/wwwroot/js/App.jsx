@@ -97,7 +97,8 @@ const AppWithGlobalNav = () => {
     representatives: "representatives",
     staff: "staff",
     "vessel-visit-notifications": "vessel-visit-notifications",
-    qualifications: "qualifications"
+    qualifications: "qualifications",
+    scheduling: "scheduling"
   };
 
 
@@ -216,6 +217,12 @@ const AppWithGlobalNav = () => {
         );
       case "3d-view":
         return <ThreeDView key="3d-view" />;
+      case "scheduling":
+        return typeof SchedulingHubPage === "undefined" ? (
+          <div className="error">SchedulingHubPage component not loaded</div>
+        ) : (
+          <SchedulingHubPage />
+        );
       case "api-docs":
         return <ApiDocsPage />;
       case 'admin-users':
