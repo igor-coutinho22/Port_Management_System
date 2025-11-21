@@ -11,9 +11,6 @@ namespace WebApp.Models.Domain.VesselVisits.Services
         Task UpdateAsync(Guid id, VesselVisitNotification vvn);
         Task SubmitAsync(Guid id);
         Task ApproveAsync(Guid id, Guid dockId);
-<<<<<<< Updated upstream
-        Task RejectAsync(Guid id,string reason);
-=======
         Task AddLoadingManifestAsync(Guid id, CargoManifest manifest);
         Task AddUnloadingManifestAsync(Guid id, CargoManifest manifest);
         Task RemoveLoadingManifestAsync(Guid id);
@@ -21,7 +18,6 @@ namespace WebApp.Models.Domain.VesselVisits.Services
         Task AddCrewMemberAsync(Guid id, CrewMember crewMember);
         Task RemoveCrewMemberAsync(Guid id, string citizenId);  
         Task RejectAsync(Guid id, string reason);
->>>>>>> Stashed changes
         Task DeleteVesselAsync(Guid id);
     }
 }

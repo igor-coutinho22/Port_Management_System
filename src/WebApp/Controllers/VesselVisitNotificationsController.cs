@@ -129,11 +129,7 @@ namespace WebApp.Controllers
         {
             try
             {
-<<<<<<< Updated upstream
-                await _service.ApproveAsync(id,dockId);
-=======
                 await _service.ApproveAsync(id, dockId);
->>>>>>> Stashed changes
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
@@ -152,11 +148,7 @@ namespace WebApp.Controllers
         {
             try
             {
-<<<<<<< Updated upstream
-                await _service.RejectAsync(id,reason);
-=======
                 await _service.RejectAsync(id, reason);
->>>>>>> Stashed changes
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
