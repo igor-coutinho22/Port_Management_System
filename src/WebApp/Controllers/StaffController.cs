@@ -20,6 +20,7 @@ namespace WebApp.Controllers
             _staffService = staffService;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StaffDTO>>> GetStaff(
             [FromQuery] string? name,
