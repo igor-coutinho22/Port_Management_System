@@ -1,9 +1,9 @@
-/*using System.Diagnostics;
+using System.Diagnostics;
 using WebApp.Models.Domain.Scheduling;
 using WebApp.Models.Domain.Scheduling.Interfaces;
 using WebApp.Models.Domain.Vessels;
 
-namespace Application.Services
+namespace WebApp.Models.Application.Services.Scheduling
 {
     /// <summary>
     /// Provides an efficient heuristic scheduling algorithm (User Story 3.4.4).
@@ -16,13 +16,13 @@ namespace Application.Services
         public HeuristicScheduleService()
         {
             _prologFilePath = Path.Combine(AppContext.BaseDirectory,
-                "Domain", "Scheduling", "scheduling_heuristic.pl");
+                "Models", "Domain", "Scheduling", "heuristic_schedule.pl");
         }
 
-        public SchedulingResult ComputeSchedule(IEnumerable<Vessel> vessels)
+        public SchedulingResult ComputeSchedule(IEnumerable<Vessel>? vessels)
         {
-            var tempFactsFile = Path.GetTempFileName();
-            File.WriteAllText(tempFactsFile, BuildVesselFacts(vessels));
+            // For now, use demo data embedded in the Prolog file
+            // Future enhancement: generate vessel facts dynamically from the vessels parameter
 
             var psi = new ProcessStartInfo
             {
@@ -34,26 +34,32 @@ namespace Application.Services
                 CreateNoWindow = true
             };
 
-            var process = new Process { StartInfo = psi };
-            process.Start();
+            try
+            {
+                var process = new Process { StartInfo = psi };
+                process.Start();
 
-            string output = process.StandardOutput.ReadToEnd();
-            string errors = process.StandardError.ReadToEnd();
-            process.WaitForExit();
+                string output = process.StandardOutput.ReadToEnd();
+                string errors = process.StandardError.ReadToEnd();
+                process.WaitForExit();
 
-            if (!string.IsNullOrWhiteSpace(errors))
-                Console.WriteLine($"[Prolog error] {errors}");
+                if (!string.IsNullOrWhiteSpace(errors))
+                {
+                    Console.WriteLine($"[Prolog warning/error] {errors}");
+                }
 
-            File.Delete(tempFactsFile);
-
-            return ParsePrologOutput(output);
-        }
-
-        private string BuildVesselFacts(IEnumerable<Vessel> vessels)
-        {
-            return string.Join(Environment.NewLine,
-                vessels.Select(v =>
-                    $"vessel({v.IMO.ToLower()}, {v.ArrivalTime}, {v.DepartureTime}, {v.UnloadTime}, {v.LoadTime})."));
+                return ParsePrologOutput(output);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] Failed to execute Prolog: {ex.Message}");
+                return new SchedulingResult
+                {
+                    Sequence = "Error: SWI-Prolog not available",
+                    TotalDelay = 0,
+                    RuntimeSeconds = 0
+                };
+            }
         }
 
         private SchedulingResult ParsePrologOutput(string output)
@@ -79,4 +85,3 @@ namespace Application.Services
         }
     }
 }
-*/
