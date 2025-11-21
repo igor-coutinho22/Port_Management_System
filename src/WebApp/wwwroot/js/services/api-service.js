@@ -407,6 +407,31 @@ class ApiService {
         return this.put(`/vesselvisitnotification/${id}/reject${params}`, reason, { 'Content-Type': 'application/json' });
     }
 
+
+    async addLoadingManifestToVesselVisitNotification(id, manifestDto) {
+        return this.post(`/vesselvisitnotification/${id}/addLoadingManifest`, manifestDto);
+    }
+
+    async removeLoadingManifestFromVesselVisitNotification(id) {
+        return this.delete(`/vesselvisitnotification/${id}/removeLoadingManifest`);
+    }
+
+    async addUnloadingManifestToVesselVisitNotification(id, manifestDto) {
+        return this.put(`/vesselvisitnotification/${id}/addUnloadingManifest`, manifestDto);
+    }
+
+    async removeUnloadingManifestFromVesselVisitNotification(id) {
+        return this.delete(`/vesselvisitnotification/${id}/removeUnloadingManifest`);
+    }
+
+    async addCrewMemberToVesselVisitNotification(id, crewMemberDto) {
+        return this.post(`/vesselvisitnotification/${id}/addCrewMember`, crewMemberDto);
+    }
+
+    async removeCrewMemberFromVesselVisitNotification(id, citizenId) {
+        return this.delete(`/vesselvisitnotification/${id}/removeCrewMember/${encodeURIComponent(citizenId)}`);
+    }
+
     async deleteVesselVisitNotification(id) {
         return this.delete(`/vesselvisitnotification/${id}`);
     }
