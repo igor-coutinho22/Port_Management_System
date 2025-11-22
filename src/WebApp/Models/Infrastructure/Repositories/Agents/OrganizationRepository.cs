@@ -82,7 +82,6 @@ namespace WebApp.Models.Infrastructure.Repositories
 
         public async Task AddRepresentativeAsync(Representative rep)
         {
-            _context.Representatives.Add(rep);
             await _context.SaveChangesAsync();
         }
     }

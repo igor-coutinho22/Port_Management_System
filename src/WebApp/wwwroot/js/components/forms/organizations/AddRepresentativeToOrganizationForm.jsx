@@ -63,26 +63,44 @@ const AddRepresentativeToOrganizationForm = ({ onSuccess }) => {
         return existingReps.filter(rep => !assignedIds.has(rep.id || rep.Id));
     };
 
+    const [selectedRep, setSelectedRep] = React.useState(null);
     const handleSelectRep = (e) => {
-        setSelectedRepId(e.target.value);
+        const repId = e.target.value;
+        setSelectedRepId(repId);
         setMessage({ type: '', text: '' });
+        if (!repId) {
+            setSelectedRep(null);
+            return;
+        }
+        const rep = getAvailableReps().find(r => (r.id || r.Id) === repId);
+        setSelectedRep(rep || null);
     };
 
     const handleAddRepresentative = async (e) => {
         e.preventDefault();
-        if (!selectedRepId) {
+        if (!selectedRepId || !selectedRep) {
             setMessage({ type: 'error', text: 'Please select a representative to add.' });
             return;
         }
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         try {
-            await apiService.addRepresentativeToOrganization(orgId.trim(), { id: selectedRepId });
+            await apiService.addRepresentativeToOrganization(orgId.trim(), {
+                id: selectedRep.id || selectedRep.Id || '',
+                name: selectedRep.name || selectedRep.Name || '',
+                citizenId: selectedRep.citizenId || selectedRep.CitizenId || '',
+                nationality: selectedRep.nationality || selectedRep.Nationality || '',
+                email: selectedRep.email || selectedRep.Email || '',
+                phone: selectedRep.phone || selectedRep.Phone || ''
+            });
             setMessage({ type: 'success', text: `Representative added to organization successfully.` });
-            setTimeout(() => {
-                handleClear();
-                if (onSuccess) onSuccess();
-            }, 2000);
+            // Reload org and representatives, reset selection
+            const data = await apiService.getOrganizationById(orgId.trim());
+            setOrg(data);
+            const reps = await apiService.getRepresentatives();
+            setExistingReps(reps);
+            setSelectedRepId('');
+            setSelectedRep(null);
         } catch (error) {
             setMessage({ type: 'error', text: error.message || 'Failed to add representative. Please try again.' });
         } finally {
@@ -138,7 +156,7 @@ const AddRepresentativeToOrganizationForm = ({ onSuccess }) => {
                         <h5>Organization: {org.legalName} (ID: {org.id})</h5>
                         <p>Select a representative to add to this organization.</p>
                     </div>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: '18px' }}>
                         <label htmlFor="selectRep">Select Representative</label>
                         <select id="selectRep" value={selectedRepId} onChange={handleSelectRep} className="form-input">
                             <option value="">-- Select --</option>
@@ -149,6 +167,18 @@ const AddRepresentativeToOrganizationForm = ({ onSuccess }) => {
                             ))}
                         </select>
                     </div>
+                    {/* Show selected representative details like RegisterOrganizationForm, with better layout */}
+                    {selectedRep && (
+                        <div style={{ marginBottom: '18px' }}>
+                            <div className="rep-fields" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
+                                <input type="text" name="name" value={selectedRep.name || selectedRep.Name || ''} className="form-input" readOnly style={{ flex: '1 1 180px', minWidth: '120px', maxWidth: '200px' }} />
+                                <input type="text" name="citizenId" value={selectedRep.citizenId || selectedRep.CitizenId || ''} className="form-input" readOnly style={{ flex: '1 1 120px', minWidth: '100px', maxWidth: '140px' }} />
+                                <input type="text" name="nationality" value={selectedRep.nationality || selectedRep.Nationality || ''} className="form-input" readOnly style={{ flex: '1 1 80px', minWidth: '80px', maxWidth: '100px' }} />
+                                <input type="email" name="email" value={selectedRep.email || selectedRep.Email || ''} className="form-input" readOnly style={{ flex: '2 1 220px', minWidth: '160px', maxWidth: '260px' }} />
+                                <input type="text" name="phone" value={selectedRep.phone || selectedRep.Phone || ''} className="form-input" readOnly style={{ flex: '1 1 120px', minWidth: '100px', maxWidth: '140px' }} />
+                            </div>
+                        </div>
+                    )}
                     <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={isLoading}>
                             {isLoading ? (<><span className="loading-spinner"></span>Adding...</>) : (<>Add Representative</>)}
