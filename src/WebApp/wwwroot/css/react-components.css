@@ -356,6 +356,15 @@
     background: #f1c40f !important; /* Yellow - Training */
 }
 
+/* Organization Status Colors */
+.status-badge.status-true {
+    background: #27ae60 !important; /* Green - Active */
+}
+
+.status-badge.status-false {
+    background: #e74c3c !important; /* Red - Inactive */
+}
+
 /* Vessel Visit Status Colors - Using enum values and names */
 .status-badge.status-inprogress,
 .status-badge.status-in-progress,

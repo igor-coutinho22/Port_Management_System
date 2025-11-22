@@ -74,6 +74,13 @@ const OrganizationsHubPage = () => {
             description: 'Remove organization representatives',
             color: '#8e44ad',
             component: 'RemoveRepresentativeFromOrganizationForm'
+        },
+        {
+            id: 'manageStatus',
+            title: `Activate/Deactivate Organization`,
+            description: 'Change the active status of an organization',
+            color: '#16a085',
+            component: 'ActivateDeactivateOrganizationForm'
         }
     ];
 
@@ -145,6 +152,7 @@ const OrganizationsHubPage = () => {
                                     {section.component === 'DeleteOrganizationForm' && <DeleteOrganizationForm onSuccess={loadOrganizations} />}
                                     {section.component === 'AddRepresentativeToOrganizationForm' && <AddRepresentativeToOrganizationForm onSuccess={loadOrganizations} />}
                                     {section.component === 'RemoveRepresentativeFromOrganizationForm' && <RemoveRepresentativeFromOrganizationForm onSuccess={loadOrganizations} />}
+                                    {section.component === 'ActivateDeactivateOrganizationForm' && <ActivateDeactivateOrganizationForm onSuccess={loadOrganizations} />}
                                 </div>
                             </div>
                         )}
@@ -180,6 +188,7 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
                                 <th>Address</th>
                                 <th>Tax Number</th>
                                 <th>Representatives</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -200,6 +209,11 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
                                             ))
                                             : <span style={{ color: '#b8eaff' }}>None</span>
                                         }
+                                    </td>
+                                    <td>
+                                        <span className={`status-badge status-${org.isActive === true ? 'true' : 'false'}`}>
+                                            {org.isActive === true ? 'Active' : org.isActive === false ? 'Inactive' : 'N/A'}
+                                        </span>
                                     </td>
                                 </tr>
                             ))}

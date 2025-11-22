@@ -307,6 +307,12 @@ class ApiService {
             data: repId,
         });
     }
+    async activateOrganization(orgId) {
+        return this.request(`/organizations/${orgId}/activate`, { method: 'PATCH' });
+    }
+    async deactivateOrganization(orgId) {
+        return this.request(`/organizations/${orgId}/deactivate`, { method: 'PATCH' });
+    }
 
     // Vessel Types
     async getVesselTypes() {
