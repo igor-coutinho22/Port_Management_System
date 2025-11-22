@@ -158,7 +158,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPost("{id:guid}/add")]
-        public async Task<IActionResult> AddRepresentative(Guid id, [FromBody] CreateRepresentativeDto dto)
+        public async Task<IActionResult> AddRepresentative(Guid id, [FromBody] GetRepresentativeToAddDto dto)
         {
             try
             {
@@ -166,10 +166,11 @@ namespace WebApp.Controllers
                 if (org == null)
                     return NotFound($"Organization with ID {id} not found.");
 
-                var rep = RepresentativeMapper.ToDomain(id, dto);
+                var rep = await _representativeService.GetByIdAsync(dto.Id);
+                RepresentativeMapper.GetFromDto(rep!, id, dto);
 
                 // Assuming there's a method to add a representative in the service
-                await _service.AddRepresentativeAsync(id, rep);
+                await _service.AddRepresentativeAsync(id, rep!);
 
                 var updated = await _service.GetByIdAsync(id);
                 return Ok(OrganizationMapper.ToDto(updated!));
