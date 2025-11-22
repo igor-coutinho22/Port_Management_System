@@ -39,36 +39,36 @@ const DocksHubPage = () => {
     const sections = [
         {
             id: 'register',
-            title: `📝 Register Dock`,
-            description: 'Create a new dock with specifications and allowed vessel types',
+            title: t('docksHubPage.section.register.title'),
+            description: t('docksHubPage.section.register.description'),
             color: '#27ae60',
             component: 'RegisterDockForm'
         },
         {
             id: 'search',
-            title: `🔍 Search Docks`,
-            description: 'Search docks by name, location, or vessel type',
+            title: t('docksHubPage.section.search.title'),
+            description: t('docksHubPage.section.search.description'),
             color: '#3498db',
             component: 'SearchDocksForm'
         },
         {
             id: 'getById',
-            title: `🎯 Get Dock by ID`,
-            description: 'Retrieve detailed information about a specific dock',
+            title: t('docksHubPage.section.getById.title'),
+            description: t('docksHubPage.section.getById.description'),
             color: '#2980b9',
             component: 'GetDockByIdForm'
         },
         {
             id: 'edit',
-            title: `✏️ Edit Dock`,
-            description: 'Update dock specifications and allowed vessel types',
+            title: t('docksHubPage.section.edit.title'),
+            description: t('docksHubPage.section.edit.description'),
             color: '#f39c12',
             component: 'EditDockForm'
         },
         {
             id: 'delete',
-            title: `🗑️ Delete Dock`,
-            description: 'Remove a dock from the system',
+            title: t('docksHubPage.section.delete.title'),
+            description: t('docksHubPage.section.delete.description'),
             color: '#e74c3c',
             component: 'DeleteDockForm'
         }
@@ -77,10 +77,8 @@ const DocksHubPage = () => {
     return (
         <div className="page-section">
             <div className="hub-header">
-                <h2 className="page-title">
-                    🏭 Docks Management
-                </h2>
-                <p>Comprehensive dock management system for port operations</p>
+                <h2 className="page-title">{t('docksHubPage.title')}</h2>
+                <p>{t('docksHubPage.description')}</p>
             </div>
 
             {/* Quick Data View Button */}
@@ -90,16 +88,16 @@ const DocksHubPage = () => {
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
                     <span className="quick-view-icon">📊</span>
-                    Quick Data View
+                    {t('docksHubPage.quickView.button')}
                     <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
-                        {showQuickView ? '▲' : '▼'}
+                        {showQuickView ? t('docksHubPage.quickView.arrow.up') : t('docksHubPage.quickView.arrow.down')}
                     </span>
                 </button>
 
                 {showQuickView && (
                     <div className="quick-view-panel">
                         {isLoading ? (
-                            <div className="loading">Loading docks...</div>
+                            <div className="loading">{t('docksHubPage.quickView.loading')}</div>
                         ) : (
                             <DocksQuickTable docks={docks} onRefresh={loadDocks} />
                         )}
@@ -154,48 +152,43 @@ const DocksHubPage = () => {
 // Quick Table Component for Docks Data
 const DocksQuickTable = ({ docks, onRefresh }) => {
     const { t } = useTranslation();
-    
     return (
         <div className="quick-table-container">
             <div className="quick-table-header">
-                <h4>Docks Overview ({docks.length} total)</h4>
-                <button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
+                <h4>{t('docksHubPage.title')} ({docks.length} total)</h4>
+                <button className="refresh-btn" onClick={onRefresh}>{t('docksHubPage.quickView.refresh')}</button>
             </div>
-            
             {docks.length === 0 ? (
                 <div className="no-data">
-                    <h3>No docks found</h3>
-                    <p>Register your first dock to get started</p>
+                    <h3>{t('docksHubPage.quickView.noData.title')}</h3>
+                    <p>{t('docksHubPage.quickView.noData.description')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table quick-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Location</th>
-                                <th>Length (m)</th>
-                                <th>Depth (m)</th>
-                                <th>Max Draft (m)</th>
-                                <th>Allowed Vessel Types</th>
+                                <th>{t('docksHubPage.table.id')}</th>
+                                <th>{t('docksHubPage.table.name')}</th>
+                                <th>{t('docksHubPage.table.location')}</th>
+                                <th>{t('docksHubPage.table.length')}</th>
+                                <th>{t('docksHubPage.table.depth')}</th>
+                                <th>{t('docksHubPage.table.maxDraft')}</th>
+                                <th>{t('docksHubPage.table.allowedVesselTypes')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {docks.map((dock) => {
-                                // Handle allowedVesselTypes collection properly
-                                let vesselTypes = 'None specified';
+                                let vesselTypes = t('docksHubPage.table.noneSpecified');
                                 if (dock.allowedVesselTypes && Array.isArray(dock.allowedVesselTypes) && dock.allowedVesselTypes.length > 0) {
                                     vesselTypes = dock.allowedVesselTypes
                                         .map(vt => vt.name || vt.vesselTypeName || vt)
                                         .join(', ');
                                 } else if (dock.allowedVesselTypes && typeof dock.allowedVesselTypes === 'object') {
-                                    // In case it's an object with vessel type details
                                     vesselTypes = Object.values(dock.allowedVesselTypes)
                                         .map(vt => vt.name || vt.vesselTypeName || vt)
                                         .join(', ');
                                 }
-
                                 return (
                                     <tr key={dock.id || dock.name}>
                                         <td className="id-cell">{dock.id || 'N/A'}</td>

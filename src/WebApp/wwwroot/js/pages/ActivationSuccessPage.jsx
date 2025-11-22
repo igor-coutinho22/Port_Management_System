@@ -1,5 +1,6 @@
 const ActivationSuccessPage = () => {
     const [tempPassword, setTempPassword] = React.useState(null);
+    const { t } = window.useTranslation ? window.useTranslation() : { t: (k) => window.t ? window.t(k) : k };
 
     React.useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -18,21 +19,20 @@ const ActivationSuccessPage = () => {
             console.error("MSAL PCA not found");
             return;
         }
-
         pca.loginRedirect(window.loginRequest);
     };
 
     return (
         <div className="page-section">
-            <h2>Conta ativada com sucesso</h2>
-            <p>A sua conta foi ativada. Utilize o seu email e a palavra-passe temporária para iniciar sessão.</p>
+            <h2>{t('activationSuccessPage.title')}</h2>
+            <p>{t('activationSuccessPage.description')}</p>
             {tempPassword && (
                 <p>
-                    <strong>Palavra-passe temporária:</strong> {tempPassword}
+                    <strong>{t('activationSuccessPage.tempPassword')}</strong> {tempPassword}
                 </p>
             )}
             <button className="btn" onClick={handleLogin}>
-                Ir para login
+                {t('activationSuccessPage.button.login')}
             </button>
         </div>
     );

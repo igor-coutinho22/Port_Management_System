@@ -2,6 +2,7 @@
 console.log('⚙️ SchedulingHubPage.jsx is loading...');
 
 const SchedulingHubPage = () => {
+    const { t } = useTranslation();
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('heuristic');
     const [isLoading, setIsLoading] = React.useState(false);
     const [result, setResult] = React.useState(null);
@@ -10,15 +11,15 @@ const SchedulingHubPage = () => {
     const algorithms = [
         {
             id: 'heuristic',
-            name: '⚡ Heuristic Algorithm (SPT)',
-            description: 'Fast heuristic using Shortest Processing Time strategy. Optimized for computational efficiency.',
+            name: t('schedulingHubPage.controls.heuristic.name'),
+            description: t('schedulingHubPage.controls.heuristic.description'),
             color: '#27ae60',
             available: true
         },
         {
             id: 'optimal',
-            name: '🎯 Optimal Algorithm',
-            description: 'Finds the optimal solution minimizing delays (Coming in US 3.4.2)',
+            name: t('schedulingHubPage.controls.optimal.name'),
+            description: t('schedulingHubPage.controls.optimal.description'),
             color: '#3498db',
             available: false
         }
@@ -52,16 +53,16 @@ const SchedulingHubPage = () => {
         <div className="page-section">
             <div className="hub-header">
                 <h2 className="page-title">
-                    ⚙️ Vessel Scheduling Algorithms
+                    {t('schedulingHubPage.title')}
                 </h2>
-                <p>Generate optimized schedules for vessel loading and unloading operations</p>
+                <p>{t('schedulingHubPage.description')}</p>
             </div>
 
             {/* Algorithm Selection */}
             <div className="scheduling-controls">
                 <div className="algorithm-selector">
                     <label htmlFor="algorithm-select">
-                        <strong>Select Algorithm:</strong>
+                        <strong>{t('schedulingHubPage.controls.selectAlgorithm')}</strong>
                     </label>
                     <select
                         id="algorithm-select"
@@ -75,7 +76,7 @@ const SchedulingHubPage = () => {
                                 value={algo.id}
                                 disabled={!algo.available}
                             >
-                                {algo.name} {!algo.available ? '(Coming Soon)' : ''}
+                                {algo.name} {!algo.available ? t('schedulingHubPage.controls.comingSoon') : ''}
                             </option>
                         ))}
                     </select>
@@ -92,18 +93,17 @@ const SchedulingHubPage = () => {
                     disabled={isLoading || !selectedAlgo?.available}
                     style={{ backgroundColor: selectedAlgo?.color }}
                 >
-                    {isLoading ? '⏳ Computing...' : '▶️ Generate Schedule'}
+                    {isLoading ? t('schedulingHubPage.runButton.inProgress') : t('schedulingHubPage.runButton.default')}
                 </button>
             </div>
 
             {/* Error Display */}
             {error && (
                 <div className="error-message">
-                    <h3>❌ Error</h3>
+                    <h3>{t('schedulingHubPage.error.title')}</h3>
                     <p>{error}</p>
                     <small>
-                        <strong>Troubleshooting:</strong> Make sure the backend is running and
-                        SWI-Prolog is installed (<code>swipl</code> command available).
+                        <strong>{t('schedulingHubPage.error.troubleshooting')}</strong> {t('schedulingHubPage.error.message')}
                     </small>
                 </div>
             )}
@@ -111,50 +111,49 @@ const SchedulingHubPage = () => {
             {/* Results Display */}
             {result && (
                 <div className="scheduling-results">
-                    <h3>✅ Scheduling Results</h3>
+                    <h3>{t('schedulingHubPage.results.title')}</h3>
 
                     <div className="results-grid">
                         <div className="result-card">
                             <div className="card-icon">🚢</div>
                             <div className="card-content">
-                                <h4>Vessel Sequence</h4>
+                                <h4>{t('schedulingHubPage.results.sequence')}</h4>
                                 <p className="result-value sequence-value">
                                     {result.sequence || 'N/A'}
                                 </p>
-                                <small>Order of vessel processing</small>
+                                <small>{t('schedulingHubPage.results.sequence.description')}</small>
                             </div>
                         </div>
 
                         <div className="result-card">
                             <div className="card-icon">⏱️</div>
                             <div className="card-content">
-                                <h4>Total Delay</h4>
+                                <h4>{t('schedulingHubPage.results.totalDelay')}</h4>
                                 <p className="result-value">
                                     {result.totalDelay !== undefined ? result.totalDelay : 'N/A'}
-                                    <span className="unit">time units</span>
+                                    <span className="unit">{t('schedulingHubPage.results.totalDelay.unit')}</span>
                                 </p>
-                                <small>Cumulative delay from desired departure times</small>
+                                <small>{t('schedulingHubPage.results.totalDelay.description')}</small>
                             </div>
                         </div>
 
                         <div className="result-card">
                             <div className="card-icon">⚡</div>
                             <div className="card-content">
-                                <h4>Computation Time</h4>
+                                <h4>{t('schedulingHubPage.results.computationTime')}</h4>
                                 <p className="result-value">
                                     {result.runtimeSeconds !== undefined
                                         ? result.runtimeSeconds.toFixed(4)
                                         : 'N/A'}
-                                    <span className="unit">seconds</span>
+                                    <span className="unit">{t('schedulingHubPage.results.computationTime.unit')}</span>
                                 </p>
-                                <small>Algorithm execution time</small>
+                                <small>{t('schedulingHubPage.results.computationTime.description')}</small>
                             </div>
                         </div>
                     </div>
 
                     <div className="results-note">
-                        <strong>ℹ️ Note:</strong> Results are computed on-demand and not persisted.
-                        The current implementation uses demo vessel data from the Prolog knowledge base.
+                        <strong>{t('schedulingHubPage.results.note')}</strong> {t('schedulingHubPage.results.note.message')}
                     </div>
                 </div>
             )}
@@ -162,15 +161,13 @@ const SchedulingHubPage = () => {
             {/* Info Section */}
             {!result && !error && !isLoading && (
                 <div className="info-section">
-                    <h3>📊 About Scheduling Algorithms</h3>
+                    <h3>{t('schedulingHubPage.info.title')}</h3>
                     <p>
-                        This module provides different algorithms for optimizing vessel loading and
-                        unloading schedules. Each algorithm has different trade-offs between
-                        computation time and solution quality.
+                        {t('schedulingHubPage.info.description')}
                     </p>
                     <ul>
-                        <li><strong>Heuristic (SPT):</strong> O(n log n) complexity, fast computation, good solutions</li>
-                        <li><strong>Optimal:</strong> Finds best solution, higher computation time (US 3.4.2)</li>
+                        <li><strong>{t('schedulingHubPage.info.heuristic')}</strong></li>
+                        <li><strong>{t('schedulingHubPage.info.optimal')}</strong></li>
                     </ul>
                 </div>
             )}

@@ -37,64 +37,64 @@ const StaffHubPage = () => {
     const sections = [
         {
             id: 'register',
-            title: `📝 Register Staff`,
-            description: 'Create a new staff member with details and operational window',
+            title: t('staffHubPage.section.register.title'),
+            description: t('staffHubPage.section.register.description'),
             color: '#27ae60',
             component: 'RegisterStaffForm'
         },
         {
             id: 'search',
-            title: `🔍 Search Staff`,
-            description: 'Search for staff members by various criteria',
+            title: t('staffHubPage.section.search.title'),
+            description: t('staffHubPage.section.search.description'),
             color: '#2980b9',
             component: 'SearchStaffForm'
         },
         {
             id: 'getByNumber',
-            title: `🎯 Get Staff by Mecanographic Number`,
-            description: 'Retrieve detailed information about a specific staff member',
+            title: t('staffHubPage.section.getByNumber.title'),
+            description: t('staffHubPage.section.getByNumber.description'),
             color: '#2980b9',
             component: 'GetStaffByMecNumberForm'
         },
         {
             id: 'edit',
-            title: `✏️ Edit Staff`,
-            description: 'Update staff details and operational window',
+            title: t('staffHubPage.section.edit.title'),
+            description: t('staffHubPage.section.edit.description'),
             color: '#f39c12',
             component: 'EditStaffForm'
         },
         {
             id: 'delete',
-            title: `🗑️ Delete Staff`,
-            description: 'Remove a staff member from the system',
+            title: t('staffHubPage.section.delete.title'),
+            description: t('staffHubPage.section.delete.description'),
             color: '#e74c3c',
             component: 'DeleteStaffForm'
         },
         {
             id: 'activate',
-            title: `✅ Activate Staff`,
-            description: 'Set staff status to available',
+            title: t('staffHubPage.section.activate.title'),
+            description: t('staffHubPage.section.activate.description'),
             color: '#2ecc71',
             component: 'ActivateStaffForm'
         },
         {
             id: 'deactivate',
-            title: `🚫 Deactivate Staff`,
-            description: 'Set staff status to unavailable',
+            title: t('staffHubPage.section.deactivate.title'),
+            description: t('staffHubPage.section.deactivate.description'),
             color: '#e67e22',
             component: 'DeactivateStaffForm'
         },
         {
             id: 'addQualification',
-            title: `➕ Add Qualification to Staff`,
-            description: 'Add a qualification to a staff member',
+            title: t('staffHubPage.section.addQualification.title'),
+            description: t('staffHubPage.section.addQualification.description'),
             color: '#8e44ad',
             component: 'AddQualificationToStaffForm'
         },
         {
             id: 'removeQualification',
-            title: `➖ Remove Qualification from Staff`,
-            description: 'Remove a qualification from a staff member',
+            title: t('staffHubPage.section.removeQualification.title'),
+            description: t('staffHubPage.section.removeQualification.description'),
             color: '#c0392b',
             component: 'RemoveQualificationFromStaffForm'
         }
@@ -104,9 +104,9 @@ const StaffHubPage = () => {
         <div className="page-section">
             <div className="hub-header">
                 <h2 className="page-title">
-                    👨‍✈️ Staff Management
+                    {t('staffHubPage.title')}
                 </h2>
-                <p>Comprehensive staff management system for port operations</p>
+                <p>{t('staffHubPage.description')}</p>
             </div>
 
             {/* Quick Data View Button */}
@@ -116,7 +116,7 @@ const StaffHubPage = () => {
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
                     <span className="quick-view-icon">📊</span>
-                    Quick Data View
+                    {t('staffHubPage.quickView.button')}
                     <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
                         {showQuickView ? '▲' : '▼'}
                     </span>
@@ -125,7 +125,7 @@ const StaffHubPage = () => {
                 {showQuickView && (
                     <div className="quick-view-panel">
                         {isLoading ? (
-                            <div className="loading">Loading staff...</div>
+                            <div className="loading">{t('staffHubPage.quickView.loading')}</div>
                         ) : (
                             <StaffQuickTable staffList={staffList} onRefresh={loadStaff} />
                         )}
@@ -183,29 +183,30 @@ const StaffHubPage = () => {
 
 // Quick Table Component for Staff Data
 const StaffQuickTable = ({ staffList, onRefresh }) => {
+    const { t } = useTranslation();
     return (
         <div className="quick-table-container">
             <div className="quick-table-header">
-                <h4>Staff Overview ({staffList.length} total)</h4>
-                <button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
+                <h4>{t('staffHubPage.quickView.overview')} ({staffList.length} {t('staffHubPage.quickView.total')})</h4>
+                <button className="refresh-btn" onClick={onRefresh}>{t('staffHubPage.quickView.refresh')}</button>
             </div>
             {staffList.length === 0 ? (
                 <div className="no-data">
-                    <h3>No staff found</h3>
-                    <p>Register your first staff member to get started</p>
+                    <h3>{t('staffHubPage.quickView.noData.title')}</h3>
+                    <p>{t('staffHubPage.quickView.noData.description')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table quick-table">
                         <thead>
                             <tr>
-                                <th>Mecanographic Number</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Status</th>
-                                <th>Operational Window</th>
-                                <th>Qualifications</th>
+                                <th>{t('staffHubPage.table.mecanographicNumber')}</th>
+                                <th>{t('staffHubPage.table.name')}</th>
+                                <th>{t('staffHubPage.table.email')}</th>
+                                <th>{t('staffHubPage.table.phone')}</th>
+                                <th>{t('staffHubPage.table.status')}</th>
+                                <th>{t('staffHubPage.table.operationalWindow')}</th>
+                                <th>{t('staffHubPage.table.qualifications')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -221,7 +222,7 @@ const StaffQuickTable = ({ staffList, onRefresh }) => {
                                     </span>
                                     </td>
                                     <td>{staff.operationalWindow}</td>
-                                    <td>{staff.qualifications && staff.qualifications.length > 0 ? staff.qualifications.map(q => q.name).join(', ') : 'None'}</td>
+                                    <td>{staff.qualifications && staff.qualifications.length > 0 ? staff.qualifications.map(q => q.name).join(', ') : t('staffHubPage.table.none')}</td>
                                 </tr>
                             ))}
                         </tbody>
