@@ -2,6 +2,7 @@
 console.log('EditQualificationForm component loading...');
 
 const EditQualificationForm = ({ onSuccess }) => {
+    const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({ code: '' });
     const [formData, setFormData] = React.useState({ code: '', name: '' });
     const [qualification, setQualification] = React.useState(null);
@@ -26,35 +27,42 @@ const EditQualificationForm = ({ onSuccess }) => {
     const handleSearch = async (e) => {
         e.preventDefault();
         if (!searchData.code.trim()) {
-            setMessage({ type: 'error', text: 'Qualification code is required' });
+            setMessage({ type: 'error', text: t('qualifications.forms.edit.error.required') });
             return;
         }
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         setHasSearched(false);
         setQualification(null);
+        
+        const searchCode = searchData.code.trim();
+
         try {
-            const data = await apiService.getQualificationByCode(searchData.code.trim());
+            const data = await apiService.getQualificationByCode(searchCode);
+            const qualCode = data.code || data.Code || searchCode; // Handle Pascal/camel case
+
             if (data) {
-                setQualification(data);
+                // Ensure code is present for consistency
+                const qualificationWithCode = { ...data, code: qualCode };
+                setQualification(qualificationWithCode);
                 setFormData({
-                    code: searchData.code.trim(),
-                    name: data.name || ''
+                    code: qualCode,
+                    name: data.name || data.Name || ''
                 });
                 setHasSearched(true);
                 setStep('edit');
-                setMessage({ type: 'success', text: `Found qualification: ${data.code}` });
+                setMessage({ type: 'success', text: t('qualifications.forms.edit.search_success_message', { code: qualCode }) });
             } else {
                 setQualification(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: `Qualification '${searchData.code}' not found` });
+                setMessage({ type: 'info', text: t('qualifications.forms.edit.search_error.not_found_with_code', { code: searchCode }) });
             }
         } catch (error) {
             console.error('Error fetching qualification:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: `Qualification '${searchData.code}' not found` });
+                setMessage({ type: 'info', text: t('qualifications.forms.edit.search_error.not_found_with_code', { code: searchCode }) });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch qualification. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('qualifications.forms.edit.search_error.failed') });
             }
             setQualification(null);
             setHasSearched(true);
@@ -68,17 +76,22 @@ const EditQualificationForm = ({ onSuccess }) => {
         setIsUpdating(true);
         setMessage({ type: '', text: '' });
         try {
-            if (!formData.code?.trim()) throw new Error('Qualification code is required');
-            if (!formData.name?.trim()) throw new Error('Qualification name is required');
+            if (!formData.code?.trim()) throw new Error(t('qualifications.forms.edit.error.required'));
+            if (!formData.name?.trim()) throw new Error(t('qualifications.forms.edit.error.name_required'));
+            
             const qualificationData = {
                 Code: formData.code.trim(),
                 Name: formData.name.trim()
             };
+            
             await apiService.updateQualification(formData.code, qualificationData);
-            setMessage({ type: 'success', text: 'Qualification updated successfully!' });
+            
+            setMessage({ type: 'success', text: t('qualifications.forms.edit.update_success') });
+            
             if (onSuccess) onSuccess();
+            
         } catch (error) {
-            setMessage({ type: 'error', text: error.message || 'Failed to update qualification' });
+            setMessage({ type: 'error', text: error.message || t('qualifications.forms.edit.update_error') });
         } finally {
             setIsUpdating(false);
         }
@@ -101,11 +114,14 @@ const EditQualificationForm = ({ onSuccess }) => {
         setStep('search');
     };
 
+    const qualName = qualification?.name || qualification?.Name || formData.name;
+    const qualCode = qualification?.code || qualification?.Code || formData.code;
+
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Edit Qualification</h4>
-                <p>Search for a qualification by code and modify its information</p>
+                <h4>{t('qualifications.forms.edit.title')}</h4>
+                <p>{t('qualifications.forms.edit.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -115,25 +131,25 @@ const EditQualificationForm = ({ onSuccess }) => {
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchCode">Qualification Code</label>
+                            <label htmlFor="searchCode">{t('qualifications.forms.edit.code.label')}</label>
                             <input
                                 type="text"
                                 id="searchCode"
                                 name="code"
                                 value={searchData.code}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter qualification code (e.g., Q-001)"
+                                placeholder={t('qualifications.forms.edit.code.placeholder')}
                                 className="form-input"
                             />
-                            <small className="form-help">Enter the unique code of the qualification you want to edit</small>
+                            <small className="form-help">{t('qualifications.forms.edit.code.help')}</small>
                         </div>
                     </div>
                     <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={isLoading}>
-                            {isLoading ? (<><span className="loading-spinner"></span>Loading...</>) : (<>Search Qualification</>)}
+                            {isLoading ? (<><span className="loading-spinner"></span>{t('common.loading')}</>) : (<><span>🔍</span>{t('qualifications.forms.edit.search_button')}</>)}
                         </button>
                         <button type="button" className="clear-btn" onClick={handleClear} disabled={isLoading}>
-                            <span>🧹</span>Cancel
+                            <span>🧹</span>{t('qualifications.forms.edit.cancel')}
                         </button>
                     </div>
                 </form>
@@ -142,15 +158,17 @@ const EditQualificationForm = ({ onSuccess }) => {
             {step === 'edit' && qualification && (
                 <>
                     <div className="form-section-header">
-                        <h5>Editing qualification: {qualification.name} (Code: {qualification.code})</h5>
+                        <h5>
+                            {t('qualifications.forms.edit.editing_header')}: <strong>{qualCode}</strong> {'('} <strong>{qualName}</strong> {')'}
+                        </h5>
                         <button type="button" className="link-btn" onClick={handleNewSearch}>
-                            🔍 Search different qualification
+                            <span>🔍</span> {t('qualifications.forms.edit.search_different')}
                         </button>
                     </div>
                     <form onSubmit={handleUpdate} className="qualification-form">
                         <div className="form-grid">
                             <div className="form-group">
-                                <label htmlFor="editCode">Qualification Code</label>
+                                <label htmlFor="editCode">{t('qualifications.forms.edit.code.label')}</label>
                                 <input
                                     type="text"
                                     id="editCode"
@@ -159,10 +177,10 @@ const EditQualificationForm = ({ onSuccess }) => {
                                     className="form-input"
                                     disabled
                                 />
-                                <small className="form-help">Code cannot be changed</small>
+                                <small className="form-help">{t('qualifications.forms.edit.code_readonly_help')}</small>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="editName">Qualification Name</label>
+                                <label htmlFor="editName">{t('qualifications.forms.edit.name.label')}</label>
                                 <input
                                     type="text"
                                     id="editName"
@@ -172,15 +190,19 @@ const EditQualificationForm = ({ onSuccess }) => {
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Name/description of the qualification</small>
+                                <small className="form-help">{t('qualifications.forms.edit.name.help')}</small>
                             </div>
                         </div>
                         <div className="form-actions">
                             <button type="submit" className="submit-btn" disabled={isUpdating}>
-                                {isUpdating ? (<><span className="loading-spinner"></span>Updating...</>) : (<>Update Qualification</>)}
+                                {isUpdating ? (
+                                    <><span className="loading-spinner"></span>{t('qualifications.forms.edit.updating')}</>
+                                ) : (
+                                    <><span>✏️</span>{t('qualifications.forms.edit.update_button')}</>
+                                )}
                             </button>
                             <button type="button" className="clear-btn" onClick={handleClear} disabled={isUpdating}>
-                                <span>🧹</span>Cancel
+                                <span>🧹</span>{t('qualifications.forms.edit.cancel')}
                             </button>
                         </div>
                     </form>
@@ -188,6 +210,6 @@ const EditQualificationForm = ({ onSuccess }) => {
             )}
         </div>
     );
-};
+}
 
 console.log('EditQualificationForm component loaded!');

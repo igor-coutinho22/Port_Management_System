@@ -2,6 +2,7 @@
 console.log('📝 RegisterQualificationForm component loading...');
 
 const RegisterQualificationForm = ({ onSuccess }) => {
+    const { t } = useTranslation();
     const [formData, setFormData] = React.useState({
         code: '',
         name: ''
@@ -19,35 +20,48 @@ const RegisterQualificationForm = ({ onSuccess }) => {
         e.preventDefault();
         setIsLoading(true);
         setMessage({ type: '', text: '' });
+        
         try {
-            if (!formData.code?.trim()) throw new Error('Qualification code is required');
-            if (!formData.name?.trim()) throw new Error('Qualification name is required');
+            if (!formData.code?.trim()) throw new Error(t('qualifications.forms.register.error.code_required'));
+            if (!formData.name?.trim()) throw new Error(t('qualifications.forms.register.error.name_required'));
 
             const qualificationData = {
                 Code: formData.code.trim(),
                 Name: formData.name.trim()
             };
+            
             await apiService.registerQualification(qualificationData);
-            setMessage({ type: 'success', text: 'Qualification registered successfully!' });
+            
+            setMessage({ type: 'success', text: t('qualifications.forms.register.success') });
+            
             setFormData({ code: '', name: '' });
             if (onSuccess) onSuccess();
+
         } catch (error) {
-            let errorText = error.message || 'Failed to register qualification';
-            // Show only the user-friendly message for duplicate code
+            let errorText = error.message || t('qualifications.forms.register.error.failed_generic');
+            
+            // Logic to show a specific message for duplicate code (if the backend returns it in a complex string)
             if (errorText.includes("Qualification with code") && errorText.includes("already exists")) {
-                errorText = errorText.match(/Qualification with code '.*?' already exists\./)?.[0] || "Qualification with this code already exists.";
+                errorText = t('qualifications.forms.register.error.code_exists');
             }
+            
             setMessage({ type: 'error', text: errorText });
+            
         } finally {
             setIsLoading(false);
         }
+    };
+    
+    const handleClear = () => {
+        setFormData({ code: '', name: '' });
+        setMessage({ type: '', text: '' });
     };
 
     return (
         <div className="form-container qualification-form">
             <div className="form-header">
-                <h4>Register Qualification</h4>
-                <p>Create a new qualification with code and name</p>
+                <h4>{t('qualifications.forms.register.title')}</h4>
+                <p>{t('qualifications.forms.register.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -55,42 +69,53 @@ const RegisterQualificationForm = ({ onSuccess }) => {
             <form onSubmit={handleSubmit} className="qualification-form">
                 <div className="form-grid">
                     <div className="form-group">
-                        <label htmlFor="code">Qualification Code <span className="required">*</span></label>
+                        <label htmlFor="code">
+                            {t('qualifications.forms.register.code.label')} <span className="required">*</span>
+                        </label>
                         <input
                             type="text"
                             id="code"
                             name="code"
                             value={formData.code}
                             onChange={handleInputChange}
-                            placeholder="e.g., Q-001"
+                            placeholder={t('qualifications.forms.register.code.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Unique code to identify this qualification</small>
+                        <small className="form-help">{t('qualifications.forms.register.code.help')}</small>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="name">Qualification Name <span className="required">*</span></label>
+                        <label htmlFor="name">
+                            {t('qualifications.forms.register.name.label')} <span className="required">*</span>
+                        </label>
                         <input
                             type="text"
                             id="name"
                             name="name"
                             value={formData.name}
                             onChange={handleInputChange}
-                            placeholder="e.g., Forklift Operator"
+                            placeholder={t('qualifications.forms.register.name.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Name/description of the qualification</small>
+                        <small className="form-help">{t('qualifications.forms.register.name.help')}</small>
                     </div>
                 </div>
                 <div className="form-actions">
                     <button type="submit" className="submit-btn" disabled={isLoading}>
-                        {isLoading ? (<><span className="loading-spinner"></span>Registering...</>) : (<>Register Qualification</>)}
+                        {isLoading ? (
+                            <><span className="loading-spinner"></span>{t('qualifications.forms.register.registering')}</>
+                        ) : (
+                            <>{t('qualifications.forms.register.submit')}</>
+                        )}
+                    </button>
+                    <button type="button" className="clear-btn" onClick={handleClear} disabled={isLoading}>
+                        <span>🧹</span>{t('common.clear')}
                     </button>
                 </div>
             </form>
         </div>
     );
-};
+}
 
-console.log('RegisterQualificationForm component loaded!');
+console.log('RegisterQualificationForm component loaded! 📝');
