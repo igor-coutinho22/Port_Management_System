@@ -37,36 +37,36 @@ const VesselTypesHubPage = () => {
     const sections = [
         {
             id: 'register',
-            title: `📝 Register Vessel Type`,
-            description: 'Create a new vessel type with specifications and capacity limits',
+            title: t('vesselTypesHubPage.section.register.title'),
+            description: t('vesselTypesHubPage.section.register.description'),
             color: '#27ae60',
             component: 'RegisterVesselTypeForm'
         },
         {
             id: 'search',
-            title: `🔍 Search Vessel Types`,
-            description: 'Search vessel types by name or description',
+            title: t('vesselTypesHubPage.section.search.title'),
+            description: t('vesselTypesHubPage.section.search.description'),
             color: '#3498db',
             component: 'SearchVesselTypesForm'
         },
         {
             id: 'getByName',
-            title: `🎯 Get Vessel Type by Name`,
-            description: 'Retrieve detailed information about a specific vessel type',
+            title: t('vesselTypesHubPage.section.getByName.title'),
+            description: t('vesselTypesHubPage.section.getByName.description'),
             color: '#2980b9',
             component: 'GetVesselTypeByNameForm'
         },
         {
             id: 'edit',
-            title: `✏️ Edit Vessel Type`,
-            description: 'Update vessel type specifications and capacity information',
+            title: t('vesselTypesHubPage.section.edit.title'),
+            description: t('vesselTypesHubPage.section.edit.description'),
             color: '#f39c12',
             component: 'EditVesselTypeForm'
         },
         {
             id: 'delete',
-            title: `🗑️ Delete Vessel Type`,
-            description: 'Remove a vessel type from the system',
+            title: t('vesselTypesHubPage.section.delete.title'),
+            description: t('vesselTypesHubPage.section.delete.description'),
             color: '#e74c3c',
             component: 'DeleteVesselTypeForm'
         }
@@ -76,9 +76,9 @@ const VesselTypesHubPage = () => {
         <div className="page-section">
             <div className="hub-header">
                 <h2 className="page-title">
-                    🛳️ Vessel Types Management
+                    {t('vesselTypesHubPage.title')}
                 </h2>
-                <p>Manage vessel type specifications, capacity limits, and container configurations</p>
+                <p>{t('vesselTypesHubPage.description')}</p>
             </div>
 
             {/* Quick Data View Button */}
@@ -88,7 +88,7 @@ const VesselTypesHubPage = () => {
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
                     <span className="quick-view-icon">📊</span>
-                    Quick Data View
+                    {t('vesselTypesHubPage.quickView.button')}
                     <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
                         {showQuickView ? '▲' : '▼'}
                     </span>
@@ -97,7 +97,7 @@ const VesselTypesHubPage = () => {
                 {showQuickView && (
                     <div className="quick-view-panel">
                         {isLoading ? (
-                            <div className="loading">Loading vessel types...</div>
+                            <div className="loading">{t('vesselTypesHubPage.quickView.loading')}</div>
                         ) : (
                             <VesselTypesQuickTable vesselTypes={vesselTypes} onRefresh={loadVesselTypes} />
                         )}
@@ -156,38 +156,38 @@ const VesselTypesQuickTable = ({ vesselTypes, onRefresh }) => {
     return (
         <div className="quick-table-container">
             <div className="quick-table-header">
-                <h4>Vessel Types Overview ({vesselTypes.length} total)</h4>
-                <button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
+                <h4>{t('vesselTypesHubPage.quickView.overview')} ({vesselTypes.length} total)</h4>
+                <button className="refresh-btn" onClick={onRefresh}>{t('vesselTypesHubPage.quickView.refresh')}</button>
             </div>
             
             {vesselTypes.length === 0 ? (
                 <div className="no-data">
-                    <h3>No vessel types found</h3>
-                    <p>Register your first vessel type to get started</p>
+                    <h3>{t('vesselTypesHubPage.quickView.noData.title')}</h3>
+                    <p>{t('vesselTypesHubPage.quickView.noData.description')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table quick-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Max Bays</th>
-                                <th>Max Rows</th>
-                                <th>Max Tiers</th>
-                                <th>Max TEU Capacity</th>
-                                <th>Dimensions</th>
+                                <th>{t('vesselTypesHubPage.table.name')}</th>
+                                <th>{t('vesselTypesHubPage.table.description')}</th>
+                                <th>{t('vesselTypesHubPage.table.maxBays')}</th>
+                                <th>{t('vesselTypesHubPage.table.maxRows')}</th>
+                                <th>{t('vesselTypesHubPage.table.maxTiers')}</th>
+                                <th>{t('vesselTypesHubPage.table.maxTEUCapacity')}</th>
+                                <th>{t('vesselTypesHubPage.table.dimensions')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {vesselTypes.map((vesselType) => (
                                 <tr key={vesselType.name}>
-                                    <td className="name-cell">{vesselType.name || 'N/A'}</td>
-                                    <td className="description-cell">{vesselType.description || 'N/A'}</td>
-                                    <td>{vesselType.maxBays || 'N/A'}</td>
-                                    <td>{vesselType.maxRows || 'N/A'}</td>
-                                    <td>{vesselType.maxTiers || 'N/A'}</td>
-                                    <td>{vesselType.maxTEUCapacity || 'N/A'}</td>
+                                    <td className="name-cell">{vesselType.name || t('vesselTypesHubPage.table.notAvailable')}</td>
+                                    <td className="description-cell">{vesselType.description || t('vesselTypesHubPage.table.notAvailable')}</td>
+                                    <td>{vesselType.maxBays || t('vesselTypesHubPage.table.notAvailable')}</td>
+                                    <td>{vesselType.maxRows || t('vesselTypesHubPage.table.notAvailable')}</td>
+                                    <td>{vesselType.maxTiers || t('vesselTypesHubPage.table.notAvailable')}</td>
+                                    <td>{vesselType.maxTEUCapacity || t('vesselTypesHubPage.table.notAvailable')}</td>
                                     <td>
                                         {(vesselType.maxBays || 0)}x{(vesselType.maxRows || 0)}x{(vesselType.maxTiers || 0)}
                                     </td>

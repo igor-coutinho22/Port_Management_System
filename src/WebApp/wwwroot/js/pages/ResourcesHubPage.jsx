@@ -37,36 +37,36 @@ const ResourcesHubPage = () => {
     const sections = [
         {
             id: 'register',
-            title: '📝 Register New Resource',
-            description: 'Add a new resource to the system',
+            title: t('resourcesHubPage.section.register.title'),
+            description: t('resourcesHubPage.section.register.description'),
             color: '#27ae60',
             component: 'RegisterResourceForm'
         },
         {
             id: 'search',
-            title: '🔍 Search Resources',
-            description: 'Find resources by multiple criteria',
+            title: t('resourcesHubPage.section.search.title'),
+            description: t('resourcesHubPage.section.search.description'),
             color: '#3498db',
             component: 'SearchResourceForm'
         },
         {
             id: 'edit',
-            title: '✏️ Edit Resource',
-            description: 'Update resource information',
+            title: t('resourcesHubPage.section.edit.title'),
+            description: t('resourcesHubPage.section.edit.description'),
             color: '#f39c12',
             component: 'EditResourceForm'
         },
         {
             id: 'status',
-            title: '🔧 Manage Status',
-            description: 'Change resource availability status',
+            title: t('resourcesHubPage.section.status.title'),
+            description: t('resourcesHubPage.section.status.description'),
             color: '#9b59b6',
             component: 'ResourceStatusForm'
         },
         {
             id: 'delete',
-            title: '🗑️ Delete Resource',
-            description: 'Remove resource from system',
+            title: t('resourcesHubPage.section.delete.title'),
+            description: t('resourcesHubPage.section.delete.description'),
             color: '#e74c3c',
             component: 'DeleteResourceForm'
         }
@@ -76,9 +76,9 @@ const ResourcesHubPage = () => {
         <div className="page-section">
             <div className="hub-header">
                 <h2 className="page-title">
-                    🏗️ Resources Management Hub
+                    {t('resourcesHubPage.title')}
                 </h2>
-                <p>Complete resource management with all CRUD operations</p>
+                <p>{t('resourcesHubPage.description')}</p>
             </div>
 
             {/* Quick Data View Button */}
@@ -88,16 +88,16 @@ const ResourcesHubPage = () => {
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
                     <span className="quick-view-icon">📊</span>
-                    Quick Data View
+                    {t('resourcesHubPage.quickView.button')}
                     <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
-                        {showQuickView ? '▲' : '▼'}
+                        {showQuickView ? t('resourcesHubPage.quickView.arrow.up') : t('resourcesHubPage.quickView.arrow.down')}
                     </span>
                 </button>
 
                 {showQuickView && (
                     <div className="quick-view-panel">
                         {isLoading ? (
-                            <div className="loading">Loading resources...</div>
+                            <div className="loading">{t('resourcesHubPage.quickView.loading')}</div>
                         ) : (
                             <ResourcesQuickTable resources={resources} onRefresh={loadResources} />
                         )}
@@ -151,49 +151,51 @@ const ResourcesHubPage = () => {
 
 // Resources Quick Table Component
 const ResourcesQuickTable = ({ resources, onRefresh }) => {
+    const { t } = useTranslation();
+
     const handleViewDetails = async (resourceId) => {
         try {
             const resource = await apiService.getResourceById(resourceId);
             
             // Handle qualifications properly
-            let qualifications = 'None';
+            let qualifications = t('resourcesHubPage.details.none');
             if (resource.qualificationRequirements && Array.isArray(resource.qualificationRequirements) && resource.qualificationRequirements.length > 0) {
                 qualifications = resource.qualificationRequirements
                     .map(q => q.name || q.code || q)
                     .join(', ');
             }
             
-            alert(`Resource Details:\n\nID: ${resource.id || 'N/A'}\nDescription: ${resource.description || 'N/A'}\nType: ${(resource.resourceType) || 'N/A'}\nStatus: ${resource.status || 'N/A'}\nCapacity: ${resource.operationalCapacity || 'N/A'}\nSetup Time: ${resource.setupTime || 'N/A'} minutes\nQualifications: ${qualifications}`);
+            alert(`${t('resourcesHubPage.details.title')}:\n\n${t('resourcesHubPage.details.id')}: ${resource.id || 'N/A'}\n${t('resourcesHubPage.details.description')}: ${resource.description || 'N/A'}\n${t('resourcesHubPage.details.type')}: ${(resource.resourceType) || 'N/A'}\n${t('resourcesHubPage.details.status')}: ${resource.status || 'N/A'}\n${t('resourcesHubPage.details.capacity')}: ${resource.operationalCapacity || 'N/A'}\n${t('resourcesHubPage.details.setupTime')}: ${resource.setupTime || 'N/A'} ${t('resourcesHubPage.details.minutes')}\n${t('resourcesHubPage.details.qualifications')}: ${qualifications}`);
         } catch (error) {
-            alert('Error: ' + error.message);
+            alert(t('resourcesHubPage.details.error') + error.message);
         }
     };
 
     return (
         <div className="quick-table-container">
             <div className="quick-table-header">
-                <h4>Resources Overview ({resources.length} total)</h4>
+                <h4>{t('resourcesHubPage.quickView.overview')} ({resources.length} {t('resourcesHubPage.quickView.total')})</h4>
                 <button onClick={onRefresh} className="refresh-btn">
-                    🔄 Refresh
+                    {t('resourcesHubPage.quickView.refresh')}
                 </button>
             </div>
 
             {resources.length === 0 ? (
                 <div className="empty-resources">
-                    <h4>No Resources Found</h4>
-                    <p>Currently there are no resources registered in the system.</p>
+                    <h4>{t('resourcesHubPage.quickView.noData.title')}</h4>
+                    <p>{t('resourcesHubPage.quickView.noData.description')}</p>
                 </div>
             ) : (
                 <table className="quick-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Description</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Capacity</th>
-                            <th>Setup Time</th>
-                            <th>Actions</th>
+                            <th>{t('resourcesHubPage.table.id')}</th>
+                            <th>{t('resourcesHubPage.table.description')}</th>
+                            <th>{t('resourcesHubPage.table.type')}</th>
+                            <th>{t('resourcesHubPage.table.status')}</th>
+                            <th>{t('resourcesHubPage.table.capacity')}</th>
+                            <th>{t('resourcesHubPage.table.setupTime')}</th>
+                            <th>{t('resourcesHubPage.table.actions')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -213,7 +215,7 @@ const ResourcesQuickTable = ({ resources, onRefresh }) => {
                                     <button 
                                         onClick={() => handleViewDetails(resource.id)}
                                         className="action-btn view-btn"
-                                        title="View Details"
+                                        title={t('resourcesHubPage.table.viewDetails')}
                                     >
                                         👁️
                                     </button>

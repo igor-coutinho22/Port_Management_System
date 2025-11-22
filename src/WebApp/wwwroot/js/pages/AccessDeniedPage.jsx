@@ -1,7 +1,10 @@
-const AccessDeniedPage = () => (
-    <div className="page-section">
-        <h2>Acesso negado</h2>
-        <p>Não tem permissões para ver esta página. Se acha que é um erro, contacte o administrador.</p>
-    </div>
-);
+const AccessDeniedPage = () => {
+    const { t } = window.useTranslation ? window.useTranslation() : { t: (k) => window.t ? window.t(k) : k };
+    return (
+        <div className="page-section">
+            <h2>{t('accessDeniedPage.title')}</h2>
+            <p>{t('accessDeniedPage.description')}</p>
+        </div>
+    );
+};
 window.AccessDeniedPage = AccessDeniedPage;

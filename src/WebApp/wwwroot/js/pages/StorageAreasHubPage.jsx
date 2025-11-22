@@ -37,79 +37,79 @@ const StorageAreasHubPage = () => {
     const sections = [
         {
             id: 'registerContainerYard',
-            title: `📦 Register Container Yard`,
-            description: 'Create a new container yard for temporary container storage',
+            title: t('storageAreasHubPage.section.registerContainerYard.title'),
+            description: t('storageAreasHubPage.section.registerContainerYard.description'),
             color: '#27ae60',
             component: 'RegisterContainerYardForm'
         },
         {
             id: 'registerWarehouse',
-            title: `🏭 Register Warehouse`,
-            description: 'Create a new warehouse for specialized cargo handling',
+            title: t('storageAreasHubPage.section.registerWarehouse.title'),
+            description: t('storageAreasHubPage.section.registerWarehouse.description'),
             color: '#2ecc71',
             component: 'RegisterWarehouseForm'
         },
         {
             id: 'getById',
-            title: `🎯 Get Storage Area by ID`,
-            description: 'Retrieve detailed information about a specific storage area by its ID',
+            title: t('storageAreasHubPage.section.getById.title'),
+            description: t('storageAreasHubPage.section.getById.description'),
             color: '#2980b9',
             component: 'GetStorageAreaByIdForm'
         },
         {
             id: 'getByName',
-            title: `🔎 Get Storage Area by Name`,
-            description: 'Retrieve detailed information about a specific storage area by its name',
+            title: t('storageAreasHubPage.section.getByName.title'),
+            description: t('storageAreasHubPage.section.getByName.description'),
             color: '#3498db',
             component: 'GetStorageAreaByNameForm'
         },
         {
             id: 'edit',
-            title: `✏️ Edit Storage Area`,
-            description: 'Update storage area capacity and specifications',
+            title: t('storageAreasHubPage.section.edit.title'),
+            description: t('storageAreasHubPage.section.edit.description'),
             color: '#f39c12',
             component: 'EditStorageAreaForm'
         },
         {
             id: 'delete',
-            title: `🗑️ Delete Storage Area`,
-            description: 'Remove a storage area from the system',
+            title: t('storageAreasHubPage.section.delete.title'),
+            description: t('storageAreasHubPage.section.delete.description'),
             color: '#e74c3c',
             component: 'DeleteStorageAreaForm'
         }
         ,
         {
             id: 'addConnection',
-            title: `🔗 Add Dock Connection`,
-            description: 'Create a new dock connection for a container yard',
+            title: t('storageAreasHubPage.section.addConnection.title'),
+            description: t('storageAreasHubPage.section.addConnection.description'),
             color: '#16a085',
             component: 'AddConnectionForm'
         },
         {
             id: 'updateConnection',
-            title: `📝 Update Dock Connection`,
-            description: 'Update an existing dock connection for a container yard',
+            title: t('storageAreasHubPage.section.updateConnection.title'),
+            description: t('storageAreasHubPage.section.updateConnection.description'),
             color: '#f1c40f',
             component: 'UpdateDockConnectionForm'
         },
         {
             id: 'deleteConnection',
-            title: `❌ Delete Dock Connection`,
-            description: 'Remove a dock connection from a container yard',
+            title: t('storageAreasHubPage.section.deleteConnection.title'),
+            description: t('storageAreasHubPage.section.deleteConnection.description'),
             color: '#c0392b',
             component: 'DeleteDockConnectionForm'
         },
         {
             id: 'getConnection',
-            title: `🔍 Get Dock Connection`,
-            description: 'Retrieve details of a specific dock connection',
+            title: t('storageAreasHubPage.section.getConnection.title'),
+            description: t('storageAreasHubPage.section.getConnection.description'),
             color: '#2980b9',
             component: 'GetDockConnectionForm'
         },
         {
             id: 'getConnections',
-            title: `📋 List Dock Connections`,
-            description: 'List all dock connections for a container yard',
+            title: t('storageAreasHubPage.section.getConnections.title'),
+            description: t('storageAreasHubPage.section.getConnections.description'),
             color: '#8e44ad',
             component: 'ListDockConnectionsForm'
         }
@@ -119,9 +119,9 @@ const StorageAreasHubPage = () => {
         <div className="page-section">
             <div className="hub-header">
                 <h2 className="page-title">
-                    🏭 Storage Areas Management
+                    {t('storageAreasHubPage.title')}
                 </h2>
-                <p>Manage container yards, warehouses, and specialized storage facilities</p>
+                <p>{t('storageAreasHubPage.description')}</p>
             </div>
 
             {/* Quick Data View Button */}
@@ -131,7 +131,7 @@ const StorageAreasHubPage = () => {
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
                     <span className="quick-view-icon">📊</span>
-                    Quick Data View
+                    {t('storageAreasHubPage.quickView.button')}
                     <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
                         {showQuickView ? '▲' : '▼'}
                     </span>
@@ -140,7 +140,7 @@ const StorageAreasHubPage = () => {
                 {showQuickView && (
                     <div className="quick-view-panel">
                         {isLoading ? (
-                            <div className="loading">Loading storage areas...</div>
+                            <div className="loading">{t('storageAreasHubPage.quickView.loading')}</div>
                         ) : (
                             <StorageAreasQuickTable storageAreas={storageAreas} onRefresh={loadStorageAreas} />
                         )}
@@ -205,53 +205,53 @@ const StorageAreasQuickTable = ({ storageAreas, onRefresh }) => {
     return (
         <div className="quick-table-container">
             <div className="quick-table-header">
-                <h4>Storage Areas Overview ({storageAreas.length} total)</h4>
-                <button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
+                <h4>{t('storageAreasHubPage.quickView.overview')} ({storageAreas.length} total)</h4>
+                <button className="refresh-btn" onClick={onRefresh}>{t('storageAreasHubPage.quickView.refresh')}</button>
             </div>
             {storageAreas.length === 0 ? (
                 <div className="no-data">
-                    <h3>No storage areas found</h3>
-                    <p>Register your first storage area to get started</p>
+                    <h3>{t('storageAreasHubPage.quickView.noData.title')}</h3>
+                    <p>{t('storageAreasHubPage.quickView.noData.description')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table quick-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Max Capacity (TEU)</th>
-                                <th>Current Occupancy (TEU)</th>
-                                <th>Utilization</th>
-                                <th>Specialized Info</th>
-                                <th>Dock Connections</th>
+                                <th>{t('storageAreasHubPage.table.id')}</th>
+                                <th>{t('storageAreasHubPage.table.name')}</th>
+                                <th>{t('storageAreasHubPage.table.type')}</th>
+                                <th>{t('storageAreasHubPage.table.maxCapacity')}</th>
+                                <th>{t('storageAreasHubPage.table.currentOccupancy')}</th>
+                                <th>{t('storageAreasHubPage.table.utilization')}</th>
+                                <th>{t('storageAreasHubPage.table.specializedInfo')}</th>
+                                <th>{t('storageAreasHubPage.table.dockConnections')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {storageAreas.map((area) => {
                                 // Support nested DTOs (ContainerYardDto, WarehouseDto)
                                 const sa = area.storageArea || area;
-                                const id = sa.id || area.id || 'N/A';
-                                const name = sa.name || area.name || 'N/A';
-                                const type = sa.type || area.type || 'N/A';
-                                const maxCapacityTeu = sa.maxCapacityTeu || area.maxCapacityTeu || 'N/A';
-                                const currentOccupancyTeu = sa.currentOccupancyTeu || area.currentOccupancyTeu || 'N/A';
+                                const id = sa.id || area.id || t('storageAreasHubPage.table.notAvailable');
+                                const name = sa.name || area.name || t('storageAreasHubPage.table.notAvailable');
+                                const type = sa.type || area.type || t('storageAreasHubPage.table.notAvailable');
+                                const maxCapacityTeu = sa.maxCapacityTeu || area.maxCapacityTeu || t('storageAreasHubPage.table.notAvailable');
+                                const currentOccupancyTeu = sa.currentOccupancyTeu || area.currentOccupancyTeu || t('storageAreasHubPage.table.notAvailable');
                                 const utilizationPercent = maxCapacityTeu && currentOccupancyTeu ? Math.round((currentOccupancyTeu / maxCapacityTeu) * 100) : 0;
-                                let specializedInfo = 'N/A';
+                                let specializedInfo = t('storageAreasHubPage.table.notAvailable');
                                 // Warehouse specialized info
                                 if (type === 'Warehouse' || type === 'warehouse') {
-                                    specializedInfo = area.specializedCargoType || 'General';
+                                    specializedInfo = area.specializedCargoType || t('storageAreasHubPage.table.general');
                                 } else if (type === 'ContainerYard' || type === 'containerYard') {
                                     // Try dockIds from top-level or nested
                                     const dockIds = area.dockIds || sa.dockIds || (sa.dockConnections ? sa.dockConnections.map(dc => dc.dockId) : []);
                                     const dockCount = dockIds ? dockIds.length : 0;
-                                    specializedInfo = `${dockCount} docks served`;
+                                    specializedInfo = t('storageAreasHubPage.table.docksServed', { count: dockCount });
                                 }
                                 // Dock connections column
                                 const dockConnections = sa.dockConnections && sa.dockConnections.length > 0
-                                    ? `${sa.dockConnections.length} dock connections`
-                                    : 'None';
+                                    ? t('storageAreasHubPage.table.dockConnectionsCount', { count: sa.dockConnections.length })
+                                    : t('storageAreasHubPage.table.none');
                                 return (
                                     <tr key={id}>
                                         <td>{id}</td>

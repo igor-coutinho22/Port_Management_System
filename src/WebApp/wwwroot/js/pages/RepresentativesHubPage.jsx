@@ -2,6 +2,7 @@
 console.log('RepresentativesHubPage.jsx is loading...');
 
 const RepresentativesHubPage = () => {
+    const { t } = useTranslation();
     const [expandedSection, setExpandedSection] = React.useState(null);
     const [representatives, setRepresentatives] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -35,29 +36,29 @@ const RepresentativesHubPage = () => {
     const sections = [
         {
             id: 'register',
-            title: `📝 Register Representative`,
-            description: 'Create a new representative for an organization',
+            title: t('representativesHubPage.section.register.title'),
+            description: t('representativesHubPage.section.register.description'),
             color: '#27ae60',
             component: 'RegisterRepresentativeForm'
         },
         {
             id: 'getById',
-            title: `🎯 Get Representative by ID`,
-            description: 'Retrieve detailed information about a specific representative',
+            title: t('representativesHubPage.section.getById.title'),
+            description: t('representativesHubPage.section.getById.description'),
             color: '#2980b9',
             component: 'GetRepresentativeByIdForm'
         },
         {
             id: 'edit',
-            title: `✏️ Edit Representative`,
-            description: 'Update representative details',
+            title: t('representativesHubPage.section.edit.title'),
+            description: t('representativesHubPage.section.edit.description'),
             color: '#f39c12',
             component: 'EditRepresentativeForm'
         },
         {
             id: 'manageStatus',
-            title: `Activate/Deactivate Representative`,
-            description: 'Change the active status of a representative',
+            title: t('representativesHubPage.section.manageStatus.title'),
+            description: t('representativesHubPage.section.manageStatus.description'),
             color: '#16a085',
             component: 'ActivateDeactivateRepresentativeForm'
         }
@@ -67,9 +68,9 @@ const RepresentativesHubPage = () => {
         <div className="page-section">
             <div className="hub-header">
                 <h2 className="page-title">
-                    👤 Representatives Management
+                    {t('representativesHubPage.title')}
                 </h2>
-                <p>Comprehensive representative management system for port operations</p>
+                <p>{t('representativesHubPage.description')}</p>
             </div>
 
             {/* Quick Data View Button */}
@@ -79,16 +80,16 @@ const RepresentativesHubPage = () => {
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
                     <span className="quick-view-icon">📊</span>
-                    Quick Data View
+                    {t('representativesHubPage.quickView.button')}
                     <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
-                        {showQuickView ? '▲' : '▼'}
+                        {showQuickView ? t('representativesHubPage.quickView.arrow.up') : t('representativesHubPage.quickView.arrow.down')}
                     </span>
                 </button>
 
                 {showQuickView && (
                     <div className="quick-view-panel">
                         {isLoading ? (
-                            <div className="loading">Loading representatives...</div>
+                            <div className="loading">{t('representativesHubPage.quickView.loading')}</div>
                         ) : (
                             <RepresentativesQuickTable representatives={representatives} onRefresh={loadRepresentatives} />
                         )}
@@ -141,30 +142,31 @@ const RepresentativesHubPage = () => {
 
 // Quick Table Component for Representatives Data
 const RepresentativesQuickTable = ({ representatives, onRefresh }) => {
+    const { t } = useTranslation();
     return (
         <div className="quick-table-container">
             <div className="quick-table-header">
-                <h4>Representatives Overview ({representatives.length} total)</h4>
-                <button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
+                <h4>{t('representativesHubPage.quickView.overview')} ({representatives.length} {t('representativesHubPage.quickView.total')})</h4>
+                <button className="refresh-btn" onClick={onRefresh}>{t('representativesHubPage.quickView.refresh')}</button>
             </div>
             {representatives.length === 0 ? (
                 <div className="no-data">
-                    <h3>No representatives found</h3>
-                    <p>Register your first representative to get started</p>
+                    <h3>{t('representativesHubPage.quickView.noData.title')}</h3>
+                    <p>{t('representativesHubPage.quickView.noData.description')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table quick-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Citizen ID</th>
-                                <th>Nationality</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Status</th>
-                                <th>Organization</th>
+                                <th>{t('representativesHubPage.table.id')}</th>
+                                <th>{t('representativesHubPage.table.name')}</th>
+                                <th>{t('representativesHubPage.table.citizenId')}</th>
+                                <th>{t('representativesHubPage.table.nationality')}</th>
+                                <th>{t('representativesHubPage.table.email')}</th>
+                                <th>{t('representativesHubPage.table.phone')}</th>
+                                <th>{t('representativesHubPage.table.status')}</th>
+                                <th>{t('representativesHubPage.table.organizationId')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -178,7 +180,7 @@ const RepresentativesQuickTable = ({ representatives, onRefresh }) => {
                                     <td>{rep.phone || 'N/A'}</td>
                                     <td>
                                         <span className={`status-badge status-${rep.isActive === true ? 'true' : 'false'}`}>
-                                            {rep.isActive === true ? 'Active' : rep.isActive === false ? 'Inactive' : 'N/A'}
+                                            {rep.isActive === true ? t('representativesHubPage.table.active') : rep.isActive === false ? t('representativesHubPage.table.inactive') : 'N/A'}
                                         </span>
                                     </td>
                                     <td>{rep.organizationId || 'N/A'}</td>

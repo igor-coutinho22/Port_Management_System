@@ -2,6 +2,7 @@
 console.log('OrganizationsHubPage.jsx is loading...');
 
 const OrganizationsHubPage = () => {
+    const { t } = useTranslation();
     const [expandedSection, setExpandedSection] = React.useState(null);
     const [organizations, setOrganizations] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -35,50 +36,50 @@ const OrganizationsHubPage = () => {
     const sections = [
         {
             id: 'register',
-            title: `📝 Register Organization`,
-            description: 'Create a new organization with legal and tax details',
+            title: t('organizationsHubPage.section.register.title'),
+            description: t('organizationsHubPage.section.register.description'),
             color: '#27ae60',
             component: 'RegisterOrganizationForm'
         },
         {
             id: 'getById',
-            title: `🎯 Get Organization by ID`,
-            description: 'Retrieve detailed information about a specific organization',
+            title: t('organizationsHubPage.section.getById.title'),
+            description: t('organizationsHubPage.section.getById.description'),
             color: '#2980b9',
             component: 'GetOrganizationByIdForm'
         },
         {
             id: 'edit',
-            title: `✏️ Edit Organization`,
-            description: 'Update organization legal, address, and tax details',
+            title: t('organizationsHubPage.section.edit.title'),
+            description: t('organizationsHubPage.section.edit.description'),
             color: '#f39c12',
             component: 'EditOrganizationForm'
         },
         {
             id: 'delete',
-            title: `🗑️ Delete Organization`,
-            description: 'Remove an organization from the system',
+            title: t('organizationsHubPage.section.delete.title'),
+            description: t('organizationsHubPage.section.delete.description'),
             color: '#e74c3c',
             component: 'DeleteOrganizationForm'
         },
         {
             id: 'add',
-            title: `Add Representatives`,
-            description: 'Add organization representatives',
+            title: t('organizationsHubPage.section.add.title'),
+            description: t('organizationsHubPage.section.add.description'),
             color: '#8e44ad',
             component: 'AddRepresentativeToOrganizationForm'
         },
         {
             id: 'remove',
-            title: `Remove Representatives`,
-            description: 'Remove organization representatives',
+            title: t('organizationsHubPage.section.remove.title'),
+            description: t('organizationsHubPage.section.remove.description'),
             color: '#8e44ad',
             component: 'RemoveRepresentativeFromOrganizationForm'
         },
         {
             id: 'manageStatus',
-            title: `Activate/Deactivate Organization`,
-            description: 'Change the active status of an organization',
+            title: t('organizationsHubPage.section.manageStatus.title'),
+            description: t('organizationsHubPage.section.manageStatus.description'),
             color: '#16a085',
             component: 'ActivateDeactivateOrganizationForm'
         }
@@ -87,10 +88,8 @@ const OrganizationsHubPage = () => {
     return (
         <div className="page-section">
             <div className="hub-header">
-                <h2 className="page-title">
-                    🏢 Organizations Management
-                </h2>
-                <p>Comprehensive organization management system for port operations</p>
+                <h2 className="page-title">{t('organizationsHubPage.title')}</h2>
+                <p>{t('organizationsHubPage.description')}</p>
             </div>
 
             {/* Quick Data View Button */}
@@ -100,16 +99,16 @@ const OrganizationsHubPage = () => {
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
                     <span className="quick-view-icon">📊</span>
-                    Quick Data View
+                    {t('organizationsHubPage.quickView.button')}
                     <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
-                        {showQuickView ? '▲' : '▼'}
+                        {showQuickView ? t('organizationsHubPage.quickView.arrow.up') : t('organizationsHubPage.quickView.arrow.down')}
                     </span>
                 </button>
 
                 {showQuickView && (
                     <div className="quick-view-panel">
                         {isLoading ? (
-                            <div className="loading">Loading organizations...</div>
+                            <div className="loading">{t('organizationsHubPage.quickView.loading')}</div>
                         ) : (
                             <OrganizationsQuickTable organizations={organizations} onRefresh={loadOrganizations} />
                         )}
@@ -165,30 +164,31 @@ const OrganizationsHubPage = () => {
 
 // Quick Table Component for Organizations Data
 const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
+    const { t } = useTranslation();
     return (
         <div className="quick-table-container">
             <div className="quick-table-header">
-                <h4>Organizations Overview ({organizations.length} total)</h4>
-                <button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
+                <h4>{t('organizationsHubPage.title')} ({organizations.length} total)</h4>
+                <button className="refresh-btn" onClick={onRefresh}>{t('organizationsHubPage.quickView.refresh')}</button>
             </div>
             {organizations.length === 0 ? (
                 <div className="no-data">
-                    <h3>No organizations found</h3>
-                    <p>Register your first organization to get started</p>
+                    <h3>{t('organizationsHubPage.quickView.noData.title')}</h3>
+                    <p>{t('organizationsHubPage.quickView.noData.description')}</p>
                 </div>
             ) : (
                 <div className="table-container">
                     <table className="data-table quick-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Identifier</th>
-                                <th>Legal Name</th>
-                                <th>Alternative Names</th>
-                                <th>Address</th>
-                                <th>Tax Number</th>
-                                <th>Representatives</th>
-                                <th>Status</th>
+                                <th>{t('organizationsHubPage.table.id')}</th>
+                                <th>{t('organizationsHubPage.table.identifier')}</th>
+                                <th>{t('organizationsHubPage.table.legalName')}</th>
+                                <th>{t('organizationsHubPage.table.alternativeNames')}</th>
+                                <th>{t('organizationsHubPage.table.address')}</th>
+                                <th>{t('organizationsHubPage.table.taxNumber')}</th>
+                                <th>{t('organizationsHubPage.table.representatives')}</th>
+                                <th>{t('organizationsHubPage.table.status')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -207,12 +207,12 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
                                                     {rep.name || rep.legalName || 'N/A'}{rep.email ? ` (${rep.email})` : ''}
                                                 </span>
                                             ))
-                                            : <span style={{ color: '#b8eaff' }}>None</span>
+                                            : <span style={{ color: '#b8eaff' }}>{t('organizationsHubPage.table.none')}</span>
                                         }
                                     </td>
                                     <td>
                                         <span className={`status-badge status-${org.isActive === true ? 'true' : 'false'}`}>
-                                            {org.isActive === true ? 'Active' : org.isActive === false ? 'Inactive' : 'N/A'}
+                                            {org.isActive === true ? t('organizationsHubPage.table.active') : org.isActive === false ? t('organizationsHubPage.table.inactive') : 'N/A'}
                                         </span>
                                     </td>
                                 </tr>
