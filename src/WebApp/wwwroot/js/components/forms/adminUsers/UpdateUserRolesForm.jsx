@@ -37,7 +37,6 @@ function UpdateUserRolesForm({ onDone }) {
     const submit = async (e) => {
         e.preventDefault();
         setMsg(null);
-
         if (!email.trim()) {
             setMsg("Email is required.");
             return;
@@ -46,7 +45,6 @@ function UpdateUserRolesForm({ onDone }) {
             setMsg("Select at least one role.");
             return;
         }
-
         setBusy(true);
         try {
             const body = { roles: selectedRoles };
@@ -64,10 +62,10 @@ function UpdateUserRolesForm({ onDone }) {
     return (
         <form onSubmit={submit} className="form-container">
             <div className="form-header">
-                <h4>Update User Roles</h4>
-                <p>Assign or update the internal roles for an existing user.</p>
+                <h4 style={{ marginBottom: 0 }}>Update User Roles</h4>
+                <p style={{ marginTop: 4, marginBottom: 18, color: '#b0b8c1' }}>Assign or update the internal roles for an existing user.</p>
             </div>
-            <div className="form-grid">
+            <div className="form-grid" style={{ gap: 24 }}>
                 <div className="form-group">
                     <label>Email <span className="required">*</span></label>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -77,12 +75,14 @@ function UpdateUserRolesForm({ onDone }) {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="form-input"
+                            style={{ marginBottom: 0 }}
                         />
                         <button
                             type="button"
                             className="btn-small"
                             onClick={loadUserRoles}
                             disabled={loadingUser}
+                            style={{ minWidth: 90 }}
                         >
                             {loadingUser ? "Loading…" : "Load roles"}
                         </button>
@@ -90,13 +90,14 @@ function UpdateUserRolesForm({ onDone }) {
                 </div>
                 <div className="form-group">
                     <label>Roles <span className="required">*</span></label>
-                    <div className="roles-checkbox-group">
+                    <div className="roles-checkbox-group" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 6 }}>
                         {KNOWN_ROLES.map((role) => (
-                            <label key={role} className="checkbox-inline">
+                            <label key={role} className="checkbox-inline" style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500 }}>
                                 <input
                                     type="checkbox"
                                     checked={selectedRoles.includes(role)}
                                     onChange={() => toggleRole(role)}
+                                    style={{ marginRight: 4 }}
                                 />
                                 {role}
                             </label>
@@ -104,12 +105,12 @@ function UpdateUserRolesForm({ onDone }) {
                     </div>
                 </div>
             </div>
-            <div className="form-actions">
-                <button className="btn" disabled={busy}>
-                    {busy ? "Saving…" : "Save roles"}
+            <div className="form-actions" style={{ marginTop: 24, display: 'flex', gap: 12 }}>
+                <button className="submit-btn" disabled={busy}>
+                    {busy ? "Saving…" : <><span>💾</span> Save roles</>}
                 </button>
             </div>
-            {msg && <p className="info">{msg}</p>}
+            {msg && <div className={`message ${msg.includes('error') ? 'error' : 'info'}`}>{msg}</div>}
         </form>
     );
 }
