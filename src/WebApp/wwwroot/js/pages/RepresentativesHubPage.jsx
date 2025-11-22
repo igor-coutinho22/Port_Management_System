@@ -55,13 +55,6 @@ const RepresentativesHubPage = () => {
             component: 'EditRepresentativeForm'
         },
         {
-            id: 'delete',
-            title: `🗑️ Delete Representative`,
-            description: 'Remove a representative from the system',
-            color: '#e74c3c',
-            component: 'DeleteRepresentativeForm'
-        },
-        {
             id: 'manageStatus',
             title: `Activate/Deactivate Representative`,
             description: 'Change the active status of a representative',
@@ -135,7 +128,6 @@ const RepresentativesHubPage = () => {
                                     {section.component === 'RegisterRepresentativeForm' && <RegisterRepresentativeForm onSuccess={loadRepresentatives} />}
                                     {section.component === 'GetRepresentativeByIdForm' && <GetRepresentativeByIdForm />}
                                     {section.component === 'EditRepresentativeForm' && <EditRepresentativeForm onSuccess={loadRepresentatives} />}
-                                    {section.component === 'DeleteRepresentativeForm' && <DeleteRepresentativeForm onSuccess={loadRepresentatives} />}
                                     {section.component === 'ActivateDeactivateRepresentativeForm' && <ActivateDeactivateRepresentativeForm onSuccess={loadRepresentatives} />}
                                 </div>
                             </div>

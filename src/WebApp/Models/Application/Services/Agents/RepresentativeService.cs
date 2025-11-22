@@ -81,22 +81,5 @@ namespace WebApp.Models.Application.Services
             rep.Deactivate();
             await _repRepo.UpdateAsync(rep);
         }
-
-        public async Task DeleteAsync(Guid repId)
-        {
-            var rep = await _repRepo.GetByIdAsync(repId);
-            if (rep == null)
-                throw new KeyNotFoundException("Representative not found.");
-
-            // Get organization to check business rules
-            var org = await _orgRepo.GetByIdAsync(rep.OrganizationId);
-            if (org != null)
-            {
-                org.RemoveRepresentative(repId);
-                await _orgRepo.UpdateAsync(org);
-            }
-
-            await _repRepo.DeleteAsync(rep);
-        }
     }
 }

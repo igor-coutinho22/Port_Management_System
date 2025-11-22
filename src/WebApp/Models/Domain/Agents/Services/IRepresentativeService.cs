@@ -11,7 +11,6 @@ namespace WebApp.Models.Application.Services
         Task<List<Representative>> GetByOrganizationIdAsync(Guid orgId);
         Task<Representative?> GetByIdAsync(Guid repId);
         Task<List<Representative>> GetAllAsync();
-        Task DeleteAsync(Guid repId);
         Task ActivateAsync(Guid repId);
         Task DeactivateAsync(Guid repId);
     }

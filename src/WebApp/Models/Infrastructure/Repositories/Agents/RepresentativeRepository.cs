@@ -48,11 +48,5 @@ namespace WebApp.Models.Infrastructure.Repositories
             _context.Representatives.Update(rep);
             await _context.SaveChangesAsync();
         }
-
-        public async Task DeleteAsync(Representative rep)
-        {
-            _context.Representatives.Remove(rep);
-            await _context.SaveChangesAsync();
-        }
     }
 }

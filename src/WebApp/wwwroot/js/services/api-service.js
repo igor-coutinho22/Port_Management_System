@@ -344,8 +344,25 @@ class ApiService {
     async getRepresentatives() {
         return this.get('/representatives/all');
     }
-    async getRepresentativeById(id) {
-        return this.get(`/representatives/${id}`);
+    async getRepresentativeById(repId) {
+        // The backend expects /representatives/{id}?repId=... so we must pass the id as both route and query param
+        return this.get(`/representatives/${repId}?repId=${repId}`);
+    }
+    async getRepresentativesByOrganization(orgId) {
+        return this.get(`/representatives?orgId=${orgId}`);
+    }
+    async createRepresentative(orgId, repData) {
+        // POST /representatives?orgId=... with repData as body
+        return this.post(`/representatives?orgId=${orgId}`, repData);
+    }
+    async updateRepresentative(repId, repData) {
+        return this.put(`/representatives/${repId}`, repData);
+    }
+    async activateRepresentative(repId) {
+        return this.request(`/representatives/${repId}/activate`, { method: 'PATCH' });
+    }
+    async deactivateRepresentative(repId) {
+        return this.request(`/representatives/${repId}/deactivate`, { method: 'PATCH' });
     }
 
     // Qualifications

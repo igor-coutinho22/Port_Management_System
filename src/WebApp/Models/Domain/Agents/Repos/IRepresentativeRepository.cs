@@ -10,6 +10,5 @@ namespace WebApp.Models.Infrastructure.Repositories
         Task<List<Representative>> GetAllAsync();
         Task AddAsync(Representative rep);
         Task UpdateAsync(Representative rep);
-        Task DeleteAsync(Representative rep);
     }
 }
