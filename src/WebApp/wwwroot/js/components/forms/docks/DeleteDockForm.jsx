@@ -41,12 +41,12 @@ const DeleteDockForm = ({ onSuccess }) => {
         
         // Validate ID field
         if (!searchData.id.trim()) {
-            setMessage({ type: 'error', text: 'Dock ID is required' });
+            setMessage({ type: 'error', text: t('docks.forms.delete.error.required') });
             return;
         }
         
         if (!isValidGuid(searchData.id.trim())) {
-            setMessage({ type: 'error', text: 'Invalid GUID format. Please enter a valid dock ID' });
+            setMessage({ type: 'error', text: t('docks.forms.delete.error.format') });
             return;
         }
         
@@ -63,18 +63,18 @@ const DeleteDockForm = ({ onSuccess }) => {
                 setDock(dockWithId);
                 setHasSearched(true);
                 setStep('confirm');
-                setMessage({ type: 'info', text: 'Dock found successfully. Please confirm deletion below.' });
+                setMessage({ type: 'info', text: t('docks.forms.delete.message.search_success') });
             } else {
                 setDock(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Dock not found with the provided ID' });
+                setMessage({ type: 'info', text: t('docks.forms.delete.error.not_found') });
             }
         } catch (error) {
             console.error('Error fetching dock:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Dock not found with the provided ID' });
+                setMessage({ type: 'info', text: t('docks.forms.delete.error.not_found') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch dock. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('common.error') });
             }
             setDock(null);
             setHasSearched(true);
@@ -90,7 +90,7 @@ const DeleteDockForm = ({ onSuccess }) => {
         if (confirmationText !== dock.name) {
             setMessage({ 
                 type: 'error', 
-                text: 'Dock name does not match. Please type the exact dock name to confirm deletion.' 
+                text: t('docks.forms.delete.error.confirmation_mismatch') 
             });
             return;
         }
@@ -104,7 +104,7 @@ const DeleteDockForm = ({ onSuccess }) => {
             
             setMessage({ 
                 type: 'success', 
-                text: `Dock "${dock.name}" has been successfully deleted.`
+                text: t('docks.forms.delete.success', { dockName: dock.name })
             });
             
             // Reset form after successful deletion
@@ -118,7 +118,7 @@ const DeleteDockForm = ({ onSuccess }) => {
             console.error('Error deleting dock:', error);
             setMessage({ 
                 type: 'error', 
-                text: error.message || 'Failed to delete dock. Please try again.' 
+                text: error.message || t('docks.forms.delete.error.failed') 
             });
         } finally {
             setIsDeleting(false);
@@ -146,8 +146,8 @@ const DeleteDockForm = ({ onSuccess }) => {
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Delete Dock</h4>
-                <p>Search for a dock by ID and permanently delete it from the system</p>
+                <h4>{t('docks.forms.delete.title')}</h4>
+                <p>{t('docks.forms.delete.description')}</p>
             </div>
 
             {message.text && (
@@ -159,17 +159,17 @@ const DeleteDockForm = ({ onSuccess }) => {
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchId">Dock ID</label>
+                            <label htmlFor="searchId">{t('docksHubPage.table.id')}</label>
                             <input
                                 type="text"
                                 id="searchId"
                                 name="id"
                                 value={searchData.id}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter dock ID (e.g., 12345678-1234-1234-1234-123456789abc)"
+                                placeholder={t('docks.forms.delete.placeholder')}
                                 className="form-input"
                             />
-                            <small className="form-help">Enter the unique GUID of the dock you want to delete</small>
+                            <small className="form-help">{t('docks.forms.delete.search_help')}</small>
                         </div>
                     </div>
 
@@ -182,12 +182,12 @@ const DeleteDockForm = ({ onSuccess }) => {
                             {isLoading ? (
                                 <>
                                     <span className="loading-spinner"></span>
-                                    Loading...
+                                    {t('common.loading')}
                                 </>
                             ) : (
                                 <>
                                     <span>🔍</span>
-                                    Search Dock
+                                    {t('docks.forms.delete.search_button')}
                                 </>
                             )}
                         </button>
@@ -199,7 +199,7 @@ const DeleteDockForm = ({ onSuccess }) => {
                             disabled={isLoading}
                         >
                             <span>🧹</span>
-                            Cancel
+                            {t('common.cancel')}
                         </button>
                     </div>
                 </form>
@@ -209,31 +209,36 @@ const DeleteDockForm = ({ onSuccess }) => {
             {step === 'confirm' && dock && (
                 <>
                     <div className="delete-form-header">
-                        <span>⚠️ Confirm Dock Deletion</span>
+                        <span>⚠️ {t('docks.forms.delete.confirm.title')}</span>
                         <button 
                             type="button" 
                             className="link-btn"
                             onClick={handleNewSearch}
                         >
-                            <span style={{ marginRight: '4px' }}>🔍</span>Search different dock
+                            <span style={{ marginRight: '4px' }}>🔍</span>{t('docks.forms.delete.confirm.search_different')}
                         </button>
                     </div>
                     <div className="delete-details-card">
-                        <span className="delete-details-card-title">⚠️ Dock to be deleted:</span>
+                        <span className="delete-details-card-title">⚠️ {t('docks.forms.delete.confirm.to_delete')}:</span>
                         <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                            <div className="delete-details-field"><span className="delete-details-label">ID:</span><br />{dock.id}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">Name:</span><br />{dock.name}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">Location:</span><br />{dock.location}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">Dimensions:</span><br />{dock.lengthMeters}m × {dock.depthMeters}m × {dock.maxDraftMeters}m</div>
-                            <div className="delete-details-field"><span className="delete-details-label">Allowed Vessel Types:</span><br />{dock.allowedVesselTypes && dock.allowedVesselTypes.length > 0 ? dock.allowedVesselTypes.join(', ') : 'None'}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('docksHubPage.table.id')}:</span><br />{dock.id}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('docksHubPage.table.name')}:</span><br />{dock.name}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('docksHubPage.table.location')}:</span><br />{dock.location}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('docks.details.dimensions')}:</span><br />{dock.lengthMeters}m × {dock.depthMeters}m × {dock.maxDraftMeters}m</div>
+                            <div className="delete-details-field">
+                                <span className="delete-details-label">{t('docks.details.allowed_vessel_types')}:</span><br />
+                                {dock.allowedVesselTypes && dock.allowedVesselTypes.length > 0 ? dock.allowedVesselTypes.join(', ') : t('docksHubPage.table.noneSpecified')}
+                            </div>
                         </div>
                     </div>
                     <div className="delete-warning-card">
-                        <span className="delete-warning-title">⚠️ Warning: This action cannot be undone</span>
-                        <span className="delete-warning-desc">Deleting this dock will permanently remove it from the system. All associated data will be lost.</span>
+                        <span className="delete-warning-title">⚠️ {t('docks.forms.delete.warning_title')}</span>
+                        <span className="delete-warning-desc">{t('docks.forms.delete.warning_description')}</span>
                         <form onSubmit={handleDelete} className="delete-form">
                             <div className="form-group" style={{ marginBottom: '18px' }}>
-                                <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>Type "<strong>{dock.name}</strong>" to confirm deletion:</label>
+                                <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>
+                                    {t('docks.forms.delete.confirmation_text', { dockName: dock.name })}
+                                </label>
                                 <input
                                     type="text"
                                     id="confirmationText"
@@ -243,7 +248,7 @@ const DeleteDockForm = ({ onSuccess }) => {
                                     className="delete-confirm-input"
                                     required
                                 />
-                                <small className="delete-confirm-help">This confirmation helps prevent accidental deletions</small>
+                                <small className="delete-confirm-help">{t('docks.forms.delete.confirmation_help')}</small>
                             </div>
                             <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
                                 <button 
@@ -252,9 +257,9 @@ const DeleteDockForm = ({ onSuccess }) => {
                                     disabled={isDeleting || confirmationText !== dock.name}
                                 >
                                     {isDeleting ? (
-                                        <><span className="loading-spinner"></span>Deleting...</>
+                                        <><span className="loading-spinner"></span>{t('docks.forms.delete.deleting')}</>
                                     ) : (
-                                        <>🗑️ Delete Dock</>
+                                        <>🗑️ {t('docks.forms.delete.submit')}</>
                                     )}
                                 </button>
                                 <button 
@@ -264,7 +269,7 @@ const DeleteDockForm = ({ onSuccess }) => {
                                     disabled={isDeleting}
                                 >
                                     <span role="img" aria-label="cancel">🧹</span>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                             </div>
                         </form>

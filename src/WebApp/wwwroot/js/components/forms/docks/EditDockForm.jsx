@@ -1,7 +1,7 @@
 // Edit Dock Form Component
 console.log('✏️ EditDockForm component loading...');
 
-const EditDockForm = ({ onSuccess }) => {
+export default function EditDockForm({ onSuccess }) {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
         id: ''
@@ -34,7 +34,7 @@ const EditDockForm = ({ onSuccess }) => {
             setVesselTypes(types);
         } catch (error) {
             console.error('Error loading vessel types:', error);
-            setMessage({ type: 'error', text: 'Failed to load vessel types' });
+            setMessage({ type: 'error', text: t('docks.forms.edit.error.load_types') });
         }
     };
 
@@ -79,12 +79,12 @@ const EditDockForm = ({ onSuccess }) => {
         
         // Validate ID field
         if (!searchData.id.trim()) {
-            setMessage({ type: 'error', text: 'Dock ID is required' });
+            setMessage({ type: 'error', text: t('docks.forms.delete.error.required') });
             return;
         }
         
         if (!isValidGuid(searchData.id.trim())) {
-            setMessage({ type: 'error', text: 'Invalid GUID format. Please enter a valid dock ID' });
+            setMessage({ type: 'error', text: t('docks.forms.delete.error.format') });
             return;
         }
         
@@ -119,18 +119,18 @@ const EditDockForm = ({ onSuccess }) => {
                 });
                 setHasSearched(true);
                 setStep('edit');
-                setMessage({ type: 'success', text: 'Dock found successfully' });
+                setMessage({ type: 'success', text: t('docks.forms.edit.dock_found') });
             } else {
                 setDock(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Dock not found' });
+                setMessage({ type: 'info', text: t('docks.forms.edit.dock_not_found') });
             }
         } catch (error) {
             console.error('Error fetching dock:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Dock not found with the provided ID' });
+                setMessage({ type: 'info', text: t('docks.forms.delete.error.not_found') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch dock. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('common.error') });
             }
             setDock(null);
             setHasSearched(true);
@@ -149,23 +149,23 @@ const EditDockForm = ({ onSuccess }) => {
             if (!formData.name?.trim() || !formData.location?.trim() || 
                 !formData.lengthMeters?.toString().trim() || !formData.depthMeters?.toString().trim() || 
                 !formData.maxDraftMeters?.toString().trim()) {
-                throw new Error('All fields are required');
+                throw new Error(t('docks.forms.edit.error.all_fields_required'));
             }
 
             // Validate vessel types selection
             if (!formData.allowedVesselTypes || formData.allowedVesselTypes.length === 0) {
-                throw new Error('At least one allowed vessel type must be selected');
+                throw new Error(t('docks.forms.edit.vessel_types.error.required'));
             }
 
             // Validate numeric fields
             if (isNaN(parseFloat(formData.lengthMeters)) || parseFloat(formData.lengthMeters) <= 0) {
-                throw new Error('Length must be a valid positive number');
+                throw new Error(t('docks.forms.edit.error.length_invalid'));
             }
             if (isNaN(parseFloat(formData.depthMeters)) || parseFloat(formData.depthMeters) <= 0) {
-                throw new Error('Depth must be a valid positive number');
+                throw new Error(t('docks.forms.edit.error.depth_invalid'));
             }
             if (isNaN(parseFloat(formData.maxDraftMeters)) || parseFloat(formData.maxDraftMeters) <= 0) {
-                throw new Error('Max draft must be a valid positive number');
+                throw new Error(t('docks.forms.edit.error.draft_invalid'));
             }
 
             // Transform data to match backend DTO expectations
@@ -185,7 +185,7 @@ const EditDockForm = ({ onSuccess }) => {
             const result = await apiService.updateDock(formData.id, dockData);
             console.log('🔍 Update result:', result);
             
-            setMessage({ type: 'success', text: 'Dock updated successfully' });
+            setMessage({ type: 'success', text: t('docks.forms.edit.success') });
             
             // Notify parent component
             if (onSuccess) onSuccess();
@@ -194,7 +194,7 @@ const EditDockForm = ({ onSuccess }) => {
             console.error('Error updating dock:', error);
             setMessage({ 
                 type: 'error', 
-                text: error.message || 'Failed to update dock. Please try again.' 
+                text: error.message.startsWith('Dock') ? error.message : t('docks.forms.edit.error.failed') 
             });
         } finally {
             setIsUpdating(false);
@@ -229,8 +229,8 @@ const EditDockForm = ({ onSuccess }) => {
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Edit Dock</h4>
-                <p>Search for a dock by ID and modify its information</p>
+                <h4>{t('docks.forms.edit.title')}</h4>
+                <p>{t('docks.forms.edit.description')}</p>
             </div>
 
             {message.text && (
@@ -242,17 +242,17 @@ const EditDockForm = ({ onSuccess }) => {
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchId">Dock ID</label>
+                            <label htmlFor="searchId">{t('docksHubPage.table.id')}</label>
                             <input
                                 type="text"
                                 id="searchId"
                                 name="id"
                                 value={searchData.id}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter dock ID (e.g., 12345678-1234-1234-1234-123456789abc)"
+                                placeholder={t('docks.forms.delete.placeholder')}
                                 className="form-input"
                             />
-                            <small className="form-help">Enter the unique GUID of the dock you want to edit</small>
+                            <small className="form-help">{t('docks.forms.edit.search_help')}</small>
                         </div>
                     </div>
 
@@ -265,12 +265,12 @@ const EditDockForm = ({ onSuccess }) => {
                             {isLoading ? (
                                 <>
                                     <span className="loading-spinner"></span>
-                                    Loading...
+                                    {t('common.loading')}
                                 </>
                             ) : (
                                 <>
                                     <span>🔍</span>
-                                    Search Dock
+                                    {t('docks.forms.edit.search_button')}
                                 </>
                             )}
                         </button>
@@ -282,7 +282,7 @@ const EditDockForm = ({ onSuccess }) => {
                             disabled={isLoading}
                         >
                             <span>🧹</span>
-                            Cancel
+                            {t('common.cancel')}
                         </button>
                     </div>
                 </form>
@@ -292,20 +292,22 @@ const EditDockForm = ({ onSuccess }) => {
             {step === 'edit' && dock && (
                 <>
                     <div className="form-section-header">
-                        <h5>Editing dock: {dock.name} (ID: {dock.id})</h5>
+                        <h5>
+                            {t('docks.forms.edit.editing_header', { dockName: dock.name, dockId: dock.id })}
+                        </h5>
                         <button 
                             type="button" 
                             className="link-btn"
                             onClick={handleNewSearch}
                         >
-                            🔍 Search different dock
+                            <span style={{ marginRight: '4px' }}>🔍</span>{t('docks.forms.edit.search_different')}
                         </button>
                     </div>
 
                     <form onSubmit={handleUpdate} className="dock-form">
                         <div className="form-grid">
                             <div className="form-group">
-                                <label htmlFor="editId">Dock ID</label>
+                                <label htmlFor="editId">{t('docksHubPage.table.id')}</label>
                                 <input
                                     type="text"
                                     id="editId"
@@ -314,12 +316,12 @@ const EditDockForm = ({ onSuccess }) => {
                                     className="form-input"
                                     disabled
                                 />
-                                <small className="form-help">ID cannot be changed</small>
+                                <small className="form-help">{t('docks.forms.edit.id_readonly_help')}</small>
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="editName">
-                                    Dock Name <span className="required">*</span>
+                                    {t('docksHubPage.table.name')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -327,16 +329,16 @@ const EditDockForm = ({ onSuccess }) => {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter dock name"
+                                    placeholder={t('docks.forms.edit.name.placeholder')}
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Unique identifier for the dock</small>
+                                <small className="form-help">{t('docks.forms.edit.name.help')}</small>
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="editLocation">
-                                    Location <span className="required">*</span>
+                                    {t('docksHubPage.table.location')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -344,16 +346,16 @@ const EditDockForm = ({ onSuccess }) => {
                                     name="location"
                                     value={formData.location}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter dock location"
+                                    placeholder={t('docks.forms.edit.location.placeholder')}
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Physical location of the dock</small>
+                                <small className="form-help">{t('docks.forms.edit.location.help')}</small>
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="editLengthMeters">
-                                    Length (meters) <span className="required">*</span>
+                                    {t('docksHubPage.table.length')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -361,18 +363,18 @@ const EditDockForm = ({ onSuccess }) => {
                                     name="lengthMeters"
                                     value={formData.lengthMeters}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter length in meters"
+                                    placeholder={t('docks.forms.edit.length.placeholder')}
                                     min="0.1"
                                     step="0.1"
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Total length of the dock</small>
+                                <small className="form-help">{t('docks.forms.edit.length.help')}</small>
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="editDepthMeters">
-                                    Depth (meters) <span className="required">*</span>
+                                    {t('docksHubPage.table.depth')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -380,18 +382,18 @@ const EditDockForm = ({ onSuccess }) => {
                                     name="depthMeters"
                                     value={formData.depthMeters}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter depth in meters"
+                                    placeholder={t('docks.forms.edit.depth.placeholder')}
                                     min="0.1"
                                     step="0.1"
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Water depth at the dock</small>
+                                <small className="form-help">{t('docks.forms.edit.depth.help')}</small>
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="editMaxDraftMeters">
-                                    Max Draft (meters) <span className="required">*</span>
+                                    {t('docksHubPage.table.maxDraft')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -399,21 +401,21 @@ const EditDockForm = ({ onSuccess }) => {
                                     name="maxDraftMeters"
                                     value={formData.maxDraftMeters}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter maximum draft in meters"
+                                    placeholder={t('docks.forms.edit.draft.placeholder')}
                                     min="0.1"
                                     step="0.1"
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Maximum vessel draft that can be accommodated</small>
+                                <small className="form-help">{t('docks.forms.edit.draft.help')}</small>
                             </div>
                         </div>
 
                         {/* Vessel Types Selection */}
                         <div className="vessel-types-selection">
                             <div className="selection-header">
-                                <h5>Allowed Vessel Types</h5>
-                                <p>Select the types of vessels that can use this dock</p>
+                                <h5>{t('docks.forms.edit.vessel_types.title')}</h5>
+                                <p>{t('docks.forms.edit.vessel_types.desc')}</p>
                             </div>
                             
                             <div className="vessel-types-checkboxes">
@@ -446,12 +448,12 @@ const EditDockForm = ({ onSuccess }) => {
                                 {isUpdating ? (
                                     <>
                                         <span className="loading-spinner"></span>
-                                        Updating...
+                                        {t('docks.forms.edit.updating')}
                                     </>
                                 ) : (
                                     <>
                                         <span>✏️</span>
-                                        Update Dock
+                                        {t('docks.forms.edit.submit')}
                                     </>
                                 )}
                             </button>
@@ -463,7 +465,7 @@ const EditDockForm = ({ onSuccess }) => {
                                 disabled={isUpdating}
                             >
                                 <span>🧹</span>
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                         </div>
                     </form>
@@ -471,6 +473,6 @@ const EditDockForm = ({ onSuccess }) => {
             )}
         </div>
     );
-};
+}
 
 console.log('EditDockForm component loaded! ✏️');

@@ -1,7 +1,7 @@
 // Search Docks Form Component
 console.log('🔍 SearchDocksForm component loading...');
 
-const SearchDocksForm = () => {
+export default function SearchDocksForm() {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
         name: '',
@@ -28,49 +28,71 @@ const SearchDocksForm = () => {
             const dock = await apiService.getDockById(dockId);
             const vesselTypesText = dock.allowedVesselTypes && dock.allowedVesselTypes.length > 0 
                 ? dock.allowedVesselTypes.join(', ') 
-                : 'None';
+                : t('docks.forms.search.alert.none_allowed');
             
-            alert(`Dock Details:\n\nID: ${dock.id}\nName: ${dock.name}\nLocation: ${dock.location}\nLength: ${dock.lengthMeters}m\nDepth: ${dock.depthMeters}m\nMax Draft: ${dock.maxDraftMeters}m\nAllowed Vessel Types: ${vesselTypesText}`);
+            // Reverting to alert() as requested by the user, with translated content
+            window.alert(
+                `${t('docks.forms.search.alert.details_header')}:\n\n` +
+                `${t('docksHubPage.table.id')}: ${dockId}\n` +
+                `${t('docksHubPage.table.name')}: ${dock.name}\n` +
+                `${t('docksHubPage.table.location')}: ${dock.location}\n` +
+                `${t('docksHubPage.table.length')}: ${dock.lengthMeters}${t('docks.details.length_unit')}\n` +
+                `${t('docksHubPage.table.depth')}: ${dock.depthMeters}${t('docks.details.length_unit')}\n` +
+                `${t('docksHubPage.table.maxDraft')}: ${dock.maxDraftMeters}${t('docks.details.length_unit')}\n` +
+                `${t('docks.forms.search.alert.allowed_vessel_types')}: ${vesselTypesText}`
+            );
+
         } catch (error) {
-            alert('Error: ' + error.message);
+            window.alert(`${t('docks.forms.search.alert.error')}: ${error.message}`);
         }
     };
+
+    // The modal closing function is no longer relevant but can be kept as a placeholder if needed.
+    // const handleCloseModal = () => { setModalDock(null); }; 
 
     const handleSearch = async (e) => {
         e.preventDefault();
         
+        const name = searchData.name.trim();
+        const location = searchData.location.trim();
+        const vesselTypeName = searchData.vesselTypeName.trim();
+
         // Validate at least one field is filled
-        if (!searchData.name.trim() && !searchData.location.trim() && !searchData.vesselTypeName.trim()) {
-            setMessage({ type: 'error', text: 'Please provide at least one search criteria (name, location, or vessel type)' });
+        if (!name && !location && !vesselTypeName) {
+            setMessage({ type: 'error', text: t('docks.forms.search.error.criteria_missing') });
             return;
         }
 
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         setHasSearched(false);
+        setSearchResults([]);
 
         try {
             const results = await apiService.searchDocks(
-                searchData.name.trim() || null,
-                searchData.location.trim() || null,
-                searchData.vesselTypeName.trim() || null
+                name || null,
+                location || null,
+                vesselTypeName || null
             );
             
             setSearchResults(results);
             setHasSearched(true);
             
             if (results.length === 0) {
-                setMessage({ type: 'info', text: 'No docks found matching the search criteria' });
+                setMessage({ type: 'info', text: t('docks.forms.search.no_results') });
             } else {
-                const resultText = results.length === 1 ? 'dock found' : 'docks found';
-                setMessage({ type: 'success', text: `Found ${results.length} ${resultText}` });
+                const countKey = results.length === 1 ? 'docks.forms.search.results.count_one' : 'docks.forms.search.results.count_plural';
+                // Using t() for combining translation keys here
+                const resultText = `${t('docks.forms.search.results.header')} ${t(countKey, { count: results.length })}`;
+                setMessage({ type: 'success', text: resultText });
             }
 
         } catch (error) {
             console.error('Error searching docks:', error);
+            // Using t() for error message
             setMessage({ 
                 type: 'error', 
-                text: error.message || 'Failed to search docks. Please try again.' 
+                text: error.message || t('docks.forms.search.error.failed') 
             });
             setSearchResults([]);
             setHasSearched(true);
@@ -89,8 +111,8 @@ const SearchDocksForm = () => {
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Search Docks</h4>
-                <p>Search for docks by name, location, and/or vessel type name</p>
+                <h4>{t('docks.forms.search.title')}</h4>
+                <p>{t('docks.forms.search.description')}</p>
             </div>
 
             {message.text && (
@@ -100,45 +122,45 @@ const SearchDocksForm = () => {
             <form onSubmit={handleSearch} className="search-form">
                 <div className="form-grid">
                     <div className="form-group">
-                        <label htmlFor="searchName">Dock Name</label>
+                        <label htmlFor="searchName">{t('docks.forms.search.name.label')}</label>
                         <input
                             type="text"
                             id="searchName"
                             name="name"
                             value={searchData.name}
                             onChange={handleInputChange}
-                            placeholder="Enter dock name (partial match)"
+                            placeholder={t('docks.forms.search.name.placeholder')}
                             className="form-input"
                         />
-                        <small className="form-help">Partial matches supported</small>
+                        <small className="form-help">{t('docks.forms.search.partial_match_help')}</small>
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="searchLocation">Location</label>
+                        <label htmlFor="searchLocation">{t('docks.forms.search.location.label')}</label>
                         <input
                             type="text"
                             id="searchLocation"
                             name="location"
                             value={searchData.location}
                             onChange={handleInputChange}
-                            placeholder="Enter location (partial match)"
+                            placeholder={t('docks.forms.search.location.placeholder')}
                             className="form-input"
                         />
-                        <small className="form-help">Partial matches supported</small>
+                        <small className="form-help">{t('docks.forms.search.partial_match_help')}</small>
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="searchVesselType">Vessel Type Name</label>
+                        <label htmlFor="searchVesselType">{t('docks.forms.search.vessel_type.label')}</label>
                         <input
                             type="text"
                             id="searchVesselType"
                             name="vesselTypeName"
                             value={searchData.vesselTypeName}
                             onChange={handleInputChange}
-                            placeholder="Enter vessel type name (partial match)"
+                            placeholder={t('docks.forms.search.vessel_type.placeholder')}
                             className="form-input"
                         />
-                        <small className="form-help">Search for docks that allow this vessel type</small>
+                        <small className="form-help">{t('docks.forms.search.vessel_type.help')}</small>
                     </div>
                 </div>
 
@@ -151,12 +173,12 @@ const SearchDocksForm = () => {
                         {isLoading ? (
                             <>
                                 <span className="loading-spinner"></span>
-                                Searching...
+                                {t('docks.forms.search.searching')}
                             </>
                         ) : (
                             <>
                                 <span>🔍</span>
-                                Search Docks
+                                {t('docks.forms.search.submit')}
                             </>
                         )}
                     </button>
@@ -165,9 +187,10 @@ const SearchDocksForm = () => {
                         type="button" 
                         className="clear-btn"
                         onClick={handleClear}
+                        disabled={isLoading}
                     >
                         <span>🧹</span>
-                        Clear
+                        {t('docks.forms.search.clear')}
                     </button>
                 </div>
             </form>
@@ -175,17 +198,23 @@ const SearchDocksForm = () => {
             {/* Search Results */}
             {hasSearched && searchResults.length > 0 && (
                 <div className="search-results">
-                    <h5>Search Results ({searchResults.length} found)</h5>
+                    <h5>
+                        {t('docks.forms.search.results.header')} 
+                        {searchResults.length === 1 
+                            ? t('docks.forms.search.results.count_one', { count: searchResults.length })
+                            : t('docks.forms.search.results.count_plural', { count: searchResults.length })
+                        }
+                    </h5>
                     <div className="table-container">
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Location</th>
-                                    <th>Dimensions (L×D×MD)</th>
-                                    <th>Allowed Vessel Types</th>
-                                    <th>Actions</th>
+                                    <th>{t('docksHubPage.table.id')}</th>
+                                    <th>{t('docksHubPage.table.name')}</th>
+                                    <th>{t('docksHubPage.table.location')}</th>
+                                    <th>{t('docks.forms.search.table.dimensions')}</th>
+                                    <th>{t('docks.details.allowed_vessel_types')}</th>
+                                    <th>{t('docks.forms.search.table.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -195,19 +224,19 @@ const SearchDocksForm = () => {
                                         <td>{dock.name}</td>
                                         <td>{dock.location}</td>
                                         <td>
-                                            {dock.lengthMeters}m × {dock.depthMeters}m × {dock.maxDraftMeters}m
+                                            {dock.lengthMeters}{t('docks.details.length_unit')} × {dock.depthMeters}{t('docks.details.length_unit')} × {dock.maxDraftMeters}{t('docks.details.length_unit')}
                                         </td>
                                         <td>
                                             {dock.allowedVesselTypes && dock.allowedVesselTypes.length > 0 
                                                 ? dock.allowedVesselTypes.join(', ') 
-                                                : 'None'}
+                                                : t('docks.forms.search.allowed_vessel_types.none')}
                                         </td>
                                         <td>
                                             <button 
                                                 className="btn-small view-btn"
                                                 onClick={() => handleViewDetails(dock.id)}
                                             >
-                                                👁️ View
+                                                {t('docks.forms.search.view_details')}
                                             </button>
                                         </td>
                                     </tr>
@@ -219,6 +248,6 @@ const SearchDocksForm = () => {
             )}
         </div>
     );
-};
+}
 
 console.log('SearchDocksForm component loaded! 🔍');

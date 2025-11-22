@@ -1,7 +1,7 @@
 // Get Dock by ID Form Component
 console.log('🎯 GetDockByIdForm component loading...');
 
-const GetDockByIdForm = () => {
+export default function GetDockByIdForm() {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
         id: ''
@@ -32,12 +32,12 @@ const GetDockByIdForm = () => {
         
         // Validate ID field
         if (!searchData.id.trim()) {
-            setMessage({ type: 'error', text: 'Dock ID is required' });
+            setMessage({ type: 'error', text: t('docks.forms.get_by_id.error.required') });
             return;
         }
         
         if (!isValidGuid(searchData.id.trim())) {
-            setMessage({ type: 'error', text: 'Invalid GUID format. Please enter a valid dock ID (e.g., 12345678-1234-1234-1234-123456789abc)' });
+            setMessage({ type: 'error', text: t('docks.forms.get_by_id.error.format') });
             return;
         }
         
@@ -49,20 +49,22 @@ const GetDockByIdForm = () => {
         try {
             const data = await apiService.getDockById(searchData.id.trim());
             if (data) {
-                setDock(data);
+                // Add the ID to the dock data since getDockById doesn't return it
+                const dockWithId = { ...data, id: searchData.id.trim() };
+                setDock(dockWithId);
                 setHasSearched(true);
-                setMessage({ type: 'success', text: 'Dock found successfully' });
+                setMessage({ type: 'success', text: t('docks.forms.get_by_id.success') });
             } else {
                 setDock(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Dock not found' });
+                setMessage({ type: 'info', text: t('docks.forms.get_by_id.not_found') });
             }
         } catch (error) {
             console.error('Error fetching dock:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Dock not found with the provided ID' });
+                setMessage({ type: 'info', text: t('docks.forms.get_by_id.error.not_found_with_id') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch dock. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('docks.forms.get_by_id.error.failed') });
             }
             setDock(null);
             setHasSearched(true);
@@ -81,8 +83,8 @@ const GetDockByIdForm = () => {
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Get Dock by ID</h4>
-                <p>Retrieve detailed information about a specific dock using its unique identifier</p>
+                <h4>{t('docks.forms.get_by_id.title')}</h4>
+                <p>{t('docks.forms.get_by_id.description')}</p>
             </div>
 
             {message.text && (
@@ -92,17 +94,17 @@ const GetDockByIdForm = () => {
             <form onSubmit={handleSearch} className="search-form">
                 <div className="form-grid">
                     <div className="form-group">
-                        <label htmlFor="searchId">Dock ID</label>
+                        <label htmlFor="searchId">{t('docksHubPage.table.id')}</label>
                         <input
                             type="text"
                             id="searchId"
                             name="id"
                             value={searchData.id}
                             onChange={handleInputChange}
-                            placeholder="Enter dock ID (e.g., 12345678-1234-1234-1234-123456789abc)"
+                            placeholder={t('docks.forms.get_by_id.id.placeholder')}
                             className="form-input"
                         />
-                        <small className="form-help">Must be a valid GUID format</small>
+                        <small className="form-help">{t('docks.forms.get_by_id.id.help')}</small>
                     </div>
                 </div>
 
@@ -115,12 +117,12 @@ const GetDockByIdForm = () => {
                         {isLoading ? (
                             <>
                                 <span className="loading-spinner"></span>
-                                Loading...
+                                {t('common.loading')}
                             </>
                         ) : (
                             <>
                                 <span>🎯</span>
-                                Get Dock
+                                {t('docks.forms.get_by_id.submit')}
                             </>
                         )}
                     </button>
@@ -132,7 +134,7 @@ const GetDockByIdForm = () => {
                         disabled={isLoading}
                     >
                         <span>🔄</span>
-                        Clear
+                        {t('common.clear')}
                     </button>
                 </div>
             </form>
@@ -141,44 +143,48 @@ const GetDockByIdForm = () => {
             {hasSearched && dock && (
                 <div className="results-section">
                     <div className="results-header">
-                        <h4>Dock Details</h4>
-                        <span className="results-count">ID: {dock.id}</span>
+                        <h4>{t('docks.forms.get_by_id.results.details_title')}</h4>
+                        <span className="results-count">{t('docksHubPage.table.id')}: {dock.id}</span>
                     </div>
                     
                     <div className="dock-details-card">
                         <div className="dock-header">
                             <h3 className="dock-name">{dock.name}</h3>
-                            <span className="dock-id">ID: {dock.id}</span>
+                            <span className="dock-id">{t('docksHubPage.table.id')}: {dock.id}</span>
                         </div>
                         
                         <div className="dock-info-grid">
                             <div className="info-group">
-                                <label>Location</label>
-                                <span>{dock.location || 'N/A'}</span>
+                                <label>{t('docksHubPage.table.location')}</label>
+                                <span>{dock.location || t('common.na')}</span>
                             </div>
                             
                             <div className="info-group">
-                                <label>Length</label>
-                                <span>{dock.lengthMeters ? `${dock.lengthMeters}m` : 'N/A'}</span>
+                                <label>{t('docksHubPage.table.length')}</label>
+                                <span>{dock.lengthMeters ? `${dock.lengthMeters}${t('docks.details.length_unit')}` : t('common.na')}</span>
                             </div>
                             
                             <div className="info-group">
-                                <label>Depth</label>
-                                <span>{dock.depthMeters ? `${dock.depthMeters}m` : 'N/A'}</span>
+                                <label>{t('docksHubPage.table.depth')}</label>
+                                <span>{dock.depthMeters ? `${dock.depthMeters}${t('docks.details.length_unit')}` : t('common.na')}</span>
                             </div>
                             
                             <div className="info-group">
-                                <label>Max Draft</label>
-                                <span>{dock.maxDraftMeters ? `${dock.maxDraftMeters}m` : 'N/A'}</span>
+                                <label>{t('docksHubPage.table.maxDraft')}</label>
+                                <span>{dock.maxDraftMeters ? `${dock.maxDraftMeters}${t('docks.details.length_unit')}` : t('common.na')}</span>
                             </div>
                             
                             <div className="info-group">
-                                <label>Dimensions</label>
-                                <span>{dock.lengthMeters || 0}m × {dock.depthMeters || 0}m × {dock.maxDraftMeters || 0}m</span>
+                                <label>{t('docks.details.dimensions')}</label>
+                                <span>
+                                    {dock.lengthMeters || 0}{t('docks.details.length_unit')} × 
+                                    {dock.depthMeters || 0}{t('docks.details.length_unit')} × 
+                                    {dock.maxDraftMeters || 0}{t('docks.details.length_unit')}
+                                </span>
                             </div>
                             
                             <div className="info-group full-width">
-                                <label>Allowed Vessel Types</label>
+                                <label>{t('docks.details.allowed_vessel_types')}</label>
                                 <div className="vessel-types-list">
                                     {dock.allowedVesselTypes && dock.allowedVesselTypes.length > 0 ? (
                                         dock.allowedVesselTypes.map((vesselType, index) => (
@@ -187,7 +193,7 @@ const GetDockByIdForm = () => {
                                             </span>
                                         ))
                                     ) : (
-                                        <span className="no-vessel-types">No allowed vessel types</span>
+                                        <span className="no-vessel-types">{t('docks.details.no_vessel_types')}</span>
                                     )}
                                 </div>
                             </div>
@@ -197,6 +203,6 @@ const GetDockByIdForm = () => {
             )}
         </div>
     );
-};
+}
 
 console.log('GetDockByIdForm component loaded! 🎯');
