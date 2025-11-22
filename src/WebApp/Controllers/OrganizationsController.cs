@@ -179,6 +179,46 @@ namespace WebApp.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id:guid}/remove")]
+        public async Task<IActionResult> RemoveRepresentative(Guid id, [FromBody] Guid repId)
+        {
+            try
+            {
+                var org = await _service.GetByIdAsync(id);
+                if (org == null)
+                    return NotFound($"Organization with ID {id} not found.");
+
+                var rep = await _representativeService.GetByIdAsync(repId);
+                if (rep == null)
+                    return NotFound($"Representative with ID {repId} not found.");
+
+                await _service.RemoveRepresentativeAsync(id, repId);
+
+                var updated = await _service.GetByIdAsync(id);
+                return Ok(OrganizationMapper.ToDto(updated!));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpDelete("{id:guid}")]

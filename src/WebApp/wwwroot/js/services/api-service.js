@@ -300,6 +300,13 @@ class ApiService {
         // POST /organizations/{id}/add
         return this.post(`/organizations/${orgId}/add`, repData);
     }
+    async removeRepresentativeFromOrganization(orgId, repId) {
+        // DELETE /organizations/{id}/remove with repId in body (as per backend)
+        return this.request(`/organizations/${orgId}/remove`, {
+            method: 'DELETE',
+            data: repId,
+        });
+    }
 
     // Vessel Types
     async getVesselTypes() {

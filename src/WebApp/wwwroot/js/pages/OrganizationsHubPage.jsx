@@ -67,6 +67,13 @@ const OrganizationsHubPage = () => {
             description: 'Add organization representatives',
             color: '#8e44ad',
             component: 'AddRepresentativeToOrganizationForm'
+        },
+        {
+            id: 'remove',
+            title: `Remove Representatives`,
+            description: 'Remove organization representatives',
+            color: '#8e44ad',
+            component: 'RemoveRepresentativeFromOrganizationForm'
         }
     ];
 
@@ -137,6 +144,7 @@ const OrganizationsHubPage = () => {
                                     {section.component === 'EditOrganizationForm' && <EditOrganizationForm onSuccess={loadOrganizations} />}
                                     {section.component === 'DeleteOrganizationForm' && <DeleteOrganizationForm onSuccess={loadOrganizations} />}
                                     {section.component === 'AddRepresentativeToOrganizationForm' && <AddRepresentativeToOrganizationForm onSuccess={loadOrganizations} />}
+                                    {section.component === 'RemoveRepresentativeFromOrganizationForm' && <RemoveRepresentativeFromOrganizationForm onSuccess={loadOrganizations} />}
                                 </div>
                             </div>
                         )}

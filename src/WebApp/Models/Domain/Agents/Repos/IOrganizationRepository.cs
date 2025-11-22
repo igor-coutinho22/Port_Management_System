@@ -10,7 +10,7 @@ namespace WebApp.Models.Infrastructure.Repositories
         Task AddAsync(ShippingAgentOrganization org);
         Task UpdateAsync(ShippingAgentOrganization org);
         Task DeleteAsync(ShippingAgentOrganization org);
-        Task AddRepresentativeAsync(Representative rep);
+        Task AddOrRemoveRepresentativeAsync();
         Task<List<ShippingAgentOrganization>> GetAllAsync();
         Task<List<ShippingAgentOrganization>> SearchAsync(string? name, string? taxNumber);
     }

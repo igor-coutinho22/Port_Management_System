@@ -13,6 +13,7 @@ namespace WebApp.Models.Application.Services
         Task ActivateAsync(Guid id);
         Task DeactivateAsync(Guid id);
         Task AddRepresentativeAsync(Guid id, Representative rep);
+        Task RemoveRepresentativeAsync(Guid organizationId, Guid representativeId);
         Task UpdateAsync(Guid id, ShippingAgentOrganization org);
         Task DeleteAsync(Guid id);
     }

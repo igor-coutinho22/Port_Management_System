@@ -80,7 +80,7 @@ namespace WebApp.Models.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task AddRepresentativeAsync(Representative rep)
+        public async Task AddOrRemoveRepresentativeAsync()
         {
             await _context.SaveChangesAsync();
         }

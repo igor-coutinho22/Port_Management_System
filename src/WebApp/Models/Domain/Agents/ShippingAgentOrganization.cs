@@ -129,7 +129,7 @@ namespace WebApp.Models.Domain.Agents
         public void RemoveRepresentative(Guid representativeId)
         {
             var rep = Representatives.FirstOrDefault(r => r.Id == representativeId)
-                    ?? throw new KeyNotFoundException("Representative not found.");
+                    ?? throw new KeyNotFoundException("Representative not found in this organization.");
 
             if (rep.IsActive && Representatives.Count(r => r.IsActive) <= 1)
                 throw new InvalidOperationException("Cannot remove the last active representative.");

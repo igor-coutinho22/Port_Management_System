@@ -86,7 +86,17 @@ namespace WebApp.Models.Application.Services
                 throw new KeyNotFoundException("Organization not found.");
 
             org.AddRepresentative(rep);
-            await _orgRepo.AddRepresentativeAsync(rep);
+            await _orgRepo.AddOrRemoveRepresentativeAsync();
+        }
+
+        public async Task RemoveRepresentativeAsync(Guid organizationId, Guid repId)
+        {
+            var org = await _orgRepo.GetByIdAsync(organizationId);
+            if (org == null)
+                throw new KeyNotFoundException("Organization not found.");
+
+            org.RemoveRepresentative(repId);
+            await _orgRepo.UpdateAsync(org);
         }
 
         public async Task DeleteAsync(Guid id)
