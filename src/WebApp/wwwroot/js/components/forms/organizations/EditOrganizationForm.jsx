@@ -2,6 +2,7 @@
 console.log('EditOrganizationForm component loading...');
 
 const EditOrganizationForm = ({ onSuccess }) => {
+    const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({ id: '' });
     const [formData, setFormData] = React.useState({
         id: '',
@@ -36,11 +37,11 @@ const EditOrganizationForm = ({ onSuccess }) => {
     const handleSearch = async (e) => {
         e.preventDefault();
         if (!searchData.id.trim()) {
-            setMessage({ type: 'error', text: 'Organization ID is required' });
+            setMessage({ type: 'error', text: t('organizations.forms.edit.search_error.required') });
             return;
         }
         if (!isValidGuid(searchData.id.trim())) {
-            setMessage({ type: 'error', text: 'Invalid GUID format. Please enter a valid organization ID' });
+            setMessage({ type: 'error', text: t('organizations.forms.edit.search_error.format') });
             return;
         }
         setIsLoading(true);
@@ -51,6 +52,7 @@ const EditOrganizationForm = ({ onSuccess }) => {
             const data = await apiService.getOrganizationById(searchData.id.trim());
             if (data) {
                 setOrganization(data);
+                // Use the searchData.id for formData since the API response doesn't always contain the ID field consistently
                 setFormData({
                     id: searchData.id.trim(),
                     alternativeNames: data.alternativeNames || '',
@@ -58,18 +60,18 @@ const EditOrganizationForm = ({ onSuccess }) => {
                 });
                 setHasSearched(true);
                 setStep('edit');
-                setMessage({ type: 'success', text: 'Organization found successfully' });
+                setMessage({ type: 'success', text: t('organizations.forms.edit.search_success') });
             } else {
                 setOrganization(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Organization not found' });
+                setMessage({ type: 'info', text: t('organizations.forms.edit.search_error.not_found') });
             }
         } catch (error) {
             console.error('Error fetching organization:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Organization not found with the provided ID' });
+                setMessage({ type: 'info', text: t('organizations.forms.edit.search_error.not_found_with_id') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch organization. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('organizations.forms.edit.search_error.failed') });
             }
             setOrganization(null);
             setHasSearched(true);
@@ -84,19 +86,19 @@ const EditOrganizationForm = ({ onSuccess }) => {
         setMessage({ type: '', text: '' });
         try {
             if (!formData.address?.trim()) {
-                throw new Error('Address is required');
+                throw new Error(t('organizations.forms.edit.error.address_required'));
             }
             // Prepare DTO for backend
             const orgData = {
-                AlternativeNames: formData.alternativeNames,
+                AlternativeNames: formData.alternativeNames.trim(),
                 Address: formData.address.trim()
             };
             await apiService.updateOrganization(formData.id, orgData);
-            setMessage({ type: 'success', text: 'Organization updated successfully' });
+            setMessage({ type: 'success', text: t('organizations.forms.edit.update_success') });
             if (onSuccess) onSuccess();
         } catch (error) {
             console.error('Error updating organization:', error);
-            setMessage({ type: 'error', text: error.message || 'Failed to update organization. Please try again.' });
+            setMessage({ type: 'error', text: error.message || t('organizations.forms.edit.update_error') });
         } finally {
             setIsUpdating(false);
         }
@@ -123,74 +125,113 @@ const EditOrganizationForm = ({ onSuccess }) => {
         setStep('search');
     };
 
+    const orgLegalName = organization?.legalName || organization?.LegalName || 'N/A';
+    const orgDisplayId = organization?.id || organization?.Id || formData.id;
+
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Edit Organization</h4>
-                <p>Search for an organization by ID and modify its information</p>
+                <h4>{t('organizations.forms.edit.title')}</h4>
+                <p>{t('organizations.forms.edit.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
             )}
+            
             {/* Step 1: Search for Organization */}
             {step === 'search' && (
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchId">Organization ID</label>
+                            <label htmlFor="searchId">{t('organizations.forms.edit.id.label')}</label>
                             <input
                                 type="text"
                                 id="searchId"
                                 name="id"
                                 value={searchData.id}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)"
+                                placeholder={t('organizations.forms.edit.id.placeholder')}
                                 className="form-input"
                             />
-                            <small className="form-help">Enter the unique GUID of the organization you want to edit</small>
+                            <small className="form-help">{t('organizations.forms.edit.id.help')}</small>
                         </div>
                     </div>
                     <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={isLoading}>
-                            {isLoading ? (<><span className="loading-spinner"></span>Loading...</>) : (<><span>🔍</span>Search Organization</>)}
+                            {isLoading ? (<><span className="loading-spinner"></span>{t('common.loading')}</>) : (<><span>🔍</span>{t('organizations.forms.edit.search_button')}</>)}
                         </button>
                         <button type="button" className="clear-btn" onClick={handleClear} disabled={isLoading}>
-                            <span>🧹</span>Cancel
+                            <span>🧹</span>{t('organizations.forms.edit.cancel')}
                         </button>
                     </div>
                 </form>
             )}
+            
             {/* Step 2: Edit Organization Form */}
             {step === 'edit' && organization && (
                 <>
                     <div className="form-section-header">
-                        <h5>Editing organization: {organization.legalName} (ID: {organization.id})</h5>
-                        <button type="button" className="link-btn" onClick={handleNewSearch}>🔍 Search different organization</button>
+                        <h5>
+                            {t('organizations.forms.edit.editing_header', { legalName: orgLegalName, orgId: orgDisplayId })}
+                        </h5>
+                        <button type="button" className="link-btn" onClick={handleNewSearch}>
+                            <span>🔍</span> {t('organizations.forms.edit.search_different')}
+                        </button>
                     </div>
                     <form onSubmit={handleUpdate} className="organization-form">
                         <div className="form-grid">
                             <div className="form-group">
-                                <label htmlFor="editId">Organization ID</label>
-                                <input type="text" id="editId" name="id" value={formData.id} className="form-input" disabled />
-                                <small className="form-help">ID cannot be changed</small>
+                                <label htmlFor="editId">{t('organizations.forms.edit.id.label')}</label>
+                                <input 
+                                    type="text" 
+                                    id="editId" 
+                                    name="id" 
+                                    value={formData.id} 
+                                    className="form-input" 
+                                    disabled 
+                                />
+                                <small className="form-help">{t('organizations.forms.edit.id_readonly_help')}</small>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="editAlternativeNames">Alternative Names</label>
-                                <input type="text" id="editAlternativeNames" name="alternativeNames" value={formData.alternativeNames} onChange={handleFormInputChange} placeholder="Enter alternative names" className="form-input" />
-                                <small className="form-help">Other names or abbreviations</small>
+                                <label htmlFor="editAlternativeNames">{t('organizations.forms.edit.alt_names.label')}</label>
+                                <input 
+                                    type="text" 
+                                    id="editAlternativeNames" 
+                                    name="alternativeNames" 
+                                    value={formData.alternativeNames} 
+                                    onChange={handleFormInputChange} 
+                                    placeholder={t('organizations.forms.edit.alt_names.placeholder')} 
+                                    className="form-input" 
+                                />
+                                <small className="form-help">{t('organizations.forms.edit.alt_names.help')}</small>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="editAddress">Address <span className="required">*</span></label>
-                                <input type="text" id="editAddress" name="address" value={formData.address} onChange={handleFormInputChange} placeholder="Enter address" className="form-input" required />
-                                <small className="form-help">Physical address</small>
+                                <label htmlFor="editAddress">
+                                    {t('organizations.forms.edit.address.label')} <span className="required">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="editAddress" 
+                                    name="address" 
+                                    value={formData.address} 
+                                    onChange={handleFormInputChange} 
+                                    placeholder={t('organizations.forms.edit.address.placeholder')} 
+                                    className="form-input" 
+                                    required 
+                                />
+                                <small className="form-help">{t('organizations.forms.edit.address.help')}</small>
                             </div>
                         </div>
                         <div className="form-actions">
                             <button type="submit" className="submit-btn" disabled={isUpdating}>
-                                {isUpdating ? (<><span className="loading-spinner"></span>Updating...</>) : (<><span>✏️</span>Update Organization</>)}
+                                {isUpdating ? (
+                                    <><span className="loading-spinner"></span>{t('organizations.forms.edit.updating')}</>
+                                ) : (
+                                    <><span>✏️</span>{t('organizations.forms.edit.update_button')}</>
+                                )}
                             </button>
                             <button type="button" className="clear-btn" onClick={handleClear} disabled={isUpdating}>
-                                <span>🧹</span>Cancel
+                                <span>🧹</span>{t('organizations.forms.edit.cancel')}
                             </button>
                         </div>
                     </form>
@@ -198,6 +239,6 @@ const EditOrganizationForm = ({ onSuccess }) => {
             )}
         </div>
     );
-};
+}
 
 console.log('EditOrganizationForm component loaded!');

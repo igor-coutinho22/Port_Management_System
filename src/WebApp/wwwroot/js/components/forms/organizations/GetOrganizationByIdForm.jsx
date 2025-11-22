@@ -2,6 +2,7 @@
 console.log('GetOrganizationByIdForm component loading...');
 
 const GetOrganizationByIdForm = () => {
+    const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({ id: '' });
     const [organization, setOrganization] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -23,11 +24,11 @@ const GetOrganizationByIdForm = () => {
     const handleSearch = async (e) => {
         e.preventDefault();
         if (!searchData.id.trim()) {
-            setMessage({ type: 'error', text: 'Organization ID is required' });
+            setMessage({ type: 'error', text: t('organizations.forms.get_by_id.error.required') });
             return;
         }
         if (!isValidGuid(searchData.id.trim())) {
-            setMessage({ type: 'error', text: 'Invalid GUID format. Please enter a valid organization ID (e.g., 12345678-1234-1234-1234-123456789abc)' });
+            setMessage({ type: 'error', text: t('organizations.forms.get_by_id.error.format') });
             return;
         }
         setIsLoading(true);
@@ -37,20 +38,22 @@ const GetOrganizationByIdForm = () => {
         try {
             const data = await apiService.getOrganizationById(searchData.id.trim());
             if (data) {
-                setOrganization(data);
+                // Ensure ID is set on the organization object if API doesn't return it
+                const orgWithId = { ...data, id: data.id || searchData.id.trim() };
+                setOrganization(orgWithId);
                 setHasSearched(true);
-                setMessage({ type: 'success', text: 'Organization found successfully' });
+                setMessage({ type: 'success', text: t('organizations.forms.get_by_id.success') });
             } else {
                 setOrganization(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Organization not found' });
+                setMessage({ type: 'info', text: t('organizations.forms.get_by_id.not_found') });
             }
         } catch (error) {
             console.error('Error fetching organization:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Organization not found with the provided ID' });
+                setMessage({ type: 'info', text: t('organizations.forms.get_by_id.error.not_found_with_id') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch organization. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('organizations.forms.get_by_id.error.failed') });
             }
             setOrganization(null);
             setHasSearched(true);
@@ -66,11 +69,14 @@ const GetOrganizationByIdForm = () => {
         setMessage({ type: '', text: '' });
     };
 
+    // Helper to extract attribute values reliably (handling PascalCase and camelCase)
+    const getAttr = (org, key) => org?.[key] || org?.[key.charAt(0).toUpperCase() + key.slice(1)];
+
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Get Organization by ID</h4>
-                <p>Retrieve detailed information about a specific organization using its unique identifier</p>
+                <h4>{t('organizations.forms.get_by_id.title')}</h4>
+                <p>{t('organizations.forms.get_by_id.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -78,77 +84,83 @@ const GetOrganizationByIdForm = () => {
             <form onSubmit={handleSearch} className="search-form">
                 <div className="form-grid">
                     <div className="form-group">
-                        <label htmlFor="searchId">Organization ID</label>
+                        <label htmlFor="searchId">{t('organizations.forms.get_by_id.id.label')}</label>
                         <input
                             type="text"
                             id="searchId"
                             name="id"
                             value={searchData.id}
                             onChange={handleInputChange}
-                            placeholder="Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)"
+                            placeholder={t('organizations.forms.get_by_id.id.placeholder')}
                             className="form-input"
                         />
-                        <small className="form-help">Must be a valid GUID format</small>
+                        <small className="form-help">{t('organizations.forms.get_by_id.id.help')}</small>
                     </div>
                 </div>
                 <div className="form-actions">
                     <button type="submit" className="submit-btn" disabled={isLoading}>
-                        {isLoading ? (<><span className="loading-spinner"></span>Loading...</>) : (<><span>🔍</span>Get Organization</>)}
+                        {isLoading ? (<><span className="loading-spinner"></span>{t('common.loading')}</>) : (<><span>🔍</span>{t('organizations.forms.get_by_id.submit')}</>)}
                     </button>
                     <button type="button" className="clear-btn" onClick={handleClear} disabled={isLoading}>
-                        <span>🔄</span>Clear
+                        <span>🔄</span>{t('common.clear')}
                     </button>
                 </div>
             </form>
+            
             {/* Results Section */}
             {hasSearched && organization && (
                 <div className="results-section">
                     <div className="results-header">
-                        <h4>Organization Details</h4>
-                        <span className="results-count">ID: {organization.id}</span>
+                        <h4>{t('organizations.forms.get_by_id.results.details_title')}</h4>
+                        <span className="results-count">{t('organizationsHubPage.table.id')}: {getAttr(organization, 'id')}</span>
                     </div>
                     <div className="organization-details-card">
                         <div className="organization-header">
-                            <h3 className="organization-name">{organization.legalName}</h3>
-                            <span className="organization-id">ID: {organization.id}</span>
+                            <h3 className="organization-name">{getAttr(organization, 'legalName')}</h3>
+                            <span className="organization-id">{t('organizationsHubPage.table.id')}: {getAttr(organization, 'id')}</span>
                         </div>
                         <div className="organization-info-grid">
                             <div className="info-group">
-                                <label>Identifier</label>
-                                <span>{organization.identifier || 'N/A'}</span>
+                                <label>{t('organizationsHubPage.table.identifier')}</label>
+                                <span>{getAttr(organization, 'identifier') || t('common.na')}</span>
                             </div>
                             <div className="info-group">
-                                <label>Alternative Names</label>
-                                <span>{organization.alternativeNames || 'N/A'}</span>
+                                <label>{t('organizationsHubPage.table.alternativeNames')}</label>
+                                <span>{getAttr(organization, 'alternativeNames') || t('common.na')}</span>
                             </div>
                             <div className="info-group">
-                                <label>Address</label>
-                                <span>{organization.address || 'N/A'}</span>
+                                <label>{t('organizationsHubPage.table.address')}</label>
+                                <span>{getAttr(organization, 'address') || t('common.na')}</span>
                             </div>
                             <div className="info-group">
-                                <label>Tax Number</label>
-                                <span>{organization.taxNumber || 'N/A'}</span>
+                                <label>{t('organizationsHubPage.table.taxNumber')}</label>
+                                <span>{getAttr(organization, 'taxNumber') || t('common.na')}</span>
                             </div>
                             <div className="info-group">
-                                <label>Status</label>
-                                <span>{organization.isActive ? 'Active' : 'Inactive'}</span>
+                                <label>{t('organizationsHubPage.table.status')}</label>
+                                <span>
+                                    {getAttr(organization, 'isActive') 
+                                        ? t('organizationsHubPage.table.active') 
+                                        : t('organizationsHubPage.table.inactive')
+                                    }
+                                </span>
                             </div>
                             <div className="info-group full-width">
-                                <label>Representatives</label>
+                                <label>{t('organizationsHubPage.table.representatives')}</label>
                                 <div className="representatives-list">
-                                    {organization.representatives && organization.representatives.length > 0 ? (
-                                        organization.representatives.map((rep, idx) => (
+                                    {getAttr(organization, 'representatives') && getAttr(organization, 'representatives').length > 0 ? (
+                                        getAttr(organization, 'representatives').map((rep, idx) => (
                                             <div key={idx} className="representative-card" style={{ marginBottom: '18px', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                                                 <div style={{ minWidth: 180, marginRight: 24 }}>
-                                                    <strong>{rep.name}</strong> ({rep.citizenId})
+                                                    <strong>{getAttr(rep, 'name')}</strong> ({getAttr(rep, 'citizenId')})
                                                 </div>
-                                                <span style={{ marginRight: 12 }}>{rep.nationality}</span>
-                                                <span style={{ marginRight: 12 }}>{rep.email}</span>
-                                                <span>{rep.phone}</span>
+                                                <span style={{ marginRight: 12 }}>{getAttr(rep, 'nationality')}</span>
+                                                <span style={{ marginRight: 12 }}>{getAttr(rep, 'email')}</span>
+                                                <span>{getAttr(rep, 'phone')}</span>
                                             </div>
                                         ))
                                     ) : (
-                                        <span className="no-representatives">No representatives</span>
+                                        <span className="no-representatives">{t('organizations.forms.get_by_id.reps_none')}</span>
                                     )}
                                 </div>
                             </div>
@@ -158,6 +170,6 @@ const GetOrganizationByIdForm = () => {
             )}
         </div>
     );
-};
+}
 
 console.log('GetOrganizationByIdForm component loaded!');
