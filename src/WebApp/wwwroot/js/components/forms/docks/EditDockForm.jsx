@@ -293,7 +293,7 @@ const EditDockForm = ({ onSuccess }) => {
                 <>
                     <div className="form-section-header">
                         <h5>
-                            {t('docks.forms.edit.editing_header', { dockName: dock.name, dockId: dock.id })}
+                            {t('docks.forms.edit.editing_header')}: <strong> {dock.name} (ID: {dock.id})</strong>
                         </h5>
                         <button 
                             type="button" 

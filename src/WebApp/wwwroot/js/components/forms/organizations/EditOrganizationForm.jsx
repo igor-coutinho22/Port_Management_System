@@ -172,7 +172,7 @@ const EditOrganizationForm = ({ onSuccess }) => {
                 <>
                     <div className="form-section-header">
                         <h5>
-                            {t('organizations.forms.edit.editing_header', { legalName: orgLegalName, orgId: orgDisplayId })}
+                            {t('organizations.forms.edit.editing_header')}: <strong> {orgLegalName} (ID: {orgDisplayId})</strong>
                         </h5>
                         <button type="button" className="link-btn" onClick={handleNewSearch}>
                             <span>🔍</span> {t('organizations.forms.edit.search_different')}

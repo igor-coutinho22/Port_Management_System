@@ -237,7 +237,9 @@ const DeleteDockForm = ({ onSuccess }) => {
                         <form onSubmit={handleDelete} className="delete-form">
                             <div className="form-group" style={{ marginBottom: '18px' }}>
                                 <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>
-                                    {t('docks.forms.delete.confirmation_text', { dockName: dock.name })}
+                                    {t('docks.forms.delete.confirmation_text').split('{{dockName}}')[0]}
+                                    <strong>{dock.name}</strong>
+                                    {t('docks.forms.delete.confirmation_text').split('{{dockName}}')[1]}
                                 </label>
                                 <input
                                     type="text"

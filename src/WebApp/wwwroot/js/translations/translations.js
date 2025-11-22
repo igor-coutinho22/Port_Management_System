@@ -2830,7 +2830,7 @@ window.translations = {
     "docks.forms.delete.deleting": "A eliminar...",
     "docks.forms.delete.submit": "Eliminar Doca",
     "docks.forms.delete.success":
-      'A Doca "{{dockName}}" foi eliminada com sucesso.',
+      'A Doca foi eliminada com sucesso.',
     "docks.details.dimensions": "Dimensões",
     "docks.details.allowed_vessel_types": "Tipos de Embarcação Permitidos",
 
@@ -2842,7 +2842,7 @@ window.translations = {
       "Insira o GUID único da doca que pretende editar",
     "docks.forms.edit.search_button": "Pesquisar Doca",
     "docks.forms.edit.editing_header":
-      "A editar doca: {{dockName}} (ID: {{dockId}})",
+      "A editar doca: ",
     "docks.forms.edit.search_different": "Pesquisar doca diferente",
     "docks.forms.edit.id_readonly_help": "O ID não pode ser alterado",
     "docks.forms.edit.name.placeholder": "Insira o nome da doca",
@@ -3065,7 +3065,7 @@ window.translations = {
 "organizations.forms.delete.confirmation_help": "Esta confirmação ajuda a evitar eliminações acidentais",
 "organizations.forms.delete.deleting": "A eliminar...",
 "organizations.forms.delete.submit": "Eliminar Organização Permanentemente",
-"organizations.forms.delete.success": "A Organização \"{{legalName}}\" foi eliminada com sucesso.",
+"organizations.forms.delete.success": "A Organização foi eliminada com sucesso.",
 "organizations.forms.delete.cancel": "Cancelar",
 
 // EditOrganizationForm
@@ -3081,7 +3081,7 @@ window.translations = {
 "organizations.forms.edit.search_error.not_found_with_id": "Organização não encontrada com o ID fornecido",
 "organizations.forms.edit.search_error.failed": "Falha ao obter organização. Por favor, tente novamente.",
 "organizations.forms.edit.search_success": "Organização encontrada com sucesso",
-"organizations.forms.edit.editing_header": "A editar organização: {{legalName}} (ID: {{orgId}})",
+"organizations.forms.edit.editing_header": "A editar organização: ",
 "organizations.forms.edit.search_different": "Pesquisar organização diferente",
 "organizations.forms.edit.id_readonly_help": "O ID não pode ser alterado",
 "organizations.forms.edit.alt_names.label": "Nomes Alternativos",
