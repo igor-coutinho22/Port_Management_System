@@ -1,7 +1,7 @@
 // Register Dock Form Component
 console.log('📝 RegisterDockForm component loading...');
 
-export default function RegisterDockForm({ onSuccess }) {
+const RegisterDockForm = ({ onSuccess }) => {
     const { t } = useTranslation();
     const [formData, setFormData] = React.useState({
         name: '',

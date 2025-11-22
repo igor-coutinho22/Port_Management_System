@@ -1,7 +1,7 @@
 // Edit Dock Form Component
 console.log('✏️ EditDockForm component loading...');
 
-export default function EditDockForm({ onSuccess }) {
+const EditDockForm = ({ onSuccess }) => {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
         id: ''

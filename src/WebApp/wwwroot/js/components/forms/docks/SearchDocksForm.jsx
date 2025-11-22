@@ -1,7 +1,7 @@
 // Search Docks Form Component
 console.log('🔍 SearchDocksForm component loading...');
 
-export default function SearchDocksForm() {
+const SearchDocksForm = () => {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
         name: '',

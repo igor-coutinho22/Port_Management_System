@@ -1,7 +1,7 @@
 // Get Dock by ID Form Component
 console.log('🎯 GetDockByIdForm component loading...');
 
-export default function GetDockByIdForm() {
+const GetDockByIdForm = () => {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
         id: ''
