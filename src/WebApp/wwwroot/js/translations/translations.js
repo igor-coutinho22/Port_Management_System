@@ -962,7 +962,7 @@ window.translations = {
       "Optimal: Finds best solution, higher computation time (US 3.4.2)",
 
     // StaffHubPage
-    "staffHubPage.title": "taff Management",
+    "staffHubPage.title": "Staff Management",
     "staffHubPage.description":
       "Comprehensive staff management system for port operations",
     "staffHubPage.quickView.button": "Quick Data View",
