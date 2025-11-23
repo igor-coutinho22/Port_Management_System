@@ -9,6 +9,8 @@ namespace WebApp.Models.Application.DTOs
 
         public string? AssignedCraneId { get; set; }
 
+        public int NumberOfCranes { get; set; } = 1;
+
         public List<string> StaffMecNumbers { get; set; } = new();
 
         public double DelayMinutes { get; set; }

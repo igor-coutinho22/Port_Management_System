@@ -8,6 +8,7 @@ namespace WebApp.Models.Domain.Scheduling
         public DateTime EndTime { get; set; }
 
         public string? AssignedCraneId { get; set; }
+        public int NumberOfCranes { get; set; } = 1;
         public List<string> StaffMecNumbers { get; set; } = new();
         public double DelayMinutes { get; set; }  
     }

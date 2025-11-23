@@ -469,6 +469,11 @@ class ApiService {
         return this.post('/scheduling/daily', body);
     }
 
+    async generateDailyScheduleWithMultiCrane(targetDate, heuristic) {
+        const body = { targetDate, heuristic };
+        return this.post('/scheduling/daily-with-multi-crane', body);
+    }
+
 
 }
 

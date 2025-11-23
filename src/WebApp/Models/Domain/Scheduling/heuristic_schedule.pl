@@ -317,3 +317,82 @@ run_heuristic(HeuristicName) :-
     write(SeqTripletsH), nl,
     write(SDelaysH), nl.
 
+
+
+
+
+% --------------------------------------------------------------------
+% 2-CRANE SUPPORT (SAME VESSEL ORDER)
+% --------------------------------------------------------------------
+
+
+% multi_crane_temporization(+LV, -SeqQuad, -TotalDelay, -TotalCraneMinutes)
+% LV       : list of vessels in the chosen order [v1, v2, ...]
+% SeqQuad  : [(V, TStart, TEnd, CranesUsed), ...]
+% TotalDelay       : sum of vessel departure delays
+% TotalCraneMinutes: sum over jobs of (CranesUsed * duration)
+
+multi_crane_temporization(LV, SeqQuad, TotalDelay, TotalCraneMinutes) :-
+    multi_crane_temporization1(0, LV, SeqQuad, TotalDelay, TotalCraneMinutes).
+
+multi_crane_temporization1(_, [], [], 0, 0).
+
+multi_crane_temporization1(EndPrev, [V|LV],
+                           [(V,TStart,TEnd,Cranes)|SeqQuadRest],
+                           TotalDelay, TotalCraneMinutes) :-
+    vessel(V, TIn, TDep, TUnload, TLoad),
+    P is TUnload + TLoad,      % processing time with 1 crane
+
+    % --- start time given previous vessel completion + arrival ---
+    ( TIn > EndPrev
+    -> S is TIn
+    ;  S is EndPrev + 1
+    ),
+
+    % --- option 1: use 1 crane ---
+    E1 is S + P - 1,
+    TPossibleDep1 is E1 + 1,
+    ( TPossibleDep1 > TDep
+    -> Delay1 is TPossibleDep1 - TDep
+    ;  Delay1 is 0
+    ),
+
+    % --- option 2: use 2 cranes (processing time ~= P/2) ---
+    P2 is (P + 1) // 2,        % ceil(P/2)
+    E2 is S + P2 - 1,
+    TPossibleDep2 is E2 + 1,
+    ( TPossibleDep2 > TDep
+    -> Delay2 is TPossibleDep2 - TDep
+    ;  Delay2 is 0
+    ),
+
+    % --- GREEDY CHOICE ---
+    % If 1 crane is on time, keep it. If not, escalate to 2 cranes.
+    ( Delay1 =:= 0
+    -> Cranes = 1,
+       TStart = S,
+       TEnd   = E1,
+       DelayChosen = Delay1
+    ;  Cranes = 2,
+       TStart = S,
+       TEnd   = E2,
+       DelayChosen = Delay2
+    ),
+
+    Duration is TEnd - TStart + 1,
+    CraneMinutesV is Cranes * Duration,
+
+    multi_crane_temporization1(TEnd, LV,
+                               SeqQuadRest, DelayRest, CraneMinutesRest),
+
+    TotalDelay is DelayChosen + DelayRest,
+    TotalCraneMinutes is CraneMinutesV + CraneMinutesRest.
+
+
+run_multi_from_sequence :-
+    findall(V, sequence(V), LV),
+    multi_crane_temporization(LV, SeqQuad, TotalDelay, TotalCraneMinutes),
+    write(SeqQuad), nl,
+    write(TotalDelay), nl,
+    write(TotalCraneMinutes), nl.
+

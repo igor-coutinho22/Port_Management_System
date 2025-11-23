@@ -32,4 +32,23 @@ public class SchedulingController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPost("daily-with-multi-crane")]
+    public async Task<IActionResult> GenerateDailyScheduleWithMultiCrane(
+    [FromBody] DailyScheduleRequestDTO request,
+    CancellationToken cancellationToken)
+    {
+        if (request.TargetDate == default)
+            return BadRequest("TargetDate is required.");
+        if (string.IsNullOrWhiteSpace(request.Heuristic))
+            return BadRequest("Heuristic is required.");
+
+        var result = await _scheduleService.GenerateDailyScheduleWithMultiCraneAsync(
+            request.TargetDate,
+            request.Heuristic,
+            cancellationToken);
+
+        return Ok(result);
+    }
+
 }

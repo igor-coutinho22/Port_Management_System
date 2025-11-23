@@ -7,4 +7,10 @@ public interface IHeuristicScheduleService
         DateOnly targetDate,
         string heuristicName,
         CancellationToken cancellationToken = default);
+
+    Task<MultiCraneComparisonResultDTO> GenerateDailyScheduleWithMultiCraneAsync(
+        DateOnly targetDate,
+        string heuristicName,
+        CancellationToken cancellationToken = default);
+
 }
