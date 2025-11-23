@@ -39,7 +39,7 @@ window.translations = {
     "search.results_found": "vessels found",
 
     // Header/Navigation
-    "header.title": "Port Management System",
+    "header.title": "Sines Port Management System",
     "nav.home": "Home",
     "nav.management": "Management",
     "nav.scheduling": "Scheduling",
@@ -50,6 +50,7 @@ window.translations = {
     "nav.navigation": "Navigation",
     "nav.admin_users": "Admin Users",
     "nav.logout": "Sign out",
+    "nav.vvn_representatives": "Vessel Visit Notifications",
 
     // Theme
     "theme.switch_to_light": "Switch to Light Mode",
@@ -86,6 +87,9 @@ window.translations = {
       "Explore the complete API documentation and endpoints.",
     "home.feature.admin_users.title": "👤 Admin Users",
     "home.feature.admin_users.desc": "Manage administrative users and roles.",
+    "home.feature.vvn.representatives.title": "🔔 Manage Vessel Visit Notifications ",
+    "home.feature.vvn.representatives.desc":
+      "Submit for approval Vessel Visit Notifications.",
 
     // Management Sidebar
     "management.title": "Management",
@@ -2212,7 +2216,7 @@ window.translations = {
     "search.results_found": "embarcações encontradas",
 
     // Header/Navigation
-    "header.title": "Sistema de Gestão Portuária",
+    "header.title": "Sistema de Gestão Portuária de Sines",
     "nav.home": "Início",
     "nav.management": "Gestão",
     "nav.scheduling": "Agendamento",
@@ -2222,6 +2226,7 @@ window.translations = {
     "nav.close_menu": "Fechar menu",
     "nav.navigation": "Navegação",
     "nav.admin_users": "Menu do Utilizador",
+    "nav.vvn_representatives": "Notificações de Visitas de Embarcações",
 
     // Theme
     "theme.switch_to_light": "Mudar para Modo Claro",
@@ -2261,6 +2266,9 @@ window.translations = {
     "home.feature.admin_users.title": "👤 Funções de Utilizador",
     "home.feature.admin_users.desc":
       "Gerencie funções e permissões de utilizador.",
+    "home.feature.vvn.representatives.title": "🔔 Gestão de Notificações de Visitas de Embarcações",
+    "home.feature.vvn.representatives.desc":
+      "Submeta para aprovação notificações de visitas de embarcações.",
 
     // Management Sidebar
     "management.title": "Gestão",

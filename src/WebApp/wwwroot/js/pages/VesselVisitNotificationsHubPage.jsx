@@ -63,13 +63,6 @@ const VesselVisitNotificationsHubPage = () => {
 			component: 'EditVesselVisitNotificationForm'
 		},
 		{
-			id: 'submit',
-			title: t('vesselVisitNotificationsHubPage.section.submit.title'),
-			description: t('vesselVisitNotificationsHubPage.section.submit.description'),
-			color: '#16a085',
-			component: 'SubmitVesselVisitNotificationForm'
-		},
-		{
 			id: 'approve',
 			title: t('vesselVisitNotificationsHubPage.section.approve.title'),
 			description: t('vesselVisitNotificationsHubPage.section.approve.description'),
@@ -179,7 +172,6 @@ const VesselVisitNotificationsHubPage = () => {
 									{section.component === 'SearchVesselVisitNotificationsForm' && <SearchVesselVisitNotificationsForm />}
 									{section.component === 'GetVesselVisitNotificationByIdForm' && <GetVesselVisitNotificationByIdForm />}
 									{section.component === 'EditVesselVisitNotificationForm' && <EditVesselVisitNotificationForm onSuccess={loadNotifications} />}
-									{section.component === 'SubmitVesselVisitNotificationForm' && <SubmitVesselVisitNotificationForm onSuccess={loadNotifications} />}
 									{section.component === 'ApproveVesselVisitNotificationForm' && <ApproveVesselVisitNotificationForm onSuccess={loadNotifications} />}
 									{section.component === 'RejectVesselVisitNotificationForm' && <RejectVesselVisitNotificationForm onSuccess={loadNotifications} />}
 									{section.component === 'ManageLoadingManifestsForm' && <ManageLoadingManifestsForm onSuccess={loadNotifications} />}

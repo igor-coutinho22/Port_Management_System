@@ -7,8 +7,10 @@ const Footer = ({ currentPage, onNavigate }) => {
     const quickLinks = [
         { id: 'home', labelKey: 'nav.home', icon: '⚓' },
         { id: 'management', labelKey: 'nav.management', icon: '⚙️' },
+        { id: 'scheduling', labelKey: 'nav.scheduling', icon: '📅' },
+        { id: 'admin-users', labelKey: 'nav.admin_users', icon: '👤' },
         { id: '3d-view', labelKey: 'nav.3d_view', icon: '🏗️' },
-        { id: 'api-docs', labelKey: 'nav.api_docs', icon: '📚' }
+        { id: 'vvn_representatives', labelKey: 'nav.vvn_representatives', icon: '🔔' }
     ];
 
     const handleQuickNavigate = (page) => {

@@ -98,7 +98,8 @@ const AppWithGlobalNav = () => {
     staff: "staff",
     "vessel-visit-notifications": "vessel-visit-notifications",
     qualifications: "qualifications",
-    scheduling: "scheduling"
+    scheduling: "scheduling",
+    "vvn-hub-for-representatives": "vvn-hub-for-representatives"
   };
 
 
@@ -223,8 +224,10 @@ const AppWithGlobalNav = () => {
         ) : (
           <SchedulingHubPage />
         );
-      case "api-docs":
-        return <ApiDocsPage />;
+      //case "api-docs":
+        //return <ApiDocsPage />;
+      case "vvn-hub-for-representatives":
+        return <VVNHubPageForRepresentatives />;
       case 'admin-users':
         return <AdminUsersPage />;
       case "activation-success":

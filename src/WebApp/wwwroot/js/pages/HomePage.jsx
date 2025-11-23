@@ -17,6 +17,11 @@ const HomePage = () => {
             route: "scheduling",
         },
         {
+            titleKey: "home.feature.vvn.representatives.title",
+            descKey: "home.feature.vvn.representatives.desc",
+            route: "vvn-hub-for-representatives",
+        },
+        {
             titleKey: "home.feature.admin_users.title",
             descKey: "home.feature.admin_users.desc",
             route: "admin-users",
@@ -26,11 +31,11 @@ const HomePage = () => {
             descKey: "home.feature.3d_view.desc",
             route: "3d-view",
         },
-        {
+        /*{
             titleKey: "home.feature.api_docs.title",
             descKey: "home.feature.api_docs.desc",
             route: "api-docs",
-        },
+        },*/
     ];
 
     // While user/roles are loading, show a placeholder
