@@ -42,6 +42,12 @@ namespace WebApp.Models.Infrastructure.Configurations.VesselVisits
             builder.HasMany(v => v.Crew)
                    .WithOne()
                    .OnDelete(DeleteBehavior.Cascade);
+
+            // One-to-many with DecisionLogs
+            builder.HasMany(v => v.DecisionLogs)
+                   .WithOne()
+                   .HasForeignKey("VesselVisitNotificationId")
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

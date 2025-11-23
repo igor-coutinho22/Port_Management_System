@@ -1,11 +1,10 @@
-// File: WebApp/Models/Domain/Agents/ShippingAgentOrganization.cs
 using System.Text.RegularExpressions;
-using WebApp.Models.Domain.Common;
 
 namespace WebApp.Models.Domain.Agents
 {
-    public class ShippingAgentOrganization : BaseEntity
+    public class ShippingAgentOrganization
     {
+        public Guid Id { get; private set; }
         public string Identifier { get; private set; } = default!;
         public string LegalName { get; private set; } = default!;
         public string? AlternativeNames { get; private set; }
@@ -27,12 +26,10 @@ namespace WebApp.Models.Domain.Agents
             TaxNumber = ValidateTaxNumber(taxNumber);
         }
 
-        public void UpdateProfile(string legalName, string? alternativeNames, string address, string taxNumber)
+        public void UpdateProfile(string? alternativeNames, string address)
         {
-            LegalName = ValidateLegalName(legalName);
             AlternativeNames = NormalizeAlternativeNames(alternativeNames);
             Address = ValidateAddress(address);
-            TaxNumber = ValidateTaxNumber(taxNumber);
         }
 
         public void Activate() => IsActive = true;
@@ -62,6 +59,16 @@ namespace WebApp.Models.Domain.Agents
                     : "At least one representative is required.");
         }
 
+        public void UpdateAlternativeNames(string? alternativeNames)
+        {
+            AlternativeNames = NormalizeAlternativeNames(alternativeNames);
+        }
+
+        public void UpdateAddress(string address)
+        {
+            Address = ValidateAddress(address);
+        }
+
         // ===== Validations =====
         private static string ValidateIdentifier(string value)
         {
@@ -78,8 +85,8 @@ namespace WebApp.Models.Domain.Agents
             if (string.IsNullOrWhiteSpace(value)) 
                 throw new ArgumentException("Legal name is required.", nameof(value));
             var v = value.Trim();
-            if (v.Length > 200) 
-                throw new ArgumentException("Legal name must be at most 200 characters.", nameof(value));
+            if (v.Length > 30) 
+                throw new ArgumentException("Legal name must be at most 30 characters.", nameof(value));
             return v;
         }
 
@@ -87,8 +94,8 @@ namespace WebApp.Models.Domain.Agents
         {
             if (string.IsNullOrWhiteSpace(value)) return null;
             var v = value.Trim();
-            if (v.Length > 200) 
-                throw new ArgumentException("Alternative names must be at most 200 characters.", nameof(value));
+            if (v.Length > 50) 
+                throw new ArgumentException("Alternative names must be at most 50 characters.", nameof(value));
             return v;
         }
 
@@ -97,8 +104,8 @@ namespace WebApp.Models.Domain.Agents
             if (string.IsNullOrWhiteSpace(value)) 
                 throw new ArgumentException("Address is required.", nameof(value));
             var v = value.Trim();
-            if (v.Length > 300) 
-                throw new ArgumentException("Address must be at most 300 characters.", nameof(value));
+            if (v.Length > 100) 
+                throw new ArgumentException("Address must be at most 100 characters.", nameof(value));
             return v;
         }
 
@@ -119,15 +126,15 @@ namespace WebApp.Models.Domain.Agents
 
             return v;
         }
-       public void RemoveRepresentative(Guid representativeId)
-{
-    var rep = Representatives.FirstOrDefault(r => r.Id == representativeId)
-              ?? throw new KeyNotFoundException("Representative not found.");
+        public void RemoveRepresentative(Guid representativeId)
+        {
+            var rep = Representatives.FirstOrDefault(r => r.Id == representativeId)
+                    ?? throw new KeyNotFoundException("Representative not found in this organization.");
 
-    if (rep.IsActive && Representatives.Count(r => r.IsActive) <= 1)
-        throw new InvalidOperationException("Cannot remove the last active representative.");
+            if (rep.IsActive && Representatives.Count(r => r.IsActive) <= 1)
+                throw new InvalidOperationException("Cannot remove the last active representative.");
 
-    Representatives.Remove(rep);
-}
+            Representatives.Remove(rep);
+        }
     }
 }

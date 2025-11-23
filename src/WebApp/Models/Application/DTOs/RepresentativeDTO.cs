@@ -1,18 +1,18 @@
-// File: WebApp/Models/Application/DTOs/RepresentativeDtos.cs
 namespace WebApp.Models.Application.DTOs
 {
-    public record RepresentativeDto(
-        Guid Id,
-        Guid OrganizationId,
-        string Name,
-        string CitizenId,
-        string Nationality,
-        string Email,
-        string Phone,
-        bool IsActive
-    );
+    public class RepresentativeDto
+    {
+        public Guid Id { get; set; }
+        public Guid OrganizationId { get; set; }
+        public string? Name { get; set; }
+        public string? CitizenId { get; set; }
+        public string? Nationality { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public bool IsActive { get; set; }
+    };
 
-    public class CreateRepresentativeRequest
+    public class CreateRepresentativeDto
     {
         public string Name { get; set; } = string.Empty;
         public string CitizenId { get; set; } = string.Empty;
@@ -21,13 +21,20 @@ namespace WebApp.Models.Application.DTOs
         public string Phone { get; set; } = string.Empty;
     }
 
-    public class UpdateRepresentativeRequest
+    public class GetRepresentativeToAddDto
     {
+        public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string CitizenId { get; set; } = string.Empty;
         public string Nationality { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
+    }
+
+    public class UpdateRepresentativeDto
+    {
+        public string Nationality { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
     }
 }

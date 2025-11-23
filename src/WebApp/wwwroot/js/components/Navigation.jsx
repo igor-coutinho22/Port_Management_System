@@ -35,9 +35,11 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
 
         console.log('Theme toggled to:', theme); // Debug log
     };
+
     // All possible navigation items (labels will be translated when rendered)
     const allNavItems = [
         { id: 'management', labelKey: 'nav.management', icon: '⚙️' },
+        { id: 'scheduling', labelKey: 'nav.scheduling', icon: '📅' },
         { id: 'admin-users', labelKey: 'nav.admin_users', icon: '👤' },
         { id: '3d-view', labelKey: 'nav.3d_view', icon: '🏗️' },
         { id: 'api-docs', labelKey: 'nav.api_docs', icon: '📚' }

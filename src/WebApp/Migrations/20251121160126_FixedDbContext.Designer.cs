@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251113120539_Initial")]
-    partial class Initial
+    [Migration("20251121160126_FixedDbContext")]
+    partial class FixedDbContext
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -256,6 +256,9 @@ namespace WebApp.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrganizationId", "CitizenId")
+                        .IsUnique();
+
                     b.HasIndex("OrganizationId", "Email")
                         .IsUnique();
 
@@ -274,7 +277,16 @@ namespace WebApp.Migrations
                         .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("AlternativeNames")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Identifier")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LegalName")
                         .IsRequired()
@@ -287,6 +299,16 @@ namespace WebApp.Migrations
                         .HasColumnType("nvarchar(32)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AlternativeNames")
+                        .IsUnique()
+                        .HasFilter("[AlternativeNames] IS NOT NULL");
+
+                    b.HasIndex("Identifier")
+                        .IsUnique();
+
+                    b.HasIndex("LegalName")
+                        .IsUnique();
 
                     b.HasIndex("TaxNumber")
                         .IsUnique();
@@ -643,9 +665,6 @@ namespace WebApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("OfficerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Outcome")
                         .HasColumnType("int");
 
@@ -659,7 +678,7 @@ namespace WebApp.Migrations
 
                     b.HasIndex("VesselVisitNotificationId");
 
-                    b.ToTable("DecisionLog");
+                    b.ToTable("DecisionLogs");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
@@ -862,7 +881,7 @@ namespace WebApp.Migrations
                     b.HasOne("WebApp.Models.Domain.Agents.ShippingAgentOrganization", "Organization")
                         .WithMany("Representatives")
                         .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Organization");
@@ -936,7 +955,8 @@ namespace WebApp.Migrations
                 {
                     b.HasOne("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", null)
                         .WithMany("DecisionLogs")
-                        .HasForeignKey("VesselVisitNotificationId");
+                        .HasForeignKey("VesselVisitNotificationId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>

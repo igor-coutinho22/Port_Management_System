@@ -26,7 +26,7 @@ const RegisterDockForm = ({ onSuccess }) => {
             setVesselTypes(types);
         } catch (error) {
             console.error('Error loading vessel types:', error);
-            setMessage({ type: 'error', text: 'Failed to load vessel types' });
+            setMessage({ type: 'error', text: t('docks.forms.register.error.load_types') });
         }
     };
 
@@ -60,33 +60,33 @@ const RegisterDockForm = ({ onSuccess }) => {
         try {
             // Validate required fields
             if (!formData.name?.trim()) {
-                throw new Error('Dock name is required');
+                throw new Error(t('docks.forms.register.error.required.name'));
             }
             if (!formData.location?.trim()) {
-                throw new Error('Location is required');
+                throw new Error(t('docks.forms.register.error.required.location'));
             }
             if (!formData.lengthMeters?.toString().trim()) {
-                throw new Error('Length is required');
+                throw new Error(t('docks.forms.register.error.required.length'));
             }
             if (!formData.depthMeters?.toString().trim()) {
-                throw new Error('Depth is required');
+                throw new Error(t('docks.forms.register.error.required.depth'));
             }
             if (!formData.maxDraftMeters?.toString().trim()) {
-                throw new Error('Max draft is required');
+                throw new Error(t('docks.forms.register.error.required.draft'));
             }
             if (!formData.allowedVesselTypes || formData.allowedVesselTypes.length === 0) {
-                throw new Error('At least one allowed vessel type must be specified');
+                throw new Error(t('docks.forms.register.error.required.vessel_types'));
             }
 
             // Validate numeric fields
             if (isNaN(parseFloat(formData.lengthMeters)) || parseFloat(formData.lengthMeters) <= 0) {
-                throw new Error('Length must be a valid positive number');
+                throw new Error(t('docks.forms.register.error.length_invalid'));
             }
             if (isNaN(parseFloat(formData.depthMeters)) || parseFloat(formData.depthMeters) <= 0) {
-                throw new Error('Depth must be a valid positive number');
+                throw new Error(t('docks.forms.register.error.depth_invalid'));
             }
             if (isNaN(parseFloat(formData.maxDraftMeters)) || parseFloat(formData.maxDraftMeters) <= 0) {
-                throw new Error('Max draft must be a valid positive number');
+                throw new Error(t('docks.forms.register.error.draft_invalid'));
             }
 
             // Debug: Log the data being sent
@@ -107,7 +107,7 @@ const RegisterDockForm = ({ onSuccess }) => {
             // Create dock
             await apiService.createDock(dockData);
             
-            setMessage({ type: 'success', text: 'Dock registered successfully!' });
+            setMessage({ type: 'success', text: t('docks.forms.register.success') });
             
             // Reset form
             setFormData({
@@ -126,7 +126,7 @@ const RegisterDockForm = ({ onSuccess }) => {
             console.error('Error registering dock:', error);
             setMessage({ 
                 type: 'error', 
-                text: error.message || 'Failed to register dock' 
+                text: error.message || t('docks.forms.register.error.failed') 
             });
         } finally {
             setIsLoading(false);
@@ -136,8 +136,8 @@ const RegisterDockForm = ({ onSuccess }) => {
     return (
         <div className="form-container dock-form">
             <div className="form-header">
-                <h4>Register Dock</h4>
-                <p>Create a new dock with specifications and allowed vessel types</p>
+                <h4>{t('docks.forms.register.title')}</h4>
+                <p>{t('docks.forms.register.description')}</p>
             </div>
 
             {message.text && (
@@ -148,7 +148,7 @@ const RegisterDockForm = ({ onSuccess }) => {
                 <div className="form-grid">
                     <div className="form-group">
                         <label htmlFor="name">
-                            Dock Name <span className="required">*</span>
+                            {t('docks.forms.register.name.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="text"
@@ -156,16 +156,16 @@ const RegisterDockForm = ({ onSuccess }) => {
                             name="name"
                             value={formData.name}
                             onChange={handleInputChange}
-                            placeholder="e.g., Main Dock, Container Terminal A"
+                            placeholder={t('docks.forms.register.name.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Unique name to identify this dock</small>
+                        <small className="form-help">{t('docks.forms.register.name.help')}</small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="location">
-                            Location <span className="required">*</span>
+                            {t('docks.forms.register.location.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="text"
@@ -173,11 +173,11 @@ const RegisterDockForm = ({ onSuccess }) => {
                             name="location"
                             value={formData.location}
                             onChange={handleInputChange}
-                            placeholder="e.g., Pier 1, North Terminal, Berth 15"
+                            placeholder={t('docks.forms.register.location.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Physical location or berth designation</small>
+                        <small className="form-help">{t('docks.forms.register.location.help')}</small>
                     </div>
                 </div>
 
@@ -185,7 +185,7 @@ const RegisterDockForm = ({ onSuccess }) => {
                 <div className="dock-dimensions-grid">
                     <div className="form-group">
                         <label htmlFor="lengthMeters">
-                            Length (meters) <span className="required">*</span>
+                            {t('docks.forms.register.length.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="number"
@@ -193,18 +193,18 @@ const RegisterDockForm = ({ onSuccess }) => {
                             name="lengthMeters"
                             value={formData.lengthMeters}
                             onChange={handleInputChange}
-                            placeholder="e.g., 300"
+                            placeholder={t('docks.forms.register.length.placeholder')}
                             className="form-input"
                             step="0.01"
                             min="0"
                             required
                         />
-                        <small className="form-help">Dock length in meters</small>
+                        <small className="form-help">{t('docks.forms.register.length.help')}</small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="depthMeters">
-                            Depth (meters) <span className="required">*</span>
+                            {t('docks.forms.register.depth.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="number"
@@ -212,18 +212,18 @@ const RegisterDockForm = ({ onSuccess }) => {
                             name="depthMeters"
                             value={formData.depthMeters}
                             onChange={handleInputChange}
-                            placeholder="e.g., 18"
+                            placeholder={t('docks.forms.register.depth.placeholder')}
                             className="form-input"
                             step="0.01"
                             min="0"
                             required
                         />
-                        <small className="form-help">Water depth at dock</small>
+                        <small className="form-help">{t('docks.forms.register.depth.help')}</small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="maxDraftMeters">
-                            Max Draft (meters) <span className="required">*</span>
+                            {t('docks.forms.register.draft.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="number"
@@ -231,25 +231,25 @@ const RegisterDockForm = ({ onSuccess }) => {
                             name="maxDraftMeters"
                             value={formData.maxDraftMeters}
                             onChange={handleInputChange}
-                            placeholder="e.g., 15"
+                            placeholder={t('docks.forms.register.draft.placeholder')}
                             className="form-input"
                             step="0.01"
                             min="0"
                             required
                         />
-                        <small className="form-help">Maximum vessel draft allowed</small>
+                        <small className="form-help">{t('docks.forms.register.draft.help')}</small>
                     </div>
                 </div>
 
                 {/* Vessel Types Selection */}
                 <div className="vessel-types-selection">
                     <div className="selection-header">
-                        <h5>Allowed Vessel Types <span className="required">*</span></h5>
-                        <p>Select which vessel types can use this dock</p>
+                        <h5>{t('docks.forms.register.vessel_types.section_title')} <span className="required">*</span></h5>
+                        <p>{t('docks.forms.register.vessel_types.section_desc')}</p>
                     </div>
                     
                     {vesselTypes.length === 0 ? (
-                        <div className="loading">Loading vessel types...</div>
+                        <div className="loading">{t('docks.forms.register.vessel_types.loading')}</div>
                     ) : (
                         <div className="vessel-types-checkboxes">
                             {vesselTypes.map((vesselType) => (
@@ -282,12 +282,12 @@ const RegisterDockForm = ({ onSuccess }) => {
                         {isLoading ? (
                             <>
                                 <span className="loading-spinner"></span>
-                                Registering Dock...
+                                {t('common.loading')}
                             </>
                         ) : (
                             <>
                                 <span>⚓</span>
-                                Register Dock
+                                {t('docks.forms.register.submit')}
                             </>
                         )}
                     </button>
@@ -309,12 +309,12 @@ const RegisterDockForm = ({ onSuccess }) => {
                         disabled={isLoading}
                     >
                         <span>🧹</span>
-                        Clear Form
+                        {t('docks.forms.register.clear')}
                     </button>
                 </div>
             </form>
         </div>
     );
-};
+}
 
 console.log('RegisterDockForm component loaded! 📝');

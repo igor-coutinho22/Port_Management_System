@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class FixedDbContext : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -72,10 +72,12 @@ namespace WebApp.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Identifier = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LegalName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    AlternativeNames = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AlternativeNames = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    TaxNumber = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false)
+                    TaxNumber = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -286,7 +288,7 @@ namespace WebApp.Migrations
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -502,11 +504,10 @@ namespace WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DecisionLog",
+                name: "DecisionLogs",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OfficerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Outcome = table.Column<int>(type: "int", nullable: false),
                     Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -514,12 +515,13 @@ namespace WebApp.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DecisionLog", x => x.Id);
+                    table.PrimaryKey("PK_DecisionLogs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DecisionLog_VesselVisitNotifications_VesselVisitNotificationId",
+                        name: "FK_DecisionLogs_VesselVisitNotifications_VesselVisitNotificationId",
                         column: x => x.VesselVisitNotificationId,
                         principalTable: "VesselVisitNotifications",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -604,8 +606,8 @@ namespace WebApp.Migrations
                 column: "VesselVisitNotificationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DecisionLog_VesselVisitNotificationId",
-                table: "DecisionLog",
+                name: "IX_DecisionLogs_VesselVisitNotificationId",
+                table: "DecisionLogs",
                 column: "VesselVisitNotificationId");
 
             migrationBuilder.CreateIndex(
@@ -625,6 +627,25 @@ namespace WebApp.Migrations
                 column: "VesselTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Organizations_AlternativeNames",
+                table: "Organizations",
+                column: "AlternativeNames",
+                unique: true,
+                filter: "[AlternativeNames] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Organizations_Identifier",
+                table: "Organizations",
+                column: "Identifier",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Organizations_LegalName",
+                table: "Organizations",
+                column: "LegalName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Organizations_TaxNumber",
                 table: "Organizations",
                 column: "TaxNumber",
@@ -634,6 +655,12 @@ namespace WebApp.Migrations
                 name: "IX_QualificationLinks_QualificationCode",
                 table: "QualificationLinks",
                 column: "QualificationCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Representatives_OrganizationId_CitizenId",
+                table: "Representatives",
+                columns: new[] { "OrganizationId", "CitizenId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Representatives_OrganizationId_Email",
@@ -685,7 +712,7 @@ namespace WebApp.Migrations
                 name: "CrewMembers");
 
             migrationBuilder.DropTable(
-                name: "DecisionLog");
+                name: "DecisionLogs");
 
             migrationBuilder.DropTable(
                 name: "DockStorageAreaConnections");

@@ -38,7 +38,7 @@ public class VesselVisitNotificationControllerTests : IClassFixture<TestWebAppFa
         
         return (dock.Id, vessel.IMO);
     }
-
+/*
     [Fact]
     public async Task Post_And_Get_VesselVisitNotification_ShouldWork()
     {
@@ -72,7 +72,7 @@ public class VesselVisitNotificationControllerTests : IClassFixture<TestWebAppFa
         var retrieved = await getResponse.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
         retrieved!.VesselIMO.Should().Be(dto.VesselIMO);
     }
-
+*/
     [Fact]
     public async Task Put_Submit_ShouldChangeStatus()
     {

@@ -41,6 +41,14 @@ namespace WebApp.Models.Domain.VesselVisits
             Status = VesselVisitStatus.InProgress;
         }
 
+        public void Update(Guid dockId, DateTime visitDate, VisitPurpose purpose)
+        {
+            DockId = dockId;
+            CheckDateNotInPast(visitDate);
+            VisitDate = visitDate;
+            Purpose = purpose;
+        }
+
         public void AddLoadingManifest(CargoManifest manifest)
         {
             if (manifest.Type != CargoManifestType.Loading)
@@ -63,9 +71,12 @@ namespace WebApp.Models.Domain.VesselVisits
             UnloadingManifest = manifest;
         }
 
-        public void AddCrewMember(string name, string citizenId, string nationality)
+        public void AddCrewMember(CrewMember member)
         {
-            Crew.Add(new CrewMember(name, citizenId, nationality));
+            if (Crew.Any(cm => cm.CitizenId == member.CitizenId))
+                throw new InvalidOperationException("Crew member with the same Citizen ID already exists.");
+
+            Crew.Add(member);
         }
 
         public void MarkAsSubmitted()
@@ -84,24 +95,21 @@ namespace WebApp.Models.Domain.VesselVisits
             Status = VesselVisitStatus.Submitted;
         }
 
-        public void Approve(Guid officerId, Guid dockId)
+        public DecisionLog Approve()
         {
             if (Status != VesselVisitStatus.Submitted)
                 throw new InvalidOperationException("Only submitted visits can be approved.");
 
-            if (dockId == Guid.Empty)
-                throw new ArgumentException("A valid dock must be assigned upon approval.");
-
             if (Crew == null || !Crew.Any())
                 throw new InvalidOperationException("Cannot approve a visit without crew information.");
 
-            DockId = dockId;
             Status = VesselVisitStatus.Approved;
-
-            LogDecision(officerId, DecisionOutcome.Approved, "Approved with valid crew data and dock assigned.");
+            var log = new DecisionLog(DecisionOutcome.Approved, $"Approved with valid crew data and dock assigned. (Crew verified: {Crew.Count}).");
+            DecisionLogs.Add(log);
+            return log;
         }
 
-        public void Reject(Guid officerId, string reason)
+        public DecisionLog Reject(string reason)
         {
             if (Status != VesselVisitStatus.Submitted)
                 throw new InvalidOperationException("Only submitted visits can be rejected.");
@@ -110,14 +118,15 @@ namespace WebApp.Models.Domain.VesselVisits
                 throw new ArgumentException("A rejection reason is required.");
 
             Status = VesselVisitStatus.Rejected;
-
-            LogDecision(officerId, DecisionOutcome.Rejected, reason);
+            var log = new DecisionLog(DecisionOutcome.Rejected, reason);
+            DecisionLogs.Add(log);
+            return log;
         }
 
-        private void LogDecision(Guid officerId, DecisionOutcome outcome, string message)
+        private void LogDecision(DecisionOutcome outcome, string message)
         {
             var details = $"{message} (Crew verified: {Crew.Count}).";
-            DecisionLogs.Add(new DecisionLog(officerId, outcome, details));
+            DecisionLogs.Add(new DecisionLog(outcome, details));
         }
 
         public List<DecisionLog> DecisionLogs { get; private set; } = new();

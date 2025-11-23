@@ -1,0 +1,318 @@
+/* Scheduling Hub Page - Algorithm Selection and Results */
+
+/* Scheduling Controls */
+.scheduling-controls {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border-color);
+}
+
+.algorithm-selector {
+    margin-bottom: 1.5rem;
+}
+
+.algorithm-selector label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.algorithm-dropdown {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.algorithm-dropdown:hover {
+    border-color: var(--text-accent);
+}
+
+.algorithm-dropdown:focus {
+    outline: none;
+    border-color: var(--text-accent);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Algorithm Description */
+.algorithm-description {
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--text-accent);
+}
+
+.algorithm-description h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-accent);
+    font-size: 1.1rem;
+}
+
+.algorithm-description p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* Run Button */
+.run-scheduling-btn {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    background: var(--text-accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.run-scheduling-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.run-scheduling-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.run-scheduling-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Error Message */
+.error-message {
+    background: #fee;
+    border: 2px solid #f88;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    animation: slideDown 0.3s ease;
+}
+
+.error-message h3 {
+    margin: 0 0 0.5rem 0;
+    color: #c33;
+}
+
+.error-message p {
+    margin: 0 0 1rem 0;
+    color: #555;
+}
+
+.error-message small {
+    display: block;
+    margin-top: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.error-message code {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Results Display */
+.scheduling-results {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border-color);
+    animation: slideDown 0.3s ease;
+}
+
+.scheduling-results h3 {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-accent);
+    font-size: 1.3rem;
+}
+
+/* Results Grid */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.result-card {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.result-value {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-accent);
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.sequence-value {
+    font-size: 1.3rem;
+    font-family: 'Courier New', monospace;
+    word-break: break-all;
+}
+
+.result-value .unit {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-left: 0.25rem;
+}
+
+.card-content small {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Results Note */
+.results-note {
+    padding: 1rem;
+    background: rgba(52, 152, 219, 0.1);
+    border-left: 4px solid var(--text-accent);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.results-note strong {
+    color: var(--text-accent);
+}
+
+/* Info Section */
+.info-section {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.info-section h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-accent);
+}
+
+.info-section p {
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.info-section ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.info-section li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.info-section li strong {
+    color: var(--text-primary);
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .scheduling-controls {
+        padding: 1.5rem;
+    }
+
+    .scheduling-results {
+        padding: 1.5rem;
+    }
+
+    .result-value {
+        font-size: 1.5rem;
+    }
+
+    .sequence-value {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .run-scheduling-btn {
+        padding: 0.875rem 1.25rem;
+        font-size: 1rem;
+    }
+
+    .result-card {
+        padding: 1rem;
+    }
+
+    .card-icon {
+        font-size: 2rem;
+    }
+
+    .info-section {
+        padding: 1.5rem;
+    }
+}

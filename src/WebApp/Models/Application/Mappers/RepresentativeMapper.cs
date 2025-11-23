@@ -11,19 +11,20 @@ namespace WebApp.Models.Application.Mappers
             if (rep == null)
                 throw new ArgumentNullException(nameof(rep));
 
-            return new RepresentativeDto(
-                rep.Id,
-                rep.OrganizationId,
-                rep.Name,
-                rep.CitizenId,
-                rep.Nationality,
-                rep.Email,
-                rep.Phone,
-                rep.IsActive
-            );
+            return new RepresentativeDto
+            {
+                Id = rep.Id,
+                OrganizationId = rep.OrganizationId,
+                Name = rep.Name,
+                CitizenId = rep.CitizenId,
+                Nationality = rep.Nationality,
+                Email = rep.Email,
+                Phone = rep.Phone,
+                IsActive = rep.IsActive
+            };
         }
 
-        public static Representative ToDomain(Guid organizationId, CreateRepresentativeRequest dto)
+        public static Representative ToDomain(Guid organizationId, CreateRepresentativeDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -38,17 +39,31 @@ namespace WebApp.Models.Application.Mappers
             );
         }
 
-        public static void UpdateDomain(Representative rep, UpdateRepresentativeRequest dto)
+        public static void GetFromDto(Representative rep, Guid organizationId, GetRepresentativeToAddDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            rep.GetRepresentativeToAdd(
+                organizationId,
+                dto.Name,
+                dto.CitizenId,
+                dto.Nationality,
+                dto.Email,
+                dto.Phone
+            );
+        }
+
+        public static void UpdateFromDto(Representative rep, UpdateRepresentativeDto dto)
         {
             if (rep == null || dto == null)
                 throw new ArgumentNullException(rep == null ? nameof(rep) : nameof(dto));
 
-            rep.UpdateProfile(dto.Name, dto.CitizenId, dto.Nationality, dto.Email, dto.Phone);
-            
-            if (dto.IsActive)
-                rep.SetActive(true);
-            else
-                rep.SetActive(false);
+            rep.UpdateProfile(
+                nationality: dto.Nationality,
+                email: dto.Email,
+                phone: dto.Phone
+            );
         }
     }
 }

@@ -1,7 +1,8 @@
 // Delete Qualification Form Component
 console.log('🗑️ DeleteQualificationForm component loading...');
 
-const DeleteQualificationForm = ({ onSuccess }) => {
+export default function DeleteQualificationForm({ onSuccess }) {
+    const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({ code: '' });
     const [qualification, setQualification] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -25,7 +26,7 @@ const DeleteQualificationForm = ({ onSuccess }) => {
     const handleSearch = async (e) => {
         e.preventDefault();
         if (!searchData.code.trim()) {
-            setMessage({ type: 'error', text: 'Qualification code is required' });
+            setMessage({ type: 'error', text: t('qualifications.forms.delete.error.required') });
             return;
         }
         setIsLoading(true);
@@ -40,18 +41,18 @@ const DeleteQualificationForm = ({ onSuccess }) => {
                 setQualification(qualificationWithCode);
                 setHasSearched(true);
                 setStep('confirm');
-                setMessage({ type: 'info', text: 'Qualification found. Please confirm deletion below.' });
+                setMessage({ type: 'info', text: t('qualifications.forms.delete.message.search_success') });
             } else {
                 setQualification(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Qualification not found with the provided code' });
+                setMessage({ type: 'info', text: t('qualifications.forms.delete.search_error.not_found_with_code') });
             }
         } catch (error) {
             console.error('Error fetching qualification:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Qualification not found with the provided code' });
+                setMessage({ type: 'info', text: t('qualifications.forms.delete.search_error.not_found_with_code') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch qualification. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('qualifications.forms.delete.search_error.failed') });
             }
             setQualification(null);
             setHasSearched(true);
@@ -62,22 +63,31 @@ const DeleteQualificationForm = ({ onSuccess }) => {
 
     const handleDelete = async (e) => {
         e.preventDefault();
-        if (confirmationText !== qualification.name) {
-            setMessage({ type: 'error', text: 'Qualification name does not match. Please type the exact qualification name to confirm deletion.' });
+        const qualName = qualification.name || qualification.Name || '';
+
+        if (confirmationText !== qualName) {
+            setMessage({ type: 'error', text: t('qualifications.forms.delete.confirmation_mismatch') });
             return;
         }
         setIsDeleting(true);
         setMessage({ type: '', text: '' });
         try {
-            await apiService.deleteQualification(qualification.code);
-            setMessage({ type: 'success', text: `Qualification "${qualification.name}" has been successfully deleted.` });
+            const qualCode = qualification.code || qualification.Code;
+            await apiService.deleteQualification(qualCode);
+            
+            setMessage({ 
+                type: 'success', 
+                text: t('qualifications.forms.delete.success', { name: qualName }) 
+            });
+            
             setTimeout(() => {
                 handleClear();
                 if (onSuccess) onSuccess();
             }, 2000);
+            
         } catch (error) {
             console.error('Error deleting qualification:', error);
-            setMessage({ type: 'error', text: error.message || 'Failed to delete qualification' });
+            setMessage({ type: 'error', text: error.message || t('qualifications.forms.delete.error.failed') });
         } finally {
             setIsDeleting(false);
         }
@@ -101,11 +111,14 @@ const DeleteQualificationForm = ({ onSuccess }) => {
         setConfirmationText('');
     };
 
+    const qualName = qualification?.name || qualification?.Name || '';
+    const qualCode = qualification?.code || qualification?.Code || '';
+
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Delete Qualification</h4>
-                <p>Search for a qualification by code and confirm deletion</p>
+                <h4>{t('qualifications.forms.delete.title')}</h4>
+                <p>{t('qualifications.forms.delete.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -115,25 +128,25 @@ const DeleteQualificationForm = ({ onSuccess }) => {
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchCode">Qualification Code</label>
+                            <label htmlFor="searchCode">{t('qualifications.forms.delete.code.label')}</label>
                             <input
                                 type="text"
                                 id="searchCode"
                                 name="code"
                                 value={searchData.code}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter qualification code (e.g., Q-001)"
+                                placeholder={t('qualifications.forms.delete.code.placeholder')}
                                 className="form-input"
                             />
-                            <small className="form-help">Enter the unique code of the qualification you want to delete</small>
+                            <small className="form-help">{t('qualifications.forms.delete.code.help')}</small>
                         </div>
                     </div>
                     <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={isLoading}>
-                            {isLoading ? (<><span className="loading-spinner"></span>Loading...</>) : (<>Search Qualification</>)}
+                            {isLoading ? (<><span className="loading-spinner"></span>{t('common.loading')}</>) : (<>{t('qualifications.forms.delete.search_button')}</>)}
                         </button>
                         <button type="button" className="clear-btn" onClick={handleClear} disabled={isLoading}>
-                            <span>🧹</span>Cancel
+                            <span>🧹</span>{t('qualifications.forms.delete.cancel')}
                         </button>
                     </div>
                 </form>
@@ -142,38 +155,55 @@ const DeleteQualificationForm = ({ onSuccess }) => {
             {step === 'confirm' && qualification && (
                 <>
                     <div className="delete-form-header">
-                        <span>⚠️ Confirm deletion of qualification: {qualification.name} <span style={{ fontWeight: 400 }}>(Code: {qualification.code})</span></span>
-                        <button type="button" className="link-btn" onClick={handleNewSearch}><span style={{ marginRight: '4px' }}>🔍</span>Search different qualification</button>
+                        <span>
+                            ⚠️ {t('qualifications.forms.delete.confirm.title')} <strong>{qualName}</strong> 
+                            <span style={{ fontWeight: 400 }}>{t('qualifications.forms.delete.confirm.title_suffix')} <strong>{qualCode}</strong></span>
+                        </span>
+                        <button type="button" className="link-btn" onClick={handleNewSearch}>
+                            <span style={{ marginRight: '4px' }}>🔍</span>{t('qualifications.forms.delete.confirm.search_different')}
+                        </button>
                     </div>
                     <div className="delete-details-card">
-                        <span className="delete-details-card-title">⚠️ Qualification to be deleted:</span>
+                        <span className="delete-details-card-title">⚠️ {t('qualifications.forms.delete.confirm.to_delete')}:</span>
                         <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                            <div className="delete-details-field"><span className="delete-details-label">CODE:</span><br />{qualification.code}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">NAME:</span><br />{qualification.name}</div>
+                            {/* Qualification attributes displayed using translated column headers */}
+                            <div className="delete-details-field">
+                                <span className="delete-details-label">{t('qualificationsHubPage.table.code')}:</span><br />
+                                {qualCode}
+                            </div>
+                            <div className="delete-details-field">
+                                <span className="delete-details-label">{t('qualificationsHubPage.table.name')}:</span><br />
+                                {qualName}
+                            </div>
                         </div>
                     </div>
                     <div className="delete-warning-card">
-                        <span className="delete-warning-title">⚠️ Warning: This action cannot be undone</span>
-                        <span className="delete-warning-desc">Deleting this qualification will permanently remove it from the system. All associated data will be lost.</span>
+                        <span className="delete-warning-title">⚠️ {t('qualifications.forms.delete.confirm.warning_title')}</span>
+                        <span className="delete-warning-desc">{t('qualifications.forms.delete.confirm.warning_description')}</span>
                         <form onSubmit={handleDelete} className="delete-form">
                             <div className="form-group" style={{ marginBottom: '18px' }}>
-                                <label htmlFor="confirmName" style={{ color: '#fff', fontWeight: 500 }}>Type "{qualification.name}" to confirm deletion:</label>
+                                <label htmlFor="confirmName" style={{ color: '#fff', fontWeight: 500 }}>
+                                    {t('qualifications.forms.delete.confirmation_prompt').split('{{name}}')[0]}
+                                    <strong>{qualName}</strong>
+                                    {t('qualifications.forms.delete.confirmation_prompt').split('{{name}}')[1]}
+                                </label>
                                 <input
                                     type="text"
                                     id="confirmName"
                                     value={confirmationText}
                                     onChange={handleConfirmationInputChange}
+                                    placeholder={qualName}
                                     className="delete-confirm-input"
                                     required
                                 />
-                                <small className="delete-confirm-help">This confirmation helps prevent accidental deletions</small>
+                                <small className="delete-confirm-help">{t('qualifications.forms.delete.confirmation_help')}</small>
                             </div>
                             <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
-                                <button type="submit" className="delete-btn" disabled={isDeleting || confirmationText !== qualification.name}>
-                                    {isDeleting ? (<><span className="loading-spinner"></span>Deleting...</>) : (<>Delete Qualification</>)}
+                                <button type="submit" className="delete-btn" disabled={isDeleting || confirmationText !== qualName}>
+                                    {isDeleting ? (<><span className="loading-spinner"></span>{t('qualifications.forms.delete.deleting')}</>) : (<>🗑️ {t('qualifications.forms.delete.submit')}</>)}
                                 </button>
                                 <button type="button" className="delete-cancel-btn" onClick={handleClear} disabled={isDeleting}>
-                                    <span role="img" aria-label="cancel">🧹</span>Cancel
+                                    <span role="img" aria-label="cancel">🧹</span>{t('qualifications.forms.delete.cancel')}
                                 </button>
                             </div>
                         </form>
@@ -182,6 +212,6 @@ const DeleteQualificationForm = ({ onSuccess }) => {
             )}
         </div>
     );
-};
+}
 
 console.log('DeleteQualificationForm component loaded! 🗑️');

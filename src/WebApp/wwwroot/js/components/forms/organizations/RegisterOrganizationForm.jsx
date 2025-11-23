@@ -1,39 +1,66 @@
-
 // Register Organization Form Component
-console.log('📝 RegisterOrganizationForm component loading...');
-
+console.log('RegisterOrganizationForm component loading...');
 
 const RegisterOrganizationForm = ({ onSuccess }) => {
+    const { t } = useTranslation();
     const [formData, setFormData] = React.useState({
+        identifier: '',
         legalName: '',
-        alternativeNames: '',
+        alternativeName: '',
         address: '',
         taxNumber: '',
-        representatives: []
+        representatives: [] // Start with no representatives
     });
-    const [representativesList, setRepresentativesList] = React.useState([]);
+    const [existingReps, setExistingReps] = React.useState([]);
+    const [selectedRepId, setSelectedRepId] = React.useState('');
     const [isLoading, setIsLoading] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
+    
+    // Helper to extract attribute values reliably (handling PascalCase and camelCase)
+    const getAttr = (obj, key) => obj?.[key] || obj?.[key.charAt(0).toUpperCase() + key.slice(1)];
 
-    // Helper to get color for message type
-    const getMessageColor = (type) => {
-        if (type === 'error') return 'red';
-        if (type === 'success') return 'green';
-        if (type === 'info') return '#0074D9'; // blue
-        return 'inherit';
-    };
 
     React.useEffect(() => {
-        loadRepresentatives();
+        // Load existing representatives on mount
+        apiService.getRepresentatives().then(setExistingReps).catch(() => setExistingReps([]));
     }, []);
 
-    const loadRepresentatives = async () => {
-        try {
-            const reps = await apiService.getRepresentatives();
-            setRepresentativesList(reps || []);
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Failed to load representatives.' });
+    const handleSelectRep = (e) => {
+        const repId = e.target.value;
+        setSelectedRepId(repId);
+        if (!repId) return;
+        
+        const selectedRepData = existingReps.find(rep => getAttr(rep, 'id') === repId);
+
+        // Prevent duplicates using Citizen ID as unique key
+        if (selectedRepData) {
+            const citizenId = getAttr(selectedRepData, 'citizenId');
+            if (formData.representatives.some(r => r.citizenId === citizenId)) {
+                return;
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                representatives: [
+                    ...prev.representatives,
+                    {
+                        id: getAttr(selectedRepData, 'id') || '',
+                        name: getAttr(selectedRepData, 'name') || '',
+                        citizenId: citizenId || '',
+                        nationality: getAttr(selectedRepData, 'nationality') || '',
+                        email: getAttr(selectedRepData, 'email') || '',
+                        phone: getAttr(selectedRepData, 'phone') || ''
+                    }
+                ]
+            }));
         }
+    };
+    
+    const handleRemoveRep = (idx) => {
+        setFormData(prev => ({
+            ...prev,
+            representatives: prev.representatives.filter((_, i) => i !== idx)
+        }));
     };
 
     const handleInputChange = (e) => {
@@ -42,201 +69,125 @@ const RegisterOrganizationForm = ({ onSuccess }) => {
         if (message.text) setMessage({ type: '', text: '' });
     };
 
-    const handleRepresentativeToggle = (repId) => {
-        setFormData(prev => {
-            const isSelected = prev.representatives.includes(repId);
-            const newReps = isSelected
-                ? prev.representatives.filter(id => id !== repId)
-                : [...prev.representatives, repId];
-            return {
-                ...prev,
-                representatives: newReps
-            };
-        });
-        if (message.text) setMessage({ type: '', text: '' });
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         setMessage({ type: '', text: '' });
+        
         try {
-            if (!formData.legalName?.trim()) throw new Error('Legal name is required.');
-            if (!formData.address?.trim()) throw new Error('Address is required.');
-            if (!formData.taxNumber?.trim()) throw new Error('Tax number is required.');
-            if (!formData.representatives || formData.representatives.length === 0) throw new Error('At least one representative is required.');
-            // Find full representative objects for selected IDs
-            const selectedReps = representativesList.filter(rep => formData.representatives.includes(rep.id));
-            // Validate all required fields for each representative
-            for (const rep of selectedReps) {
-                if (!rep.name || !rep.email || !rep.phone || !rep.citizenId || !rep.nationality) {
-                    throw new Error('All representative fields (Name, Email, Phone, CitizenId, Nationality) are required.');
-                }
-            }
-            const orgData = {
+            if (!formData.identifier.trim()) throw new Error(t('organizations.forms.register.error.required.identifier'));
+            if (!formData.legalName.trim()) throw new Error(t('organizations.forms.register.error.required.legalName'));
+            if (!formData.address.trim()) throw new Error(t('organizations.forms.register.error.required.address'));
+            if (!formData.taxNumber.trim()) throw new Error(t('organizations.forms.register.error.required.taxNumber'));
+            if (formData.representatives.length === 0) throw new Error(t('organizations.forms.register.error.required.reps'));
+            
+            // Prepare DTO for backend
+            const dto = {
+                Identifier: formData.identifier,
                 LegalName: formData.legalName,
-                AlternativeNames: formData.alternativeNames,
+                AlternativeName: formData.alternativeName,
                 Address: formData.address,
                 TaxNumber: formData.taxNumber,
-                Representatives: selectedReps.map(rep => ({
-                    Name: rep.name,
-                    Email: rep.email,
-                    Phone: rep.phone,
-                    CitizenId: rep.citizenId,
-                    Nationality: rep.nationality,
-                    Id: rep.id
+                Representatives: formData.representatives.map(r => ({
+                    Id: r.id || undefined,
+                    Name: r.name,
+                    CitizenId: r.citizenId,
+                    Nationality: r.nationality,
+                    Email: r.email,
+                    Phone: r.phone
                 }))
             };
-            await apiService.createOrganization(orgData);
-            setMessage({ type: 'success', text: 'Organization registered successfully.' });
-            setFormData({ legalName: '', alternativeNames: '', address: '', taxNumber: '', representatives: [] });
+            
+            await apiService.createOrganization(dto);
+            
+            setMessage({ type: 'success', text: t('organizations.forms.register.success') });
+            
             if (onSuccess) onSuccess();
+            
+            setFormData({
+                identifier: '',
+                legalName: '',
+                alternativeName: '',
+                address: '',
+                taxNumber: '',
+                representatives: []
+            });
+            
         } catch (error) {
-            setMessage({ type: 'error', text: error.message || 'Failed to register organization.' });
+            setMessage({ type: 'error', text: error.message || t('organizations.forms.register.error.failed') });
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="form-container" style={{
-            background: '#232b3e',
-            borderRadius: '10px',
-            padding: '32px 32px 28px 32px',
-            maxWidth: '700px',
-            color: '#fff',
-            margin: '0 auto',
-            boxShadow: '0 2px 12px 0 rgba(45,225,252,0.08)'
-        }}>
-            <div className="form-header" style={{ marginBottom: '18px' }}>
-                <h2 style={{ color: '#2de1fc', fontWeight: 700, fontSize: '1.35rem', marginBottom: '2px' }}>Register Organization</h2>
-                <p style={{ color: '#b8eaff', fontSize: '1rem', marginBottom: '12px' }}>Fill in the details to register a new organization.</p>
-                <hr style={{ border: 'none', borderTop: '1px solid #3a4666', margin: '0 0 18px 0' }} />
+        <div className="form-container">
+            <div className="form-header">
+                <h4>{t('organizations.forms.register.title')}</h4>
+                <p>{t('organizations.forms.register.description')}</p>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`} style={{ color: getMessageColor(message.type), marginBottom: '16px', fontWeight: 500, fontSize: '1.05em' }}>{message.text}</div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
             <form onSubmit={handleSubmit} className="register-form">
-                <div className="form-grid" style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '22px 28px',
-                    marginBottom: '18px'
-                }}>
-                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label htmlFor="legalName" style={{ color: '#b8eaff', fontWeight: 600 }}>Name <span style={{ color: 'red' }}>*</span></label>
-                        <input
-                            type="text"
-                            id="legalName"
-                            name="legalName"
-                            value={formData.legalName}
-                            onChange={handleInputChange}
-                            className="form-input"
-                            required
-                            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #3a4666', background: '#232b3e', color: '#fff', fontSize: '1.05em' }}
-                        />
-                    </div>
-                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label htmlFor="alternativeNames" style={{ color: '#b8eaff', fontWeight: 600 }}>Alternative Names</label>
-                        <input
-                            type="text"
-                            id="alternativeNames"
-                            name="alternativeNames"
-                            value={formData.alternativeNames}
-                            onChange={handleInputChange}
-                            className="form-input"
-                            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #3a4666', background: '#232b3e', color: '#fff', fontSize: '1.05em' }}
-                        />
-                    </div>
-                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label htmlFor="address" style={{ color: '#b8eaff', fontWeight: 600 }}>Address <span style={{ color: 'red' }}>*</span></label>
-                        <input
-                            type="text"
-                            id="address"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleInputChange}
-                            className="form-input"
-                            required
-                            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #3a4666', background: '#232b3e', color: '#fff', fontSize: '1.05em' }}
-                        />
-                    </div>
-                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label htmlFor="taxNumber" style={{ color: '#b8eaff', fontWeight: 600 }}>Tax Number <span style={{ color: 'red' }}>*</span></label>
-                        <input
-                            type="text"
-                            id="taxNumber"
-                            name="taxNumber"
-                            value={formData.taxNumber}
-                            onChange={handleInputChange}
-                            className="form-input"
-                            required
-                            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #3a4666', background: '#232b3e', color: '#fff', fontSize: '1.05em' }}
-                        />
-                    </div>
+                <div className="form-group">
+                    <label htmlFor="identifier">{t('organizations.forms.register.identifier.label')}</label>
+                    <input type="text" id="identifier" name="identifier" value={formData.identifier} onChange={handleInputChange} className="form-input" required />
                 </div>
-                <div className="representatives-selection-box" style={{
-                    background: 'linear-gradient(135deg, #1a2332 80%, #22304a 100%)',
-                    border: '2px solid #2de1fc',
-                    borderRadius: '14px',
-                    padding: '18px 22px',
-                    margin: '18px 0',
-                    boxShadow: '0 2px 12px 0 rgba(45,225,252,0.08)',
-                    color: '#fff',
-                    maxWidth: '540px'
-                }}>
-                    <div className="selection-header" style={{ marginBottom: '12px', borderBottom: '1px solid #2de1fc', paddingBottom: '8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <h5 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#2de1fc', margin: 0 }}>
-                            <span style={{ marginRight: '6px' }}>🧑‍💼</span>Representatives <span className="required" style={{ color: 'red' }}>*</span>
-                        </h5>
-                        <p style={{ fontSize: '0.98rem', color: '#b8eaff', margin: 0 }}>Select representatives for this organization</p>
+                <div className="form-group">
+                    <label htmlFor="legalName">{t('organizations.forms.register.legalName.label')}</label>
+                    <input type="text" id="legalName" name="legalName" value={formData.legalName} onChange={handleInputChange} className="form-input" required />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="alternativeName">{t('organizations.forms.register.altName.label')}</label>
+                    <input type="text" id="alternativeName" name="alternativeName" value={formData.alternativeName} onChange={handleInputChange} className="form-input" />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="address">{t('organizations.forms.register.address.label')}</label>
+                    <input type="text" id="address" name="address" value={formData.address} onChange={handleInputChange} className="form-input" required />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="taxNumber">{t('organizations.forms.register.taxNumber.label')}</label>
+                    <input type="text" id="taxNumber" name="taxNumber" value={formData.taxNumber} onChange={handleInputChange} className="form-input" required />
+                </div>
+                <div className="form-group">
+                    <label>{t('organizations.forms.register.reps.label')}</label>
+                    {/* Dropdown to select existing representative */}
+                    <div style={{ marginBottom: '8px' }}>
+                        <select value={selectedRepId} onChange={handleSelectRep} className="form-input" disabled={isLoading}>
+                            <option value="">{t('organizations.forms.register.reps.select_placeholder')}</option>
+                            {existingReps.map(rep => (
+                                <option key={getAttr(rep, 'id')} value={getAttr(rep, 'id')}>
+                                    {/* Attributes (name, citizenId) are NOT translated */}
+                                    {getAttr(rep, 'name')} ({getAttr(rep, 'citizenId')})
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                    {representativesList.length === 0 ? (
-                        <div className="loading" style={{ color: '#b8eaff' }}>Loading representatives...</div>
-                    ) : (
-                        <div className="representative-checkboxes" style={{ maxHeight: '220px', overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {representativesList.map(rep => (
-                                <div key={rep.id} className="representative-checkbox" style={{ background: '#232b3e', borderRadius: '8px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <input
-                                        type="checkbox"
-                                        id={`register-rep-${rep.id}`}
-                                        value={rep.id}
-                                        checked={formData.representatives.includes(rep.id)}
-                                        onChange={() => handleRepresentativeToggle(rep.id)}
-                                        style={{ width: '22px', height: '22px', accentColor: '#2de1fc', marginRight: '10px' }}
-                                    />
-                                    <label htmlFor={`register-rep-${rep.id}`} style={{ color: '#fff', fontWeight: 600, fontSize: '1.05rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                        <span>
-                                            {rep.name}
-                                            {rep.email && (
-                                                <span style={{ color: '#b8eaff', fontWeight: 400 }}> - {rep.email}</span>
-                                            )}
-                                            <span style={{ color: '#b8eaff', fontWeight: 400, fontSize: '0.95em' }}> ({rep.id})</span>
-                                        </span>
-                                    </label>
+                    {/* Show only selected representatives in a read-only table */}
+                    {formData.representatives.length > 0 && (
+                        <div>
+                            {formData.representatives.map((rep, idx) => (
+                                <div key={idx} className="rep-fields" style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                                    <input type="text" name="name" value={rep.name} placeholder={t('representativesHubPage.table.name')} className="form-input" readOnly />
+                                    <input type="text" name="citizenId" value={rep.citizenId} placeholder={t('representativesHubPage.table.citizenId')} className="form-input" readOnly />
+                                    <input type="text" name="nationality" value={rep.nationality} placeholder={t('representativesHubPage.table.nationality')} className="form-input" readOnly />
+                                    <input type="email" name="email" value={rep.email} placeholder={t('representativesHubPage.table.email')} className="form-input" readOnly />
+                                    <input type="text" name="phone" value={rep.phone} placeholder={t('representativesHubPage.table.phone')} className="form-input" readOnly />
+                                    <button type="button" className="remove-btn" onClick={() => handleRemoveRep(idx)} style={{ fontSize: '1.2em' }}>🗑️</button>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
-                <div className="form-actions" style={{ marginTop: '8px' }}>
-                    <button type="submit" className="submit-btn" disabled={isLoading} style={{
-                        background: '#2de1fc',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '10px 22px',
-                        fontWeight: 600,
-                        fontSize: '1.08em',
-                        cursor: isLoading ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 2px 8px 0 rgba(45,225,252,0.08)'
-                    }}>
-                        {isLoading ? (<><span className="loading-spinner"></span>Registering...</>) : (<>Register Organization</>)}
+                <div className="form-actions">
+                    <button type="submit" className="submit-btn" disabled={isLoading}>
+                        {isLoading ? (<><span className="loading-spinner"></span>{t('common.loading')}</>) : (<>{t('organizations.forms.register.submit')}</>)}
                     </button>
                 </div>
             </form>
         </div>
     );
-};
+}
 
-console.log('RegisterOrganizationForm component loaded! 📝');
+console.log('RegisterOrganizationForm component loaded!');

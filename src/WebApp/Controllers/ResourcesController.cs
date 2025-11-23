@@ -21,6 +21,7 @@ namespace WebApp.Controllers
         }
 
         // GET: api/resources
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResourceDTO>>> GetResources(
             [FromQuery] string? id,

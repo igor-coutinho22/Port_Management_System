@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Application.DTOs;
+using WebApp.Models.Application.Mappers;
 using WebApp.Models.Application.Services;
 
 namespace WebApp.Controllers
 {
     [Authorize("RequireOfficer")]
     [ApiController]
-    [Route("api/organizations/{orgId:guid}/[controller]")]
+    [Route("api/[controller]")]
     public class RepresentativesController : ControllerBase
     {
         private readonly IRepresentativeService _service;
@@ -18,21 +19,31 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RepresentativeDto>>> GetByOrganization(Guid orgId)
+        public async Task<ActionResult> GetByOrganizationId(Guid orgId)
         {
-            var reps = await _service.GetByOrganizationAsync(orgId);
-            return Ok(reps);
+            var reps = await _service.GetByOrganizationIdAsync(orgId);
+            return Ok(reps.Select(RepresentativeMapper.ToDto));
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetById(Guid repId)
+        {
+            var rep = await _service.GetByIdAsync(repId);
+            return rep == null ? NotFound($"Representative with ID {repId} not found.") : Ok(RepresentativeMapper.ToDto(rep));
         }
 
         [HttpPost]
-        public async Task<ActionResult<RepresentativeDto>> Create(Guid orgId, [FromBody] CreateRepresentativeRequest req)
+        public async Task<ActionResult> Create(Guid orgId, [FromBody] CreateRepresentativeDto dto)
         {
             try
             {
-                if (req is null) return BadRequest("Request body is required.");
+                if (dto is null) return BadRequest("Request body is required.");
 
-                var rep = await _service.CreateAsync(orgId, req);
-                return CreatedAtAction(nameof(GetByOrganization), new { orgId }, rep);
+                var rep = RepresentativeMapper.ToDomain(orgId, dto);
+                await _service.CreateAsync(orgId, rep);
+
+                var created = await _service.GetByIdAsync(rep.Id);
+                return CreatedAtAction(nameof(GetById), new { id = created!.Id }, RepresentativeMapper.ToDto(created));
             }
             catch (KeyNotFoundException ex)
             {
@@ -49,14 +60,19 @@ namespace WebApp.Controllers
         }
 
         [HttpPut("{repId:guid}")]
-        public async Task<ActionResult<RepresentativeDto>> Update(Guid orgId, Guid repId, [FromBody] UpdateRepresentativeRequest req)
+        public async Task<ActionResult> Update(Guid repId, [FromBody] UpdateRepresentativeDto dto)
         {
             try
             {
-                if (req is null) return BadRequest("Request body is required.");
+                if (dto is null) return BadRequest("Request body is required.");
 
-                var rep = await _service.UpdateAsync(repId, req);
-                return Ok(rep);
+                var existing = await _service.GetByIdAsync(repId);
+                if (existing == null)
+                    return NotFound($"Representative with ID {repId} not found.");
+
+                RepresentativeMapper.UpdateFromDto(existing, dto);
+                await _service.UpdateAsync(repId, existing);
+                return Ok(RepresentativeMapper.ToDto(existing));
             }
             catch (KeyNotFoundException ex)
             {
@@ -68,30 +84,47 @@ namespace WebApp.Controllers
             }
         }
 
-        [HttpDelete("{repId:guid}")]
-        public async Task<IActionResult> Delete(Guid orgId, Guid repId)
+        [HttpGet("all")]
+        public async Task<ActionResult> GetAll()
+        {
+            var reps = await _service.GetAllAsync();
+            return Ok(reps.Select(RepresentativeMapper.ToDto));
+        }
+
+        [HttpPatch("{repId:guid}/activate")]
+        public async Task<IActionResult> Activate(Guid repId)
         {
             try
             {
-                await _service.DeleteAsync(repId);
+                await _service.ActivateAsync(repId);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
             }
-            catch (InvalidOperationException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<RepresentativeDto>>> GetAll(
-            [FromQuery] Guid? organizationId, [FromQuery] bool? active)
+        [HttpPatch("{repId:guid}/deactivate")]
+        public async Task<IActionResult> Deactivate(Guid repId)
         {
-            var reps = await _service.GetAllAsync(organizationId, active);
-            return Ok(reps);
+            try
+            {
+                await _service.DeactivateAsync(repId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

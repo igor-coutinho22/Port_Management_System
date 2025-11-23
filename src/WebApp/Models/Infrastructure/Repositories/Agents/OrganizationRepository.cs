@@ -30,7 +30,7 @@ namespace WebApp.Models.Infrastructure.Repositories
 
         public async Task AddAsync(ShippingAgentOrganization org)
         {
-            await _context.Organizations.AddAsync(org);
+            _context.Organizations.Add(org);
             await _context.SaveChangesAsync();
         }
 
@@ -46,7 +46,7 @@ namespace WebApp.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<ShippingAgentOrganization>> GetAllAsync()
+        public async Task<List<ShippingAgentOrganization>> GetAllAsync()
         {
             return await _context.Organizations
                 .Include(o => o.Representatives)
@@ -54,7 +54,7 @@ namespace WebApp.Models.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ShippingAgentOrganization>> SearchAsync(string? name, string? taxNumber)
+        public async Task<List<ShippingAgentOrganization>> SearchAsync(string? name, string? taxNumber)
         {
             var query = _context.Organizations
                 .Include(o => o.Representatives)
@@ -78,6 +78,11 @@ namespace WebApp.Models.Infrastructure.Repositories
             return await query
                 .OrderBy(o => o.LegalName)
                 .ToListAsync();
+        }
+
+        public async Task AddOrRemoveRepresentativeAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

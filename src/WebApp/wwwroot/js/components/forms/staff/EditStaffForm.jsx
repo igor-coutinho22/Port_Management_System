@@ -133,7 +133,10 @@ const EditStaffForm = ({ onSuccess }) => {
                 phone: formData.phone.trim(),
                 status: formData.status.trim(),
                 operationalWindow: formData.operationalWindow.trim(),
-                qualifications: formData.qualifications // array of codes
+                qualifications: formData.qualifications.map(code => {
+                    const q = qualificationList.find(q => q.code === code);
+                    return { code, name: q ? q.name : '' };
+                }) // array of objects with code and name
             };
             const result = await apiService.updateStaff(formData.mecanographicNumber, staffData);
             setMessage({ type: 'success', text: 'Staff updated successfully' });

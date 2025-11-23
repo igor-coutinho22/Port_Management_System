@@ -76,17 +76,31 @@ namespace WebApp.Models.Application.Mappers
                 entity.AddUnloadingManifest(manifest);
             }
             foreach (var member in dto.Crew)
-                entity.AddCrewMember(member.Name, member.CitizenId, member.Nationality);
+                entity.AddCrewMember(CrewMapper.ToEntity(member));
 
             return entity;
+        }
+
+        public static void UpdateFromDto(VesselVisitNotification entity, VesselVisitNotificationUpdateDTO dto)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            // Update manifests and containers in-place to avoid breaking EF tracking
+            entity.Update(
+                dockId: dto.DockId,
+                visitDate: dto.VisitDate,
+                purpose: Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true)
+            );
         }
 
         public static VesselVisitNotificationFilterDTO ToFilterDTO(
             string? vesselIMO, 
             string? status, 
             DateTime? fromDate, 
-            DateTime? toDate, 
-            string? representative)
+            DateTime? toDate)
         {
             return new VesselVisitNotificationFilterDTO
             {
@@ -94,7 +108,6 @@ namespace WebApp.Models.Application.Mappers
                 Status = status,
                 FromDate = fromDate,
                 ToDate = toDate,
-                Representative = representative
             };
         }
     }

@@ -145,7 +145,7 @@ public class VesselVisitNotificationRepositoryTest
         var dockId = Guid.NewGuid();
         var baseDate = DateTime.UtcNow.Date;
         
-        var vvn1 = new VesselVisitNotification(ValidIMO, dockId, baseDate.AddDays(-2), VisitPurpose.Commercial);
+        var vvn1 = new VesselVisitNotification(ValidIMO, dockId, baseDate.AddDays(3), VisitPurpose.Commercial);
         var vvn2 = new VesselVisitNotification("2345674", dockId, baseDate, VisitPurpose.Maintenance);
         var vvn3 = new VesselVisitNotification("3456781", dockId, baseDate.AddDays(2), VisitPurpose.Commercial);
         var vvn4 = new VesselVisitNotification("4567898", dockId, baseDate.AddDays(5), VisitPurpose.Maintenance);
@@ -160,7 +160,8 @@ public class VesselVisitNotificationRepositoryTest
         var filteredResults = allResults.Where(v => v.VisitDate >= baseDate.AddDays(-1) && v.VisitDate <= baseDate.AddDays(3)).ToList();
 
         // Assert
-        filteredResults.Should().HaveCount(2);
+        filteredResults.Should().HaveCount(3);
+        filteredResults.Should().Contain(v => v.Id == vvn1.Id);
         filteredResults.Should().Contain(v => v.Id == vvn2.Id);
         filteredResults.Should().Contain(v => v.Id == vvn3.Id);
     }
@@ -175,8 +176,8 @@ public class VesselVisitNotificationRepositoryTest
         var vvn = new VesselVisitNotification(ValidIMO, dockId, visitDate, VisitPurpose.Commercial);
         vvn.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
         vvn.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
-        vvn.AddCrewMember("Captain", "CIT001", "Portuguese");
-        vvn.AddCrewMember("Engineer", "CIT002", "Spanish");
+        vvn.AddCrewMember(new CrewMember("Captain", "CIT001", "PT"));
+        vvn.AddCrewMember(new CrewMember("Engineer", "CIT002", "ES"));
         
         await _repository.AddAsync(vvn);
         await _context.SaveChangesAsync();

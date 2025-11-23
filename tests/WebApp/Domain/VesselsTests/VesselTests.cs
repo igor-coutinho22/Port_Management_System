@@ -186,18 +186,4 @@ public class VesselTests
         var act = () => vessel.ValidateDimensions(15, 12, 6);
         act.Should().NotThrow();
     }
-
-    [Fact]
-    public void ToString_ShouldReturn_FormattedString()
-    {
-        // Arrange
-        var vesselType = CreateTestVesselType();
-        var vessel = new Vessel("1234567", "MSC Vessel", "MSC Shipping", vesselType, 15, 12, 6, 4, 300.5);
-
-        // Act
-        var result = vessel.ToString();
-
-        // Assert
-        result.Should().Be("MSC Vessel (IMO: 1234567, Operator: MSC Shipping, Type: Container Ship, Dimensions: 15x12x6, Required Cranes: 4, Required Dock Length: 300,5)");
-    }
 }

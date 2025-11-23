@@ -7,7 +7,9 @@ const UPDATE_ROLES_URL = "/admin/users";
 window.KNOWN_ROLES = KNOWN_ROLES;
 
 
+
 const AdminUsersPage = () => {
+    const { t } = useTranslation();
     const [expandedSection, setExpandedSection] = React.useState(null);
     const [users, setUsers] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -22,7 +24,7 @@ const AdminUsersPage = () => {
             const data = await apiService.get(url);
             setUsers(Array.isArray(data) ? data : (data?.items || []));
         } catch (e) {
-            setError(e?.message || "Failed to load users.");
+            setError(e?.message || t('adminUsersPage.section.list.error'));
             setUsers([]);
         } finally {
             setIsLoading(false);
@@ -34,17 +36,17 @@ const AdminUsersPage = () => {
     const sections = [
         {
             id: "list",
-            title: "Users List",
-            description: "View, search, and manage users.",
+            title: t('adminUsersPage.section.list.title'),
+            description: t('adminUsersPage.section.list.description'),
             color: "#3498db",
             component: (
                 <div>
                     <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search (email/name)…" className="form-input" />
-                        <button className="btn-small" onClick={loadUsers}>Search</button>
+                        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('adminUsersPage.section.list.search.placeholder')} className="form-input" />
+                        <button className="btn-small" onClick={loadUsers}>{t('adminUsersPage.section.list.search.button')}</button>
                     </div>
                     {isLoading ? (
-                        <div className="loading">Loading users…</div>
+                        <div className="loading">{t('adminUsersPage.section.list.loading')}</div>
                     ) : error ? (
                         <div className="error" style={{ color: "crimson" }}>{error}</div>
                     ) : (
@@ -55,15 +57,15 @@ const AdminUsersPage = () => {
         },
         {
             id: "add",
-            title: "Add User",
-            description: "Send an invitation to a new user with an activation link.",
+            title: t('adminUsersPage.section.add.title'),
+            description: t('adminUsersPage.section.add.description'),
             color: "#27ae60",
             component: <InviteUserForm onDone={loadUsers} />
         },
         {
             id: "roles",
-            title: "Update User Roles",
-            description: "Assign or update internal roles for an existing user.",
+            title: t('adminUsersPage.section.roles.title'),
+            description: t('adminUsersPage.section.roles.description'),
             color: "#f39c12",
             component: <UpdateUserRolesForm onDone={loadUsers} />
         }
@@ -72,8 +74,8 @@ const AdminUsersPage = () => {
     return (
         <div className="page-section">
             <div className="hub-header">
-                <h2 className="page-title">Admin — User Management</h2>
-                <p>Add users, resend invites, enable/disable accounts.</p>
+                <h2 className="page-title">{t('adminUsersPage.title')}</h2>
+                <p>{t('adminUsersPage.description')}</p>
             </div>
 
             <div className="operations-container">

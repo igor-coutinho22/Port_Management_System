@@ -2,6 +2,7 @@
 console.log('VesselVisitNotificationsHubPage.jsx is loading...');
 
 const VesselVisitNotificationsHubPage = () => {
+	const { t } = useTranslation();
 	const [expandedSection, setExpandedSection] = React.useState(null);
 	const [notifications, setNotifications] = React.useState([]);
 	const [isLoading, setIsLoading] = React.useState(false);
@@ -35,57 +36,78 @@ const VesselVisitNotificationsHubPage = () => {
 	const sections = [
 		{
 			id: 'register',
-			title: `📝 Register Notification`,
-			description: 'Register a new vessel visit notification',
+			title: t('vesselVisitNotificationsHubPage.section.register.title'),
+			description: t('vesselVisitNotificationsHubPage.section.register.description'),
 			color: '#27ae60',
 			component: 'RegisterVesselVisitNotificationForm'
 		},
 		{
 			id: 'search',
-			title: `🔍 Search Notifications`,
-			description: 'Search notifications by vessel IMO, status, date, or representative',
+			title: t('vesselVisitNotificationsHubPage.section.search.title'),
+			description: t('vesselVisitNotificationsHubPage.section.search.description'),
 			color: '#3498db',
 			component: 'SearchVesselVisitNotificationsForm'
 		},
 		{
 			id: 'getById',
-			title: `🎯 Get Notification by ID`,
-			description: 'Retrieve details of a specific notification',
+			title: t('vesselVisitNotificationsHubPage.section.getById.title'),
+			description: t('vesselVisitNotificationsHubPage.section.getById.description'),
 			color: '#2980b9',
 			component: 'GetVesselVisitNotificationByIdForm'
 		},
 		{
 			id: 'edit',
-			title: `✏️ Edit Notification`,
-			description: 'Update notification details',
+			title: t('vesselVisitNotificationsHubPage.section.edit.title'),
+			description: t('vesselVisitNotificationsHubPage.section.edit.description'),
 			color: '#f39c12',
 			component: 'EditVesselVisitNotificationForm'
 		},
 		{
 			id: 'submit',
-			title: `📤 Submit Notification`,
-			description: 'Submit a notification for approval',
+			title: t('vesselVisitNotificationsHubPage.section.submit.title'),
+			description: t('vesselVisitNotificationsHubPage.section.submit.description'),
 			color: '#16a085',
 			component: 'SubmitVesselVisitNotificationForm'
 		},
 		{
 			id: 'approve',
-			title: `✅ Approve Notification`,
-			description: 'Approve a submitted notification',
+			title: t('vesselVisitNotificationsHubPage.section.approve.title'),
+			description: t('vesselVisitNotificationsHubPage.section.approve.description'),
 			color: '#2ecc71',
 			component: 'ApproveVesselVisitNotificationForm'
 		},
 		{
 			id: 'reject',
-			title: `❌ Reject Notification`,
-			description: 'Reject a submitted notification',
+			title: t('vesselVisitNotificationsHubPage.section.reject.title'),
+			description: t('vesselVisitNotificationsHubPage.section.reject.description'),
 			color: '#e74c3c',
 			component: 'RejectVesselVisitNotificationForm'
 		},
 		{
+			id: 'manage LM',
+			title: t('vesselVisitNotificationsHubPage.section.manageLM.title'),
+			description: t('vesselVisitNotificationsHubPage.section.manageLM.description'),
+			color: '#8e44ad',
+			component: 'ManageLoadingManifestsForm'
+		},
+		{
+			id: 'manage UM',
+			title: t('vesselVisitNotificationsHubPage.section.manageUM.title'),
+			description: t('vesselVisitNotificationsHubPage.section.manageUM.description'),
+			color: '#9b59b6',
+			component: 'ManageUnloadingManifestsForm'
+		},
+		{
+			id: 'manage CM',
+			title: t('vesselVisitNotificationsHubPage.section.manageCM.title'),
+			description: t('vesselVisitNotificationsHubPage.section.manageCM.description'),
+			color: '#d35400',
+			component: 'ManageCrewMembersForm'
+		},
+		{
 			id: 'delete',
-			title: `🗑️ Delete Notification`,
-			description: 'Remove a vessel visit notification from the system',
+			title: t('vesselVisitNotificationsHubPage.section.delete.title'),
+			description: t('vesselVisitNotificationsHubPage.section.delete.description'),
 			color: '#c0392b',
 			component: 'DeleteVesselVisitNotificationForm'
 		}
@@ -95,9 +117,9 @@ const VesselVisitNotificationsHubPage = () => {
 		<div className="page-section">
 			<div className="hub-header">
 				<h2 className="page-title">
-					🚢 Vessel Visit Notifications Management
+					{t('vesselVisitNotificationsHubPage.title')}
 				</h2>
-				<p>Comprehensive management for vessel visit notifications</p>
+				<p>{t('vesselVisitNotificationsHubPage.description')}</p>
 			</div>
 
 			{/* Quick Data View Button */}
@@ -107,7 +129,7 @@ const VesselVisitNotificationsHubPage = () => {
 					onClick={() => setShowQuickView(!showQuickView)}
 				>
 					<span className="quick-view-icon">📊</span>
-					Quick Data View
+					{t('vesselVisitNotificationsHubPage.quickView.button')}
 					<span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
 						{showQuickView ? '▲' : '▼'}
 					</span>
@@ -116,7 +138,7 @@ const VesselVisitNotificationsHubPage = () => {
 				{showQuickView && (
 					<div className="quick-view-panel">
 						{isLoading ? (
-							<div className="loading">Loading notifications...</div>
+							<div className="loading">{t('vesselVisitNotificationsHubPage.quickView.loading')}</div>
 						) : (
 							<VesselVisitNotificationsQuickTable notifications={notifications} onRefresh={loadNotifications} />
 						)}
@@ -160,6 +182,9 @@ const VesselVisitNotificationsHubPage = () => {
 									{section.component === 'SubmitVesselVisitNotificationForm' && <SubmitVesselVisitNotificationForm onSuccess={loadNotifications} />}
 									{section.component === 'ApproveVesselVisitNotificationForm' && <ApproveVesselVisitNotificationForm onSuccess={loadNotifications} />}
 									{section.component === 'RejectVesselVisitNotificationForm' && <RejectVesselVisitNotificationForm onSuccess={loadNotifications} />}
+									{section.component === 'ManageLoadingManifestsForm' && <ManageLoadingManifestsForm onSuccess={loadNotifications} />}
+									{section.component === 'ManageUnloadingManifestsForm' && <ManageUnloadingManifestsForm onSuccess={loadNotifications} />}
+									{section.component === 'ManageCrewMembersForm' && <ManageCrewMembersForm onSuccess={loadNotifications} />}
 									{section.component === 'DeleteVesselVisitNotificationForm' && <DeleteVesselVisitNotificationForm onSuccess={loadNotifications} />}
 								</div>
 							</div>
@@ -173,6 +198,7 @@ const VesselVisitNotificationsHubPage = () => {
 
 // Quick Table Component for Vessel Visit Notifications Data
 const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
+	const { t } = useTranslation();
 	const [vessels, setVessels] = React.useState([]);
 	const [docks, setDocks] = React.useState([]);
 
@@ -189,63 +215,63 @@ const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
 
 	function getVesselName(imo) {
 		const vessel = vessels.find(v => v.imo === imo);
-		return vessel ? vessel.vesselName || vessel.name || 'N/A' : 'N/A';
+		return vessel ? vessel.vesselName || vessel.name || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
 	}
 	function getDockName(id) {
 		const dock = docks.find(d => d.id === id);
-		return dock ? dock.name || 'N/A' : 'N/A';
+		return dock ? dock.name || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
 	}
 
 	return (
 		<div className="quick-table-container">
 			<div className="quick-table-header">
-				<h4>Notifications Overview ({notifications.length} total)</h4>
-				<button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
+				<h4>{t('vesselVisitNotificationsHubPage.quickView.overview')} ({notifications.length} total)</h4>
+				<button className="refresh-btn" onClick={onRefresh}>{t('vesselVisitNotificationsHubPage.quickView.refresh')}</button>
 			</div>
 			{notifications.length === 0 ? (
 				<div className="no-data">
-					<h3>No notifications found</h3>
-					<p>Register your first notification to get started</p>
+					<h3>{t('vesselVisitNotificationsHubPage.quickView.noData.title')}</h3>
+					<p>{t('vesselVisitNotificationsHubPage.quickView.noData.description')}</p>
 				</div>
 			) : (
 				<div className="table-container">
 					<table className="data-table quick-table">
 						<thead>
 							<tr>
-								<th>ID</th>
-								<th>Vessel IMO (Name)</th>
-								<th>Dock ID (Name)</th>
-								<th>Visit Date</th>
-								<th>Status</th>
-								<th>Purpose</th>
-								<th>Crew Size</th>
-								<th>Loading Manifest</th>
-								<th>Unloading Manifest</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.id')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.vesselImo')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.dockId')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.visitDate')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.status')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.purpose')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.crewSize')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.loadingManifest')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.unloadingManifest')}</th>
 							</tr>
 						</thead>
 						<tbody>
 							{notifications.map((n) => (
 								<tr key={n.id}>
-									<td className="id-cell">{n.id || 'N/A'}</td>
-									<td>{n.vesselIMO ? `${n.vesselIMO} (${getVesselName(n.vesselIMO)})` : 'N/A'}</td>
-									<td>{n.dockId ? `${n.dockId} (${getDockName(n.dockId)})` : 'N/A'}</td>
-									<td>{n.visitDate ? new Date(n.visitDate).toLocaleDateString() : 'N/A'}</td>
+									<td className="id-cell">{n.id || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.vesselIMO ? `${n.vesselIMO} (${getVesselName(n.vesselIMO)})` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.dockId ? `${n.dockId} (${getDockName(n.dockId)})` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.visitDate ? new Date(n.visitDate).toLocaleDateString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
 									<td>
 										<span className={`status-badge status-${(n.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
-											{n.status || 'N/A'}
+											{n.status || t('vesselVisitNotificationsHubPage.table.notAvailable')}
 										</span>
 									</td>
-									<td>{n.purpose || 'N/A'}</td>
+									<td>{n.purpose || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
 									<td>{n.crew ? n.crew.length : 0}</td>
 									<td>
 										{n.loadingManifest && n.loadingManifest.containers && n.loadingManifest.containers.length > 0
 											? n.loadingManifest.containers.map(c => c.identifier).join(', ')
-											: <span style={{ color: '#888' }}>None</span>}
+											: <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
 									</td>
 									<td>
 										{n.unloadingManifest && n.unloadingManifest.containers && n.unloadingManifest.containers.length > 0
 											? n.unloadingManifest.containers.map(c => c.identifier).join(', ')
-											: <span style={{ color: '#888' }}>None</span>}
+											: <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
 									</td>
 								</tr>
 							))}

@@ -122,7 +122,7 @@ namespace WebApp.Controllers
 
             return Ok(results.Select(DockMapper.MapToDto));
         }
-
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

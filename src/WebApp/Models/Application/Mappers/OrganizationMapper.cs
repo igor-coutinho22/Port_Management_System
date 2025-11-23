@@ -11,18 +11,20 @@ namespace WebApp.Models.Application.Mappers
             if (org == null)
                 throw new ArgumentNullException(nameof(org));
 
-            return new OrganizationDto(
-                org.Id,
-                org.Identifier,
-                org.LegalName,
-                org.AlternativeNames,
-                org.Address,
-                org.TaxNumber,
-                org.IsActive
-            );
+            return new OrganizationDto
+            {
+                Id = org.Id,
+                Identifier = org.Identifier,
+                LegalName = org.LegalName,
+                AlternativeNames = org.AlternativeNames,
+                Address = org.Address,
+                TaxNumber = org.TaxNumber,
+                IsActive = org.IsActive,
+                Representatives = org.Representatives.Select(RepresentativeMapper.ToDto).ToList()
+            };
         }
 
-        public static ShippingAgentOrganization ToDomain(CreateOrganizationRequest dto)
+        public static ShippingAgentOrganization ToDomain(CreateOrganizationDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -36,17 +38,14 @@ namespace WebApp.Models.Application.Mappers
             );
         }
 
-        public static void UpdateDomain(ShippingAgentOrganization org, UpdateOrganizationRequest dto)
+        public static void UpdateFromDto(ShippingAgentOrganization org, UpdateOrganizationDto dto)
         {
             if (org == null || dto == null)
                 throw new ArgumentNullException(org == null ? nameof(org) : nameof(dto));
 
-            org.UpdateProfile(dto.LegalName, dto.AlternativeName, dto.Address, dto.TaxNumber);
-            
-            if (dto.IsActive)
-                org.Activate();
-            else
-                org.Deactivate();
+            org.UpdateProfile(
+                alternativeNames: dto.AlternativeNames, 
+                address: dto.Address);
         }
     }
 }

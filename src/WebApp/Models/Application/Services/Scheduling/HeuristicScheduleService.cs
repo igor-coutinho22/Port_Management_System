@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using WebApp.Models.Domain.Scheduling;
 using WebApp.Models.Domain.Scheduling.Services;
 
-namespace Application.Services
+namespace WebApp.Models.Application.Services.Scheduling
 {
     public class HeuristicScheduleService : IHeuristicScheduleService
     {

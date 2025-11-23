@@ -10,5 +10,13 @@ namespace WebApp.Models.Domain.VesselVisits
         Task AddAsync(VesselVisitNotification notification);
         Task UpdateAsync(VesselVisitNotification notification);
         Task DeleteAsync(VesselVisitNotification notification);
+        Task SaveLMAsync(CargoManifest manifest);
+        Task SaveUMAsync(CargoManifest manifest);
+        Task SaveCMAsync(CrewMember crewMember);
+        Task DeleteLMAsync(CargoManifest manifest);
+        Task DeleteUMAsync(CargoManifest manifest);
+        Task DeleteCMAsync(CrewMember crewMember);
+        Task UpdateStatusToApprovedAsync(VesselVisitNotification notification, DecisionLog decisionLog);
+        Task UpdateStatusToRejectedAsync(VesselVisitNotification notification, DecisionLog decisionLog);
     }
 }

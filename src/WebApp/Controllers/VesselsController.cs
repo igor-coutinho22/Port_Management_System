@@ -110,6 +110,7 @@ namespace WebApp.Controllers
         // ------------------------------------------------------------
         // Get all vessel types
         // ------------------------------------------------------------
+        [AllowAnonymous]
         [HttpGet()]
         public async Task<IActionResult> GetAllVesselsAsync()
         {
@@ -117,7 +118,6 @@ namespace WebApp.Controllers
             
             return Ok(vessels);
         }
-
         // ------------------------------------------------------------
         // Delete a vessel
         // ------------------------------------------------------------

@@ -2,6 +2,7 @@
 console.log('GetQualificationByCodeForm component loading...');
 
 const GetQualificationByCodeForm = () => {
+    const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({
         code: ''
     });
@@ -9,6 +10,9 @@ const GetQualificationByCodeForm = () => {
     const [isLoading, setIsLoading] = React.useState(false);
     const [hasSearched, setHasSearched] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
+
+    // Helper to extract attribute values reliably (handling PascalCase and camelCase)
+    const getAttr = (obj, key) => obj?.[key] || obj?.[key.charAt(0).toUpperCase() + key.slice(1)];
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -21,8 +25,10 @@ const GetQualificationByCodeForm = () => {
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        if (!searchData.code.trim()) {
-            setMessage({ type: 'error', text: "Qualification code is required" });
+        const searchCode = searchData.code.trim();
+
+        if (!searchCode) {
+            setMessage({ type: 'error', text: t("qualifications.forms.get_by_code.error.required") });
             return;
         }
         setIsLoading(true);
@@ -30,22 +36,24 @@ const GetQualificationByCodeForm = () => {
         setHasSearched(false);
         setQualification(null);
         try {
-            const data = await apiService.getQualificationByCode(searchData.code.trim());
+            const data = await apiService.getQualificationByCode(searchCode);
             if (data) {
-                setQualification(data);
+                // Ensure code is present for display purposes
+                const qualWithCode = { ...data, code: data.code || data.Code || searchCode };
+                setQualification(qualWithCode);
                 setHasSearched(true);
-                setMessage({ type: 'success', text: `Found qualification: ${data.code}` });
+                setMessage({ type: 'success', text: t('qualifications.forms.get_by_code.success', { code: qualWithCode.code }) });
             } else {
                 setQualification(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: `Qualification '${searchData.code}' not found` });
+                setMessage({ type: 'info', text: t('qualifications.forms.get_by_code.not_found_with_code', { code: searchCode }) });
             }
         } catch (error) {
             console.error('Error fetching qualification:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: `Qualification '${searchData.code}' not found` });
+                setMessage({ type: 'info', text: t('qualifications.forms.get_by_code.not_found_with_code', { code: searchCode }) });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch qualification. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('qualifications.forms.get_by_code.error.failed') });
             }
             setQualification(null);
             setHasSearched(true);
@@ -60,12 +68,16 @@ const GetQualificationByCodeForm = () => {
         setHasSearched(false);
         setMessage({ type: '', text: '' });
     };
+    
+    // Extract attributes for display
+    const qualName = getAttr(qualification, 'name');
+    const qualCode = getAttr(qualification, 'code');
 
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Get Qualification by Code</h4>
-                <p>Retrieve detailed information about a specific qualification using its unique code</p>
+                <h4>{t('qualifications.forms.get_by_code.title')}</h4>
+                <p>{t('qualifications.forms.get_by_code.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -73,17 +85,17 @@ const GetQualificationByCodeForm = () => {
             <form onSubmit={handleSearch} className="search-form">
                 <div className="form-grid">
                     <div className="form-group">
-                        <label htmlFor="searchCode">Qualification Code</label>
+                        <label htmlFor="searchCode">{t('qualifications.forms.get_by_code.id.label')}</label>
                         <input
                             type="text"
                             id="searchCode"
                             name="code"
                             value={searchData.code}
                             onChange={handleInputChange}
-                            placeholder="Enter qualification code (e.g., Q-001)"
+                            placeholder={t('qualifications.forms.get_by_code.id.placeholder')}
                             className="form-input"
                         />
-                        <small className="form-help">Must be a valid code</small>
+                        <small className="form-help">{t('qualifications.forms.get_by_code.id.help')}</small>
                     </div>
                 </div>
                 <div className="form-actions">
@@ -95,12 +107,12 @@ const GetQualificationByCodeForm = () => {
                         {isLoading ? (
                             <>
                                 <span className="loading-spinner"></span>
-                                Loading...
+                                {t('common.loading')}
                             </>
                         ) : (
                             <>
                                 <span>🎯</span>
-                                Get Qualification
+                                {t('qualifications.forms.get_by_code.submit')}
                             </>
                         )}
                     </button>
@@ -111,26 +123,27 @@ const GetQualificationByCodeForm = () => {
                         disabled={isLoading}
                     >
                         <span>🔄</span>
-                        Clear
+                        {t('common.clear')}
                     </button>
                 </div>
             </form>
+            
             {/* Results Section */}
             {hasSearched && qualification && (
                 <div className="results-section">
                     <div className="results-header">
-                        <h4>Qualification Details</h4>
-                        <span className="results-count">Code: {qualification.code}</span>
+                        <h4>{t('qualifications.forms.get_by_code.results.details_title')}</h4>
+                        <span className="results-count">{t('qualifications.forms.get_by_code.results.code_prefix')}{qualCode}</span>
                     </div>
                     <div className="qualification-details-card">
                         <div className="qualification-info-grid">
                             <div className="info-group">
-                                <label>Name</label>
-                                <span>{qualification.name || 'N/A'}</span>
+                                <label>{t('qualifications.forms.get_by_code.results.name_label')}</label>
+                                <span>{qualName || t('common.na')}</span>
                             </div>
                             <div className="info-group">
-                                <label style={{ marginTop: '16px', display: 'inline-block' }}>Code</label>
-                                <span>{qualification.code || 'N/A'}</span>
+                                <label style={{ marginTop: '16px', display: 'inline-block' }}>{t('qualifications.forms.get_by_code.results.code_label')}</label>
+                                <span>{qualCode || t('common.na')}</span>
                             </div>
                         </div>
                     </div>
@@ -138,6 +151,6 @@ const GetQualificationByCodeForm = () => {
             )}
         </div>
     );
-};
+}
 
 console.log('GetQualificationByCodeForm component loaded!');

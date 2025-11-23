@@ -74,7 +74,7 @@ namespace WebApp.Models.Application.Services
             await _repository.UpdateAsync(notification);
         }
 
-        public async Task ApproveAsync(Guid id, Guid officerId, Guid dockId)
+        public async Task ApproveAsync(Guid id, Guid dockId)
         {
             var visit = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
@@ -84,17 +84,77 @@ namespace WebApp.Models.Application.Services
             if (dock == null)
                 throw new InvalidOperationException("Dock not found.");
 
-            visit.Approve(officerId, dockId);
-            await _repository.UpdateAsync(visit);
+            if (visit.Status != VesselVisitStatus.Submitted)
+                throw new InvalidOperationException("Only 'Submitted' visits can be approved.");
+
+            if (visit.DockId != dockId)
+                throw new InvalidOperationException("Dock ID must match the assigned dock for approval.");
+
+            DecisionLog log =  visit.Approve();
+            await _repository.UpdateStatusToApprovedAsync(visit, log);
         }
 
-        public async Task RejectAsync(Guid id, Guid officerId, string reason)
+        public async Task RejectAsync(Guid id, string reason)
         {
             var visit = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
 
-            visit.Reject(officerId, reason);
-            await _repository.UpdateAsync(visit);
+            if (visit.Status != VesselVisitStatus.Submitted)
+                throw new InvalidOperationException("Only 'Submitted' visits can be rejected.");
+
+
+            DecisionLog log = visit.Reject(reason);
+            await _repository.UpdateStatusToRejectedAsync(visit, log);
+        }
+
+        public async Task AddLoadingManifestAsync(Guid id, CargoManifest manifest)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.AddLoadingManifest(manifest);
+            await _repository.SaveLMAsync(manifest);
+        }
+
+        public async Task AddUnloadingManifestAsync(Guid id, CargoManifest manifest)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.AddUnloadingManifest(manifest);
+            await _repository.SaveUMAsync(manifest);
+        }
+
+        public async Task RemoveLoadingManifestAsync(Guid id)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            await _repository.DeleteLMAsync(visit.LoadingManifest!);
+        }
+
+        public async Task RemoveUnloadingManifestAsync(Guid id)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+            await _repository.DeleteUMAsync(visit.UnloadingManifest!);
+        }
+
+        public async Task AddCrewMemberAsync(Guid id, CrewMember crewMember)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            visit.AddCrewMember(crewMember);
+            await _repository.SaveCMAsync(crewMember);
+        }
+
+        public async Task RemoveCrewMemberAsync(Guid id, string citizenId)
+        {
+            var visit = await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Vessel Visit Notification not found.");
+
+            await _repository.DeleteCMAsync(visit.Crew.FirstOrDefault(cm => cm.CitizenId == citizenId)!);
         }
 
         public async Task<IEnumerable<VesselVisitNotificationDTO>> SearchAsync(VesselVisitNotificationFilterDTO filter)
@@ -103,8 +163,7 @@ namespace WebApp.Models.Application.Services
             bool hasAnyFilter = !string.IsNullOrEmpty(filter.VesselIMO) ||
                                !string.IsNullOrEmpty(filter.Status) ||
                                filter.FromDate.HasValue ||
-                               filter.ToDate.HasValue ||
-                               !string.IsNullOrEmpty(filter.Representative);
+                               filter.ToDate.HasValue;
 
             if (!hasAnyFilter)
             {
@@ -134,7 +193,7 @@ namespace WebApp.Models.Application.Services
             if (!result.Any())
             {
                 var filterDescription = BuildFilterDescription(filter);
-                throw new InvalidOperationException($"No vessel visit notifications found with the specified criteria: {filterDescription}");
+                throw new InvalidOperationException($"No vessel visit notifications found with the specified criteria.");
             }
 
             return result.Select(VesselVisitNotificationMapper.ToDTO);
@@ -155,9 +214,6 @@ namespace WebApp.Models.Application.Services
             
             if (filter.ToDate.HasValue)
                 criteria.Add($"To Date: {filter.ToDate.Value:yyyy-MM-dd}");
-            
-            if (!string.IsNullOrEmpty(filter.Representative))
-                criteria.Add($"Representative: {filter.Representative}");
             
             return string.Join(", ", criteria);
         }
@@ -180,15 +236,10 @@ namespace WebApp.Models.Application.Services
             var dock = await _dockRepository.GetByIdAsync(vvn.DockId);
             if (dock == null)
                 throw new InvalidOperationException("Dock not found.");
-
-            if (existingVisit.VesselIMO != vvn.VesselIMO)
-                throw new InvalidOperationException("Vessel IMO cannot be changed.");
-            existingVisit.UpdatePurpose(vvn.Purpose);
+            
             existingVisit.UpdateDockId(vvn.DockId);
             existingVisit.UpdateVisitDate(vvn.VisitDate);
-            existingVisit.UpdateLoadingManifest(vvn.LoadingManifest);
-            existingVisit.UpdateUnloadingManifest(vvn.UnloadingManifest);
-            existingVisit.UpdateCrew(vvn.Crew);
+            existingVisit.UpdatePurpose(vvn.Purpose);
             await _repository.UpdateAsync(existingVisit);
         }
 

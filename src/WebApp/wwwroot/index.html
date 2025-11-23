@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="css/storageAreas/storage-areas-components.css?v=1" />
   <link rel="stylesheet" href="css/storageAreas/storage-areas-hub.css?v=1" />
   <link rel="stylesheet" href="css/adminUsers/admin-users-hub.css?v=1" />
+  <link rel="stylesheet" href="css/scheduling-hub.css?v=1" />
 
   <!-- React + Babel -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -54,8 +55,16 @@
   <!-- Services -->
   <script src="js/services/api-service.js"></script>
 
+  <!-- ---------------------------------------------------------------------- -->
+  <!-- 3D Visualization (NEW SYSTEM)                                         -->
+  <!-- ---------------------------------------------------------------------- -->
+  <script type="text/babel" src="js/components/3d/PortDataFetcher.js"></script>
+  <script type="text/babel" src="js/components/3d/PortLayoutEngine.js"></script>
+  <script type="text/babel" src="js/components/3d/PortGeometryBuilder.js"></script>
+  <script type="text/babel" src="js/components/3d/PortVisualization.js"></script>
+
   <!-- 3D Visualization -->
-  <script src="js/components/3d-visualization.js"></script>
+  <!--<script src="js/components/3d-visualization.js"></script>-->
 
   <!-- Contexts -->
   <script type="text/babel" src="js/contexts/UserContext.jsx?v=1"></script>
@@ -104,11 +113,22 @@
   <script type="text/babel" src="js/components/forms/storageAreas/ListDockConnectionsForm.jsx?v=1"></script>
 
   <script type="text/babel" src="js/components/forms/organizations/RegisterOrganizationForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/organizations/GetOrganizationByIdForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/organizations/EditOrganizationForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/organizations/DeleteOrganizationForm.jsx?v=1"></script>
 
   <script type="text/babel" src="js/components/forms/qualifications/RegisterQualificationForm.jsx?v=1"></script>
   <script type="text/babel" src="js/components/forms/qualifications/GetQualificationByCodeForm.jsx?v=1"></script>
   <script type="text/babel" src="js/components/forms/qualifications/EditQualificationForm.jsx?v=1"></script>
   <script type="text/babel" src="js/components/forms/qualifications/DeleteQualificationForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/organizations/AddRepresentativeToOrganizationForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/organizations/RemoveRepresentativeFromOrganizationForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/organizations/ActivateDeactivateOrganizationForm.jsx?v=1"></script>
+
+  <script type="text/babel" src="js/components/forms/representatives/RegisterRepresentativeForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/representatives/GetRepresentativeByIdForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/representatives/EditRepresentativeForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/representatives/ActivateDeactivateRepresentativeForm.jsx?v=1"></script>
 
   <script type="text/babel" src="js/components/forms/staff/RegisterStaffForm.jsx?v=1"></script>
   <script type="text/babel" src="js/components/forms/staff/SearchStaffForm.jsx?v=1"></script>
@@ -122,6 +142,25 @@
 
   <script type="text/babel"
     src="js/components/forms/vesselVisitNotifications/RegisterVesselVisitNotificationForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/SearchVesselVisitNotificationsForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/GetVesselVisitNotificationByIdForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/EditVesselVisitNotificationForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/SubmitVesselVisitNotificationForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/ApproveVesselVisitNotificationForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/RejectVesselVisitNotificationForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/ManageLoadingManifestsForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/ManageUnloadingManifestsForm.jsx?v=1"></script>
+  <script type="text/babel" src="js/components/forms/vesselVisitNotifications/ManageCrewMembersForm.jsx?v=1"></script>
+  <script type="text/babel"
+    src="js/components/forms/vesselVisitNotifications/DeleteVesselVisitNotificationForm.jsx?v=1"></script>
 
   <script type="text/babel" src="js/components/forms/adminUsers/InviteUserForm.jsx?v=1"></script>
   <script type="text/babel" src="js/components/forms/adminUsers/UsersQuickTable.jsx?v=2"></script>
@@ -144,7 +183,7 @@
   <script type="text/babel" src="js/pages/DocksHubPage.jsx?v=1"></script>
   <script type="text/babel" src="js/pages/StorageAreasHubPage.jsx?v=2"></script>
   <script type="text/babel" src="js/pages/OrganizationsHubPage.jsx?v=2"></script>
-  <script type="text/babel" src="js/pages/RepresentativesPage.jsx?v=2"></script>
+  <script type="text/babel" src="js/pages/RepresentativesHubPage.jsx?v=2"></script>
   <script type="text/babel" src="js/pages/StaffHubPage.jsx?v=2"></script>
   <script type="text/babel" src="js/pages/VesselVisitNotificationsHubPage.jsx?v=2"></script>
   <script type="text/babel" src="js/pages/QualificationsHubPage.jsx?v=2"></script>
@@ -152,6 +191,7 @@
   <script type="text/babel" src="js/pages/AdminUsersPage.jsx"></script>
   <script type="text/babel" src="js/pages/ActivationSuccessPage.jsx"></script>
   <script type="text/babel" src="js/pages/AccessDeniedPage.jsx"></script>
+  <script type="text/babel" src="js/pages/SchedulingHubPage.jsx?v=1"></script>
 
 
   <!-- 🔹 Load the AuthGate -->

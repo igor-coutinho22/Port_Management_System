@@ -55,7 +55,7 @@ public class VesselVisitNotificationTests
         // Act & Assert
         var act = () => vvn.AddLoadingManifest(invalidManifest);
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage("*Loading*");
+           .WithMessage("Manifest must be of type 'Loading'.");
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class VesselVisitNotificationTests
         // Act & Assert
         var act = () => vvn.AddUnloadingManifest(invalidManifest);
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage("*Unloading*");
+           .WithMessage("Manifest must be of type 'Unloading'.");
     }
 
     [Fact]
@@ -92,13 +92,13 @@ public class VesselVisitNotificationTests
         var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
 
         // Act
-        vvn.AddCrewMember("John Doe", "CIT123", "Portuguese");
+        vvn.AddCrewMember(new CrewMember("John Doe", "CIT123", "PT"));
 
         // Assert
         vvn.Crew.Should().ContainSingle(c =>
             c.Name == "John Doe" &&
             c.CitizenId == "CIT123" &&
-            c.Nationality == "Portuguese");
+            c.Nationality == "PT");
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class VesselVisitNotificationTests
         // Act & Assert
         var act = () => vvn.MarkAsSubmitted();
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage("*cargo manifest*");
+           .WithMessage("Commercial visits must include at least one cargo manifest.");
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class VesselVisitNotificationTests
         // Act & Assert
         var act = () => vvn.MarkAsSubmitted();
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage("*InProgress*");
+           .WithMessage("Only 'InProgress' visits can be submitted.");
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class VesselVisitNotificationTests
         // Act & Assert
         var act = () => vvn.UpdatePurpose(VisitPurpose.Maintenance);
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage("*InProgress*");
+           .WithMessage("Only 'InProgress' visits can be updated.");
     }
 
     [Fact]
@@ -246,7 +246,7 @@ public class VesselVisitNotificationTests
         // Act & Assert
         var act = () => vvn.UpdateLoadingManifest(wrongManifest);
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage("*Loading*");
+           .WithMessage("Loading manifest must be of type 'Loading'.");
     }
 
     [Fact]
@@ -254,12 +254,12 @@ public class VesselVisitNotificationTests
     {
         // Arrange
         var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
-        vvn.AddCrewMember("Original", "CIT001", "Portuguese");
+        vvn.AddCrewMember(new CrewMember("Original", "CIT001", "PT"));
         
         var newCrew = new List<CrewMember>
         {
-            new CrewMember("John Doe", "CIT123", "American"),
-            new CrewMember("Jane Smith", "CIT456", "British")
+            new CrewMember("John Doe", "CIT123", "US"),
+            new CrewMember("Jane Smith", "CIT456", "UK")
         };
 
         // Act
@@ -277,7 +277,7 @@ public class VesselVisitNotificationTests
     {
         // Arrange
         var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
-        vvn.AddCrewMember("John Doe", "CIT123", "Portuguese");
+        vvn.AddCrewMember(new CrewMember("John Doe", "CIT123", "PT"));
 
         // Act
         vvn.UpdateCrew(new List<CrewMember>());

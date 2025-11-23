@@ -21,7 +21,7 @@ namespace WebApp.Models.Infrastructure.Repositories
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public async Task<IEnumerable<Representative>> GetByOrganizationAsync(Guid orgId)
+        public async Task<List<Representative>> GetByOrganizationIdAsync(Guid orgId)
         {
             return await _context.Representatives
                 .Where(r => r.OrganizationId == orgId)
@@ -29,36 +29,23 @@ namespace WebApp.Models.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Representative>> GetAllAsync(Guid? orgId = null, bool? active = null)
+        public async Task<List<Representative>> GetAllAsync()
         {
-            var query = _context.Representatives.AsQueryable();
-
-            if (orgId.HasValue)
-                query = query.Where(r => r.OrganizationId == orgId.Value);
-
-            if (active.HasValue)
-                query = query.Where(r => r.IsActive == active.Value);
-
-            return await query
+            return await _context.Representatives
+                .Include(r => r.Organization)
                 .OrderBy(r => r.Name)
                 .ToListAsync();
         }
 
         public async Task AddAsync(Representative rep)
         {
-            await _context.Representatives.AddAsync(rep);
+            _context.Representatives.Add(rep);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Representative rep)
         {
             _context.Representatives.Update(rep);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(Representative rep)
-        {
-            _context.Representatives.Remove(rep);
             await _context.SaveChangesAsync();
         }
     }
