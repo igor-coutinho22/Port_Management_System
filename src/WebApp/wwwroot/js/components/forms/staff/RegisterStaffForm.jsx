@@ -2,6 +2,7 @@
 console.log('📝 RegisterStaffForm component loading...');
 
 const RegisterStaffForm = ({ onSuccess }) => {
+    const { t } = useTranslation();
     const [formData, setFormData] = React.useState({
         mecanographicNumber: '',
         shortName: '',
@@ -27,17 +28,14 @@ const RegisterStaffForm = ({ onSuccess }) => {
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         try {
-            // Validate required fields
-            if (!formData.mecanographicNumber?.trim()) throw new Error('Mecanographic number is required');
-            if (!formData.shortName?.trim()) throw new Error('Short name is required');
-            if (!formData.email?.trim()) throw new Error('Email is required');
-            if (!formData.phone?.trim()) throw new Error('Phone is required');
-            if (!formData.operationalWindow?.trim()) throw new Error('Operational window is required');
+            // Validate required fields (LOGIC UNCHANGED)
+            if (!formData.mecanographicNumber?.trim()) throw new Error(t('staff.forms.register.error.mec_number_required'));
+            if (!formData.shortName?.trim()) throw new Error(t('staff.forms.register.error.name_required'));
+            if (!formData.email?.trim()) throw new Error(t('staff.forms.register.error.email_required'));
+            if (!formData.phone?.trim()) throw new Error(t('staff.forms.register.error.phone_required'));
+            if (!formData.operationalWindow?.trim()) throw new Error(t('staff.forms.register.error.window_required'));
 
-            // Debug: Log the data being sent
-            console.log('🔍 Sending staff data:', formData);
-
-            // Transform data to match backend DTO expectations
+            // Transform data to match backend DTO expectations (LOGIC UNCHANGED)
             const staffData = {
                 MecanographicNumber: formData.mecanographicNumber.trim(),
                 ShortName: formData.shortName.trim(),
@@ -48,7 +46,10 @@ const RegisterStaffForm = ({ onSuccess }) => {
             };
 
             await apiService.createStaff(staffData);
-            setMessage({ type: 'success', text: 'Staff registered successfully!' });
+            
+            setMessage({ type: 'success', text: t('staff.forms.register.success') });
+            
+            // Reset form (LOGIC UNCHANGED)
             setFormData({
                 mecanographicNumber: '',
                 shortName: '',
@@ -57,20 +58,33 @@ const RegisterStaffForm = ({ onSuccess }) => {
                 status: 'Available',
                 operationalWindow: ''
             });
+            
             if (onSuccess) onSuccess();
         } catch (error) {
             console.error('Error registering staff:', error);
-            setMessage({ type: 'error', text: error.message || 'Failed to register staff' });
+            setMessage({ type: 'error', text: error.message || t('staff.forms.register.error.failed') });
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleClear = () => {
+        setFormData({
+            mecanographicNumber: '',
+            shortName: '',
+            email: '',
+            phone: '',
+            status: 'Available',
+            operationalWindow: ''
+        });
+        setMessage({ type: '', text: '' });
+    };
+
     return (
         <div className="form-container staff-form">
             <div className="form-header">
-                <h4>Register Staff</h4>
-                <p>Create a new staff member with details and operational window</p>
+                <h4>{t('staff.forms.register.title')}</h4>
+                <p>{t('staff.forms.register.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -78,63 +92,73 @@ const RegisterStaffForm = ({ onSuccess }) => {
             <form onSubmit={handleSubmit} className="staff-form">
                 <div className="form-grid">
                     <div className="form-group">
-                        <label htmlFor="mecanographicNumber">Mecanographic Number <span className="required">*</span></label>
+                        <label htmlFor="mecanographicNumber">
+                            {t('staff.forms.register.mec_number.label')} <span className="required">*</span>
+                        </label>
                         <input
                             type="text"
                             id="mecanographicNumber"
                             name="mecanographicNumber"
                             value={formData.mecanographicNumber}
                             onChange={handleInputChange}
-                            placeholder="e.g., S12345"
+                            placeholder={t('staff.forms.register.mec_number.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Unique staff identifier</small>
+                        <small className="form-help">{t('staff.forms.register.mec_number.help')}</small>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="shortName">Short Name <span className="required">*</span></label>
+                        <label htmlFor="shortName">
+                            {t('staff.forms.register.name.label')} <span className="required">*</span>
+                        </label>
                         <input
                             type="text"
                             id="shortName"
                             name="shortName"
                             value={formData.shortName}
                             onChange={handleInputChange}
-                            placeholder="e.g., John Doe"
+                            placeholder={t('staff.forms.register.name.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Full name or nickname</small>
+                        <small className="form-help">{t('staff.forms.register.name.help')}</small>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="email">Email <span className="required">*</span></label>
+                        <label htmlFor="email">
+                            {t('staff.forms.register.email.label')} <span className="required">*</span>
+                        </label>
                         <input
                             type="email"
                             id="email"
                             name="email"
                             value={formData.email}
                             onChange={handleInputChange}
-                            placeholder="e.g., john.doe@example.com"
+                            placeholder={t('staff.forms.register.email.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Contact email address</small>
+                        <small className="form-help">{t('staff.forms.register.email.help')}</small>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="phone">Phone <span className="required">*</span></label>
+                        <label htmlFor="phone">
+                            {t('staff.forms.register.phone.label')} <span className="required">*</span>
+                        </label>
                         <input
                             type="text"
                             id="phone"
                             name="phone"
                             value={formData.phone}
                             onChange={handleInputChange}
-                            placeholder="e.g., +351912345678"
+                            placeholder={t('staff.forms.register.phone.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Contact phone number</small>
+                        <small className="form-help">{t('staff.forms.register.phone.help')}</small>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="status">Status <span className="required">*</span></label>
+                        <label htmlFor="status">
+                            {t('staff.forms.register.status.label')} <span className="required">*</span>
+                        </label>
                         <select
                             id="status"
                             name="status"
@@ -143,34 +167,54 @@ const RegisterStaffForm = ({ onSuccess }) => {
                             className="form-select"
                             required
                         >
-                            <option value="Available">Available</option>
-                            <option value="Unavailable">Unavailable</option>
+                            <option value="Available">{t('staff.forms.register.status.available')}</option>
+                            <option value="Unavailable">{t('staff.forms.register.status.unavailable')}</option>
                         </select>
-                        <small className="form-help">Current staff status</small>
+                        <small className="form-help">{t('staff.forms.register.status.help')}</small>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="operationalWindow">Operational Window <span className="required">*</span></label>
+                        <label htmlFor="operationalWindow">
+                            {t('staff.forms.register.window.label')} <span className="required">*</span>
+                        </label>
                         <input
                             type="text"
                             id="operationalWindow"
                             name="operationalWindow"
                             value={formData.operationalWindow}
                             onChange={handleInputChange}
-                            placeholder="e.g., 08:00-16:00"
+                            placeholder={t('staff.forms.register.window.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Working hours or shift</small>
+                        <small className="form-help">{t('staff.forms.register.window.help')}</small>
                     </div>
                 </div>
                 <div className="form-actions">
                     <button type="submit" className="submit-btn" disabled={isLoading}>
-                        {isLoading ? (<><span className="loading-spinner"></span>Registering...</>) : (<>Register Staff</>)}
+                        {isLoading ? (
+                            <>
+                                <span className="loading-spinner"></span>
+                                {t('staff.forms.register.registering')}
+                            </>
+                        ) : (
+                            <>
+                                <span>🏗️</span>
+                                {t('staff.forms.register.submit')}
+                            </>
+                        )}
+                    </button>
+                    <button 
+                        type="button" 
+                        className="clear-btn"
+                        onClick={handleClear}
+                    >
+                        <span>🧹</span>
+                        {t('common.clear')}
                     </button>
                 </div>
             </form>
         </div>
     );
-};
+}
 
-console.log('RegisterStaffForm component loaded!');
+console.log('RegisterStaffForm component loaded! 📝');

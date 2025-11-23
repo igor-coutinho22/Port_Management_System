@@ -2,6 +2,11 @@
 console.log('DeleteStaffForm component loading...');
 
 const DeleteStaffForm = ({ onSuccess }) => {
+    const { t } = useTranslation();
+    
+    // Helper to extract attribute values reliably (handling PascalCase and camelCase)
+    const getAttr = (obj, key) => obj?.[key] || obj?.[key.charAt(0).toUpperCase() + key.slice(1)];
+    
     const [searchData, setSearchData] = React.useState({
         mecanographicNumber: ''
     });
@@ -29,8 +34,10 @@ const DeleteStaffForm = ({ onSuccess }) => {
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        if (!searchData.mecanographicNumber.trim()) {
-            setMessage({ type: 'error', text: 'Mecanographic number is required' });
+        const staffNumber = searchData.mecanographicNumber.trim();
+        
+        if (!staffNumber) {
+            setMessage({ type: 'error', text: t('staff.forms.delete.error.required') });
             return;
         }
         setIsLoading(true);
@@ -38,23 +45,25 @@ const DeleteStaffForm = ({ onSuccess }) => {
         setHasSearched(false);
         setStaff(null);
         try {
-            const data = await apiService.getStaffById(searchData.mecanographicNumber.trim());
+            const data = await apiService.getStaffById(staffNumber);
             if (data) {
-                setStaff(data);
+                // Ensure data uses a consistent key for number
+                const staffWithNumber = { ...data, mecanographicNumber: staffNumber };
+                setStaff(staffWithNumber);
                 setHasSearched(true);
                 setStep('confirm');
-                setMessage({ type: 'info', text: 'Staff found successfully. Please confirm deletion below.' });
+                setMessage({ type: 'info', text: t('staff.forms.delete.search_success') });
             } else {
                 setStaff(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Staff not found with the provided number' });
+                setMessage({ type: 'info', text: t('staff.forms.delete.search_error.not_found', { number: staffNumber }) });
             }
         } catch (error) {
             console.error('Error fetching staff:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Staff not found with the provided number' });
+                setMessage({ type: 'info', text: t('staff.forms.delete.search_error.not_found', { number: staffNumber }) });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch staff. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('staff.forms.delete.search_error.failed') });
             }
             setStaff(null);
             setHasSearched(true);
@@ -65,20 +74,22 @@ const DeleteStaffForm = ({ onSuccess }) => {
 
     const handleDelete = async (e) => {
         e.preventDefault();
-        if (confirmationText !== staff.shortName) {
+        const staffShortName = getAttr(staff, 'shortName') || '';
+
+        if (confirmationText !== staffShortName) {
             setMessage({
                 type: 'error',
-                text: 'Staff name does not match. Please type the exact staff name to confirm deletion.'
+                text: t('staff.forms.delete.confirmation_mismatch')
             });
             return;
         }
         setIsDeleting(true);
         setMessage({ type: '', text: '' });
         try {
-            await apiService.deleteStaff(staff.mecanographicNumber);
+            await apiService.deleteStaff(getAttr(staff, 'mecanographicNumber'));
             setMessage({
                 type: 'success',
-                text: `Staff "${staff.shortName}" has been successfully deleted.`
+                text: t('staff.forms.delete.success', { name: staffShortName })
             });
             setTimeout(() => {
                 handleClear();
@@ -88,7 +99,7 @@ const DeleteStaffForm = ({ onSuccess }) => {
             console.error('Error deleting staff:', error);
             setMessage({
                 type: 'error',
-                text: error.message || 'Failed to delete staff. Please try again.'
+                text: error.message || t('staff.forms.delete.error.failed')
             });
         } finally {
             setIsDeleting(false);
@@ -112,12 +123,21 @@ const DeleteStaffForm = ({ onSuccess }) => {
         setStep('search');
         setConfirmationText('');
     };
+    
+    // Attributes derived for display
+    const mecNumber = getAttr(staff, 'mecanographicNumber');
+    const shortName = getAttr(staff, 'shortName');
+    const email = getAttr(staff, 'email');
+    const phone = getAttr(staff, 'phone');
+    const status = getAttr(staff, 'status');
+    const window = getAttr(staff, 'operationalWindow');
+
 
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Delete Staff</h4>
-                <p>Search for a staff member by mecanographic number and permanently delete them from the system</p>
+                <h4>{t('staff.forms.delete.title')}</h4>
+                <p>{t('staff.forms.delete.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -127,17 +147,17 @@ const DeleteStaffForm = ({ onSuccess }) => {
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchMecanographicNumber">Mecanographic Number</label>
+                            <label htmlFor="searchMecanographicNumber">{t('staff.forms.delete.number.label')}</label>
                             <input
                                 type="text"
                                 id="searchMecanographicNumber"
                                 name="mecanographicNumber"
                                 value={searchData.mecanographicNumber}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter staff number (e.g., S12345)"
+                                placeholder={t('staff.forms.delete.number.placeholder')}
                                 className="form-input"
                             />
-                            <small className="form-help">Enter the unique number of the staff you want to delete</small>
+                            <small className="form-help">{t('staff.forms.delete.number.help')}</small>
                         </div>
                     </div>
                     <div className="form-actions">
@@ -146,7 +166,7 @@ const DeleteStaffForm = ({ onSuccess }) => {
                             className="submit-btn"
                             disabled={isLoading}
                         >
-                            {isLoading ? (<><span className="loading-spinner"></span>Loading...</>) : (<>Search Staff</>)}
+                            {isLoading ? (<><span className="loading-spinner"></span>{t('staff.forms.delete.searching')}</>) : (<>{t('staff.forms.delete.search_button')}</>)}
                         </button>
                         <button
                             type="button"
@@ -155,7 +175,7 @@ const DeleteStaffForm = ({ onSuccess }) => {
                             disabled={isLoading}
                         >
                             <span>🧹</span>
-                            Cancel
+                            {t('staff.forms.delete.cancel')}
                         </button>
                     </div>
                 </form>
@@ -164,50 +184,51 @@ const DeleteStaffForm = ({ onSuccess }) => {
             {step === 'confirm' && staff && (
                 <>
                     <div className="delete-form-header">
-                        <span>⚠️ Confirm Staff Deletion</span>
+                        <span>⚠️ {t('staff.forms.delete.confirm.title')}</span>
                         <button
                             type="button"
                             className="link-btn"
                             onClick={handleNewSearch}
                         >
-                            <span style={{ marginRight: '4px' }}>🔍</span>Search different staff
+                            <span style={{ marginRight: '4px' }}>🔍</span>{t('staff.forms.delete.confirm.search_different')}
                         </button>
                     </div>
                     <div className="delete-details-card">
-                        <span className="delete-details-card-title">⚠️ Staff to be deleted:</span>
+                        <span className="delete-details-card-title">⚠️ {t('staff.forms.delete.confirm.to_delete')}</span>
                         <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                            <div className="delete-details-field"><span className="delete-details-label">MEC NUMBER:</span><br />{staff.mecanographicNumber}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">NAME:</span><br />{staff.shortName}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">EMAIL:</span><br />{staff.email}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">PHONE:</span><br />{staff.phone}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">STATUS:</span><br />{staff.status}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">OPERATIONAL WINDOW:</span><br />{staff.operationalWindow}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('staff.forms.delete.confirm.mec_number')}:</span><br />{mecNumber}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('staff.forms.delete.confirm.name')}:</span><br />{shortName}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('staff.forms.delete.confirm.email')}:</span><br />{email}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('staff.forms.delete.confirm.phone')}:</span><br />{phone}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('staff.forms.delete.confirm.status')}:</span><br />{status}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('staff.forms.delete.confirm.window')}:</span><br />{window}</div>
                         </div>
                     </div>
                     <div className="delete-warning-card">
-                        <span className="delete-warning-title">⚠️ Warning: This action cannot be undone</span>
-                        <span className="delete-warning-desc">Deleting this staff member will permanently remove them from the system. All associated data will be lost.</span>
+                        <span className="delete-warning-title">⚠️ {t('staff.forms.delete.confirm.warning_title')}</span>
+                        <span className="delete-warning-desc">{t('staff.forms.delete.confirm.warning_description')}</span>
                         <form onSubmit={handleDelete} className="delete-form">
                             <div className="form-group" style={{ marginBottom: '18px' }}>
-                                <label htmlFor="confirmDelete" style={{ color: '#fff', fontWeight: 500 }}>Type the staff name to confirm deletion:</label>
+                                <label htmlFor="confirmDelete" style={{ color: '#fff', fontWeight: 500 }}>{t('staff.forms.delete.confirmation_prompt')} "<strong>{shortName}</strong>" {t('staff.forms.delete.confirmation_prompt_continued')}</label>
                                 <input
                                     type="text"
                                     id="confirmDelete"
                                     value={confirmationText}
                                     onChange={handleConfirmationInputChange}
-                                    placeholder={`Type "${staff.shortName}" to confirm`}
+                                    placeholder={shortName}
                                     className="delete-confirm-input"
                                     autoComplete="off"
+                                    required
                                 />
-                                <small className="delete-confirm-help">This confirmation helps prevent accidental deletions</small>
+                                <small className="delete-confirm-help">{t('staff.forms.delete.confirmation_help')}</small>
                             </div>
                             <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
                                 <button
                                     type="submit"
                                     className="delete-btn"
-                                    disabled={isDeleting || confirmationText !== staff.shortName}
+                                    disabled={isDeleting || confirmationText !== shortName}
                                 >
-                                    {isDeleting ? (<><span className="loading-spinner"></span>Deleting...</>) : (<>Delete Staff</>)}
+                                    {isDeleting ? (<><span className="loading-spinner"></span>{t('staff.forms.delete.deleting')}</>) : (<>🗑️ {t('staff.forms.delete.submit')}</>)}
                                 </button>
                                 <button
                                     type="button"
@@ -215,8 +236,8 @@ const DeleteStaffForm = ({ onSuccess }) => {
                                     onClick={handleClear}
                                     disabled={isDeleting}
                                 >
-                                    <span role="img" aria-label="cancel">🧹</span>
-                                    Cancel
+                                    <span>🧹</span>
+                                    {t('staff.forms.delete.cancel')}
                                 </button>
                             </div>
                         </form>
@@ -225,6 +246,6 @@ const DeleteStaffForm = ({ onSuccess }) => {
             )}
         </div>
     );
-};
+}
 
 console.log('DeleteStaffForm component loaded!');

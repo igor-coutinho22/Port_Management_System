@@ -35,7 +35,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
         
         // Validate resource ID field
         if (!searchData.id.trim()) {
-            setMessage({ type: 'error', text: 'Resource ID is required' });
+            setMessage({ type: 'error', text: t('resources.forms.delete.error.required') });
             return;
         }
         
@@ -50,18 +50,18 @@ const DeleteResourceForm = ({ onSuccess }) => {
                 setResource(data);
                 setHasSearched(true);
                 setStep('confirm');
-                setMessage({ type: 'info', text: 'Resource found successfully' });
+                setMessage({ type: 'info', text: t('resources.forms.delete.search_success') });
             } else {
                 setResource(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'No resource found with the provided ID' });
+                setMessage({ type: 'info', text: t('resources.forms.delete.search_not_found') });
             }
         } catch (error) {
             console.error('Error fetching resource:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'No resource found with the provided ID' });
+                setMessage({ type: 'info', text: t('resources.forms.delete.search_error.not_found') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to retrieve resource' });
+                setMessage({ type: 'error', text: error.message || t('resources.forms.delete.search_error.failed') });
             }
             setResource(null);
             setHasSearched(true);
@@ -77,7 +77,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
         if (confirmationText !== resource.description) {
             setMessage({ 
                 type: 'error', 
-                text: 'Confirmation text does not match the resource description' 
+                text: t('resources.forms.delete.confirm.mismatch') 
             });
             return;
         }
@@ -90,7 +90,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
             
             setMessage({ 
                 type: 'success', 
-                text: `Resource "${resource.description}" has been successfully deleted`
+                text: t('resources.forms.delete.success')
             });
             
             // Reset form after successful deletion
@@ -103,7 +103,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
             console.error('Error deleting resource:', error);
             setMessage({ 
                 type: 'error', 
-                text: error.message || 'Failed to delete resource' 
+                text: error.message || t('resources.forms.delete.delete_error.failed') 
             });
         } finally {
             setIsDeleting(false);
@@ -141,8 +141,8 @@ const DeleteResourceForm = ({ onSuccess }) => {
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Delete Resource</h4>
-                <p>⚠️ This action cannot be undone</p>
+                <h4>{t('resources.forms.delete.title')}</h4>
+                <p>{t('resources.forms.delete.description')}</p>
             </div>
 
             {message.text && (
@@ -154,7 +154,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchId">Resource ID</label>
+                            <label htmlFor="searchId">{t('resources.forms.delete.id.label')}</label>
                             <input
                                 type="text"
                                 id="searchId"
@@ -164,7 +164,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
                                 placeholder="Enter resource ID"
                                 className="form-input"
                             />
-                            <small className="form-help">Enter the ID of the resource you want to delete</small>
+                            <small className="form-help">{t('resources.forms.delete.id.help')}</small>
                         </div>
                     </div>
 
@@ -177,12 +177,12 @@ const DeleteResourceForm = ({ onSuccess }) => {
                             {isLoading ? (
                                 <>
                                     <span className="loading-spinner"></span>
-                                    Loading...
+                                    {t('common.loading')}
                                 </>
                             ) : (
                                 <>
                                     <span>🔍</span>
-                                    Find Resource
+                                    {t('resources.forms.delete.search_button')}
                                 </>
                             )}
                         </button>
@@ -194,7 +194,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
                             disabled={isLoading}
                         >
                             <span>🧹</span>
-                            Cancel
+                            {t('resources.forms.delete.cancel')}
                         </button>
                     </div>
                 </form>
@@ -204,32 +204,32 @@ const DeleteResourceForm = ({ onSuccess }) => {
             {step === 'confirm' && resource && (
                 <>
                     <div className="delete-form-header">
-                        <span>⚠️ Confirm Deletion</span>
+                        <span>⚠️ {t('resources.forms.delete.confirm.title')}</span>
                         <button 
                             type="button" 
                             className="link-btn"
                             onClick={handleNewSearch}
                         >
-                            <span style={{ marginRight: '4px' }}>🔍</span>Search Different Resource
+                            <span style={{ marginRight: '4px' }}>🔍</span>{t('resources.forms.delete.confirm.search_different')}
                         </button>
                     </div>
                     <div className="delete-details-card">
-                        <span className="delete-details-card-title">⚠️ Resource to delete:</span>
+                        <span className="delete-details-card-title">⚠️ {t('resources.forms.delete.confirm.to_delete')}</span>
                         <div className="delete-details-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
                             <div className="delete-details-field"><span className="delete-details-label">ID:</span><br />{resource.id}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">Description:</span><br />{resource.description}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">Type:</span><br />{getResourceTypeLabel(resource.resourceType)}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">Status:</span><br /><span className={`status-badge status-${(resource.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>{resource.status || 'N/A'}</span></div>
-                            <div className="delete-details-field"><span className="delete-details-label">Capacity:</span><br />{resource.operationalCapacity}</div>
-                            <div className="delete-details-field"><span className="delete-details-label">Setup Time:</span><br />{resource.setupTime} minutes</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('resources.details.description_label')}:</span><br />{resource.description}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('resources.details.type_label')}:</span><br />{getResourceTypeLabel(resource.resourceType)}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('resources.details.status_label')}:</span><br /><span className={`status-badge status-${(resource.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>{resource.status || 'N/A'}</span></div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('resources.details.capacity_label')}:</span><br />{resource.operationalCapacity}</div>
+                            <div className="delete-details-field"><span className="delete-details-label">{t('resources.details.setup_time_label')}:</span><br />{resource.setupTime} {t('resources.details.minutes_unit')}</div>
                         </div>
                     </div>
                     <div className="delete-warning-card">
-                        <span className="delete-warning-title">⚠️ Warning</span>
-                        <span className="delete-warning-desc">This action cannot be undone and will permanently remove all resource data.</span>
+                        <span className="delete-warning-title">⚠️ {t('resources.forms.delete.confirm.warning_title_short')}</span>
+                        <span className="delete-warning-desc">{t('resources.forms.delete.confirm.warning_description')}</span>
                         <form onSubmit={handleDelete} className="delete-form">
                             <div className="form-group" style={{ marginBottom: '18px' }}>
-                                <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>Type "<strong>{resource.description}</strong>" to confirm:</label>
+                                <label htmlFor="confirmationText" style={{ color: '#fff', fontWeight: 500 }}>{t('resources.forms.delete.confirmation_prompt')} "<strong>{resource.description}</strong>" {t('resources.forms.delete.confirmation_prompt_continued')}</label>
                                 <input
                                     type="text"
                                     id="confirmationText"
@@ -239,7 +239,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
                                     className="delete-confirm-input"
                                     required
                                 />
-                                <small className="delete-confirm-help">This confirmation helps prevent accidental deletions</small>
+                                <small className="delete-confirm-help">{t('resources.forms.delete.confirmation_help')}</small>
                             </div>
                             <div className="form-actions" style={{ display: 'flex', gap: '16px' }}>
                                 <button 
@@ -248,9 +248,9 @@ const DeleteResourceForm = ({ onSuccess }) => {
                                     disabled={isDeleting || confirmationText !== resource.description}
                                 >
                                     {isDeleting ? (
-                                        <><span className="loading-spinner"></span>Deleting...</>
+                                        <><span className="loading-spinner"></span>{t('resources.forms.delete.deleting')}...</>
                                     ) : (
-                                        <>🗑️ Delete Resource</>
+                                        <>🗑️ {t('resources.forms.delete.submit')}</>
                                     )}
                                 </button>
                                 <button 
@@ -260,7 +260,7 @@ const DeleteResourceForm = ({ onSuccess }) => {
                                     disabled={isDeleting}
                                 >
                                     <span role="img" aria-label="cancel">🧹</span>
-                                    Cancel
+                                    {t('resources.forms.delete.cancel')}
                                 </button>
                             </div>
                         </form>

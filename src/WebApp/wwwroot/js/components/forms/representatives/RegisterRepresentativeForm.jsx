@@ -1,7 +1,8 @@
 // Register Representative Form Component
 console.log('RegisterRepresentativesForm is loading...');
 
-const RegisterRepresentativeForm = ({ onSuccess }) => {
+export default function RegisterRepresentativeForm({ onSuccess }) {
+    const { t } = useTranslation();
     const [formData, setFormData] = React.useState({
         organizationId: '',
         name: '',
@@ -14,12 +15,18 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
     const [isLoading, setIsLoading] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
 
+    // Helper to extract attribute values reliably (handling PascalCase and camelCase)
+    const getAttr = (obj, key) => obj?.[key] || obj?.[key.charAt(0).toUpperCase() + key.slice(1)];
+
+
     React.useEffect(() => {
         const fetchOrganizations = async () => {
             try {
                 const orgs = await apiService.getOrganizations();
                 setOrganizations(orgs);
             } catch (error) {
+                // TRANSLATED: Fallback message for error loading organizations
+                setMessage({ type: 'error', text: t('organizations.error_loading') });
                 setOrganizations([]);
             }
         };
@@ -42,21 +49,33 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         try {
+            // TRANSLATED: Validation messages
             if (!formData.organizationId) {
-                throw new Error('Please select an organization.');
+                throw new Error(t('representatives.forms.register.error.required.organization'));
             }
-            await apiService.createRepresentative(formData.organizationId, {
-                name: formData.name,
-                citizenId: formData.citizenId,
-                nationality: formData.nationality,
-                email: formData.email,
-                phone: formData.phone
-            });
-            setMessage({ type: 'success', text: 'Representative registered successfully!' });
-            setFormData({ organizationId: '', name: '', citizenId: '', nationality: '', email: '', phone: '' });
+            if (!formData.name?.trim()) { 
+                throw new Error(t('representatives.forms.register.name.label') + t('common.error.required'));
+            }
+            
+            // Logic unchanged for DTO creation
+            const representativeData = {
+                Name: formData.name.trim(),
+                CitizenId: formData.citizenId.trim(),
+                Nationality: formData.nationality.trim(),
+                Email: formData.email.trim(),
+                Phone: formData.phone.trim()
+            };
+
+            await apiService.createRepresentative(formData.organizationId, representativeData);
+            
+            setMessage({ type: 'success', text: t('representatives.forms.register.success') });
+            
             if (onSuccess) onSuccess();
+
         } catch (error) {
-            setMessage({ type: 'error', text: error?.message || 'Failed to register representative.' });
+            // TRANSLATED: Error handling
+            let errorText = error?.message || t('representatives.forms.register.error.failed');
+            setMessage({ type: 'error', text: errorText });
         } finally {
             setIsLoading(false);
         }
@@ -65,8 +84,8 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
     return (
         <div className="form-container representative-form">
             <div className="form-header">
-                <h4>Register Representative</h4>
-                <p>Create a new representative. All fields are required.</p>
+                <h4>{t('representatives.forms.register.title')}</h4>
+                <p>{t('representatives.forms.register.description')}</p>
             </div>
 
             {message.text && (
@@ -77,7 +96,7 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                 <div className="form-grid">
                     <div className="form-group">
                         <label htmlFor="organizationId">
-                            Organization <span className="required">*</span>
+                            {t('representatives.forms.register.organization.label')} <span className="required">*</span>
                         </label>
                         <select
                             id="organizationId"
@@ -86,17 +105,20 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                             onChange={handleInputChange}
                             className="form-input"
                             required
+                            disabled={organizations.length === 0}
                         >
-                            <option value="" disabled>Select organization...</option>
+                            <option value="" disabled>{t('representatives.forms.register.organization.select_placeholder')}</option>
                             {organizations.map(org => (
-                                <option key={org.id} value={org.id}>{org.legalName}</option>
+                                // Attribute values (id, legalName) are NOT translated
+                                <option key={getAttr(org, 'id')} value={getAttr(org, 'id')}>{getAttr(org, 'legalName')}</option>
                             ))}
                         </select>
-                        <small className="form-help">Choose the organization to assign this representative</small>
+                        <small className="form-help">{t('representatives.forms.register.organization.help')}</small>
                     </div>
+                    
                     <div className="form-group">
                         <label htmlFor="name">
-                            Name <span className="required">*</span>
+                            {t('representatives.forms.register.name.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="text"
@@ -104,16 +126,17 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                             name="name"
                             value={formData.name}
                             onChange={handleInputChange}
-                            placeholder="e.g., John Doe"
+                            placeholder={t('representatives.forms.register.name.placeholder')}
                             className="form-input"
                             maxLength={120}
                             required
                         />
-                        <small className="form-help">Full name of the representative</small>
+                        <small className="form-help">{t('representatives.forms.register.name.help')}</small>
                     </div>
+                    
                     <div className="form-group">
                         <label htmlFor="citizenId">
-                            Citizen ID <span className="required">*</span>
+                            {t('representatives.forms.register.citizenId.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="text"
@@ -121,16 +144,17 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                             name="citizenId"
                             value={formData.citizenId}
                             onChange={handleInputChange}
-                            placeholder="e.g., 123456789"
+                            placeholder={t('representatives.forms.register.citizenId.placeholder')}
                             className="form-input"
                             maxLength={64}
                             required
                         />
-                        <small className="form-help">Unique citizen identification number</small>
+                        <small className="form-help">{t('representatives.forms.register.citizenId.help')}</small>
                     </div>
+                    
                     <div className="form-group">
                         <label htmlFor="nationality">
-                            Nationality <span className="required">*</span>
+                            {t('representatives.forms.register.nationality.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="text"
@@ -138,16 +162,17 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                             name="nationality"
                             value={formData.nationality}
                             onChange={handleInputChange}
-                            placeholder="e.g., PRT"
+                            placeholder={t('representatives.forms.register.nationality.placeholder')}
                             className="form-input"
                             maxLength={3}
                             required
                         />
-                        <small className="form-help">ISO 2 or 3-letter country code</small>
+                        <small className="form-help">{t('representatives.forms.register.nationality.help')}</small>
                     </div>
+                    
                     <div className="form-group">
                         <label htmlFor="email">
-                            Email <span className="required">*</span>
+                            {t('representatives.forms.register.email.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="email"
@@ -155,16 +180,17 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                             name="email"
                             value={formData.email}
                             onChange={handleInputChange}
-                            placeholder="e.g., john.doe@email.com"
+                            placeholder={t('representatives.forms.register.email.placeholder')}
                             className="form-input"
                             maxLength={200}
                             required
                         />
-                        <small className="form-help">Valid email address</small>
+                        <small className="form-help">{t('representatives.forms.register.email.help')}</small>
                     </div>
+                    
                     <div className="form-group">
                         <label htmlFor="phone">
-                            Phone <span className="required">*</span>
+                            {t('representatives.forms.register.phone.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="text"
@@ -172,14 +198,15 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                             name="phone"
                             value={formData.phone}
                             onChange={handleInputChange}
-                            placeholder="e.g., +351912345678"
+                            placeholder={t('representatives.forms.register.phone.placeholder')}
                             className="form-input"
                             maxLength={32}
                             required
                         />
-                        <small className="form-help">Phone number in E.164 format</small>
+                        <small className="form-help">{t('representatives.forms.register.phone.help')}</small>
                     </div>
                 </div>
+                
                 <div className="form-actions">
                     <button
                         type="submit"
@@ -189,12 +216,12 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                         {isLoading ? (
                             <>
                                 <span className="loading-spinner"></span>
-                                Registering...
+                                {t('representatives.forms.register.registering')}
                             </>
                         ) : (
                             <>
                                 <span>👤</span>
-                                Register Representative
+                                {t('representatives.forms.register.submit')}
                             </>
                         )}
                     </button>
@@ -205,12 +232,12 @@ const RegisterRepresentativeForm = ({ onSuccess }) => {
                         disabled={isLoading}
                     >
                         <span>🧹</span>
-                        Clear Form
+                        {t('representatives.forms.register.clear')}
                     </button>
                 </div>
             </form>
         </div>
     );
-};
+}
 
 console.log('RegisterRepresentativeForm component loaded!');

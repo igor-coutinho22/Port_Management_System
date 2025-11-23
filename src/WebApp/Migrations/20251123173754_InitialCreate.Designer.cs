@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251121160126_FixedDbContext")]
-    partial class FixedDbContext
+    [Migration("20251123173754_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -687,8 +687,20 @@ namespace WebApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("ArrivalTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DesiredDepartureTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("DockId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("EstimatedLoadingDurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("EstimatedUnloadingDurationMinutes")
+                        .HasColumnType("int");
 
                     b.Property<int>("Purpose")
                         .HasColumnType("int");
