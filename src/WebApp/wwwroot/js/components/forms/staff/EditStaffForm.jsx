@@ -2,6 +2,11 @@
 console.log('EditStaffForm component loading...');
 
 const EditStaffForm = ({ onSuccess }) => {
+    const { t } = useTranslation();
+    
+    // Helper to extract attribute values reliably (handling PascalCase and camelCase)
+    const getAttr = (obj, key) => obj?.[key] || obj?.[key.charAt(0).toUpperCase() + key.slice(1)];
+    
     const [searchData, setSearchData] = React.useState({
         mecanographicNumber: ''
     });
@@ -33,7 +38,7 @@ const EditStaffForm = ({ onSuccess }) => {
             setQualificationList(list);
         } catch (error) {
             console.error('Error loading qualifications:', error);
-            setMessage({ type: 'error', text: 'Failed to load qualifications' });
+            setMessage({ type: 'error', text: t('staff.forms.edit.error.load_qualifications') });
         }
     };
 
@@ -67,8 +72,10 @@ const EditStaffForm = ({ onSuccess }) => {
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        if (!searchData.mecanographicNumber.trim()) {
-            setMessage({ type: 'error', text: 'Mecanographic number is required' });
+        const staffNumber = searchData.mecanographicNumber.trim();
+
+        if (!staffNumber) {
+            setMessage({ type: 'error', text: t('staff.forms.edit.search_error.required') });
             return;
         }
         setIsLoading(true);
@@ -76,32 +83,33 @@ const EditStaffForm = ({ onSuccess }) => {
         setHasSearched(false);
         setStaff(null);
         try {
-            const data = await apiService.getStaffById(searchData.mecanographicNumber.trim());
+            const data = await apiService.getStaffById(staffNumber);
             if (data) {
-                setStaff(data);
+                const staffWithNumber = { ...data, mecanographicNumber: staffNumber };
+                setStaff(staffWithNumber);
                 setFormData({
-                    mecanographicNumber: data.mecanographicNumber || '',
-                    shortName: data.shortName || '',
-                    email: data.email || '',
-                    phone: data.phone || '',
-                    status: data.status || '',
-                    operationalWindow: data.operationalWindow || '',
-                    qualifications: data.qualifications ? data.qualifications.map(q => q.code) : []
+                    mecanographicNumber: getAttr(data, 'mecanographicNumber') || staffNumber,
+                    shortName: getAttr(data, 'shortName') || '',
+                    email: getAttr(data, 'email') || '',
+                    phone: getAttr(data, 'phone') || '',
+                    status: getAttr(data, 'status') || '',
+                    operationalWindow: getAttr(data, 'operationalWindow') || '',
+                    qualifications: getAttr(data, 'qualifications') ? getAttr(data, 'qualifications').map(q => getAttr(q, 'code')) : []
                 });
                 setHasSearched(true);
                 setStep('edit');
-                setMessage({ type: 'success', text: 'Staff found successfully' });
+                setMessage({ type: 'success', text: t('staff.forms.edit.search_success') });
             } else {
                 setStaff(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Staff not found' });
+                setMessage({ type: 'info', text: t('staff.forms.edit.search_error.not_found') });
             }
         } catch (error) {
             console.error('Error fetching staff:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Staff not found with the provided number' });
+                setMessage({ type: 'info', text: t('staff.forms.edit.search_error.not_found_with_number') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch staff. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('staff.forms.edit.search_error.failed') });
             }
             setStaff(null);
             setHasSearched(true);
@@ -115,18 +123,20 @@ const EditStaffForm = ({ onSuccess }) => {
         setIsUpdating(true);
         setMessage({ type: '', text: '' });
         try {
+            // Validate required fields
             if (!formData.shortName?.trim() || !formData.email?.trim() || !formData.phone?.trim() || !formData.status?.trim() || !formData.operationalWindow?.trim()) {
-                throw new Error('All fields are required');
+                throw new Error(t('staff.forms.edit.error.all_fields_required'));
             }
             // Validate email
             if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
-                throw new Error('Invalid email format');
+                throw new Error(t('staff.forms.edit.error.email_invalid'));
             }
             // Validate phone
             if (!/^\+?[0-9\s-]{7,}$/.test(formData.phone)) {
-                throw new Error('Invalid phone number');
+                throw new Error(t('staff.forms.edit.error.phone_invalid'));
             }
-            // Prepare staff data for update
+            
+            // Prepare staff data for update (LOGIC UNCHANGED)
             const staffData = {
                 shortName: formData.shortName.trim(),
                 email: formData.email.trim(),
@@ -134,16 +144,17 @@ const EditStaffForm = ({ onSuccess }) => {
                 status: formData.status.trim(),
                 operationalWindow: formData.operationalWindow.trim(),
                 qualifications: formData.qualifications.map(code => {
-                    const q = qualificationList.find(q => q.code === code);
-                    return { code, name: q ? q.name : '' };
+                    const q = qualificationList.find(q => q.code === code || q.Code === code);
+                    // LOGIC UNCHANGED: Map to DTO structure
+                    return { Code: code, Name: q ? q.name || q.Name : '' };
                 }) // array of objects with code and name
             };
             const result = await apiService.updateStaff(formData.mecanographicNumber, staffData);
-            setMessage({ type: 'success', text: 'Staff updated successfully' });
+            setMessage({ type: 'success', text: t('staff.forms.edit.update_success') });
             if (onSuccess) onSuccess();
         } catch (error) {
             console.error('Error updating staff:', error);
-            setMessage({ type: 'error', text: error.message || 'Failed to update staff. Please try again.' });
+            setMessage({ type: 'error', text: error.message || t('staff.forms.edit.update_error') });
         } finally {
             setIsUpdating(false);
         }
@@ -174,11 +185,15 @@ const EditStaffForm = ({ onSuccess }) => {
         setStep('search');
     };
 
+    // Derived values for display
+    const mecNumber = getAttr(staff, 'mecanographicNumber') || formData.mecanographicNumber;
+    const shortName = getAttr(staff, 'shortName') || formData.shortName;
+
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Edit Staff</h4>
-                <p>Search for a staff member by mecanographic number and modify their information</p>
+                <h4>{t('staff.forms.edit.title')}</h4>
+                <p>{t('staff.forms.edit.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -188,17 +203,17 @@ const EditStaffForm = ({ onSuccess }) => {
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchMecanographicNumber">Mecanographic Number</label>
+                            <label htmlFor="searchMecanographicNumber">{t('staff.forms.edit.number.label')}</label>
                             <input
                                 type="text"
                                 id="searchMecanographicNumber"
                                 name="mecanographicNumber"
                                 value={searchData.mecanographicNumber}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter mecanographic number (e.g., 12345)"
+                                placeholder={t('staff.forms.edit.number.placeholder')}
                                 className="form-input"
                             />
-                            <small className="form-help">Enter the unique number of the staff you want to edit</small>
+                            <small className="form-help">{t('staff.forms.edit.number.search_help')}</small>
                         </div>
                     </div>
                     <div className="form-actions">
@@ -210,12 +225,12 @@ const EditStaffForm = ({ onSuccess }) => {
                             {isLoading ? (
                                 <>
                                     <span className="loading-spinner"></span>
-                                    Loading...
+                                    {t('common.loading')}
                                 </>
                             ) : (
                                 <>
                                     <span>🔍</span>
-                                    Search Staff
+                                    {t('staff.forms.edit.search_button')}
                                 </>
                             )}
                         </button>
@@ -226,7 +241,7 @@ const EditStaffForm = ({ onSuccess }) => {
                             disabled={isLoading}
                         >
                             <span>🧹</span>
-                            Cancel
+                            {t('staff.forms.edit.cancel')}
                         </button>
                     </div>
                 </form>
@@ -235,19 +250,19 @@ const EditStaffForm = ({ onSuccess }) => {
             {step === 'edit' && staff && (
                 <>
                     <div className="form-section-header">
-                        <h5>Editing staff: {staff.shortName} (MEC: {staff.mecanographicNumber})</h5>
+                        <h5>{t('staff.forms.edit.editing_header')}: <strong>{shortName}</strong> {'('} <strong>{mecNumber}</strong> {')'}</h5>
                         <button 
                             type="button" 
                             className="link-btn"
                             onClick={handleNewSearch}
                         >
-                            🔍 Search different staff
+                            🔍 {t('staff.forms.edit.search_different')}
                         </button>
                     </div>
                     <form onSubmit={handleUpdate} className="staff-form">
                         <div className="form-grid">
                             <div className="form-group">
-                                <label htmlFor="editMecanographicNumber">Mecanographic Number</label>
+                                <label htmlFor="editMecanographicNumber">{t('staff.forms.edit.number.label')}</label>
                                 <input
                                     type="text"
                                     id="editMecanographicNumber"
@@ -256,11 +271,11 @@ const EditStaffForm = ({ onSuccess }) => {
                                     className="form-input"
                                     disabled
                                 />
-                                <small className="form-help">Number cannot be changed</small>
+                                <small className="form-help">{t('staff.forms.edit.number_readonly_help')}</small>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="editShortName">
-                                    Name <span className="required">*</span>
+                                    {t('staff.forms.edit.name.label')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -268,15 +283,15 @@ const EditStaffForm = ({ onSuccess }) => {
                                     name="shortName"
                                     value={formData.shortName}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter staff name"
+                                    placeholder={t('staff.forms.edit.name.placeholder')}
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Full name of the staff member</small>
+                                <small className="form-help">{t('staff.forms.edit.name.help')}</small>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="editEmail">
-                                    Email <span className="required">*</span>
+                                    {t('staff.forms.edit.email.label')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="email"
@@ -284,15 +299,15 @@ const EditStaffForm = ({ onSuccess }) => {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter email address"
+                                    placeholder={t('staff.forms.edit.email.placeholder')}
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Valid email address</small>
+                                <small className="form-help">{t('staff.forms.edit.email.help')}</small>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="editPhone">
-                                    Phone <span className="required">*</span>
+                                    {t('staff.forms.edit.phone.label')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -300,15 +315,15 @@ const EditStaffForm = ({ onSuccess }) => {
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter phone number"
+                                    placeholder={t('staff.forms.edit.phone.placeholder')}
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Contact phone number</small>
+                                <small className="form-help">{t('staff.forms.edit.phone.help')}</small>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="editStatus">
-                                    Status <span className="required">*</span>
+                                    {t('staff.forms.edit.status.label')} <span className="required">*</span>
                                 </label>
                                 <select
                                     id="editStatus"
@@ -318,14 +333,14 @@ const EditStaffForm = ({ onSuccess }) => {
                                     className="form-select"
                                     required
                                 >
-                                    <option value="Available">Available</option>
-                                    <option value="Unavailable">Unavailable</option>
+                                    <option value="Available">{t('staff.forms.edit.status.available')}</option>
+                                    <option value="Unavailable">{t('staff.forms.edit.status.unavailable')}</option>
                                 </select>
-                                <small className="form-help">Current status of the staff member</small>
+                                <small className="form-help">{t('staff.forms.edit.status.help')}</small>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="editOperationalWindow">
-                                    Operational Window <span className="required">*</span>
+                                    {t('staff.forms.edit.window.label')} <span className="required">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -333,18 +348,18 @@ const EditStaffForm = ({ onSuccess }) => {
                                     name="operationalWindow"
                                     value={formData.operationalWindow}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter operational window"
+                                    placeholder={t('staff.forms.edit.window.placeholder')}
                                     className="form-input"
                                     required
                                 />
-                                <small className="form-help">Working hours or operational window</small>
+                                <small className="form-help">{t('staff.forms.edit.window.help')}</small>
                             </div>
                         </div>
                         {/* Qualifications Selection */}
                         <div className="qualifications-selection" style={{ marginTop: '32px', marginBottom: '16px' }}>
                             <div className="selection-header" style={{ marginBottom: '18px' }}>
-                                <h5 style={{ marginBottom: '6px', fontSize: '1.15em', letterSpacing: '0.5px' }}>Qualifications</h5>
-                                <p style={{ marginBottom: '0', fontSize: '1em', color: '#b0b8c1', lineHeight: '1.5' }}>Select the qualifications for this staff member</p>
+                                <h5 style={{ marginBottom: '6px', fontSize: '1.15em', letterSpacing: '0.5px' }}>{t('staff.forms.edit.qualifications.header')}</h5>
+                                <p style={{ marginBottom: '0', fontSize: '1em', color: '#b0b8c1', lineHeight: '1.5' }}>{t('staff.forms.edit.qualifications.desc')}</p>
                             </div>
                             <div className="qualification-cards-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '18px', marginTop: '10px' }}>
                                 {qualificationList.map((q) => {
@@ -397,12 +412,12 @@ const EditStaffForm = ({ onSuccess }) => {
                                 {isUpdating ? (
                                     <>
                                         <span className="loading-spinner"></span>
-                                        Updating...
+                                        {t('staff.forms.edit.updating')}
                                     </>
                                 ) : (
                                     <>
                                         <span>✏️</span>
-                                        Update Staff
+                                        {t('staff.forms.edit.update_button')}
                                     </>
                                 )}
                             </button>
@@ -413,7 +428,7 @@ const EditStaffForm = ({ onSuccess }) => {
                                 disabled={isUpdating}
                             >
                                 <span>🧹</span>
-                                Cancel
+                                {t('staff.forms.edit.cancel')}
                             </button>
                         </div>
                     </form>
@@ -421,6 +436,6 @@ const EditStaffForm = ({ onSuccess }) => {
             )}
         </div>
     );
-};
+}
 
 console.log('EditStaffForm component loaded!');
