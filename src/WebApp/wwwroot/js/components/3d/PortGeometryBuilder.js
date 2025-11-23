@@ -187,23 +187,52 @@ class PortGeometryBuilder {
     }
 
     addDecorContainers(group, areaWidth, areaDepth, groundHeight) {
-        const containerSize = 5;
-        const numContainers = Math.floor((areaWidth * areaDepth) / 500);
+        const containerWidth = 5;
+        const containerDepth = 10; // BoxGeometry(5, 5, 10) -> Z is 10
+        const gap = 2;
 
-        const geo = new THREE.BoxGeometry(containerSize, containerSize, containerSize * 2);
-        // UVs for container
-        this.adjustUVs(geo, containerSize, containerSize, containerSize * 2, 0.2); // Smaller scale
+        const cellWidth = containerWidth + gap; // 7
+        const cellDepth = containerDepth + gap; // 12
 
-        for (let i = 0; i < numContainers; i++) {
-            const mat = this.materials.container[Math.floor(Math.random() * this.materials.container.length)];
-            const mesh = new THREE.Mesh(geo, mat);
+        // Calculate grid capacity
+        const cols = Math.floor((areaWidth - 10) / cellWidth);
+        const rows = Math.floor((areaDepth - 10) / cellDepth);
 
-            const x = (Math.random() - 0.5) * (areaWidth - 10);
-            const z = (Math.random() - 0.5) * (areaDepth - 10);
+        // Limit total containers
+        const maxContainers = Math.min(cols * rows, 50);
 
-            mesh.position.set(x, groundHeight / 2 + containerSize / 2, z);
-            mesh.castShadow = true;
-            group.add(mesh);
+        // Center the grid
+        const startX = -((cols * cellWidth) / 2) + cellWidth / 2;
+        const startZ = -((rows * cellDepth) / 2) + cellDepth / 2;
+
+        const geo = new THREE.BoxGeometry(containerWidth, containerWidth, containerDepth);
+        this.adjustUVs(geo, containerWidth, containerWidth, containerDepth, 0.2);
+
+        let count = 0;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (count >= maxContainers) return;
+
+                // Randomly skip some spots
+                if (Math.random() > 0.4) {
+                    const mat = this.materials.container[Math.floor(Math.random() * this.materials.container.length)];
+                    const mesh = new THREE.Mesh(geo, mat);
+
+                    const x = startX + c * cellWidth;
+                    const z = startZ + r * cellDepth;
+
+                    // Stack height (randomly 1 to 3 high)
+                    const stackHeight = Math.floor(Math.random() * 3) + 1;
+
+                    for (let h = 0; h < stackHeight; h++) {
+                        const stackMesh = mesh.clone();
+                        stackMesh.position.set(x, groundHeight + containerWidth / 2 + h * containerWidth, z);
+                        stackMesh.castShadow = true;
+                        group.add(stackMesh);
+                    }
+                    count++;
+                }
+            }
         }
     }
 
