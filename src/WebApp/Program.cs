@@ -30,7 +30,8 @@ using WebApp.Models.Domain.VesselVisits.Services;
 using WebApp.Models.Security;
 using WebApp.Security;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Models.Application.Services.Agents;
+using Application.Services;
+using WebApp.Models.Domain.Scheduling.Services;
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
@@ -143,6 +144,15 @@ builder.Services.AddAuthorization(options =>
     policy.RequireRole(Roles.All));
 });
 
+// HTTP client for prolog service
+builder.Services.AddHttpClient("DomainBackend", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["DomainBackend:BaseUrl"]!);
+    client.DefaultRequestHeaders.Accept.Add(
+        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+
+
 // ---------- MVC / JSON ----------
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>
 {
@@ -212,9 +222,9 @@ builder.Services.AddScoped<IVesselVisitNotificationRepository, VesselVisitNotifi
 builder.Services.AddScoped<IVesselVisitNotificationService, VesselVisitNotificationService>();
 builder.Services.AddScoped<IGraphUserService, GraphUserService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IHeuristicScheduleService, HeuristicScheduleService>();
 
 
-// ---------- Graph client (app-only) + claims transformation + user admin service ----------
 var backendClientId = ciam["BackendApp:ClientId"];
 var backendClientSecret = ciam["BackendApp:ClientSecret"];
 var extAppNoDashes = ciam["ExtensionsAppIdNoDashes"];
