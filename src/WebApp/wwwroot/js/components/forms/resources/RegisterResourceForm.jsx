@@ -14,13 +14,16 @@ const RegisterResourceForm = ({ onSuccess }) => {
     const [qualifications, setQualifications] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
+    
+    // Helper to extract attribute values reliably (handling PascalCase and camelCase)
+    const getAttr = (obj, key) => obj?.[key] || obj?.[key.charAt(0).toUpperCase() + key.slice(1)];
 
-    // Resource type options
+    // Resource type options (TRANSLATED LABELS)
     const resourceTypes = [
-        { value: 'STSCrane', label: 'STS Crane' },
-        { value: 'YardCrane', label: 'Yard Crane' },
-        { value: 'Truck', label: 'Truck' },
-        { value: 'Tractor', label: 'Tractor' }
+        { value: 'STSCrane', label: t('resources.type.STS_Crane') },
+        { value: 'YardCrane', label: t('resources.type.Yard_Crane') },
+        { value: 'Truck', label: t('resources.type.Truck') },
+        { value: 'Tractor', label: t('resources.type.Tractor') }
     ];
 
     // Load qualifications on mount
@@ -34,7 +37,8 @@ const RegisterResourceForm = ({ onSuccess }) => {
             setQualifications(data || []);
         } catch (error) {
             console.error('Error loading qualifications:', error);
-            setMessage({ type: 'error', text: 'Failed to load qualifications' });
+            // TRANSLATION APPLIED
+            setMessage({ type: 'error', text: t('resources.forms.register.error.load_qualifications') });
         }
     };
 
@@ -48,12 +52,13 @@ const RegisterResourceForm = ({ onSuccess }) => {
         if (message.text) setMessage({ type: '', text: '' });
     };
 
-    const handleQualificationToggle = (qualificationId) => {
+    const handleQualificationToggle = (qualificationCode) => {
+        // LOGIC UNCHANGED
         setFormData(prev => {
-            const isCurrentlySelected = prev.qualificationRequirements.includes(qualificationId);
+            const isCurrentlySelected = prev.qualificationRequirements.includes(qualificationCode);
             const newRequirements = isCurrentlySelected
-                ? prev.qualificationRequirements.filter(id => id !== qualificationId)
-                : [...prev.qualificationRequirements, qualificationId];
+                ? prev.qualificationRequirements.filter(id => id !== qualificationCode)
+                : [...prev.qualificationRequirements, qualificationCode];
                 
             return {
                 ...prev,
@@ -71,15 +76,15 @@ const RegisterResourceForm = ({ onSuccess }) => {
             // Validate required fields
             if (!formData.id?.trim() || !formData.description?.trim() || !formData.resourceType ||
                 !formData.operationalCapacity?.toString().trim() || !formData.setupTime?.toString().trim()) {
-                throw new Error('All fields are required');
+                throw new Error(t('resources.forms.register.error.all_required'));
             }
 
             // Validate numeric fields
             if (isNaN(parseInt(formData.operationalCapacity)) || parseInt(formData.operationalCapacity) <= 0) {
-                throw new Error('Operational capacity must be a valid positive number');
+                throw new Error(t('resources.forms.register.error.capacity_invalid'));
             }
             if (isNaN(parseInt(formData.setupTime)) || parseInt(formData.setupTime) < 0) {
-                throw new Error('Setup time must be a valid number (0 or greater)');
+                throw new Error(t('resources.forms.register.error.setup_time_invalid'));
             }
 
             // Transform data to match backend DTO expectations
@@ -90,21 +95,18 @@ const RegisterResourceForm = ({ onSuccess }) => {
                 OperationalCapacity: parseInt(formData.operationalCapacity),
                 SetupTime: parseInt(formData.setupTime),
                 QualificationRequirements: formData.qualificationRequirements.map(qCode => {
-                    const qual = qualifications.find(q => q.code === qCode);
-                    return qual ? { Code: qual.code, Name: qual.name } : null;
+                    const qual = qualifications.find(q => getAttr(q, 'code') === qCode);
+                    // LOGIC UNCHANGED: Map to DTO structure
+                    return qual ? { Code: getAttr(qual, 'code'), Name: getAttr(qual, 'name') } : null;
                 }).filter(q => q !== null)
             };
-
-            console.log('🔍 Sending resource data:', resourceData);
-            console.log('🔍 Selected qualifications:', formData.qualificationRequirements);
-            console.log('🔍 Mapped qualifications:', resourceData.QualificationRequirements);
 
             // Create resource
             await apiService.createResource(resourceData);
             
-            setMessage({ type: 'success', text: 'Resource registered successfully!' });
+            setMessage({ type: 'success', text: t('resources.forms.register.success') });
             
-            // Reset form
+            // Reset form (LOGIC UNCHANGED)
             setFormData({
                 id: '',
                 description: '',
@@ -121,7 +123,7 @@ const RegisterResourceForm = ({ onSuccess }) => {
             console.error('Error registering resource:', error);
             setMessage({ 
                 type: 'error', 
-                text: error.message || 'Failed to register resource' 
+                text: error.message || t('resources.forms.register.error.failed') 
             });
         } finally {
             setIsLoading(false);
@@ -143,8 +145,8 @@ const RegisterResourceForm = ({ onSuccess }) => {
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Register New Resource</h4>
-                <p>Add a new resource to the port management system</p>
+                <h4>{t('resources.forms.register.title')}</h4>
+                <p>{t('resources.forms.register.description')}</p>
             </div>
 
             {message.text && (
@@ -155,7 +157,7 @@ const RegisterResourceForm = ({ onSuccess }) => {
                 <div className="form-grid">
                     <div className="form-group">
                         <label htmlFor="id">
-                            Resource ID <span className="required">*</span>
+                            {t('resources.forms.register.id.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="text"
@@ -163,16 +165,16 @@ const RegisterResourceForm = ({ onSuccess }) => {
                             name="id"
                             value={formData.id}
                             onChange={handleInputChange}
-                            placeholder="Enter unique resource ID"
+                            placeholder={t('resources.forms.register.id.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Unique identifier for the resource</small>
+                        <small className="form-help">{t('resources.forms.register.id.help')}</small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="description">
-                            Description <span className="required">*</span>
+                            {t('resources.forms.register.description.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="text"
@@ -180,16 +182,16 @@ const RegisterResourceForm = ({ onSuccess }) => {
                             name="description"
                             value={formData.description}
                             onChange={handleInputChange}
-                            placeholder="Enter resource description"
+                            placeholder={t('resources.forms.register.description.placeholder')}
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Brief description of the resource</small>
+                        <small className="form-help">{t('resources.forms.register.description.help')}</small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="resourceType">
-                            Resource Type <span className="required">*</span>
+                            {t('resources.forms.register.type.label')} <span className="required">*</span>
                         </label>
                         <select
                             id="resourceType"
@@ -199,19 +201,19 @@ const RegisterResourceForm = ({ onSuccess }) => {
                             className="form-select"
                             required
                         >
-                            <option value="">Select resource type</option>
+                            <option value="">{t('resources.forms.register.type.select_placeholder')}</option>
                             {resourceTypes.map((type, index) => (
                                 <option key={type.value} value={index}>
                                     {type.label}
                                 </option>
                             ))}
                         </select>
-                        <small className="form-help">Type/category of the resource</small>
+                        <small className="form-help">{t('resources.forms.register.type.help')}</small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="operationalCapacity">
-                            Operational Capacity <span className="required">*</span>
+                            {t('resources.forms.register.capacity.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="number"
@@ -219,17 +221,17 @@ const RegisterResourceForm = ({ onSuccess }) => {
                             name="operationalCapacity"
                             value={formData.operationalCapacity}
                             onChange={handleInputChange}
-                            placeholder="Enter capacity"
+                            placeholder={t('resources.forms.register.capacity.placeholder')}
                             min="1"
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Maximum operational capacity</small>
+                        <small className="form-help">{t('resources.forms.register.capacity.help')}</small>
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="setupTime">
-                            Setup Time (minutes) <span className="required">*</span>
+                            {t('resources.forms.register.setup_time.label')} <span className="required">*</span>
                         </label>
                         <input
                             type="number"
@@ -237,34 +239,34 @@ const RegisterResourceForm = ({ onSuccess }) => {
                             name="setupTime"
                             value={formData.setupTime}
                             onChange={handleInputChange}
-                            placeholder="Enter setup time"
+                            placeholder={t('resources.forms.register.setup_time.placeholder')}
                             min="0"
                             className="form-input"
                             required
                         />
-                        <small className="form-help">Time required to set up the resource</small>
+                        <small className="form-help">{t('resources.forms.register.setup_time.help')}</small>
                     </div>
 
                     <div className="form-group full-width">
                         <label htmlFor="qualificationRequirements">
-                            Required Qualifications
+                            {t('resources.forms.register.qualifications.label')}
                         </label>
                         <div className="qualification-selector">
                             {qualifications.map(qualification => (
                                 <div 
-                                    key={qualification.code} 
-                                    className={`qualification-option ${formData.qualificationRequirements.includes(qualification.code) ? 'selected' : ''}`}
-                                    onClick={() => handleQualificationToggle(qualification.code)}
+                                    key={getAttr(qualification, 'code')} 
+                                    className={`qualification-option ${formData.qualificationRequirements.includes(getAttr(qualification, 'code')) ? 'selected' : ''}`}
+                                    onClick={() => handleQualificationToggle(getAttr(qualification, 'code'))}
                                 >
-                                    <span className="qualification-name">{qualification.name}</span>
-                                    <span className="qualification-code">({qualification.code})</span>
-                                    {formData.qualificationRequirements.includes(qualification.code) && (
+                                    <span className="qualification-name">{getAttr(qualification, 'name')}</span>
+                                    <span className="qualification-code">({getAttr(qualification, 'code')})</span>
+                                    {formData.qualificationRequirements.includes(getAttr(qualification, 'code')) && (
                                         <span className="selected-indicator">✓</span>
                                     )}
                                 </div>
                             ))}
                         </div>
-                        <small className="form-help">Click on qualifications to select/deselect them (optional)</small>
+                        <small className="form-help">{t('resources.forms.register.qualifications.help')}</small>
                     </div>
                 </div>
 
@@ -277,12 +279,12 @@ const RegisterResourceForm = ({ onSuccess }) => {
                         {isLoading ? (
                             <>
                                 <span className="loading-spinner"></span>
-                                Loading...
+                                {t('resources.forms.register.registering')}
                             </>
                         ) : (
                             <>
                                 <span>🏗️</span>
-                                Register Resource
+                                {t('resources.forms.register.submit')}
                             </>
                         )}
                     </button>
@@ -290,13 +292,14 @@ const RegisterResourceForm = ({ onSuccess }) => {
                         type="button" 
                         onClick={handleClear}
                         className="clear-btn"
+                        disabled={isLoading}
                     >
-                        Clear Form
+                        {t('resources.forms.register.clear')}
                     </button>
                 </div>
             </form>
         </div>
     );
-};
+}
 
 console.log('RegisterResourceForm component loaded! 📝');

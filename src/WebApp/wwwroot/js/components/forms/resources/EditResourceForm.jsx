@@ -3,6 +3,10 @@ console.log('✏️ EditResourceForm component loading...');
 
 const EditResourceForm = ({ onSuccess }) => {
     const { t } = useTranslation();
+    
+    // Helper to extract attribute values reliably (handling PascalCase and camelCase)
+    const getAttr = (obj, key) => obj?.[key] || obj?.[key.charAt(0).toUpperCase() + key.slice(1)];
+
     const [searchData, setSearchData] = React.useState({
         id: ''
     });
@@ -22,12 +26,12 @@ const EditResourceForm = ({ onSuccess }) => {
     const [message, setMessage] = React.useState({ type: '', text: '' });
     const [step, setStep] = React.useState('search'); // 'search' or 'edit'
 
-    // Resource type options
+    // Resource type options (LOGIC UNCHANGED)
     const resourceTypes = [
-        { value: 'STSCrane', label: 'STS Crane' },
-        { value: 'YardCrane', label: 'Yard Crane' },
-        { value: 'Truck', label: 'Truck' },
-        { value: 'Tractor', label: 'Tractor' }
+        { value: 'STSCrane', label: t('resources.type.STS_Crane') },
+        { value: 'YardCrane', label: t('resources.type.Yard_Crane') },
+        { value: 'Truck', label: t('resources.type.Truck') },
+        { value: 'Tractor', label: t('resources.type.Tractor') }
     ];
 
     // Load qualifications on mount
@@ -41,7 +45,7 @@ const EditResourceForm = ({ onSuccess }) => {
             setQualifications(data || []);
         } catch (error) {
             console.error('Error loading qualifications:', error);
-            setMessage({ type: 'error', text: 'Failed to load qualifications' });
+            setMessage({ type: 'error', text: t('resources.forms.edit.error.load_qualifications') });
         }
     };
 
@@ -66,6 +70,7 @@ const EditResourceForm = ({ onSuccess }) => {
     };
 
     const handleQualificationToggle = (qualificationCode) => {
+        // LOGIC UNCHANGED
         setFormData(prev => {
             const isCurrentlySelected = prev.qualificationRequirements.includes(qualificationCode);
             const newRequirements = isCurrentlySelected
@@ -80,6 +85,7 @@ const EditResourceForm = ({ onSuccess }) => {
     };
 
     const handleQualificationChange = (e) => {
+        // LOGIC UNCHANGED
         const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
         setFormData(prev => ({
             ...prev,
@@ -92,7 +98,7 @@ const EditResourceForm = ({ onSuccess }) => {
         
         // Validate resource ID field
         if (!searchData.id.trim()) {
-            setMessage({ type: 'error', text: 'Resource ID is required' });
+            setMessage({ type: 'error', text: t('resources.forms.edit.error.required') });
             return;
         }
         
@@ -101,37 +107,41 @@ const EditResourceForm = ({ onSuccess }) => {
         setHasSearched(false);
         setResource(null);
         
+        const searchId = searchData.id.trim();
+
         try {
-            const data = await apiService.getResourceById(searchData.id.trim());
+            const data = await apiService.getResourceById(searchId);
+            
             if (data) {
                 setResource(data);
                 
-                // Map resource type to index for the select dropdown
-                const resourceTypeIndex = resourceTypes.findIndex(type => type.value === data.resourceType);
+                // Find index corresponding to the resourceType value
+                const resourceTypeIndex = resourceTypes.findIndex(type => type.value === getAttr(data, 'resourceType'));
                 
+                // LOGIC UNCHANGED: Map fetched data to form state
                 setFormData({
-                    id: data.id || '',
-                    description: data.description || '',
+                    id: getAttr(data, 'id') || '',
+                    description: getAttr(data, 'description') || '',
                     resourceType: resourceTypeIndex !== -1 ? resourceTypeIndex.toString() : '',
-                    operationalCapacity: data.operationalCapacity || '',
-                    setupTime: data.setupTime || '',
-                    qualificationRequirements: data.qualificationRequirements ? 
-                        data.qualificationRequirements.map(q => q.code || q) : []
+                    operationalCapacity: getAttr(data, 'operationalCapacity') || '',
+                    setupTime: getAttr(data, 'setupTime') || '',
+                    qualificationRequirements: getAttr(data, 'qualificationRequirements') ? 
+                        getAttr(data, 'qualificationRequirements').map(q => getAttr(q, 'code') || q) : []
                 });
                 setHasSearched(true);
                 setStep('edit');
-                setMessage({ type: 'success', text: 'Resource found! You can now edit the information below.' });
+                setMessage({ type: 'success', text: t('resources.forms.edit.search_success') });
             } else {
                 setResource(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'No resource found with the provided ID' });
+                setMessage({ type: 'info', text: t('resources.forms.edit.search_error.not_found') });
             }
         } catch (error) {
             console.error('Error fetching resource:', error);
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'No resource found with the provided ID' });
+                setMessage({ type: 'info', text: t('resources.forms.edit.search_error.not_found') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to retrieve resource' });
+                setMessage({ type: 'error', text: error.message || t('resources.forms.edit.search_error.failed') });
             }
             setResource(null);
             setHasSearched(true);
@@ -149,15 +159,15 @@ const EditResourceForm = ({ onSuccess }) => {
             // Validate required fields
             if (!formData.id?.trim() || !formData.description?.trim() || 
                 !formData.operationalCapacity?.toString().trim() || !formData.setupTime?.toString().trim()) {
-                throw new Error('All fields are required');
+                throw new Error(t('resources.forms.edit.error.all_fields_required'));
             }
 
             // Validate numeric fields
             if (isNaN(parseInt(formData.operationalCapacity)) || parseInt(formData.operationalCapacity) <= 0) {
-                throw new Error('Operational capacity must be a valid positive number');
+                throw new Error(t('resources.forms.edit.error.capacity_invalid'));
             }
             if (isNaN(parseInt(formData.setupTime)) || parseInt(formData.setupTime) < 0) {
-                throw new Error('Setup time must be a valid number (0 or greater)');
+                throw new Error(t('resources.forms.edit.error.setup_time_invalid'));
             }
 
             // Transform data to match backend DTO expectations
@@ -168,15 +178,16 @@ const EditResourceForm = ({ onSuccess }) => {
                 OperationalCapacity: parseInt(formData.operationalCapacity),
                 SetupTime: parseInt(formData.setupTime),
                 QualificationRequirements: formData.qualificationRequirements.map(qCode => {
-                    const qual = qualifications.find(q => q.code === qCode);
-                    return qual ? { Code: qual.code, Name: qual.name } : null;
+                    const qual = qualifications.find(q => getAttr(q, 'code') === qCode);
+                    // LOGIC UNCHANGED: Map to DTO structure
+                    return qual ? { Code: getAttr(qual, 'code'), Name: getAttr(qual, 'name') } : null;
                 }).filter(q => q !== null)
             };
 
             // Update resource
             await apiService.updateResource(formData.id, resourceData);
             
-            setMessage({ type: 'success', text: 'Resource updated successfully!' });
+            setMessage({ type: 'success', text: t('resources.forms.edit.update_success') });
             
             // Notify parent component
             if (onSuccess) onSuccess();
@@ -185,7 +196,7 @@ const EditResourceForm = ({ onSuccess }) => {
             console.error('Error updating resource:', error);
             setMessage({ 
                 type: 'error', 
-                text: error.message || 'Failed to update resource' 
+                text: error.message || t('resources.forms.edit.update_error') 
             });
         } finally {
             setIsUpdating(false);
@@ -209,18 +220,24 @@ const EditResourceForm = ({ onSuccess }) => {
     };
 
     const handleSearchDifferent = () => {
+        // LOGIC UNCHANGED
         setResource(null);
         setHasSearched(false);
         setMessage({ type: '', text: '' });
         setStep('search');
         setSearchData({ id: '' });
     };
+    
+    // Derived values for header display
+    const resourceDescription = resource?.description || resource?.Description || '';
+    const resourceID = resource?.id || resource?.Id || '';
+
 
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Edit Resource</h4>
-                <p>Update resource information</p>
+                <h4>{t('resources.forms.edit.title')}</h4>
+                <p>{t('resources.forms.edit.description')}</p>
             </div>
 
             {message.text && (
@@ -229,19 +246,19 @@ const EditResourceForm = ({ onSuccess }) => {
 
             {step === 'search' && (
                 <div className="search-section">
-                    <h5>Search for a resource to edit</h5>
-                    <p className="help-text">Enter the ID of the resource you want to edit</p>
+                    <h5>{t('resources.forms.edit.search_section_title')}</h5>
+                    <p className="help-text">{t('resources.forms.edit.search_section_help')}</p>
                     
                     <form onSubmit={handleSearch} className="search-form">
                         <div className="form-group">
-                            <label htmlFor="searchResourceId">Resource ID</label>
+                            <label htmlFor="searchResourceId">{t('resources.forms.edit.id.label')}</label>
                             <input
                                 type="text"
                                 id="searchResourceId"
                                 name="id"
                                 value={searchData.id}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter resource ID"
+                                placeholder={t('resources.forms.edit.id.placeholder')}
                                 className="form-input"
                                 required
                             />
@@ -256,12 +273,12 @@ const EditResourceForm = ({ onSuccess }) => {
                                 {isLoading ? (
                                     <>
                                         <span className="loading-spinner"></span>
-                                        Searching...
+                                        {t('common.loading')}
                                     </>
                                 ) : (
                                     <>
                                         <span>🔍</span>
-                                        Find Resource
+                                        {t('resources.forms.edit.search_button')}
                                     </>
                                 )}
                             </button>
@@ -273,20 +290,21 @@ const EditResourceForm = ({ onSuccess }) => {
             {step === 'edit' && resource && (
                 <div className="edit-section">
                     <div className="form-section-header">
-                        <h5>Editing: {resource.description} (ID: {resource.id})</h5>
+                        {/* UNTRANSLATED ATTRIBUTES */}
+                        <h5>{t('resources.forms.edit.editing_header')}: <strong>{resourceDescription}</strong> {'('} <strong>{resourceID}</strong> {')'}</h5>
                         <button 
                             type="button"
                             onClick={handleSearchDifferent}
                             className="link-btn"
                         >
-                            🔍 Search Different Resource
+                            <span>🔍</span> {t('resources.forms.edit.search_different')}
                         </button>
                     </div>
 
                     <form onSubmit={handleUpdate} className="resource-form">
                         <div className="form-grid">
                             <div className="form-group">
-                                <label htmlFor="editResourceId">Resource ID</label>
+                                <label htmlFor="editResourceId">{t('resources.forms.edit.id.label')}</label>
                                 <input
                                     type="text"
                                     id="editResourceId"
@@ -295,25 +313,25 @@ const EditResourceForm = ({ onSuccess }) => {
                                     className="form-input"
                                     disabled
                                 />
-                                <small className="form-help">ID cannot be changed</small>
+                                <small className="form-help">{t('resources.forms.edit.id_readonly_help')}</small>
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="editDescription">Description</label>
+                                <label htmlFor="editDescription">{t('resources.forms.edit.description.label')}</label>
                                 <input
                                     type="text"
                                     id="editDescription"
                                     name="description"
                                     value={formData.description}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter resource description"
+                                    placeholder={t('resources.forms.edit.description.placeholder')}
                                     className="form-input"
                                     required
                                 />
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="editResourceType">Resource Type</label>
+                                <label htmlFor="editResourceType">{t('resources.forms.edit.type.label')}</label>
                                 <select
                                     id="editResourceType"
                                     name="resourceType"
@@ -322,9 +340,10 @@ const EditResourceForm = ({ onSuccess }) => {
                                     className="form-select"
                                     required
                                 >
-                                    <option value="">Select resource type</option>
+                                    <option value="">{t('resources.forms.edit.type.select_placeholder')}</option>
                                     {resourceTypes.map((type, index) => (
                                         <option key={type.value} value={index}>
+                                            {/* TRANSLATED LABEL */}
                                             {type.label}
                                         </option>
                                     ))}
@@ -332,14 +351,14 @@ const EditResourceForm = ({ onSuccess }) => {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="editOperationalCapacity">Operational Capacity</label>
+                                <label htmlFor="editOperationalCapacity">{t('resources.forms.edit.capacity.label')}</label>
                                 <input
                                     type="number"
                                     id="editOperationalCapacity"
                                     name="operationalCapacity"
                                     value={formData.operationalCapacity}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter capacity"
+                                    placeholder={t('resources.forms.edit.capacity.placeholder')}
                                     min="1"
                                     className="form-input"
                                     required
@@ -347,14 +366,14 @@ const EditResourceForm = ({ onSuccess }) => {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="editSetupTime">Setup Time (minutes)</label>
+                                <label htmlFor="editSetupTime">{t('resources.forms.edit.setup_time.label')}</label>
                                 <input
                                     type="number"
                                     id="editSetupTime"
                                     name="setupTime"
                                     value={formData.setupTime}
                                     onChange={handleFormInputChange}
-                                    placeholder="Enter setup time"
+                                    placeholder={t('resources.forms.edit.setup_time.placeholder')}
                                     min="0"
                                     className="form-input"
                                     required
@@ -362,23 +381,23 @@ const EditResourceForm = ({ onSuccess }) => {
                             </div>
 
                             <div className="form-group full-width">
-                                <label htmlFor="editQualificationRequirements">Required Qualifications</label>
+                                <label htmlFor="editQualificationRequirements">{t('resources.forms.edit.qualifications.label')}</label>
                                 <div className="qualification-selector">
                                     {qualifications.map(qualification => (
                                         <div 
-                                            key={qualification.code} 
-                                            className={`qualification-option ${formData.qualificationRequirements.includes(qualification.code) ? 'selected' : ''}`}
-                                            onClick={() => handleQualificationToggle(qualification.code)}
+                                            key={getAttr(qualification, 'code')} 
+                                            className={`qualification-option ${formData.qualificationRequirements.includes(getAttr(qualification, 'code')) ? 'selected' : ''}`}
+                                            onClick={() => handleQualificationToggle(getAttr(qualification, 'code'))}
                                         >
-                                            <span className="qualification-name">{qualification.name}</span>
-                                            <span className="qualification-code">({qualification.code})</span>
-                                            {formData.qualificationRequirements.includes(qualification.code) && (
+                                            <span className="qualification-name">{getAttr(qualification, 'name')}</span>
+                                            <span className="qualification-code">({getAttr(qualification, 'code')})</span>
+                                            {formData.qualificationRequirements.includes(getAttr(qualification, 'code')) && (
                                                 <span className="selected-indicator">✓</span>
                                             )}
                                         </div>
                                     ))}
                                 </div>
-                                <small className="form-help">Click on qualifications to select/deselect them</small>
+                                <small className="form-help">{t('resources.forms.edit.qualifications.help')}</small>
                             </div>
                         </div>
 
@@ -391,14 +410,23 @@ const EditResourceForm = ({ onSuccess }) => {
                                 {isUpdating ? (
                                     <>
                                         <span className="loading-spinner"></span>
-                                        Updating...
+                                        {t('resources.forms.edit.updating')}
                                     </>
                                 ) : (
                                     <>
                                         <span>✏️</span>
-                                        Update Resource
+                                        {t('resources.forms.edit.update_button')}
                                     </>
                                 )}
+                            </button>
+                            <button 
+                                type="button" 
+                                className="clear-btn"
+                                onClick={handleClear}
+                                disabled={isUpdating}
+                            >
+                                <span>🧹</span>
+                                {t('resources.forms.edit.cancel')}
                             </button>
                         </div>
                     </form>
@@ -406,6 +434,6 @@ const EditResourceForm = ({ onSuccess }) => {
             )}
         </div>
     );
-};
+}
 
 console.log('EditResourceForm component loaded! ✏️');
