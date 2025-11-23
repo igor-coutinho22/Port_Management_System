@@ -1418,200 +1418,435 @@ window.translations = {
     "organizations.forms.manage_status.success.activated":
       "Organization activated successfully.",
 
-      // DeleteOrganizationForm
-      "organizations.forms.delete.title": "Delete Organization",
-"organizations.forms.delete.description": "Search for an organization by ID and permanently delete it from the system",
-"organizations.forms.delete.id.label": "Organization ID",
-"organizations.forms.delete.id.placeholder": "Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.delete.id.help": "Enter the unique GUID of the organization you want to delete",
-"organizations.forms.delete.search_button": "Search Organization",
-"organizations.forms.delete.error.required": "Organization ID is required",
-"organizations.forms.delete.error.format": "Invalid GUID format. Please enter a valid organization ID",
-"organizations.forms.delete.search_error.not_found": "Organization not found with the provided ID",
-"organizations.forms.delete.search_error.failed": "Failed to fetch organization. Please try again.",
-"organizations.forms.delete.message.search_success": "Organization found successfully. Please confirm deletion below.",
-"organizations.forms.delete.confirm.title": "Confirm Organization Deletion",
-"organizations.forms.delete.confirm.search_different": "Search different organization",
-"organizations.forms.delete.confirm.to_delete": "Organization to be deleted",
-"organizations.forms.delete.confirm.reps_none": "None",
-"organizations.forms.delete.warning_title": "Warning: This action cannot be undone",
-"organizations.forms.delete.warning_description": "Deleting this organization will permanently remove it from the system. All associated data will be lost.",
-"organizations.forms.delete.confirmation_prompt": "Type \"{{legalName}}\" to confirm deletion:",
-"organizations.forms.delete.confirmation_mismatch": "Organization legal name does not match. Please type the exact legal name to confirm deletion.",
-"organizations.forms.delete.confirmation_help": "This confirmation helps prevent accidental deletions",
-"organizations.forms.delete.deleting": "Deleting...",
-"organizations.forms.delete.submit": "Delete Organization Permanently",
-"organizations.forms.delete.success": "Organization \"{{legalName}}\" has been successfully deleted.",
-"organizations.forms.delete.cancel": "Cancel",
+    // DeleteOrganizationForm
+    "organizations.forms.delete.title": "Delete Organization",
+    "organizations.forms.delete.description":
+      "Search for an organization by ID and permanently delete it from the system",
+    "organizations.forms.delete.id.label": "Organization ID",
+    "organizations.forms.delete.id.placeholder":
+      "Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.delete.id.help":
+      "Enter the unique GUID of the organization you want to delete",
+    "organizations.forms.delete.search_button": "Search Organization",
+    "organizations.forms.delete.error.required": "Organization ID is required",
+    "organizations.forms.delete.error.format":
+      "Invalid GUID format. Please enter a valid organization ID",
+    "organizations.forms.delete.search_error.not_found":
+      "Organization not found with the provided ID",
+    "organizations.forms.delete.search_error.failed":
+      "Failed to fetch organization. Please try again.",
+    "organizations.forms.delete.message.search_success":
+      "Organization found successfully. Please confirm deletion below.",
+    "organizations.forms.delete.confirm.title": "Confirm Organization Deletion",
+    "organizations.forms.delete.confirm.search_different":
+      "Search different organization",
+    "organizations.forms.delete.confirm.to_delete":
+      "Organization to be deleted",
+    "organizations.forms.delete.confirm.reps_none": "None",
+    "organizations.forms.delete.warning_title":
+      "Warning: This action cannot be undone",
+    "organizations.forms.delete.warning_description":
+      "Deleting this organization will permanently remove it from the system. All associated data will be lost.",
+    "organizations.forms.delete.confirmation_prompt":
+      'Type "{{legalName}}" to confirm deletion:',
+    "organizations.forms.delete.confirmation_mismatch":
+      "Organization legal name does not match. Please type the exact legal name to confirm deletion.",
+    "organizations.forms.delete.confirmation_help":
+      "This confirmation helps prevent accidental deletions",
+    "organizations.forms.delete.deleting": "Deleting...",
+    "organizations.forms.delete.submit": "Delete Organization Permanently",
+    "organizations.forms.delete.success":
+      'Organization "{{legalName}}" has been successfully deleted.',
+    "organizations.forms.delete.cancel": "Cancel",
 
-// EditOrganizationForm
-"organizations.forms.edit.title": "Edit Organization",
-"organizations.forms.edit.description": "Search for an organization by ID and modify its information",
-"organizations.forms.edit.search_button": "Search Organization",
-"organizations.forms.edit.id.label": "Organization ID",
-"organizations.forms.edit.id.placeholder": "Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.edit.id.help": "Enter the unique GUID of the organization you want to edit",
-"organizations.forms.edit.search_error.required": "Organization ID is required",
-"organizations.forms.edit.search_error.format": "Invalid GUID format. Please enter a valid organization ID",
-"organizations.forms.edit.search_error.not_found": "Organization not found",
-"organizations.forms.edit.search_error.not_found_with_id": "Organization not found with the provided ID",
-"organizations.forms.edit.search_error.failed": "Failed to fetch organization. Please try again.",
-"organizations.forms.edit.search_success": "Organization found successfully",
-"organizations.forms.edit.editing_header": "Editing organization: {{legalName}} (ID: {{orgId}})",
-"organizations.forms.edit.search_different": "Search different organization",
-"organizations.forms.edit.id_readonly_help": "ID cannot be changed",
-"organizations.forms.edit.alt_names.label": "Alternative Names",
-"organizations.forms.edit.alt_names.placeholder": "Enter alternative names",
-"organizations.forms.edit.alt_names.help": "Other names or abbreviations",
-"organizations.forms.edit.address.label": "Address",
-"organizations.forms.edit.address.placeholder": "Enter address",
-"organizations.forms.edit.address.help": "Physical address",
-"organizations.forms.edit.error.address_required": "Address is required",
-"organizations.forms.edit.update_button": "Update Organization",
-"organizations.forms.edit.updating": "Updating...",
-"organizations.forms.edit.update_success": "Organization updated successfully",
-"organizations.forms.edit.update_error": "Failed to update organization. Please try again.",
-"organizations.forms.edit.cancel": "Cancel",
+    // EditOrganizationForm
+    "organizations.forms.edit.title": "Edit Organization",
+    "organizations.forms.edit.description":
+      "Search for an organization by ID and modify its information",
+    "organizations.forms.edit.search_button": "Search Organization",
+    "organizations.forms.edit.id.label": "Organization ID",
+    "organizations.forms.edit.id.placeholder":
+      "Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.edit.id.help":
+      "Enter the unique GUID of the organization you want to edit",
+    "organizations.forms.edit.search_error.required":
+      "Organization ID is required",
+    "organizations.forms.edit.search_error.format":
+      "Invalid GUID format. Please enter a valid organization ID",
+    "organizations.forms.edit.search_error.not_found": "Organization not found",
+    "organizations.forms.edit.search_error.not_found_with_id":
+      "Organization not found with the provided ID",
+    "organizations.forms.edit.search_error.failed":
+      "Failed to fetch organization. Please try again.",
+    "organizations.forms.edit.search_success":
+      "Organization found successfully",
+    "organizations.forms.edit.editing_header":
+      "Editing organization: {{legalName}} (ID: {{orgId}})",
+    "organizations.forms.edit.search_different":
+      "Search different organization",
+    "organizations.forms.edit.id_readonly_help": "ID cannot be changed",
+    "organizations.forms.edit.alt_names.label": "Alternative Names",
+    "organizations.forms.edit.alt_names.placeholder": "Enter alternative names",
+    "organizations.forms.edit.alt_names.help": "Other names or abbreviations",
+    "organizations.forms.edit.address.label": "Address",
+    "organizations.forms.edit.address.placeholder": "Enter address",
+    "organizations.forms.edit.address.help": "Physical address",
+    "organizations.forms.edit.error.address_required": "Address is required",
+    "organizations.forms.edit.update_button": "Update Organization",
+    "organizations.forms.edit.updating": "Updating...",
+    "organizations.forms.edit.update_success":
+      "Organization updated successfully",
+    "organizations.forms.edit.update_error":
+      "Failed to update organization. Please try again.",
+    "organizations.forms.edit.cancel": "Cancel",
 
-// GetOrganizationByIdForm
-"organizations.forms.get_by_id.title": "Get Organization by ID",
-"organizations.forms.get_by_id.description": "Retrieve detailed information about a specific organization using its unique identifier",
-"organizations.forms.get_by_id.error.required": "Organization ID is required",
-"organizations.forms.get_by_id.error.format": "Invalid GUID format. Please enter a valid organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.get_by_id.id.label": "Organization ID",
-"organizations.forms.get_by_id.id.placeholder": "Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.get_by_id.id.help": "Must be a valid GUID format",
-"organizations.forms.get_by_id.submit": "Get Organization",
-"organizations.forms.get_by_id.success": "Organization found successfully",
-"organizations.forms.get_by_id.not_found": "Organization not found",
-"organizations.forms.get_by_id.error.not_found_with_id": "Organization not found with the provided ID",
-"organizations.forms.get_by_id.error.failed": "Failed to fetch organization. Please try again.",
-"organizations.forms.get_by_id.results.details_title": "Organization Details",
-"organizations.forms.get_by_id.reps_none": "No representatives",
+    // GetOrganizationByIdForm
+    "organizations.forms.get_by_id.title": "Get Organization by ID",
+    "organizations.forms.get_by_id.description":
+      "Retrieve detailed information about a specific organization using its unique identifier",
+    "organizations.forms.get_by_id.error.required":
+      "Organization ID is required",
+    "organizations.forms.get_by_id.error.format":
+      "Invalid GUID format. Please enter a valid organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.get_by_id.id.label": "Organization ID",
+    "organizations.forms.get_by_id.id.placeholder":
+      "Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.get_by_id.id.help": "Must be a valid GUID format",
+    "organizations.forms.get_by_id.submit": "Get Organization",
+    "organizations.forms.get_by_id.success": "Organization found successfully",
+    "organizations.forms.get_by_id.not_found": "Organization not found",
+    "organizations.forms.get_by_id.error.not_found_with_id":
+      "Organization not found with the provided ID",
+    "organizations.forms.get_by_id.error.failed":
+      "Failed to fetch organization. Please try again.",
+    "organizations.forms.get_by_id.results.details_title":
+      "Organization Details",
+    "organizations.forms.get_by_id.reps_none": "No representatives",
 
-// RegisterOrganizationForm
-"organizations.forms.register.title": "Register Organization",
-"organizations.forms.register.description": "Register a new shipping agent organization in the system.",
-"organizations.forms.register.identifier.label": "Identifier",
-"organizations.forms.register.legalName.label": "Legal Name",
-"organizations.forms.register.altName.label": "Alternative Name",
-"organizations.forms.register.address.label": "Address",
-"organizations.forms.register.taxNumber.label": "Tax Number",
-"organizations.forms.register.reps.label": "Representatives",
-"organizations.forms.register.reps.select_placeholder": "Select existing representative...",
-"organizations.forms.register.submit": "Register Organization",
-"organizations.forms.register.error.required.identifier": "Identifier is required",
-"organizations.forms.register.error.required.legalName": "Legal name is required",
-"organizations.forms.register.error.required.address": "Address is required",
-"organizations.forms.register.error.required.taxNumber": "Tax number is required",
-"organizations.forms.register.error.required.reps": "At least one representative is required",
-"organizations.forms.register.error.failed": "Failed to register organization.",
-"organizations.forms.register.success": "Organization registered successfully.",
+    // RegisterOrganizationForm
+    "organizations.forms.register.title": "Register Organization",
+    "organizations.forms.register.description":
+      "Register a new shipping agent organization in the system.",
+    "organizations.forms.register.identifier.label": "Identifier",
+    "organizations.forms.register.legalName.label": "Legal Name",
+    "organizations.forms.register.altName.label": "Alternative Name",
+    "organizations.forms.register.address.label": "Address",
+    "organizations.forms.register.taxNumber.label": "Tax Number",
+    "organizations.forms.register.reps.label": "Representatives",
+    "organizations.forms.register.reps.select_placeholder":
+      "Select existing representative...",
+    "organizations.forms.register.submit": "Register Organization",
+    "organizations.forms.register.error.required.identifier":
+      "Identifier is required",
+    "organizations.forms.register.error.required.legalName":
+      "Legal name is required",
+    "organizations.forms.register.error.required.address":
+      "Address is required",
+    "organizations.forms.register.error.required.taxNumber":
+      "Tax number is required",
+    "organizations.forms.register.error.required.reps":
+      "At least one representative is required",
+    "organizations.forms.register.error.failed":
+      "Failed to register organization.",
+    "organizations.forms.register.success":
+      "Organization registered successfully.",
 
-// RemoveRepresentativeFromOrganizationForm
-"organizations.forms.remove_rep.title": "Remove Representative from Organization",
-"organizations.forms.remove_rep.description": "Search for an organization by ID and remove an assigned representative",
-"organizations.forms.remove_rep.id.label": "Organization ID",
-"organizations.forms.remove_rep.id.placeholder": "Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.remove_rep.search_button": "Search Organization",
-"organizations.forms.remove_rep.search_error.required": "Organization ID is required",
-"organizations.forms.remove_rep.search_error.format": "Invalid GUID format. Please enter a valid organization ID",
-"organizations.forms.remove_rep.search_error.not_found": "Organization not found with the provided ID",
-"organizations.forms.remove_rep.search_error.failed": "Failed to fetch organization. Please try again.",
-"organizations.forms.remove_rep.editing_header": "Organization: {{legalName}} (ID: {{orgId}})",
-"organizations.forms.remove_rep.select.desc": "Select a representative to remove from this organization.",
-"organizations.forms.remove_rep.select.title": "Select Representative",
-"organizations.forms.remove_rep.select.placeholder": "-- Select --",
-"organizations.forms.remove_rep.error.no_rep_selected": "Please select a representative to remove.",
-"organizations.forms.remove_rep.remove_button": "Remove Representative",
-"organizations.forms.remove_rep.removing": "Removing...",
-"organizations.forms.remove_rep.error.failed": "Failed to remove representative. Please try again.",
-"organizations.forms.remove_rep.success": "Representative removed from organization successfully.",
-"organizations.forms.remove_rep.cancel": "Cancel",
+    // RemoveRepresentativeFromOrganizationForm
+    "organizations.forms.remove_rep.title":
+      "Remove Representative from Organization",
+    "organizations.forms.remove_rep.description":
+      "Search for an organization by ID and remove an assigned representative",
+    "organizations.forms.remove_rep.id.label": "Organization ID",
+    "organizations.forms.remove_rep.id.placeholder":
+      "Enter organization ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.remove_rep.search_button": "Search Organization",
+    "organizations.forms.remove_rep.search_error.required":
+      "Organization ID is required",
+    "organizations.forms.remove_rep.search_error.format":
+      "Invalid GUID format. Please enter a valid organization ID",
+    "organizations.forms.remove_rep.search_error.not_found":
+      "Organization not found with the provided ID",
+    "organizations.forms.remove_rep.search_error.failed":
+      "Failed to fetch organization. Please try again.",
+    "organizations.forms.remove_rep.editing_header":
+      "Organization: {{legalName}} (ID: {{orgId}})",
+    "organizations.forms.remove_rep.select.desc":
+      "Select a representative to remove from this organization.",
+    "organizations.forms.remove_rep.select.title": "Select Representative",
+    "organizations.forms.remove_rep.select.placeholder": "-- Select --",
+    "organizations.forms.remove_rep.error.no_rep_selected":
+      "Please select a representative to remove.",
+    "organizations.forms.remove_rep.remove_button": "Remove Representative",
+    "organizations.forms.remove_rep.removing": "Removing...",
+    "organizations.forms.remove_rep.error.failed":
+      "Failed to remove representative. Please try again.",
+    "organizations.forms.remove_rep.success":
+      "Representative removed from organization successfully.",
+    "organizations.forms.remove_rep.cancel": "Cancel",
 
-// DeleteQualificationForm
-"qualifications.forms.delete.title": "Delete Qualification",
-"qualifications.forms.delete.description": "Search for a qualification by code and confirm deletion",
-"qualifications.forms.delete.code.label": "Qualification Code",
-"qualifications.forms.delete.code.placeholder": "Enter qualification code (e.g., Q-001)",
-"qualifications.forms.delete.code.help": "Enter the unique code of the qualification you want to delete",
-"qualifications.forms.delete.search_button": "Search Qualification",
-"qualifications.forms.delete.error.required": "Qualification code is required",
-"qualifications.forms.delete.search_error.not_found": "Qualification not found",
-"qualifications.forms.delete.search_error.not_found_with_code": "Qualification not found with the provided code",
-"qualifications.forms.delete.search_error.failed": "Failed to fetch qualification. Please try again.",
-"qualifications.forms.delete.message.search_success": "Qualification found. Please confirm deletion below.",
-"qualifications.forms.delete.confirm.title": "Confirm deletion of qualification: {{name}}",
-"qualifications.forms.delete.confirm.title_suffix": "(Code: {{code}})",
-"qualifications.forms.delete.confirm.search_different": "Search different qualification",
-"qualifications.forms.delete.confirm.to_delete": "Qualification to be deleted",
-"qualifications.forms.delete.confirm.warning_title": "Warning: This action cannot be undone",
-"qualifications.forms.delete.confirm.warning_description": "Deleting this qualification will permanently remove it from the system. All associated data will be lost.",
-"qualifications.forms.delete.confirmation_prompt": "Type \"{{name}}\" to confirm deletion:",
-"qualifications.forms.delete.confirmation_mismatch": "Qualification name does not match. Please type the exact qualification name to confirm deletion.",
-"qualifications.forms.delete.confirmation_help": "This confirmation helps prevent accidental deletions",
-"qualifications.forms.delete.deleting": "Deleting...",
-"qualifications.forms.delete.submit": "Delete Qualification",
-"qualifications.forms.delete.success": "Qualification \"{{name}}\" has been successfully deleted.",
-"qualifications.forms.delete.cancel": "Cancel",
+    // DeleteQualificationForm
+    "qualifications.forms.delete.title": "Delete Qualification",
+    "qualifications.forms.delete.description":
+      "Search for a qualification by code and confirm deletion",
+    "qualifications.forms.delete.code.label": "Qualification Code",
+    "qualifications.forms.delete.code.placeholder":
+      "Enter qualification code (e.g., Q-001)",
+    "qualifications.forms.delete.code.help":
+      "Enter the unique code of the qualification you want to delete",
+    "qualifications.forms.delete.search_button": "Search Qualification",
+    "qualifications.forms.delete.error.required":
+      "Qualification code is required",
+    "qualifications.forms.delete.search_error.not_found":
+      "Qualification not found",
+    "qualifications.forms.delete.search_error.not_found_with_code":
+      "Qualification not found with the provided code",
+    "qualifications.forms.delete.search_error.failed":
+      "Failed to fetch qualification. Please try again.",
+    "qualifications.forms.delete.message.search_success":
+      "Qualification found. Please confirm deletion below.",
+    "qualifications.forms.delete.confirm.title":
+      "Confirm deletion of qualification: {{name}}",
+    "qualifications.forms.delete.confirm.title_suffix": "(Code: {{code}})",
+    "qualifications.forms.delete.confirm.search_different":
+      "Search different qualification",
+    "qualifications.forms.delete.confirm.to_delete":
+      "Qualification to be deleted",
+    "qualifications.forms.delete.confirm.warning_title":
+      "Warning: This action cannot be undone",
+    "qualifications.forms.delete.confirm.warning_description":
+      "Deleting this qualification will permanently remove it from the system. All associated data will be lost.",
+    "qualifications.forms.delete.confirmation_prompt":
+      'Type "{{name}}" to confirm deletion:',
+    "qualifications.forms.delete.confirmation_mismatch":
+      "Qualification name does not match. Please type the exact qualification name to confirm deletion.",
+    "qualifications.forms.delete.confirmation_help":
+      "This confirmation helps prevent accidental deletions",
+    "qualifications.forms.delete.deleting": "Deleting...",
+    "qualifications.forms.delete.submit": "Delete Qualification",
+    "qualifications.forms.delete.success":
+      'Qualification "{{name}}" has been successfully deleted.',
+    "qualifications.forms.delete.cancel": "Cancel",
 
-// EditQualificationForm
-"qualifications.forms.edit.title": "Edit Qualification",
-"qualifications.forms.edit.description": "Search for a qualification by code and modify its information",
-"qualifications.forms.edit.code.label": "Qualification Code",
-"qualifications.forms.edit.code.placeholder": "Enter qualification code (e.g., Q-001)",
-"qualifications.forms.edit.code.help": "Enter the unique code of the qualification you want to edit",
-"qualifications.forms.edit.search_button": "Search Qualification",
-"qualifications.forms.edit.error.required": "Qualification code is required",
-"qualifications.forms.edit.search_error.not_found": "Qualification not found",
-"qualifications.forms.edit.search_error.not_found_with_code": "Qualification not found with the provided code",
-"qualifications.forms.edit.search_error.failed": "Failed to fetch qualification. Please try again.",
-"qualifications.forms.edit.search_success_message": "Found qualification: {{code}}",
-"qualifications.forms.edit.editing_header": "Editing qualification: {{name}} (Code: {{code}})",
-"qualifications.forms.edit.search_different": "Search different qualification",
-"qualifications.forms.edit.code_readonly_help": "Code cannot be changed",
-"qualifications.forms.edit.name.label": "Qualification Name",
-"qualifications.forms.edit.name.help": "Name/description of the qualification",
-"qualifications.forms.edit.error.name_required": "Qualification name is required",
-"qualifications.forms.edit.update_button": "Update Qualification",
-"qualifications.forms.edit.updating": "Updating...",
-"qualifications.forms.edit.update_success": "Qualification updated successfully!",
-"qualifications.forms.edit.update_error": "Failed to update qualification",
-"qualifications.forms.edit.cancel": "Cancel",
+    // EditQualificationForm
+    "qualifications.forms.edit.title": "Edit Qualification",
+    "qualifications.forms.edit.description":
+      "Search for a qualification by code and modify its information",
+    "qualifications.forms.edit.code.label": "Qualification Code",
+    "qualifications.forms.edit.code.placeholder":
+      "Enter qualification code (e.g., Q-001)",
+    "qualifications.forms.edit.code.help":
+      "Enter the unique code of the qualification you want to edit",
+    "qualifications.forms.edit.search_button": "Search Qualification",
+    "qualifications.forms.edit.error.required":
+      "Qualification code is required",
+    "qualifications.forms.edit.search_error.not_found":
+      "Qualification not found",
+    "qualifications.forms.edit.search_error.not_found_with_code":
+      "Qualification not found with the provided code",
+    "qualifications.forms.edit.search_error.failed":
+      "Failed to fetch qualification. Please try again.",
+    "qualifications.forms.edit.search_success_message":
+      "Found qualification: {{code}}",
+    "qualifications.forms.edit.editing_header":
+      "Editing qualification: {{name}} (Code: {{code}})",
+    "qualifications.forms.edit.search_different":
+      "Search different qualification",
+    "qualifications.forms.edit.code_readonly_help": "Code cannot be changed",
+    "qualifications.forms.edit.name.label": "Qualification Name",
+    "qualifications.forms.edit.name.help":
+      "Name/description of the qualification",
+    "qualifications.forms.edit.error.name_required":
+      "Qualification name is required",
+    "qualifications.forms.edit.update_button": "Update Qualification",
+    "qualifications.forms.edit.updating": "Updating...",
+    "qualifications.forms.edit.update_success":
+      "Qualification updated successfully!",
+    "qualifications.forms.edit.update_error": "Failed to update qualification",
+    "qualifications.forms.edit.cancel": "Cancel",
 
-// GetQualificationByCodeForm
-"qualifications.forms.get_by_code.title": "Get Qualification by Code",
-"qualifications.forms.get_by_code.description": "Retrieve detailed information about a specific qualification using its unique code",
-"qualifications.forms.get_by_code.error.required": "Qualification code is required",
-"qualifications.forms.get_by_code.id.label": "Qualification Code",
-"qualifications.forms.get_by_code.id.placeholder": "Enter qualification code (e.g., Q-001)",
-"qualifications.forms.get_by_code.id.help": "Must be a valid code",
-"qualifications.forms.get_by_code.submit": "Get Qualification",
-"qualifications.forms.get_by_code.success": "Found qualification: {{code}}",
-"qualifications.forms.get_by_code.not_found": "Qualification not found",
-"qualifications.forms.get_by_code.not_found_with_code": "Qualification '{{code}}' not found",
-"qualifications.forms.get_by_code.error.failed": "Failed to fetch qualification. Please try again.",
-"qualifications.forms.get_by_code.results.details_title": "Qualification Details",
-"qualifications.forms.get_by_code.results.code_label": "Code",
-"qualifications.forms.get_by_code.results.name_label": "Name",
-"qualifications.forms.get_by_code.results.code_prefix": "Code: ",
+    // GetQualificationByCodeForm
+    "qualifications.forms.get_by_code.title": "Get Qualification by Code",
+    "qualifications.forms.get_by_code.description":
+      "Retrieve detailed information about a specific qualification using its unique code",
+    "qualifications.forms.get_by_code.error.required":
+      "Qualification code is required",
+    "qualifications.forms.get_by_code.id.label": "Qualification Code",
+    "qualifications.forms.get_by_code.id.placeholder":
+      "Enter qualification code (e.g., Q-001)",
+    "qualifications.forms.get_by_code.id.help": "Must be a valid code",
+    "qualifications.forms.get_by_code.submit": "Get Qualification",
+    "qualifications.forms.get_by_code.success": "Found qualification: {{code}}",
+    "qualifications.forms.get_by_code.not_found": "Qualification not found",
+    "qualifications.forms.get_by_code.not_found_with_code":
+      "Qualification '{{code}}' not found",
+    "qualifications.forms.get_by_code.error.failed":
+      "Failed to fetch qualification. Please try again.",
+    "qualifications.forms.get_by_code.results.details_title":
+      "Qualification Details",
+    "qualifications.forms.get_by_code.results.code_label": "Code",
+    "qualifications.forms.get_by_code.results.name_label": "Name",
+    "qualifications.forms.get_by_code.results.code_prefix": "Code: ",
 
-// RegisterQualificationForm
-"qualifications.forms.register.title": "Register Qualification",
-"qualifications.forms.register.description": "Create a new qualification with code and name",
-"qualifications.forms.register.code.label": "Qualification Code",
-"qualifications.forms.register.code.placeholder": "e.g., Q-001",
-"qualifications.forms.register.code.help": "Unique code to identify this qualification",
-"qualifications.forms.register.name.label": "Qualification Name",
-"qualifications.forms.register.name.placeholder": "e.g., Forklift Operator",
-"qualifications.forms.register.name.help": "Name/description of the qualification",
-"qualifications.forms.register.submit": "Register Qualification",
-"qualifications.forms.register.registering": "Registering...",
-"qualifications.forms.register.error.code_required": "Qualification code is required",
-"qualifications.forms.register.error.name_required": "Qualification name is required",
-"qualifications.forms.register.error.failed_generic": "Failed to register qualification",
-"qualifications.forms.register.error.code_exists": "Qualification with this code already exists.",
-"qualifications.forms.register.success": "Qualification registered successfully!",
+    // RegisterQualificationForm
+    "qualifications.forms.register.title": "Register Qualification",
+    "qualifications.forms.register.description":
+      "Create a new qualification with code and name",
+    "qualifications.forms.register.code.label": "Qualification Code",
+    "qualifications.forms.register.code.placeholder": "e.g., Q-001",
+    "qualifications.forms.register.code.help":
+      "Unique code to identify this qualification",
+    "qualifications.forms.register.name.label": "Qualification Name",
+    "qualifications.forms.register.name.placeholder": "e.g., Forklift Operator",
+    "qualifications.forms.register.name.help":
+      "Name/description of the qualification",
+    "qualifications.forms.register.submit": "Register Qualification",
+    "qualifications.forms.register.registering": "Registering...",
+    "qualifications.forms.register.error.code_required":
+      "Qualification code is required",
+    "qualifications.forms.register.error.name_required":
+      "Qualification name is required",
+    "qualifications.forms.register.error.failed_generic":
+      "Failed to register qualification",
+    "qualifications.forms.register.error.code_exists":
+      "Qualification with this code already exists.",
+    "qualifications.forms.register.success":
+      "Qualification registered successfully!",
+
+    // ActivateDeactivateRepresentativeForm
+    "representatives.forms.manage_status.title":
+      "Activate/Deactivate Representative",
+    "representatives.forms.manage_status.description":
+      "Enter a representative ID to activate or deactivate them.",
+    "representatives.forms.manage_status.id.label": "Representative ID",
+    "representatives.forms.manage_status.id.placeholder":
+      "Enter representative ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.manage_status.search_button":
+      "Search Representative",
+    "representatives.forms.manage_status.search_error.required":
+      "Representative ID is required",
+    "representatives.forms.manage_status.search_error.not_found":
+      "Representative not found.",
+    "representatives.forms.manage_status.confirm.header_label":
+      "Representative",
+    "representatives.forms.manage_status.confirm.status_label": "Status",
+    "representatives.forms.manage_status.confirm.status_active": "Active",
+    "representatives.forms.manage_status.confirm.status_inactive": "Inactive",
+    "representatives.forms.manage_status.confirm.question_deactivate":
+      "Are you sure you want to deactivate this representative?",
+    "representatives.forms.manage_status.confirm.question_activate":
+      "Are you sure you want to activate this representative?",
+    "representatives.forms.manage_status.confirm.button_deactivate":
+      "Deactivate Representative",
+    "representatives.forms.manage_status.confirm.button_activate":
+      "Activate Representative",
+    "representatives.forms.manage_status.confirm.no_rep_loaded":
+      "No representative loaded.",
+    "representatives.forms.manage_status.processing": "Processing...",
+    "representatives.forms.manage_status.operation_failed": "Operation failed.",
+    "representatives.forms.manage_status.success.deactivated":
+      "Representative deactivated successfully.",
+    "representatives.forms.manage_status.success.activated":
+      "Representative activated successfully.",
+    "representatives.forms.manage_status.cancel": "Cancel",
+
+    // GetRepresentativeByIdForm
+    "representatives.forms.get_by_id.title": "Get Representative by ID",
+    "representatives.forms.get_by_id.description":
+      "Retrieve detailed information about a specific representative using its unique identifier",
+    "representatives.forms.get_by_id.error.required":
+      "Representative ID is required",
+    "representatives.forms.get_by_id.error.format":
+      "Invalid GUID format. Please enter a valid representative ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.get_by_id.id.label": "Representative ID",
+    "representatives.forms.get_by_id.id.placeholder":
+      "Enter representative ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.get_by_id.id.help": "Must be a valid GUID format",
+    "representatives.forms.get_by_id.submit": "Get Representative",
+    "representatives.forms.get_by_id.success":
+      "Representative found successfully",
+    "representatives.forms.get_by_id.not_found": "Representative not found",
+    "representatives.forms.get_by_id.error.not_found_with_id":
+      "Representative not found with the provided ID",
+    "representatives.forms.get_by_id.error.failed":
+      "Failed to fetch representative. Please try again.",
+    "representatives.forms.get_by_id.results.details_title":
+      "Representative Details",
+    "representatives.forms.get_by_id.results.id_prefix": "ID: ",
+    "representatives.forms.get_by_id.results.status_active": "Active",
+    "representatives.forms.get_by_id.results.status_inactive": "Inactive",
+    "representatives.forms.get_by_id.results.organization_none": "N/A",
+
+    // RegisterRepresentativeForm
+    "representatives.forms.register.title": "Register Representative",
+    "representatives.forms.register.description":
+      "Create a new representative. All fields are required.",
+    "representatives.forms.register.organization.label": "Organization",
+    "representatives.forms.register.organization.select_placeholder":
+      "Select organization...",
+    "representatives.forms.register.organization.help":
+      "Choose the organization to assign this representative",
+    "representatives.forms.register.name.label": "Name",
+    "representatives.forms.register.name.placeholder": "e.g., John Doe",
+    "representatives.forms.register.name.help":
+      "Full name of the representative",
+    "representatives.forms.register.citizenId.label": "Citizen ID",
+    "representatives.forms.register.citizenId.placeholder": "e.g., 123456789",
+    "representatives.forms.register.citizenId.help":
+      "Unique citizen identification number",
+    "representatives.forms.register.nationality.label": "Nationality",
+    "representatives.forms.register.nationality.placeholder": "e.g., PRT",
+    "representatives.forms.register.nationality.help":
+      "ISO 2 or 3-letter country code",
+    "representatives.forms.register.email.label": "Email",
+    "representatives.forms.register.email.placeholder":
+      "e.g., john.doe@email.com",
+    "representatives.forms.register.email.help": "Valid email address",
+    "representatives.forms.register.phone.label": "Phone",
+    "representatives.forms.register.phone.placeholder": "e.g., +351912345678",
+    "representatives.forms.register.phone.help": "Phone number in E.164 format",
+    "representatives.forms.register.submit": "Register Representative",
+    "representatives.forms.register.registering": "Registering...",
+    "representatives.forms.register.clear": "Clear Form",
+    "representatives.forms.register.error.required.organization":
+      "Please select an organization.",
+    "representatives.forms.register.error.failed":
+      "Failed to register representative.",
+    "representatives.forms.register.success":
+      "Representative registered successfully!",
+
+    // EditRepresentativeForm
+    "representatives.forms.edit.title": "Edit Representative",
+    "representatives.forms.edit.description":
+      "Search for a representative by ID, then edit their details.",
+    "representatives.forms.edit.search_error.required":
+      "Representative ID is required",
+    "representatives.forms.edit.search_error.format":
+      "Invalid GUID format. Please enter a valid representative ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.edit.search_button": "Search",
+    "representatives.forms.edit.id.label": "Representative ID",
+    "representatives.forms.edit.id.placeholder":
+      "Enter representative ID (e.g., 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.edit.id.help": "Must be a valid GUID format",
+    "representatives.forms.edit.search_success":
+      "Representative found. You can now edit.",
+    "representatives.forms.edit.search_error.not_found":
+      "Representative not found",
+    "representatives.forms.edit.search_error.not_found_with_id":
+      "Representative not found with the provided ID",
+    "representatives.forms.edit.search_error.failed":
+      "Failed to fetch representative. Please try again.",
+    "representatives.forms.edit.nationality.label": "Nationality",
+    "representatives.forms.edit.email.label": "Email",
+    "representatives.forms.edit.phone.label": "Phone",
+    "representatives.forms.edit.update_button": "Update Representative",
+    "representatives.forms.edit.updating": "Updating...",
+    "representatives.forms.edit.update_success":
+      "Representative updated successfully!",
+    "representatives.forms.edit.update_error":
+      "Failed to update representative.",
+    "representatives.forms.edit.clear": "Clear",
+    "representatives.forms.edit.cancel": "Cancel",
+    "representatives.forms.edit.loading": "Loading...",
   },
 
   pt: {
@@ -2829,8 +3064,7 @@ window.translations = {
       "O nome da doca não corresponde. Por favor, digite o nome exato da doca para confirmar a eliminação.",
     "docks.forms.delete.deleting": "A eliminar...",
     "docks.forms.delete.submit": "Eliminar Doca",
-    "docks.forms.delete.success":
-      'A Doca foi eliminada com sucesso.',
+    "docks.forms.delete.success": "A Doca foi eliminada com sucesso.",
     "docks.details.dimensions": "Dimensões",
     "docks.details.allowed_vessel_types": "Tipos de Embarcação Permitidos",
 
@@ -2841,8 +3075,7 @@ window.translations = {
     "docks.forms.edit.search_help":
       "Insira o GUID único da doca que pretende editar",
     "docks.forms.edit.search_button": "Pesquisar Doca",
-    "docks.forms.edit.editing_header":
-      "A editar doca: ",
+    "docks.forms.edit.editing_header": "A editar doca: ",
     "docks.forms.edit.search_different": "Pesquisar doca diferente",
     "docks.forms.edit.id_readonly_help": "O ID não pode ser alterado",
     "docks.forms.edit.name.placeholder": "Insira o nome da doca",
@@ -3042,200 +3275,442 @@ window.translations = {
     "organizations.forms.manage_status.success.activated":
       "Organização ativada com sucesso.",
 
-      // DeleteOrganizationForm
-      "organizations.forms.delete.title": "Eliminar Organização",
-"organizations.forms.delete.description": "Pesquisar uma organização por ID e eliminá-la permanentemente do sistema",
-"organizations.forms.delete.id.label": "ID da Organização",
-"organizations.forms.delete.id.placeholder": "Insira o ID da organização (ex.: 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.delete.id.help": "Insira o GUID único da organização que pretende eliminar",
-"organizations.forms.delete.search_button": "Pesquisar Organização",
-"organizations.forms.delete.error.required": "O ID da Organização é obrigatório",
-"organizations.forms.delete.error.format": "Formato GUID inválido. Por favor, insira um ID de organização válido",
-"organizations.forms.delete.search_error.not_found": "Organização não encontrada com o ID fornecido",
-"organizations.forms.delete.search_error.failed": "Falha ao obter organização. Por favor, tente novamente.",
-"organizations.forms.delete.message.search_success": "Organização encontrada com sucesso. Por favor, confirme a eliminação abaixo.",
-"organizations.forms.delete.confirm.title": "Confirmar Eliminação da Organização",
-"organizations.forms.delete.confirm.search_different": "Pesquisar organização diferente",
-"organizations.forms.delete.confirm.to_delete": "Organização a ser eliminada",
-"organizations.forms.delete.confirm.reps_none": "Nenhum",
-"organizations.forms.delete.warning_title": "Aviso: Esta ação não pode ser desfeita",
-"organizations.forms.delete.warning_description": "A eliminação desta organização irá removê-la permanentemente do sistema. Todos os dados associados serão perdidos.",
-"organizations.forms.delete.confirmation_prompt": "Digite \"{{legalName}}\" para confirmar a eliminação:",
-"organizations.forms.delete.confirmation_mismatch": "O nome legal da organização não corresponde. Por favor, digite o nome legal exato para confirmar a eliminação.",
-"organizations.forms.delete.confirmation_help": "Esta confirmação ajuda a evitar eliminações acidentais",
-"organizations.forms.delete.deleting": "A eliminar...",
-"organizations.forms.delete.submit": "Eliminar Organização Permanentemente",
-"organizations.forms.delete.success": "A Organização foi eliminada com sucesso.",
-"organizations.forms.delete.cancel": "Cancelar",
+    // DeleteOrganizationForm
+    "organizations.forms.delete.title": "Eliminar Organização",
+    "organizations.forms.delete.description":
+      "Pesquisar uma organização por ID e eliminá-la permanentemente do sistema",
+    "organizations.forms.delete.id.label": "ID da Organização",
+    "organizations.forms.delete.id.placeholder":
+      "Insira o ID da organização (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.delete.id.help":
+      "Insira o GUID único da organização que pretende eliminar",
+    "organizations.forms.delete.search_button": "Pesquisar Organização",
+    "organizations.forms.delete.error.required":
+      "O ID da Organização é obrigatório",
+    "organizations.forms.delete.error.format":
+      "Formato GUID inválido. Por favor, insira um ID de organização válido",
+    "organizations.forms.delete.search_error.not_found":
+      "Organização não encontrada com o ID fornecido",
+    "organizations.forms.delete.search_error.failed":
+      "Falha ao obter organização. Por favor, tente novamente.",
+    "organizations.forms.delete.message.search_success":
+      "Organização encontrada com sucesso. Por favor, confirme a eliminação abaixo.",
+    "organizations.forms.delete.confirm.title":
+      "Confirmar Eliminação da Organização",
+    "organizations.forms.delete.confirm.search_different":
+      "Pesquisar organização diferente",
+    "organizations.forms.delete.confirm.to_delete":
+      "Organização a ser eliminada",
+    "organizations.forms.delete.confirm.reps_none": "Nenhum",
+    "organizations.forms.delete.warning_title":
+      "Aviso: Esta ação não pode ser desfeita",
+    "organizations.forms.delete.warning_description":
+      "A eliminação desta organização irá removê-la permanentemente do sistema. Todos os dados associados serão perdidos.",
+    "organizations.forms.delete.confirmation_prompt":
+      'Digite "{{legalName}}" para confirmar a eliminação:',
+    "organizations.forms.delete.confirmation_mismatch":
+      "O nome legal da organização não corresponde. Por favor, digite o nome legal exato para confirmar a eliminação.",
+    "organizations.forms.delete.confirmation_help":
+      "Esta confirmação ajuda a evitar eliminações acidentais",
+    "organizations.forms.delete.deleting": "A eliminar...",
+    "organizations.forms.delete.submit": "Eliminar Organização Permanentemente",
+    "organizations.forms.delete.success":
+      "A Organização foi eliminada com sucesso.",
+    "organizations.forms.delete.cancel": "Cancelar",
 
-// EditOrganizationForm
-"organizations.forms.edit.title": "Editar Organização",
-"organizations.forms.edit.description": "Pesquisar uma organização por ID e modificar as suas informações",
-"organizations.forms.edit.search_button": "Pesquisar Organização",
-"organizations.forms.edit.id.label": "ID da Organização",
-"organizations.forms.edit.id.placeholder": "Insira o ID da organização (ex.: 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.edit.id.help": "Insira o GUID único da organização que pretende editar",
-"organizations.forms.edit.search_error.required": "O ID da Organização é obrigatório",
-"organizations.forms.edit.search_error.format": "Formato GUID inválido. Por favor, insira um ID de organização válido",
-"organizations.forms.edit.search_error.not_found": "Organização não encontrada",
-"organizations.forms.edit.search_error.not_found_with_id": "Organização não encontrada com o ID fornecido",
-"organizations.forms.edit.search_error.failed": "Falha ao obter organização. Por favor, tente novamente.",
-"organizations.forms.edit.search_success": "Organização encontrada com sucesso",
-"organizations.forms.edit.editing_header": "A editar organização: ",
-"organizations.forms.edit.search_different": "Pesquisar organização diferente",
-"organizations.forms.edit.id_readonly_help": "O ID não pode ser alterado",
-"organizations.forms.edit.alt_names.label": "Nomes Alternativos",
-"organizations.forms.edit.alt_names.placeholder": "Insira nomes alternativos",
-"organizations.forms.edit.alt_names.help": "Outros nomes ou abreviaturas",
-"organizations.forms.edit.address.label": "Endereço",
-"organizations.forms.edit.address.placeholder": "Insira o endereço",
-"organizations.forms.edit.address.help": "Endereço físico",
-"organizations.forms.edit.error.address_required": "O endereço é obrigatório",
-"organizations.forms.edit.update_button": "Atualizar Organização",
-"organizations.forms.edit.updating": "A atualizar...",
-"organizations.forms.edit.update_success": "Organização atualizada com sucesso",
-"organizations.forms.edit.update_error": "Falha ao atualizar organização. Por favor, tente novamente.",
-"organizations.forms.edit.cancel": "Cancelar",
+    // EditOrganizationForm
+    "organizations.forms.edit.title": "Editar Organização",
+    "organizations.forms.edit.description":
+      "Pesquisar uma organização por ID e modificar as suas informações",
+    "organizations.forms.edit.search_button": "Pesquisar Organização",
+    "organizations.forms.edit.id.label": "ID da Organização",
+    "organizations.forms.edit.id.placeholder":
+      "Insira o ID da organização (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.edit.id.help":
+      "Insira o GUID único da organização que pretende editar",
+    "organizations.forms.edit.search_error.required":
+      "O ID da Organização é obrigatório",
+    "organizations.forms.edit.search_error.format":
+      "Formato GUID inválido. Por favor, insira um ID de organização válido",
+    "organizations.forms.edit.search_error.not_found":
+      "Organização não encontrada",
+    "organizations.forms.edit.search_error.not_found_with_id":
+      "Organização não encontrada com o ID fornecido",
+    "organizations.forms.edit.search_error.failed":
+      "Falha ao obter organização. Por favor, tente novamente.",
+    "organizations.forms.edit.search_success":
+      "Organização encontrada com sucesso",
+    "organizations.forms.edit.editing_header": "A editar organização: ",
+    "organizations.forms.edit.search_different":
+      "Pesquisar organização diferente",
+    "organizations.forms.edit.id_readonly_help": "O ID não pode ser alterado",
+    "organizations.forms.edit.alt_names.label": "Nomes Alternativos",
+    "organizations.forms.edit.alt_names.placeholder":
+      "Insira nomes alternativos",
+    "organizations.forms.edit.alt_names.help": "Outros nomes ou abreviaturas",
+    "organizations.forms.edit.address.label": "Endereço",
+    "organizations.forms.edit.address.placeholder": "Insira o endereço",
+    "organizations.forms.edit.address.help": "Endereço físico",
+    "organizations.forms.edit.error.address_required":
+      "O endereço é obrigatório",
+    "organizations.forms.edit.update_button": "Atualizar Organização",
+    "organizations.forms.edit.updating": "A atualizar...",
+    "organizations.forms.edit.update_success":
+      "Organização atualizada com sucesso",
+    "organizations.forms.edit.update_error":
+      "Falha ao atualizar organização. Por favor, tente novamente.",
+    "organizations.forms.edit.cancel": "Cancelar",
 
-// GetOrganizationByIdForm
-"organizations.forms.get_by_id.title": "Obter Organização por ID",
-"organizations.forms.get_by_id.description": "Obter informações detalhadas sobre uma organização específica usando o seu identificador único",
-"organizations.forms.get_by_id.error.required": "O ID da Organização é obrigatório",
-"organizations.forms.get_by_id.error.format": "Formato GUID inválido. Por favor, insira um ID de organização válido (ex.: 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.get_by_id.id.label": "ID da Organização",
-"organizations.forms.get_by_id.id.placeholder": "Insira o ID da organização (ex.: 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.get_by_id.id.help": "Deve estar em formato GUID válido",
-"organizations.forms.get_by_id.submit": "Obter Organização",
-"organizations.forms.get_by_id.success": "Organização encontrada com sucesso",
-"organizations.forms.get_by_id.not_found": "Organização não encontrada",
-"organizations.forms.get_by_id.error.not_found_with_id": "Organização não encontrada com o ID fornecido",
-"organizations.forms.get_by_id.error.failed": "Falha ao obter organização. Por favor, tente novamente.",
-"organizations.forms.get_by_id.results.details_title": "Detalhes da Organização",
-"organizations.forms.get_by_id.reps_none": "Nenhum representante",
+    // GetOrganizationByIdForm
+    "organizations.forms.get_by_id.title": "Obter Organização por ID",
+    "organizations.forms.get_by_id.description":
+      "Obter informações detalhadas sobre uma organização específica usando o seu identificador único",
+    "organizations.forms.get_by_id.error.required":
+      "O ID da Organização é obrigatório",
+    "organizations.forms.get_by_id.error.format":
+      "Formato GUID inválido. Por favor, insira um ID de organização válido (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.get_by_id.id.label": "ID da Organização",
+    "organizations.forms.get_by_id.id.placeholder":
+      "Insira o ID da organização (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.get_by_id.id.help":
+      "Deve estar em formato GUID válido",
+    "organizations.forms.get_by_id.submit": "Obter Organização",
+    "organizations.forms.get_by_id.success":
+      "Organização encontrada com sucesso",
+    "organizations.forms.get_by_id.not_found": "Organização não encontrada",
+    "organizations.forms.get_by_id.error.not_found_with_id":
+      "Organização não encontrada com o ID fornecido",
+    "organizations.forms.get_by_id.error.failed":
+      "Falha ao obter organização. Por favor, tente novamente.",
+    "organizations.forms.get_by_id.results.details_title":
+      "Detalhes da Organização",
+    "organizations.forms.get_by_id.reps_none": "Nenhum representante",
 
-// RegisterOrganizationForm
-"organizations.forms.register.title": "Registar Organização",
-"organizations.forms.register.description": "Registar uma nova organização de agente de navegação no sistema.",
-"organizations.forms.register.identifier.label": "Identificador",
-"organizations.forms.register.legalName.label": "Nome Legal",
-"organizations.forms.register.altName.label": "Nome Alternativo",
-"organizations.forms.register.address.label": "Endereço",
-"organizations.forms.register.taxNumber.label": "Número Fiscal",
-"organizations.forms.register.reps.label": "Representantes",
-"organizations.forms.register.reps.select_placeholder": "Selecionar representante existente...",
-"organizations.forms.register.submit": "Registar Organização",
-"organizations.forms.register.error.required.identifier": "O identificador é obrigatório",
-"organizations.forms.register.error.required.legalName": "O nome legal é obrigatório",
-"organizations.forms.register.error.required.address": "O endereço é obrigatório",
-"organizations.forms.register.error.required.taxNumber": "O número fiscal é obrigatório",
-"organizations.forms.register.error.required.reps": "Pelo menos um representante é obrigatório",
-"organizations.forms.register.error.failed": "Falha ao registar organização.",
-"organizations.forms.register.success": "Organização registada com sucesso.",
+    // RegisterOrganizationForm
+    "organizations.forms.register.title": "Registar Organização",
+    "organizations.forms.register.description":
+      "Registar uma nova organização de agente de navegação no sistema.",
+    "organizations.forms.register.identifier.label": "Identificador",
+    "organizations.forms.register.legalName.label": "Nome Legal",
+    "organizations.forms.register.altName.label": "Nome Alternativo",
+    "organizations.forms.register.address.label": "Endereço",
+    "organizations.forms.register.taxNumber.label": "Número Fiscal",
+    "organizations.forms.register.reps.label": "Representantes",
+    "organizations.forms.register.reps.select_placeholder":
+      "Selecionar representante existente...",
+    "organizations.forms.register.submit": "Registar Organização",
+    "organizations.forms.register.error.required.identifier":
+      "O identificador é obrigatório",
+    "organizations.forms.register.error.required.legalName":
+      "O nome legal é obrigatório",
+    "organizations.forms.register.error.required.address":
+      "O endereço é obrigatório",
+    "organizations.forms.register.error.required.taxNumber":
+      "O número fiscal é obrigatório",
+    "organizations.forms.register.error.required.reps":
+      "Pelo menos um representante é obrigatório",
+    "organizations.forms.register.error.failed":
+      "Falha ao registar organização.",
+    "organizations.forms.register.success":
+      "Organização registada com sucesso.",
 
-// RemoveRepresentativeFromOrganizationForm
-"organizations.forms.remove_rep.title": "Remover Representante da Organização",
-"organizations.forms.remove_rep.description": "Pesquisar uma organização por ID e remover um representante atribuído",
-"organizations.forms.remove_rep.id.label": "ID da Organização",
-"organizations.forms.remove_rep.id.placeholder": "Insira o ID da organização (ex.: 12345678-1234-1234-1234-123456789abc)",
-"organizations.forms.remove_rep.search_button": "Pesquisar Organização",
-"organizations.forms.remove_rep.search_error.required": "O ID da Organização é obrigatório",
-"organizations.forms.remove_rep.search_error.format": "Formato GUID inválido. Por favor, insira um ID de organização válido",
-"organizations.forms.remove_rep.search_error.not_found": "Organização não encontrada com o ID fornecido",
-"organizations.forms.remove_rep.search_error.failed": "Falha ao obter organização. Por favor, tente novamente.",
-"organizations.forms.remove_rep.editing_header": "Organização: {{legalName}} (ID: {{orgId}})",
-"organizations.forms.remove_rep.select.desc": "Selecione um representante para remover desta organização.",
-"organizations.forms.remove_rep.select.title": "Selecionar Representante",
-"organizations.forms.remove_rep.select.placeholder": "-- Selecionar --",
-"organizations.forms.remove_rep.error.no_rep_selected": "Por favor, selecione um representante para remover.",
-"organizations.forms.remove_rep.remove_button": "Remover Representante",
-"organizations.forms.remove_rep.removing": "A remover...",
-"organizations.forms.remove_rep.error.failed": "Falha ao remover representante. Por favor, tente novamente.",
-"organizations.forms.remove_rep.success": "Representante removido da organização com sucesso.",
-"organizations.forms.remove_rep.cancel": "Cancelar",
+    // RemoveRepresentativeFromOrganizationForm
+    "organizations.forms.remove_rep.title":
+      "Remover Representante da Organização",
+    "organizations.forms.remove_rep.description":
+      "Pesquisar uma organização por ID e remover um representante atribuído",
+    "organizations.forms.remove_rep.id.label": "ID da Organização",
+    "organizations.forms.remove_rep.id.placeholder":
+      "Insira o ID da organização (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "organizations.forms.remove_rep.search_button": "Pesquisar Organização",
+    "organizations.forms.remove_rep.search_error.required":
+      "O ID da Organização é obrigatório",
+    "organizations.forms.remove_rep.search_error.format":
+      "Formato GUID inválido. Por favor, insira um ID de organização válido",
+    "organizations.forms.remove_rep.search_error.not_found":
+      "Organização não encontrada com o ID fornecido",
+    "organizations.forms.remove_rep.search_error.failed":
+      "Falha ao obter organização. Por favor, tente novamente.",
+    "organizations.forms.remove_rep.editing_header":
+      "Organização: {{legalName}} (ID: {{orgId}})",
+    "organizations.forms.remove_rep.select.desc":
+      "Selecione um representante para remover desta organização.",
+    "organizations.forms.remove_rep.select.title": "Selecionar Representante",
+    "organizations.forms.remove_rep.select.placeholder": "-- Selecionar --",
+    "organizations.forms.remove_rep.error.no_rep_selected":
+      "Por favor, selecione um representante para remover.",
+    "organizations.forms.remove_rep.remove_button": "Remover Representante",
+    "organizations.forms.remove_rep.removing": "A remover...",
+    "organizations.forms.remove_rep.error.failed":
+      "Falha ao remover representante. Por favor, tente novamente.",
+    "organizations.forms.remove_rep.success":
+      "Representante removido da organização com sucesso.",
+    "organizations.forms.remove_rep.cancel": "Cancelar",
 
-// DeleteQualificationForm
-"qualifications.forms.delete.title": "Eliminar Qualificação",
-"qualifications.forms.delete.description": "Pesquisar uma qualificação por código e confirmar a eliminação",
-"qualifications.forms.delete.code.label": "Código da Qualificação",
-"qualifications.forms.delete.code.placeholder": "Insira o código da qualificação (ex.: Q-001)",
-"qualifications.forms.delete.code.help": "Insira o código único da qualificação que pretende eliminar",
-"qualifications.forms.delete.search_button": "Pesquisar Qualificação",
-"qualifications.forms.delete.error.required": "O código da qualificação é obrigatório",
-"qualifications.forms.delete.search_error.not_found": "Qualificação não encontrada",
-"qualifications.forms.delete.search_error.not_found_with_code": "Qualificação não encontrada com o código fornecido",
-"qualifications.forms.delete.search_error.failed": "Falha ao obter qualificação. Por favor, tente novamente.",
-"qualifications.forms.delete.message.search_success": "Qualificação encontrada. Por favor, confirme a eliminação abaixo.",
-"qualifications.forms.delete.confirm.title": "Confirmar eliminação da qualificação: ",
-"qualifications.forms.delete.confirm.title_suffix": " (Código: )",
-"qualifications.forms.delete.confirm.search_different": "Pesquisar qualificação diferente",
-"qualifications.forms.delete.confirm.to_delete": "Qualificação a ser eliminada",
-"qualifications.forms.delete.confirm.warning_title": "Aviso: Esta ação não pode ser desfeita",
-"qualifications.forms.delete.confirm.warning_description": "A eliminação desta qualificação irá removê-la permanentemente do sistema. Todos os dados associados serão perdidos.",
-"qualifications.forms.delete.confirmation_prompt": "Digite \"{{name}}\" para confirmar a eliminação:",
-"qualifications.forms.delete.confirmation_mismatch": "O nome da qualificação não corresponde. Por favor, digite o nome exato da qualificação para confirmar a eliminação.",
-"qualifications.forms.delete.confirmation_help": "Esta confirmação ajuda a evitar eliminações acidentais",
-"qualifications.forms.delete.deleting": "A eliminar...",
-"qualifications.forms.delete.submit": "Eliminar Qualificação",
-"qualifications.forms.delete.success": "A Qualificação foi eliminada com sucesso.",
-"qualifications.forms.delete.cancel": "Cancelar",
+    // DeleteQualificationForm
+    "qualifications.forms.delete.title": "Eliminar Qualificação",
+    "qualifications.forms.delete.description":
+      "Pesquisar uma qualificação por código e confirmar a eliminação",
+    "qualifications.forms.delete.code.label": "Código da Qualificação",
+    "qualifications.forms.delete.code.placeholder":
+      "Insira o código da qualificação (ex.: Q-001)",
+    "qualifications.forms.delete.code.help":
+      "Insira o código único da qualificação que pretende eliminar",
+    "qualifications.forms.delete.search_button": "Pesquisar Qualificação",
+    "qualifications.forms.delete.error.required":
+      "O código da qualificação é obrigatório",
+    "qualifications.forms.delete.search_error.not_found":
+      "Qualificação não encontrada",
+    "qualifications.forms.delete.search_error.not_found_with_code":
+      "Qualificação não encontrada com o código fornecido",
+    "qualifications.forms.delete.search_error.failed":
+      "Falha ao obter qualificação. Por favor, tente novamente.",
+    "qualifications.forms.delete.message.search_success":
+      "Qualificação encontrada. Por favor, confirme a eliminação abaixo.",
+    "qualifications.forms.delete.confirm.title":
+      "Confirmar eliminação da qualificação: ",
+    "qualifications.forms.delete.confirm.title_suffix": " (Código: )",
+    "qualifications.forms.delete.confirm.search_different":
+      "Pesquisar qualificação diferente",
+    "qualifications.forms.delete.confirm.to_delete":
+      "Qualificação a ser eliminada",
+    "qualifications.forms.delete.confirm.warning_title":
+      "Aviso: Esta ação não pode ser desfeita",
+    "qualifications.forms.delete.confirm.warning_description":
+      "A eliminação desta qualificação irá removê-la permanentemente do sistema. Todos os dados associados serão perdidos.",
+    "qualifications.forms.delete.confirmation_prompt":
+      'Digite "{{name}}" para confirmar a eliminação:',
+    "qualifications.forms.delete.confirmation_mismatch":
+      "O nome da qualificação não corresponde. Por favor, digite o nome exato da qualificação para confirmar a eliminação.",
+    "qualifications.forms.delete.confirmation_help":
+      "Esta confirmação ajuda a evitar eliminações acidentais",
+    "qualifications.forms.delete.deleting": "A eliminar...",
+    "qualifications.forms.delete.submit": "Eliminar Qualificação",
+    "qualifications.forms.delete.success":
+      "A Qualificação foi eliminada com sucesso.",
+    "qualifications.forms.delete.cancel": "Cancelar",
 
-// EditQualificationForm
-"qualifications.forms.edit.title": "Editar Qualificação",
-"qualifications.forms.edit.description": "Pesquisar uma qualificação por código e modificar as suas informações",
-"qualifications.forms.edit.code.label": "Código da Qualificação",
-"qualifications.forms.edit.code.placeholder": "Insira o código da qualificação (ex.: Q-001)",
-"qualifications.forms.edit.code.help": "Insira o código único da qualificação que pretende editar",
-"qualifications.forms.edit.search_button": "Pesquisar Qualificação",
-"qualifications.forms.edit.error.required": "O código da qualificação é obrigatório",
-"qualifications.forms.edit.search_error.not_found": "Qualificação não encontrada",
-"qualifications.forms.edit.search_error.not_found_with_code": "Qualificação não encontrada com o código fornecido",
-"qualifications.forms.edit.search_error.failed": "Falha ao obter qualificação. Por favor, tente novamente.",
-"qualifications.forms.edit.search_success_message": "Qualificação encontrada",
-"qualifications.forms.edit.editing_header": "A editar qualificação: ",
-"qualifications.forms.edit.search_different": "Pesquisar qualificação diferente",
-"qualifications.forms.edit.code_readonly_help": "O código não pode ser alterado",
-"qualifications.forms.edit.name.label": "Nome da Qualificação",
-"qualifications.forms.edit.name.help": "Nome/descrição da qualificação",
-"qualifications.forms.edit.error.name_required": "O nome da qualificação é obrigatório",
-"qualifications.forms.edit.update_button": "Atualizar Qualificação",
-"qualifications.forms.edit.updating": "A atualizar...",
-"qualifications.forms.edit.update_success": "Qualificação atualizada com sucesso!",
-"qualifications.forms.edit.update_error": "Falha ao atualizar qualificação",
-"qualifications.forms.edit.cancel": "Cancelar",
+    // EditQualificationForm
+    "qualifications.forms.edit.title": "Editar Qualificação",
+    "qualifications.forms.edit.description":
+      "Pesquisar uma qualificação por código e modificar as suas informações",
+    "qualifications.forms.edit.code.label": "Código da Qualificação",
+    "qualifications.forms.edit.code.placeholder":
+      "Insira o código da qualificação (ex.: Q-001)",
+    "qualifications.forms.edit.code.help":
+      "Insira o código único da qualificação que pretende editar",
+    "qualifications.forms.edit.search_button": "Pesquisar Qualificação",
+    "qualifications.forms.edit.error.required":
+      "O código da qualificação é obrigatório",
+    "qualifications.forms.edit.search_error.not_found":
+      "Qualificação não encontrada",
+    "qualifications.forms.edit.search_error.not_found_with_code":
+      "Qualificação não encontrada com o código fornecido",
+    "qualifications.forms.edit.search_error.failed":
+      "Falha ao obter qualificação. Por favor, tente novamente.",
+    "qualifications.forms.edit.search_success_message":
+      "Qualificação encontrada",
+    "qualifications.forms.edit.editing_header": "A editar qualificação: ",
+    "qualifications.forms.edit.search_different":
+      "Pesquisar qualificação diferente",
+    "qualifications.forms.edit.code_readonly_help":
+      "O código não pode ser alterado",
+    "qualifications.forms.edit.name.label": "Nome da Qualificação",
+    "qualifications.forms.edit.name.help": "Nome/descrição da qualificação",
+    "qualifications.forms.edit.error.name_required":
+      "O nome da qualificação é obrigatório",
+    "qualifications.forms.edit.update_button": "Atualizar Qualificação",
+    "qualifications.forms.edit.updating": "A atualizar...",
+    "qualifications.forms.edit.update_success":
+      "Qualificação atualizada com sucesso!",
+    "qualifications.forms.edit.update_error": "Falha ao atualizar qualificação",
+    "qualifications.forms.edit.cancel": "Cancelar",
 
-// GetQualificationByCodeForm
-"qualifications.forms.get_by_code.title": "Obter Qualificação por Código",
-"qualifications.forms.get_by_code.description": "Obter informações detalhadas sobre uma qualificação específica usando o seu código único",
-"qualifications.forms.get_by_code.error.required": "O código da qualificação é obrigatório",
-"qualifications.forms.get_by_code.id.label": "Código da Qualificação",
-"qualifications.forms.get_by_code.id.placeholder": "Insira o código da qualificação (ex.: Q-001)",
-"qualifications.forms.get_by_code.id.help": "Deve ser um código válido",
-"qualifications.forms.get_by_code.submit": "Obter Qualificação",
-"qualifications.forms.get_by_code.success": "Qualificação encontrada",
-"qualifications.forms.get_by_code.not_found": "Qualificação não encontrada",
-"qualifications.forms.get_by_code.not_found_with_code": "Qualificação não encontrada",
-"qualifications.forms.get_by_code.error.failed": "Falha ao obter qualificação. Por favor, tente novamente.",
-"qualifications.forms.get_by_code.results.details_title": "Detalhes da Qualificação",
-"qualifications.forms.get_by_code.results.code_label": "Código",
-"qualifications.forms.get_by_code.results.name_label": "Nome",
-"qualifications.forms.get_by_code.results.code_prefix": "Código: ",
+    // GetQualificationByCodeForm
+    "qualifications.forms.get_by_code.title": "Obter Qualificação por Código",
+    "qualifications.forms.get_by_code.description":
+      "Obter informações detalhadas sobre uma qualificação específica usando o seu código único",
+    "qualifications.forms.get_by_code.error.required":
+      "O código da qualificação é obrigatório",
+    "qualifications.forms.get_by_code.id.label": "Código da Qualificação",
+    "qualifications.forms.get_by_code.id.placeholder":
+      "Insira o código da qualificação (ex.: Q-001)",
+    "qualifications.forms.get_by_code.id.help": "Deve ser um código válido",
+    "qualifications.forms.get_by_code.submit": "Obter Qualificação",
+    "qualifications.forms.get_by_code.success": "Qualificação encontrada",
+    "qualifications.forms.get_by_code.not_found": "Qualificação não encontrada",
+    "qualifications.forms.get_by_code.not_found_with_code":
+      "Qualificação não encontrada",
+    "qualifications.forms.get_by_code.error.failed":
+      "Falha ao obter qualificação. Por favor, tente novamente.",
+    "qualifications.forms.get_by_code.results.details_title":
+      "Detalhes da Qualificação",
+    "qualifications.forms.get_by_code.results.code_label": "Código",
+    "qualifications.forms.get_by_code.results.name_label": "Nome",
+    "qualifications.forms.get_by_code.results.code_prefix": "Código: ",
 
-// RegisterQualificationForm
-"qualifications.forms.register.title": "Registar Qualificação",
-"qualifications.forms.register.description": "Criar uma nova qualificação com código e nome",
-"qualifications.forms.register.code.label": "Código da Qualificação",
-"qualifications.forms.register.code.placeholder": "ex.: Q-001",
-"qualifications.forms.register.code.help": "Código único para identificar esta qualificação",
-"qualifications.forms.register.name.label": "Nome da Qualificação",
-"qualifications.forms.register.name.placeholder": "ex.: Operador de Empilhadeira",
-"qualifications.forms.register.name.help": "Nome/descrição da qualificação",
-"qualifications.forms.register.submit": "Registar Qualificação",
-"qualifications.forms.register.registering": "A registar...",
-"qualifications.forms.register.error.code_required": "O código da qualificação é obrigatório",
-"qualifications.forms.register.error.name_required": "O nome da qualificação é obrigatório",
-"qualifications.forms.register.error.failed_generic": "Falha ao registar qualificação",
-"qualifications.forms.register.error.code_exists": "Qualificação com este código já existe.",
-"qualifications.forms.register.success": "Qualificação registada com sucesso!",
+    // RegisterQualificationForm
+    "qualifications.forms.register.title": "Registar Qualificação",
+    "qualifications.forms.register.description":
+      "Criar uma nova qualificação com código e nome",
+    "qualifications.forms.register.code.label": "Código da Qualificação",
+    "qualifications.forms.register.code.placeholder": "ex.: Q-001",
+    "qualifications.forms.register.code.help":
+      "Código único para identificar esta qualificação",
+    "qualifications.forms.register.name.label": "Nome da Qualificação",
+    "qualifications.forms.register.name.placeholder":
+      "ex.: Operador de Empilhadeira",
+    "qualifications.forms.register.name.help": "Nome/descrição da qualificação",
+    "qualifications.forms.register.submit": "Registar Qualificação",
+    "qualifications.forms.register.registering": "A registar...",
+    "qualifications.forms.register.error.code_required":
+      "O código da qualificação é obrigatório",
+    "qualifications.forms.register.error.name_required":
+      "O nome da qualificação é obrigatório",
+    "qualifications.forms.register.error.failed_generic":
+      "Falha ao registar qualificação",
+    "qualifications.forms.register.error.code_exists":
+      "Qualificação com este código já existe.",
+    "qualifications.forms.register.success":
+      "Qualificação registada com sucesso!",
+
+    // ActivateDeactivateRepresentativeForm
+    "representatives.forms.manage_status.title":
+      "Ativar/Desativar Representante",
+    "representatives.forms.manage_status.description":
+      "Insira um ID de representante para ativá-lo ou desativá-lo.",
+    "representatives.forms.manage_status.id.label": "ID do Representante",
+    "representatives.forms.manage_status.id.placeholder":
+      "Insira o ID do representante (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.manage_status.search_button":
+      "Pesquisar Representante",
+    "representatives.forms.manage_status.search_error.required":
+      "O ID do Representante é obrigatório",
+    "representatives.forms.manage_status.search_error.not_found":
+      "Representante não encontrado.",
+    "representatives.forms.manage_status.confirm.header_label": "Representante",
+    "representatives.forms.manage_status.confirm.status_label": "Estado",
+    "representatives.forms.manage_status.confirm.status_active": "Ativo",
+    "representatives.forms.manage_status.confirm.status_inactive": "Inativo",
+    "representatives.forms.manage_status.confirm.question_deactivate":
+      "Tem certeza de que deseja desativar este representante?",
+    "representatives.forms.manage_status.confirm.question_activate":
+      "Tem certeza de que deseja ativar este representante?",
+    "representatives.forms.manage_status.confirm.button_deactivate":
+      "Desativar Representante",
+    "representatives.forms.manage_status.confirm.button_activate":
+      "Ativar Representante",
+    "representatives.forms.manage_status.confirm.no_rep_loaded":
+      "Nenhum representante carregado.",
+    "representatives.forms.manage_status.processing": "A processar...",
+    "representatives.forms.manage_status.operation_failed":
+      "A operação falhou.",
+    "representatives.forms.manage_status.success.deactivated":
+      "Representante desativado com sucesso.",
+    "representatives.forms.manage_status.success.activated":
+      "Representante ativado com sucesso.",
+    "representatives.forms.manage_status.cancel": "Cancelar",
+
+    // GetRepresentativeByIdForm
+    "representatives.forms.get_by_id.title": "Obter Representante por ID",
+    "representatives.forms.get_by_id.description":
+      "Obter informações detalhadas sobre um representante específico usando o seu identificador único",
+    "representatives.forms.get_by_id.error.required":
+      "O ID do Representante é obrigatório",
+    "representatives.forms.get_by_id.error.format":
+      "Formato GUID inválido. Por favor, insira um ID de representante válido (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.get_by_id.id.label": "ID do Representante",
+    "representatives.forms.get_by_id.id.placeholder":
+      "Insira o ID do representante (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.get_by_id.id.help":
+      "Deve ser um formato GUID válido",
+    "representatives.forms.get_by_id.submit": "Obter Representante",
+    "representatives.forms.get_by_id.success":
+      "Representante encontrado com sucesso",
+    "representatives.forms.get_by_id.not_found": "Representante não encontrado",
+    "representatives.forms.get_by_id.error.not_found_with_id":
+      "Representante não encontrado com o ID fornecido",
+    "representatives.forms.get_by_id.error.failed":
+      "Falha ao obter representante. Por favor, tente novamente.",
+    "representatives.forms.get_by_id.results.details_title":
+      "Detalhes do Representante",
+    "representatives.forms.get_by_id.results.id_prefix": "ID: ",
+    "representatives.forms.get_by_id.results.status_active": "Ativo",
+    "representatives.forms.get_by_id.results.status_inactive": "Inativo",
+    "representatives.forms.get_by_id.results.organization_none": "N/D",
+
+    // RegisterRepresentativeForm
+    "representatives.forms.register.title": "Registar Representante",
+    "representatives.forms.register.description":
+      "Criar um novo representante. Todos os campos são obrigatórios.",
+    "representatives.forms.register.organization.label": "Organização",
+    "representatives.forms.register.organization.select_placeholder":
+      "Selecionar organização...",
+    "representatives.forms.register.organization.help":
+      "Escolha a organização para atribuir este representante",
+    "representatives.forms.register.name.label": "Nome",
+    "representatives.forms.register.name.placeholder": "ex.: João Silva",
+    "representatives.forms.register.name.help":
+      "Nome completo do representante",
+    "representatives.forms.register.citizenId.label": "CC/ID Civil",
+    "representatives.forms.register.citizenId.placeholder": "ex.: 123456789",
+    "representatives.forms.register.citizenId.help":
+      "Número único de identificação civil",
+    "representatives.forms.register.nationality.label": "Nacionalidade",
+    "representatives.forms.register.nationality.placeholder": "ex.: PRT",
+    "representatives.forms.register.nationality.help":
+      "Código de país ISO de 2 ou 3 letras",
+    "representatives.forms.register.email.label": "Email",
+    "representatives.forms.register.email.placeholder":
+      "ex.: joao.silva@email.com",
+    "representatives.forms.register.email.help": "Endereço de email válido",
+    "representatives.forms.register.phone.label": "Telefone",
+    "representatives.forms.register.phone.placeholder": "ex.: +351912345678",
+    "representatives.forms.register.phone.help":
+      "Número de telefone em formato E.164",
+    "representatives.forms.register.submit": "Registar Representante",
+    "representatives.forms.register.registering": "A registar...",
+    "representatives.forms.register.clear": "Limpar Formulário",
+    "representatives.forms.register.error.required.organization":
+      "Por favor, selecione uma organização.",
+    "representatives.forms.register.error.failed":
+      "Falha ao registar representante.",
+    "representatives.forms.register.success":
+      "Representante registado com sucesso!",
+
+    // EditRepresentativeForm
+    "representatives.forms.edit.title": "Editar Representante",
+    "representatives.forms.edit.description":
+      "Pesquisar um representante por ID e, em seguida, editar os seus detalhes.",
+    "representatives.forms.edit.search_error.required":
+      "O ID do Representante é obrigatório",
+    "representatives.forms.edit.search_error.format":
+      "Formato GUID inválido. Por favor, insira um ID de representante válido (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.edit.search_button": "Pesquisar",
+    "representatives.forms.edit.id.label": "ID do Representante",
+    "representatives.forms.edit.id.placeholder":
+      "Insira o ID do representante (ex.: 12345678-1234-1234-1234-123456789abc)",
+    "representatives.forms.edit.id.help": "Deve ser um formato GUID válido",
+    "representatives.forms.edit.search_success":
+      "Representante encontrado. Pode agora editar.",
+    "representatives.forms.edit.search_error.not_found":
+      "Representante não encontrado",
+    "representatives.forms.edit.search_error.not_found_with_id":
+      "Representante não encontrado com o ID fornecido",
+    "representatives.forms.edit.search_error.failed":
+      "Falha ao obter representante. Por favor, tente novamente.",
+    "representatives.forms.edit.nationality.label": "Nacionalidade",
+    "representatives.forms.edit.email.label": "Email",
+    "representatives.forms.edit.phone.label": "Telefone",
+    "representatives.forms.edit.update_button": "Atualizar Representante",
+    "representatives.forms.edit.updating": "A atualizar...",
+    "representatives.forms.edit.update_success":
+      "Representante atualizado com sucesso!",
+    "representatives.forms.edit.update_error":
+      "Falha ao atualizar representante.",
+    "representatives.forms.edit.clear": "Limpar",
+    "representatives.forms.edit.cancel": "Cancelar",
+    "representatives.forms.edit.loading": "A carregar...",
   },
 };
 

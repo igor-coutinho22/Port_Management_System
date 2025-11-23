@@ -2,6 +2,7 @@
 console.log('EditRepresentativeForm is loading...');
 
 const EditRepresentativeForm = ({ onSuccess }) => {
+    const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({ id: '' });
     const [formData, setFormData] = React.useState({
         nationality: '',
@@ -36,11 +37,11 @@ const EditRepresentativeForm = ({ onSuccess }) => {
     const handleSearch = async (e) => {
         e.preventDefault();
         if (!searchData.id.trim()) {
-            setMessage({ type: 'error', text: 'Representative ID is required' });
+            setMessage({ type: 'error', text: t('representatives.forms.edit.search_error.required') });
             return;
         }
         if (!isValidGuid(searchData.id.trim())) {
-            setMessage({ type: 'error', text: 'Invalid GUID format. Please enter a valid representative ID (e.g., 12345678-1234-1234-1234-123456789abc)' });
+            setMessage({ type: 'error', text: t('representatives.forms.edit.search_error.format') });
             return;
         }
         setIsLoading(true);
@@ -58,17 +59,17 @@ const EditRepresentativeForm = ({ onSuccess }) => {
                 });
                 setStep('edit');
                 setHasSearched(true);
-                setMessage({ type: 'success', text: 'Representative found. You can now edit.' });
+                setMessage({ type: 'success', text: t('representatives.forms.edit.search_success') });
             } else {
                 setRepresentative(null);
                 setHasSearched(true);
-                setMessage({ type: 'info', text: 'Representative not found' });
+                setMessage({ type: 'info', text: t('representatives.forms.edit.search_error.not_found') });
             }
         } catch (error) {
             if (error.message.includes('404')) {
-                setMessage({ type: 'info', text: 'Representative not found with the provided ID' });
+                setMessage({ type: 'info', text: t('representatives.forms.edit.search_error.not_found_with_id') });
             } else {
-                setMessage({ type: 'error', text: error.message || 'Failed to fetch representative. Please try again.' });
+                setMessage({ type: 'error', text: error.message || t('representatives.forms.edit.search_error.failed') });
             }
             setRepresentative(null);
             setHasSearched(true);
@@ -83,10 +84,10 @@ const EditRepresentativeForm = ({ onSuccess }) => {
         setMessage({ type: '', text: '' });
         try {
             await apiService.updateRepresentative(searchData.id.trim(), formData);
-            setMessage({ type: 'success', text: 'Representative updated successfully!' });
+            setMessage({ type: 'success', text: t('representatives.forms.edit.update_success') });
             if (onSuccess) onSuccess();
         } catch (error) {
-            setMessage({ type: 'error', text: error.message || 'Failed to update representative.' });
+            setMessage({ type: 'error', text: error.message || t('representatives.forms.edit.update_error') });
         } finally {
             setIsUpdating(false);
         }
@@ -104,8 +105,8 @@ const EditRepresentativeForm = ({ onSuccess }) => {
     return (
         <div className="form-container">
             <div className="form-header">
-                <h4>Edit Representative</h4>
-                <p>Search for a representative by ID, then edit their details.</p>
+                <h4>{t('representatives.forms.edit.title')}</h4>
+                <p>{t('representatives.forms.edit.description')}</p>
             </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
@@ -114,25 +115,25 @@ const EditRepresentativeForm = ({ onSuccess }) => {
                 <form onSubmit={handleSearch} className="search-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="searchId">Representative ID</label>
+                            <label htmlFor="searchId">{t('representatives.forms.edit.id.label')}</label>
                             <input
                                 type="text"
                                 id="searchId"
                                 name="id"
                                 value={searchData.id}
                                 onChange={handleSearchInputChange}
-                                placeholder="Enter representative ID (e.g., 12345678-1234-1234-1234-123456789abc)"
+                                placeholder={t('representatives.forms.edit.id.placeholder')}
                                 className="form-input"
                             />
-                            <small className="form-help">Must be a valid GUID format</small>
+                            <small className="form-help">{t('representatives.forms.edit.id.help')}</small>
                         </div>
                     </div>
                     <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={isLoading}>
-                            {isLoading ? (<><span className="loading-spinner"></span>Loading...</>) : (<><span>✏️</span>Search</>)}
+                            {isLoading ? (<><span className="loading-spinner"></span>{t('representatives.forms.edit.loading')}</>) : (<><span>✏️</span>{t('representatives.forms.edit.search_button')}</>)}
                         </button>
                         <button type="button" className="clear-btn" onClick={handleClear} disabled={isLoading}>
-                            <span>🔄</span>Clear
+                            <span>🔄</span>{t('representatives.forms.edit.clear')}
                         </button>
                     </div>
                 </form>
@@ -141,7 +142,7 @@ const EditRepresentativeForm = ({ onSuccess }) => {
                 <form onSubmit={handleUpdate} className="edit-form">
                     <div className="form-grid">
                         <div className="form-group">
-                            <label>Nationality</label>
+                            <label>{t('representatives.forms.edit.nationality.label')}</label>
                             <input
                                 name="nationality"
                                 value={formData.nationality}
@@ -152,7 +153,7 @@ const EditRepresentativeForm = ({ onSuccess }) => {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Email</label>
+                            <label>{t('representatives.forms.edit.email.label')}</label>
                             <input
                                 name="email"
                                 type="email"
@@ -164,7 +165,7 @@ const EditRepresentativeForm = ({ onSuccess }) => {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Phone</label>
+                            <label>{t('representatives.forms.edit.phone.label')}</label>
                             <input
                                 name="phone"
                                 value={formData.phone}
@@ -177,10 +178,10 @@ const EditRepresentativeForm = ({ onSuccess }) => {
                     </div>
                     <div className="form-actions">
                         <button type="submit" className="submit-btn" disabled={isUpdating}>
-                            {isUpdating ? (<><span className="loading-spinner"></span>Updating...</>) : (<><span>💾</span>Update Representative</>)}
+                            {isUpdating ? (<><span className="loading-spinner"></span>{t('representatives.forms.edit.updating')}</>) : (<><span>💾</span>{t('representatives.forms.edit.update_button')}</>)}
                         </button>
                         <button type="button" className="clear-btn" onClick={handleClear} disabled={isUpdating}>
-                            <span>🔄</span>Clear
+                            <span>🔄</span>{t('representatives.forms.edit.clear')}
                         </button>
                     </div>
                 </form>
