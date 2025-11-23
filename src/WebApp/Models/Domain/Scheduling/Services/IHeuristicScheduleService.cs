@@ -1,19 +1,10 @@
-using System.Collections.Generic;
-using WebApp.Models.Domain.Vessels;
-namespace WebApp.Models.Domain.Scheduling.Interfaces
+using WebApp.Models.Domain.Scheduling;
+
+namespace WebApp.Models.Domain.Scheduling.Services;
+public interface IHeuristicScheduleService
 {
-    /// <summary>
-    /// Defines the contract for the heuristic scheduling algorithm service.
-    /// Implements the functionality required by User Story 3.4.4.
-    /// </summary>
-    public interface IHeuristicScheduleService
-    {
-        /// <summary>
-        /// Generates a vessel schedule using a heuristic Prolog algorithm.
-        /// Produces a good, efficient solution for load/unload sequencing.
-        /// </summary>
-        /// <param name="vessels">The list of vessel entities for the given day.</param>
-        /// <returns>A scheduling result with the computed sequence, delay, and runtime.</returns>
-        SchedulingResult ComputeSchedule(IEnumerable<Vessel> vessels);
-    }
+    Task<SchedulingResult> GenerateDailyScheduleAsync(
+        DateOnly targetDate,
+        string heuristicName,
+        CancellationToken cancellationToken = default);
 }
