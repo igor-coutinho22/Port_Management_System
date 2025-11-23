@@ -206,16 +206,22 @@ class PortVisualization {
     // -----------------------------------------------------------------------------
     // LOAD PORT DATA
     // -----------------------------------------------------------------------------
+
     async loadPortData() {
         console.log("PortVisualization: loadPortData called");
         this.clearScene();
         this.addWaterPlane();
 
         try {
-            const raw = await this.dataFetcher.loadAll();
-            console.log("PortVisualization: Data fetched", raw);
+            const data = await this.dataFetcher.loadAll();
+            console.log("PortVisualization: Data fetched", data);
 
-            const layout = this.layoutEngine.computeLayout(raw);
+            // Initialize textures
+            if (data.textureConfig) {
+                this.geometryBuilder.loadTextures(data.textureConfig);
+            }
+
+            const layout = this.layoutEngine.computeLayout(data);
             console.log("PortVisualization: Layout computed", layout);
 
             this.buildDocks(layout.docks);

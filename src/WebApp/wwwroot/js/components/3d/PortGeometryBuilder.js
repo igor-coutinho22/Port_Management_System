@@ -1,33 +1,64 @@
 class PortGeometryBuilder {
 
     constructor() {
-        // Materials - mixing new style with some placeholder colors
+        // Default materials (fallback)
         this.materials = {
-            dock: new THREE.MeshPhongMaterial({ color: 0x8B4513 }), // Brown like placeholder
-            dockSide: new THREE.MeshPhongMaterial({ color: 0x5D4037 }),
-
-            yardSurface: new THREE.MeshPhongMaterial({ color: 0x666666 }), // Grey like placeholder
+            dock: new THREE.MeshStandardMaterial({ color: 0x888888 }),
+            dockSide: new THREE.MeshStandardMaterial({ color: 0x666666 }),
+            yardSurface: new THREE.MeshStandardMaterial({ color: 0x555555 }),
             container: [
-                new THREE.MeshPhongMaterial({ color: 0xFF0000 }),
-                new THREE.MeshPhongMaterial({ color: 0x00FF00 }),
-                new THREE.MeshPhongMaterial({ color: 0x0000FF }),
-                new THREE.MeshPhongMaterial({ color: 0xFFFF00 })
+                new THREE.MeshStandardMaterial({ color: 0xAA0000 }),
+                new THREE.MeshStandardMaterial({ color: 0x00AA00 }),
+                new THREE.MeshStandardMaterial({ color: 0x0000AA }),
+                new THREE.MeshStandardMaterial({ color: 0xAAAA00 })
             ],
-
-            warehouseWall: new THREE.MeshPhongMaterial({ color: 0x888888 }), // Grey walls
-            warehouseRoof: new THREE.MeshPhongMaterial({ color: 0x8B0000 }), // Red roof like placeholder
-
-            craneBody: new THREE.MeshPhongMaterial({ color: 0xFFD700 }),
-            vehicleBody: new THREE.MeshPhongMaterial({ color: 0x607D8B }),
-
-            vesselHull: new THREE.MeshPhongMaterial({ color: 0x333333 }),
-            vesselBridge: new THREE.MeshPhongMaterial({ color: 0xEEEEEE }),
-
-            staffBody: new THREE.MeshPhongMaterial({ color: 0xFFA500 }) // Orange for staff
+            warehouseWall: new THREE.MeshStandardMaterial({ color: 0x999999 }),
+            warehouseRoof: new THREE.MeshStandardMaterial({ color: 0x8B0000 }),
+            craneBody: new THREE.MeshStandardMaterial({ color: 0xFFD700 }),
+            vehicleBody: new THREE.MeshStandardMaterial({ color: 0x607D8B }),
+            vesselHull: new THREE.MeshStandardMaterial({ color: 0x333333 }),
+            vesselBridge: new THREE.MeshStandardMaterial({ color: 0xEEEEEE }),
+            staffBody: new THREE.MeshStandardMaterial({ color: 0xFFA500 })
         };
+
+        this.textureLoader = new THREE.TextureLoader();
     }
 
-    // ... (existing methods)
+    loadTextures(config) {
+        if (!config || !config.materials) return;
+
+        const loadMat = (matName, targetMat) => {
+            const conf = config.materials[matName];
+            if (!conf) return;
+
+            if (conf.colorMap) {
+                this.textureLoader.load(conf.colorMap, (tex) => {
+                    tex.wrapS = THREE.RepeatWrapping;
+                    tex.wrapT = THREE.RepeatWrapping;
+                    targetMat.map = tex;
+                    targetMat.needsUpdate = true;
+                });
+            }
+            if (conf.normalMap) {
+                this.textureLoader.load(conf.normalMap, (tex) => {
+                    tex.wrapS = THREE.RepeatWrapping;
+                    tex.wrapT = THREE.RepeatWrapping;
+                    targetMat.normalMap = tex;
+                    targetMat.needsUpdate = true;
+                });
+            }
+            if (conf.roughness !== undefined) targetMat.roughness = conf.roughness;
+            if (conf.metalness !== undefined) targetMat.metalness = conf.metalness;
+        };
+
+        // Apply to specific materials
+        loadMat("concrete", this.materials.dock);
+        loadMat("concrete", this.materials.yardSurface);
+        loadMat("metal", this.materials.vesselHull);
+        loadMat("metal", this.materials.craneBody);
+        loadMat("container", this.materials.container[0]); // Apply to first container type for now
+        // We could clone materials for other container colors but keep the texture
+    }
 
     // -----------------------------------------------------------------------------
     // VESSEL GEOMETRY
@@ -40,6 +71,9 @@ class PortGeometryBuilder {
         // Hull
         const hullHeight = height * 0.7;
         const hullGeo = new THREE.BoxGeometry(length, hullHeight, width);
+        // Adjust UVs for tiling
+        this.adjustUVs(hullGeo, length, hullHeight, width);
+
         const hull = new THREE.Mesh(hullGeo, this.materials.vesselHull);
         hull.position.y = hullHeight / 2;
         hull.castShadow = true;
@@ -51,6 +85,8 @@ class PortGeometryBuilder {
         const bridgeHeight = height * 0.5;
         const bridgeWidth = width * 0.8;
         const bridgeGeo = new THREE.BoxGeometry(bridgeLength, bridgeHeight, bridgeWidth);
+        this.adjustUVs(bridgeGeo, bridgeLength, bridgeHeight, bridgeWidth);
+
         const bridge = new THREE.Mesh(bridgeGeo, this.materials.vesselBridge);
         bridge.position.set(-length / 2 + bridgeLength, hullHeight + bridgeHeight / 2, 0); // Stern
         bridge.castShadow = true;
@@ -64,13 +100,7 @@ class PortGeometryBuilder {
     // STAFF GEOMETRY
     // -----------------------------------------------------------------------------
     createStaff(staff) {
-        // Simple capsule/cylinder for human
-        const height = 10; // 1.8m scaled? No, scale is 1.0, so 10 units is tall. 
-        // Wait, dock height is 10. So staff should be smaller, maybe 2-3 units?
-        // But previous conversation said scale is 1.0. If dock is 10 units high, that's 10 meters?
-        // If so, human is ~2 units.
-        // Let's make them visible: 5 units high.
-
+        const height = 10;
         const radius = 1.5;
         const h = 5;
 
@@ -84,18 +114,15 @@ class PortGeometryBuilder {
     }
 
     // -----------------------------------------------------------------------------
-    // LABEL CREATION (CanvasTexture)
-    // -----------------------------------------------------------------------------
-
-    // -----------------------------------------------------------------------------
     // DOCK GEOMETRY
     // -----------------------------------------------------------------------------
     createDock(dock) {
-        const { width, height, depth } = dock; // Note: width is length along X, depth is width along Z
+        const { width, height, depth } = dock;
 
         const geometry = new THREE.BoxGeometry(width, height, depth);
-        const mesh = new THREE.Mesh(geometry, this.materials.dock);
+        this.adjustUVs(geometry, width, height, depth);
 
+        const mesh = new THREE.Mesh(geometry, this.materials.dock);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
 
@@ -112,11 +139,13 @@ class PortGeometryBuilder {
 
         // Ground
         const groundGeo = new THREE.BoxGeometry(width, height, depth);
+        this.adjustUVs(groundGeo, width, height, depth);
+
         const ground = new THREE.Mesh(groundGeo, this.materials.yardSurface);
         ground.receiveShadow = true;
         group.add(ground);
 
-        // Add some random containers on top to make it look alive
+        // Add some random containers
         this.addDecorContainers(group, width, depth, height);
 
         return group;
@@ -124,15 +153,16 @@ class PortGeometryBuilder {
 
     addDecorContainers(group, areaWidth, areaDepth, groundHeight) {
         const containerSize = 5;
-        const numContainers = Math.floor((areaWidth * areaDepth) / 500); // Density
+        const numContainers = Math.floor((areaWidth * areaDepth) / 500);
 
         const geo = new THREE.BoxGeometry(containerSize, containerSize, containerSize * 2);
+        // UVs for container
+        this.adjustUVs(geo, containerSize, containerSize, containerSize * 2, 0.2); // Smaller scale
 
         for (let i = 0; i < numContainers; i++) {
             const mat = this.materials.container[Math.floor(Math.random() * this.materials.container.length)];
             const mesh = new THREE.Mesh(geo, mat);
 
-            // Random position within area
             const x = (Math.random() - 0.5) * (areaWidth - 10);
             const z = (Math.random() - 0.5) * (areaDepth - 10);
 
@@ -152,19 +182,14 @@ class PortGeometryBuilder {
 
         // Walls
         const wallGeo = new THREE.BoxGeometry(width, height, depth);
+        this.adjustUVs(wallGeo, width, height, depth);
+
         const walls = new THREE.Mesh(wallGeo, this.materials.warehouseWall);
         walls.castShadow = true;
         walls.receiveShadow = true;
         group.add(walls);
 
         // Roof
-        const roofHeight = 5;
-        const roofGeo = new THREE.ConeGeometry(Math.max(width, depth) * 0.8, roofHeight, 4);
-        const roof = new THREE.Mesh(roofGeo, this.materials.warehouseRoof);
-
-        // Rotate roof to align with building (pyramid style or prism)
-        // For simplicity, let's use a prism (Box) or just a flat top with color
-        // Reverting to simple box roof for stability
         const flatRoofGeo = new THREE.BoxGeometry(width + 2, 2, depth + 2);
         const flatRoof = new THREE.Mesh(flatRoofGeo, this.materials.warehouseRoof);
         flatRoof.position.y = height / 2 + 1;
@@ -175,25 +200,53 @@ class PortGeometryBuilder {
     }
 
     // -----------------------------------------------------------------------------
-    // RESOURCES (Cranes, trucks, etc.)
+    // RESOURCES
+    // -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // RESOURCES
     // -----------------------------------------------------------------------------
     createResource(resource) {
         const { radius, height, type } = resource;
+        const isCrane = (type || "").toLowerCase().includes("crane") || (resource.resourceType === 0) || (resource.resourceType === 1);
 
-        const isCrane = (type || "").toLowerCase().includes("crane");
+        if (isCrane) {
+            const group = new THREE.Group();
 
-        const geo = new THREE.CylinderGeometry(radius, radius, height, 16);
-        const mat = isCrane ? this.materials.craneBody : this.materials.vehicleBody;
+            // Vertical mast
+            const mastGeo = new THREE.BoxGeometry(radius * 2, height, radius * 2);
+            this.adjustUVs(mastGeo, radius * 2, height, radius * 2);
+            const mast = new THREE.Mesh(mastGeo, this.materials.craneBody);
+            mast.position.y = height / 2;
+            mast.castShadow = true;
+            mast.receiveShadow = true;
+            group.add(mast);
 
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
+            // Horizontal boom (arm)
+            const boomLength = height * 0.8;
+            const boomGeo = new THREE.BoxGeometry(boomLength, radius * 1.5, radius * 1.5);
+            this.adjustUVs(boomGeo, boomLength, radius * 1.5, radius * 1.5);
+            const boom = new THREE.Mesh(boomGeo, this.materials.craneBody);
+            boom.position.set(boomLength / 2 - radius, height - radius, 0);
+            boom.castShadow = true;
+            boom.receiveShadow = true;
+            group.add(boom);
 
-        return mesh;
+            return group;
+        } else {
+            // Simple cylinder for other vehicles
+            const geo = new THREE.CylinderGeometry(radius, radius, height, 16);
+            const mat = this.materials.vehicleBody;
+
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            return mesh;
+        }
     }
 
     // -----------------------------------------------------------------------------
-    // LABEL CREATION (CanvasTexture)
+    // UTILS
     // -----------------------------------------------------------------------------
     createLabel(text) {
         const canvas = document.createElement("canvas");
@@ -201,11 +254,9 @@ class PortGeometryBuilder {
         canvas.height = 64;
 
         const ctx = canvas.getContext("2d");
-        // Background
         ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Text
         ctx.fillStyle = "white";
         ctx.font = "bold 24px Arial";
         ctx.textAlign = "center";
@@ -220,7 +271,37 @@ class PortGeometryBuilder {
 
         return sprite;
     }
+
+    adjustUVs(geometry, width, height, depth, scale = 0.05) {
+        const pos = geometry.attributes.position;
+        const norm = geometry.attributes.normal;
+        const uv = geometry.attributes.uv;
+
+        if (!pos || !norm || !uv) return;
+
+        for (let i = 0; i < pos.count; i++) {
+            const x = pos.getX(i);
+            const y = pos.getY(i);
+            const z = pos.getZ(i);
+
+            const nx = Math.abs(norm.getX(i));
+            const ny = Math.abs(norm.getY(i));
+            const nz = Math.abs(norm.getZ(i));
+
+            // Determine major axis and map UVs accordingly
+            if (nx > 0.5) {
+                // Side facing X: map Z, Y
+                uv.setXY(i, z * scale, y * scale);
+            } else if (ny > 0.5) {
+                // Top/Bottom facing Y: map X, Z
+                uv.setXY(i, x * scale, z * scale);
+            } else {
+                // Side facing Z: map X, Y
+                uv.setXY(i, x * scale, y * scale);
+            }
+        }
+        uv.needsUpdate = true;
+    }
 }
 
-// GLOBAL EXPORT
 window.PortGeometryBuilder = PortGeometryBuilder;

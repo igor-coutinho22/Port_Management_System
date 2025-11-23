@@ -14,13 +14,31 @@ class PortDataFetcher {
             }
         };
 
+        const textureConfig = await safeFetch("textureConfig", () => this.fetchTextureConfig());
         const docks = await safeFetch("docks", () => this.fetchDocks());
         const storageAreas = await safeFetch("storageAreas", () => this.fetchStorageAreas());
         const resources = await safeFetch("resources", () => this.fetchResources());
-        const vessels = await safeFetch("vessels", () => this.fetchVessels());
+
+        // Fetch approved visits to filter vessels
+        const approvedVisits = await safeFetch("approvedVisits", () => this.fetchApprovedVisits());
+
+        // Fetch all vessels but filter them
+        const allVessels = await safeFetch("vessels", () => this.fetchVessels());
+
+        // Filter and enrich vessels
+        const vessels = allVessels.filter(v => {
+            const visit = approvedVisits.find(visit => visit.vesselIMO === v.id);
+            if (visit) {
+                v.dockId = visit.dockId; // Attach assigned dock ID
+                return true;
+            }
+            return false;
+        });
+
         const staff = await safeFetch("staff", () => this.fetchStaff());
 
         return {
+            textureConfig,
             docks,
             storageAreas,
             resources,
@@ -28,6 +46,30 @@ class PortDataFetcher {
             staff,
             errors
         };
+    }
+
+    async fetchTextureConfig() {
+        const resp = await fetch("data/textures.json");
+        if (!resp.ok) throw new Error("Failed to fetch texture config");
+        return await resp.json();
+    }
+
+    async fetchApprovedVisits() {
+        // Fetch visits with status 'Approved' (Enum value 2 or string "Approved")
+        // And filter by TODAY's date to show currently relevant vessels
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+
+        const params = new URLSearchParams({
+            status: "Approved",
+            fromDate: startOfDay,
+            toDate: endOfDay
+        });
+
+        const resp = await fetch(`/api/vesselvisitnotification/search?${params.toString()}`, { credentials: 'include' });
+        if (!resp.ok) throw new Error("Failed to fetch approved visits");
+        return await resp.json();
     }
 
     // -------------------------------------------------------------------------
