@@ -50,75 +50,211 @@ We analyze both:
 
 ### 2.1 Common Components
 
-Two predicates are used by almost all methods:
+Two predicates are used by almost all methods.
 
-1.  `sequence_temporization/2`\
-    Runs once per vessel, computing start/end times. Complexity:
-    **O(N)**.
+#### `sequence_temporization/2`
+Input: an ordered list of vessels `[V1, V2, ..., VN]`.
 
-2.  `sum_delays/2`\
-    Computes delays across N vessels. Complexity: **O(N)**.
+It simulates processing on a **single dock**:
 
-------------------------------------------------------------------------
+- Each vessel starts at the maximum of:
+  - Its arrival time
+  - The end of the previous vessel  
+- It computes `(Start, End)` for each vessel and returns:
+
+```
+[(V1, Start1, End1), (V2, Start2, End2), ...]
+```
+
+#### `sum_delays/2`
+For each vessel:
+
+```
+Delay = max(0, (End + 1) − Departure)
+```
+
+Total delay = sum of all vessel delays.
+
+---
 
 ### 2.2 Exact Optimal Method: `obtain_seq_shortest_delay/2`
 
-Enumerates all N! permutations. Each permutation costs O(N) to simulate
-and score.
+**Idea:**  
+Try **all permutations** of vessels and pick the one with lowest delay.
 
-Total complexity: **O(N! · N)**.
+Steps:
 
-------------------------------------------------------------------------
+1. `findall(V, vessel(...), LV)` → list of all N vessels  
+2. `permutation(LV, SeqV)` → iterate over all N! permutations  
+3. For each permutation:
+   - simulate with `sequence_temporization/2`
+   - compute delay using `sum_delays/2`
+   - update global `shortest_delay/2` if better
 
-### 2.3 Early Arrival Time --- `heuristic_early_arrival_time/2`
+Produces a mathematically optimal solution.
 
--   Build `(Arrival, V)` list: O(N)
--   Sort: O(N log N)
--   Simulation + delay: O(N)
+---
 
-Total: **O(N log N)**.
+### 2.3 Heuristic: Early Arrival Time  
+`heuristic_early_arrival_time/2`
 
-------------------------------------------------------------------------
+**Idea:**  
+Schedule vessels in ascending order of arrival time.
 
-### 2.4 Early Departure Time --- `heuristic_early_departure_time/2`
+Steps:
+1. Build `(Arrival, V)` list  
+2. Sort  
+3. Extract vessel IDs  
+4. Run temporization  
+5. Compute delay  
 
-Sort vessels by departure time.
+---
 
-Total: **O(N log N)**.
+### 2.4 Heuristic: Early Departure Time (EDD)
+`heuristic_early_departure_time/2`
 
-------------------------------------------------------------------------
+**Idea:**  
+Order by earliest due date (desired departure time).
 
-### 2.5 Shortest Processing Time --- `heuristic_shortest_processing_time/2`
+Steps identical to early arrival, except sorting by `Departure`.
 
-Compute P = Loading + Unloading, sort by P.
+---
 
-Total: **O(N log N)**.
+### 2.5 Heuristic: Shortest Processing Time (SPT)
+`heuristic_shortest_processing_time/2`
 
-------------------------------------------------------------------------
+**Idea:**  
+Schedule vessels with smallest processing time first.
 
-### 2.6 Minimum Slack Time --- `heuristic_minimum_slack_time/2`
+Steps:
+1. Compute `P = Loading + Unloading`
+2. Build `(P, V)` list  
+3. Sort  
+4. Temporize and compute delay  
 
-Compute slack = (Departure - Arrival) - P, sort.
+---
 
-Total: **O(N log N)**.
+### 2.6 Heuristic: Minimum Slack Time
+`heuristic_minimum_slack_time/2`
 
-------------------------------------------------------------------------
+Slack is defined as:
 
-### 2.7 Arrived + Shortest Departure Time --- `heuristic_arrived_shortest_departure_time/2`
+```
+Slack = (Departure − Arrival) − ProcessingTime
+```
 
-Dynamic selection: each step scans remaining vessels.
+Heuristic:
+- Vessels with least slack are most urgent.
+- Sort by slack ascending.
 
-Total: **O(N²)**.
+---
 
-------------------------------------------------------------------------
+### 2.7 Heuristic: Arrived + Shortest Departure Time  
+`heuristic_arrived_shortest_departure_time/2`
 
-### 2.8 ATC --- `heuristic_atc/2`
+A dynamic rule:
 
-ATC computes priorities for all remaining vessels at each step.
+- Maintain a current time.
+- Among vessels **already arrived**, choose the one with the earliest departure.
+- If none have arrived, jump time to earliest arrival.
+- Update time based on that vessel’s processing time.
+- Repeat until all vessels are selected.
 
-Total: **O(N²)**.
+Uses helper predicates:
 
-------------------------------------------------------------------------
+- `select_earliest_arrived/4`
+- `earliest_arrival/2`
+
+---
+
+### 2.8 Heuristic: ATC (Apparent Tardiness Cost)
+`heuristic_atc/2`
+
+Advanced dynamic priority rule.
+
+For each vessel:
+```
+Slack = D − P − T
+PI = (1 / P) * exp(-max(0, Slack) / (K * avgP))
+```
+
+Where:
+- `T` = current time  
+- `P` = processing time  
+- `D` = desired departure  
+- `avgP` = average processing time of remaining jobs  
+- `K` = tuning parameter (typically 3.0)
+
+Steps:
+1. Identify arrived vessels  
+2. Compute ATC priority for each  
+3. Select highest-priority job  
+4. Advance time  
+5. Repeat until all are scheduled  
+
+---
+
+## 3. Computational Complexity Analysis
+
+Let **N = number of vessels**.
+
+### 3.1 Optimal Enumeration
+- Enumerates all N! permutations  
+- Each permutation requires O(N) simulation + delay computation  
+
+**Complexity:**  
+`O(N! · N)`
+
+---
+
+### 3.2 Early Arrival Time
+- Build list: O(N)
+- Sort: O(N log N)
+- Simulate: O(N)
+
+**Complexity:** `O(N log N)`
+
+---
+
+### 3.3 Early Departure Time
+Same as early arrival.
+
+**Complexity:** `O(N log N)`
+
+---
+
+### 3.4 Shortest Processing Time
+Compute processing, sort, simulate.
+
+**Complexity:** `O(N log N)`
+
+---
+
+### 3.5 Minimum Slack
+Compute slack, sort, simulate.
+
+**Complexity:** `O(N log N)`
+
+---
+
+### 3.6 Arrived + Shortest Departure
+Worst case:
+
+```
+N + (N−1) + … + 1 = N(N+1)/2
+```
+
+**Complexity:** `O(N²)`
+
+---
+
+### 3.7 ATC
+At each of N steps:
+- Evaluate priority for all remaining vessels → O(N)
+
+**Complexity:** `O(N²)`
+
+---
 
 ## 3. Complexity Summary
 
@@ -132,9 +268,79 @@ Total: **O(N²)**.
   Arrived + shortest departure   **O(N²)**
   ATC                            **O(N²)**
 
+
 ------------------------------------------------------------------------
 
-## 4. Experimental Results
+## 4. C#–Prolog Integration (HeuristicScheduleService)
+
+The `HeuristicScheduleService` is the bridge between C# and Prolog.
+
+### 4.1 Workflow
+
+```
+Fetch visits → Build Prolog facts → Build temporary .pl → Run SWI-Prolog
+→ Prolog prints sequence + delay → Parse output → Return SchedulingResult
+```
+
+### 4.2 Fetching Visits
+- Uses HttpClient with user bearer token
+- Calls `search?status=Approved&fromDate=...&toDate=...`
+- Converts response into DTO list  
+
+### 4.3 Converting Visits into Prolog Facts
+Each visit becomes:
+
+```
+vessel(v_<GUID>, ArrivalMinutes, DepartureMinutes, Loading, Unloading).
+```
+
+An ID map stores: `prologId → DTO`.
+
+### 4.4 Generating a Temporary Prolog Script
+Creates file with:
+
+```
+:- consult('heuristic_schedule.pl').
+<vessel facts>
+main :- run_heuristic(Heuristic), halt.
+```
+
+### 4.5 Running SWI-Prolog
+Executed with:
+
+```
+swipl -q -s temp.pl -g main -t halt
+```
+
+- Captures stdout/stderr  
+- Enforces timeout  
+- Deletes temp file afterward  
+
+### 4.6 Parsing Prolog Output
+1st line:  
+`[(v_abc,10,25),(v_def,30,50),...]`
+
+2nd line:  
+`TotalDelay`
+
+Regex extracts tuples and maps IDs back to DTOs.
+
+### 4.7 Returning SchedulingResult
+
+Returned object:
+
+```csharp
+new SchedulingResult {
+  HeuristicName,
+  TotalDelayMinutes,
+  RuntimeSeconds,
+  Entries
+}
+```
+
+---
+
+## 5. Experimental Results
 
 ### Dataset N = 5
 
@@ -198,7 +404,7 @@ Total: **O(N²)**.
 
 ------------------------------------------------------------------------
 
-## 5. Conclusion
+## 6. Conclusion
 
 -   **Optimal** grows factorially and becomes unusable beyond N ≈ 10.\
 -   Sorting-based heuristics (**O(N log N)**) scale best but may
@@ -213,7 +419,7 @@ Departure** as a fallback. The optimal solver should only be used on
 small instances for validation.
 
 
-## 6. Raw Experimental Data
+## 7. Raw Experimental Data
 
 This section records the **exact datasets** used and the **Prolog commands and outputs** obtained during testing.
 

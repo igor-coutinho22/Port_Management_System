@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class FixedDbContext : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -443,7 +443,11 @@ namespace WebApp.Migrations
                     VisitDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DockId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Purpose = table.Column<int>(type: "int", nullable: false)
+                    Purpose = table.Column<int>(type: "int", nullable: false),
+                    ArrivalTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DesiredDepartureTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EstimatedLoadingDurationMinutes = table.Column<int>(type: "int", nullable: true),
+                    EstimatedUnloadingDurationMinutes = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {

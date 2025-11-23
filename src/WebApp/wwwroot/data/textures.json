@@ -1,0 +1,28 @@
+{
+    "materials": {
+        "concrete": {
+            "colorMap": "textures/concrete_diffuse.png",
+            "normalMap": "textures/concrete_normal.png",
+            "roughness": 0.8,
+            "metalness": 0.1
+        },
+        "metal": {
+            "colorMap": "textures/metal_diffuse.png",
+            "normalMap": "textures/metal_normal.png",
+            "roughness": 0.4,
+            "metalness": 0.8
+        },
+        "water": {
+            "colorMap": "textures/water_diffuse.png",
+            "normalMap": "textures/water_normal.png",
+            "roughness": 0.1,
+            "metalness": 0.1
+        },
+        "container": {
+            "colorMap": "textures/container_diffuse.png",
+            "normalMap": "textures/container_normal.png",
+            "roughness": 0.6,
+            "metalness": 0.3
+        }
+    }
+}

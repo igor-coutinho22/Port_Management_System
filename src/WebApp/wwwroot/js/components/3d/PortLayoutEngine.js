@@ -25,8 +25,8 @@ class PortLayoutEngine {
     computeLayout({ docks, storageAreas, resources, vessels, staff }) {
         const dockLayouts = this.layoutDocks(docks);
         const storageLayouts = this.layoutStorageAreas(storageAreas, dockLayouts);
-        const resourceLayouts = this.layoutResources(resources, storageLayouts);
-        const vesselLayouts = this.layoutVessels(vessels || []);
+        const resourceLayouts = this.layoutResources(resources, storageLayouts, dockLayouts);
+        const vesselLayouts = this.layoutVessels(vessels || [], dockLayouts);
         const staffLayouts = this.layoutStaff(staff || []);
 
         return {
@@ -137,39 +137,111 @@ class PortLayoutEngine {
     // -----------------------------------------------------------------------------
     // RESOURCES LAYOUT (Cranes, Trucks, etc.)
     // -----------------------------------------------------------------------------
-    layoutResources(resources, storageLayouts) {
+    // -----------------------------------------------------------------------------
+    // RESOURCES LAYOUT (Cranes, Trucks, etc.)
+    // -----------------------------------------------------------------------------
+    layoutResources(resources, storageLayouts, dockLayouts) {
         const layouts = [];
 
-        // Scatter resources around the storage areas or docks
-        // For now, place them in a designated "parking" area to the side
+        // Separate resources by type
+        const stsCranes = resources.filter(r => (r.resourceType || "").toString().toLowerCase().includes("sts") || (r.resourceType === 0));
+        const yardCranes = resources.filter(r => (r.resourceType || "").toString().toLowerCase().includes("yard") || (r.resourceType === 1));
+        const others = resources.filter(r => !stsCranes.includes(r) && !yardCranes.includes(r));
 
-        let x = 300; // To the right
-        let z = 50;
+        // 1. Place STS Cranes at Docks
+        stsCranes.forEach((res, i) => {
+            const dock = dockLayouts[i % dockLayouts.length];
+            if (dock) {
+                // Place along the dock edge
+                layouts.push({
+                    id: res.id,
+                    name: res.description,
+                    type: res.resourceType,
+                    height: 50, // Taller
+                    radius: 5,
+                    x: dock.x + (Math.random() - 0.5) * (dock.width - 20),
+                    y: dock.height, // On top of dock
+                    z: dock.z - dock.depth / 2 + 5 // Near the water edge
+                });
+            }
+        });
 
-        resources.forEach((res, i) => {
+        // 2. Place Yard Cranes at Container Yards
+        const yards = storageLayouts.filter(s => s.subtype === "ContainerYard");
+        yardCranes.forEach((res, i) => {
+            const yard = yards.length > 0 ? yards[i % yards.length] : storageLayouts[i % storageLayouts.length];
+            if (yard) {
+                layouts.push({
+                    id: res.id,
+                    name: res.description,
+                    type: res.resourceType,
+                    height: 40,
+                    radius: 5,
+                    x: yard.x + (Math.random() - 0.5) * (yard.width - 20),
+                    y: yard.height, // On ground/yard
+                    z: yard.z + (Math.random() - 0.5) * (yard.depth - 20)
+                });
+            }
+        });
+
+        // 3. Scatter others (Trucks, etc.) near storage
+        others.forEach((res, i) => {
+            const targetArea = storageLayouts[i % storageLayouts.length];
+            let x = 0, z = 0;
+
+            if (targetArea) {
+                x = targetArea.x + (Math.random() - 0.5) * 50;
+                z = targetArea.z + targetArea.depth / 2 + 20;
+            } else {
+                x = (Math.random() - 0.5) * 200;
+                z = 50;
+            }
+
             layouts.push({
                 id: res.id,
                 name: res.description,
                 type: res.resourceType,
-                height: 30,
-                radius: 8,
-                x: x + (i % 5) * 40,
-                y: 15,
-                z: z + Math.floor(i / 5) * 40
+                height: 15,
+                radius: 4,
+                x: x,
+                y: 5,
+                z: z
             });
         });
 
         return layouts;
     }
+
     // -----------------------------------------------------------------------------
     // VESSELS LAYOUT
     // -----------------------------------------------------------------------------
-    layoutVessels(vessels) {
+    // -----------------------------------------------------------------------------
+    // VESSELS LAYOUT
+    // -----------------------------------------------------------------------------
+    layoutVessels(vessels, dockLayouts) {
         const layouts = [];
-        let currentX = -200;
 
-        vessels.forEach(v => {
+        vessels.forEach((v, i) => {
             const length = (v.length || 100) * this.scale;
+            const width = (v.width || 30) * this.scale;
+
+            // Find assigned dock by ID
+            const dock = dockLayouts.find(d => d.id === v.dockId);
+
+            let x, z, angle;
+
+            if (dock) {
+                // Place alongside the dock
+                // Assuming dock is along X, we place vessel along X, slightly offset in Z
+                x = dock.x;
+                z = dock.z - dock.depth / 2 - width / 2 - 5; // 5 units gap
+                angle = 0;
+            } else {
+                // Anchor out at sea if no dock assigned (fallback)
+                x = (i - vessels.length / 2) * 150;
+                z = -200;
+                angle = 0;
+            }
 
             layouts.push({
                 id: v.id,
@@ -177,14 +249,13 @@ class PortLayoutEngine {
                 type: "Vessel",
                 vesselType: v.type,
                 length: length,
-                width: (v.width || 30) * this.scale,
+                width: width,
                 height: (v.height || 20) * this.scale,
-                x: currentX,
-                y: 0, // On water surface
-                z: -150 // In the water
+                x: x,
+                y: 0, // On water
+                z: z,
+                rotation: angle
             });
-
-            currentX += length + 50; // Spacing
         });
 
         return layouts;

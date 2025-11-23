@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
+using WebApp.Models.Application.DTOs;
 using WebApp.Models.Domain.Scheduling;
 using WebApp.Models.Domain.Scheduling.Services;
 
@@ -85,8 +86,63 @@ namespace WebApp.Models.Application.Services.Scheduling
             };
         }
 
+        public async Task<MultiCraneComparisonResultDTO> GenerateDailyScheduleWithMultiCraneAsync(
+            DateOnly targetDate,
+            string heuristicName,
+            CancellationToken cancellationToken = default)
+        {
+            // 1) Run existing single-crane logic
+            var single = await GenerateDailyScheduleAsync(targetDate, heuristicName, cancellationToken);
 
-        #region Prolog Availability Check (Option A)
+            // No delay -> nothing more to do
+            if (single.TotalDelayMinutes <= 0.0001) // tiny epsilon
+            {
+                return new MultiCraneComparisonResultDTO
+                {
+                    SingleCrane = MapToDto(single),
+                    MultiCrane = null,
+                    CraneHoursSingle = ComputeCraneHours(single),
+                    CraneHoursMulti = null
+                };
+            }
+
+            // 2) We have delay -> run multi-crane improvement using the SAME visits
+            var visits = await GetVisitsForDateAsync(targetDate, cancellationToken);
+
+            var (vesselFacts, idMap) = BuildPrologVesselFacts(visits, targetDate);
+
+            // build sequence(V) facts in the exact order returned by single-crane schedule
+            var sequenceFacts = BuildSequenceFacts(single.Entries, idMap);
+
+            var (seqLine, delayLine, craneMinutesLine) =
+                await RunPrologMultiCraneAsync(vesselFacts, sequenceFacts, cancellationToken);
+
+            var multiEntries = ParseSeqQuadrupletsLine(seqLine, idMap, targetDate);
+
+            if (!double.TryParse(delayLine, out var multiDelay))
+                throw new InvalidOperationException($"Could not parse multi-crane delay: '{delayLine}'");
+
+            if (!double.TryParse(craneMinutesLine, out var totalCraneMinutes))
+                throw new InvalidOperationException($"Could not parse crane-minutes: '{craneMinutesLine}'");
+
+            var multiResult = new SchedulingResult
+            {
+                HeuristicName = NormalizeHeuristicName(heuristicName) + "_multi",
+                TotalDelayMinutes = multiDelay,
+                RuntimeSeconds = 0, // or measure separately
+                Entries = multiEntries,
+                Warnings = new List<string>()
+            };
+
+            return new MultiCraneComparisonResultDTO
+            {
+                SingleCrane = MapToDto(single),
+                MultiCrane = MapToDto(multiResult),
+                CraneHoursSingle = ComputeCraneHours(single),
+                CraneHoursMulti = totalCraneMinutes / 60.0
+            };
+        }
+
 
         private void EnsurePrologAvailable()
         {
@@ -127,31 +183,10 @@ namespace WebApp.Models.Application.Services.Scheduling
             }
         }
 
-        #endregion
-
-
-
-        #region REST: Fetch Vessel Visit Notifications
-
-        private sealed class VesselVisitNotificationDTO
-        {
-            public Guid Id { get; set; }
-            public string VesselIMO { get; set; } = default!;
-            public DateTime VisitDate { get; set; }
-            public string Status { get; set; } = default!;
-            public string Purpose { get; set; } = default!;
-
-            public DateTime? ArrivalTime { get; set; }
-            public DateTime? DesiredDepartureTime { get; set; }
-            public int? EstimatedLoadingDurationMinutes { get; set; }
-            public int? EstimatedUnloadingDurationMinutes { get; set; }
-        }
-
         private async Task<IReadOnlyList<VesselVisitNotificationDTO>> GetVisitsForDateAsync(
-            DateOnly targetDate,
-            CancellationToken cancellationToken)
+    DateOnly targetDate,
+    CancellationToken cancellationToken)
         {
-
             AttachUserBearerToken();
 
             var from = targetDate.ToDateTime(TimeOnly.MinValue);
@@ -164,25 +199,40 @@ namespace WebApp.Models.Application.Services.Scheduling
                 $"&toDate={Uri.EscapeDataString(to.ToString("O"))}";
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
-                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                // Backend currently throws InvalidOperationException("No vessel visit notifications found with the specified criteria.")
+                // and returns HTTP 500. We interpret that as "no results", not as a fatal error.
+                var isNoVisits =
+                    (int)response.StatusCode == 500 &&
+                    body.Contains("No vessel visit notifications found with the specified criteria",
+                                  StringComparison.OrdinalIgnoreCase);
+
+                if (isNoVisits)
+                {
+                    _logger.LogInformation("No vessel visits found for {Date}. Returning empty list.", targetDate);
+                    return Array.Empty<VesselVisitNotificationDTO>();
+                }
+
+                // Any other 4xx/5xx is still a real error.
                 throw new InvalidOperationException(
                     $"Error fetching vessel visits. Status={response.StatusCode}, Body={body}");
             }
 
-            var list = await response.Content.ReadFromJsonAsync<List<VesselVisitNotificationDTO>>(cancellationToken: cancellationToken)
+            // Normal success: parse JSON
+            var list = System.Text.Json.JsonSerializer.Deserialize<List<VesselVisitNotificationDTO>>(
+                           body,
+                           new System.Text.Json.JsonSerializerOptions
+                           {
+                               PropertyNameCaseInsensitive = true
+                           })
                        ?? new List<VesselVisitNotificationDTO>();
 
             return list;
         }
 
-        #endregion
-
-
-
-        #region Build Prolog Facts
 
         private (string Facts, Dictionary<string, VesselVisitNotificationDTO> IdMap)
             BuildPrologVesselFacts(
@@ -208,7 +258,6 @@ namespace WebApp.Models.Application.Services.Scheduling
 
             return (sb.ToString(), idMap);
         }
-
 
         private int GetArrivalTimeMinutes(VesselVisitNotificationDTO visit, DateOnly targetDate)
         {
@@ -236,16 +285,10 @@ namespace WebApp.Models.Application.Services.Scheduling
         private int GetUnloadingTimeMinutes(VesselVisitNotificationDTO visit)
             => visit.EstimatedUnloadingDurationMinutes ?? 0;
 
-        #endregion
-
-
-
-        #region Run Prolog
-
         private async Task<(string SeqLine, string DelayLine)> RunPrologAsync(
-    string vesselFacts,
-    string heuristicAtom,
-    CancellationToken cancellationToken)
+            string vesselFacts,
+            string heuristicAtom,
+            CancellationToken cancellationToken)
         {
             var tempFile = Path.Combine(Path.GetTempPath(), $"schedule_{Guid.NewGuid():N}.pl");
 
@@ -345,14 +388,105 @@ namespace WebApp.Models.Application.Services.Scheduling
             }
         }
 
+        private async Task<(string SeqLine, string DelayLine, string CraneMinutesLine)> RunPrologMultiCraneAsync(
+            string vesselFacts,
+            string sequenceFacts,
+            CancellationToken cancellationToken)
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"schedule_multi_{Guid.NewGuid():N}.pl");
+
+            try
+            {
+                var script = new StringBuilder();
+
+                // 1) Load heuristics file (it now also contains run_multi_from_sequence/0)
+                script.AppendLine($":- consult('{EscapePathForProlog(_prologFilePath)}').");
+                script.AppendLine();
+
+                // 2) Assert vessel facts
+                script.AppendLine("% Vessel facts (generated by C#):");
+                script.AppendLine(vesselFacts);
+                script.AppendLine();
+
+                // 3) Assert sequence(V) facts from the single-crane result
+                script.AppendLine("% Vessel order from single-crane schedule:");
+                script.AppendLine(sequenceFacts);
+                script.AppendLine();
+
+                // 4) Define main/0 that runs the multi-crane scheduler
+                script.AppendLine("main :-");
+                script.AppendLine("    run_multi_from_sequence,");
+                script.AppendLine("    halt.");
+                script.AppendLine();
+
+                await File.WriteAllTextAsync(tempFile, script.ToString(), cancellationToken);
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = PrologCommandName,
+                    Arguments = $"-q -s \"{tempFile}\" -g main -t halt",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var process = new Process { StartInfo = psi };
+                process.Start();
+
+                var stdoutTask = process.StandardOutput.ReadToEndAsync();
+                var stderrTask = process.StandardError.ReadToEndAsync();
+
+                var waitTask = process.WaitForExitAsync(cancellationToken);
+                var completed = await Task.WhenAny(
+                    waitTask,
+                    Task.Delay(TimeSpan.FromSeconds(10), cancellationToken));
+
+                if (completed != waitTask)
+                {
+                    try { process.Kill(entireProcessTree: true); } catch { }
+
+                    var so = await stdoutTask;
+                    var se = await stderrTask;
+                    _logger.LogError("Prolog multi-crane timed out. Stdout: {Stdout} Stderr: {Stderr}", so, se);
+                    throw new InvalidOperationException("Prolog multi-crane scheduling timed out.");
+                }
+
+                await waitTask;
+                var stdout = await stdoutTask;
+                var stderr = await stderrTask;
+
+                if (process.ExitCode != 0)
+                {
+                    _logger.LogError("Prolog multi-crane exited with {ExitCode}. Stderr: {Stderr}",
+                        process.ExitCode, stderr);
+                    throw new InvalidOperationException(
+                        $"Prolog multi-crane scheduling failed. ExitCode={process.ExitCode}. Stderr={stderr}");
+                }
+
+                var lines = stdout
+                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(l => l.Trim())
+                    .ToArray();
+
+                if (lines.Length < 3)
+                {
+                    _logger.LogError("Unexpected multi-crane Prolog output. Stdout: {Stdout}", stdout);
+                    throw new InvalidOperationException(
+                        $"Unexpected Prolog output (multi-crane). Expected 3 lines, got {lines.Length}. Output:\n{stdout}");
+                }
+
+                return (lines[0], lines[1], lines[2]);
+            }
+            finally
+            {
+                try { if (File.Exists(tempFile)) File.Delete(tempFile); } catch { }
+            }
+        }
+
+
         private string EscapePathForProlog(string path)
             => path.Replace("\\", "\\\\");
-
-        #endregion
-
-
-
-        #region Parse Sequence Returned by Prolog
 
         private List<VesselScheduleEntry> ParseSeqTripletsLine(
             string seqLine,
@@ -393,11 +527,50 @@ namespace WebApp.Models.Application.Services.Scheduling
             return entries;
         }
 
-        #endregion
+        private List<VesselScheduleEntry> ParseSeqQuadrupletsLine(
+            string seqLine,
+            Dictionary<string, VesselVisitNotificationDTO> idMap,
+            DateOnly targetDate)
+        {
+            // Matches (v_xxx, 123, 456, 2)
+            var pattern = @"\(\s*([^,]+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)";
+            var matches = Regex.Matches(seqLine, pattern);
 
+            var entries = new List<VesselScheduleEntry>();
+            var midnight = targetDate.ToDateTime(TimeOnly.MinValue);
 
+            foreach (Match match in matches)
+            {
+                var idAtom = match.Groups[1].Value.Trim();
+                var startStr = match.Groups[2].Value;
+                var endStr = match.Groups[3].Value;
+                var cranesStr = match.Groups[4].Value;
 
-        #region Heuristic Validation
+                if (!int.TryParse(startStr, out var startMinutes) ||
+                    !int.TryParse(endStr, out var endMinutes) ||
+                    !int.TryParse(cranesStr, out var cranes))
+                {
+                    throw new InvalidOperationException($"Invalid Prolog quadruple: {match.Value}");
+                }
+
+                if (!idMap.TryGetValue(idAtom, out var visit))
+                    throw new InvalidOperationException($"Unknown vessel ID: {idAtom}");
+
+                entries.Add(new VesselScheduleEntry
+                {
+                    VesselVisitId = visit.Id,
+                    VesselIMO = visit.VesselIMO,
+                    StartTime = midnight.AddMinutes(startMinutes),
+                    EndTime = midnight.AddMinutes(endMinutes),
+                    NumberOfCranes = cranes,
+                    AssignedCraneId = null,
+                    DelayMinutes = 0   // if you want per-vessel delay, you can compute afterwards
+                });
+            }
+
+            return entries;
+        }
+
 
         private string NormalizeHeuristicName(string name) =>
             name.Trim().ToLower().Replace("-", "_").Replace(" ", "_");
@@ -418,7 +591,47 @@ namespace WebApp.Models.Application.Services.Scheduling
                     $"Unknown heuristic '{heuristic}'. Allowed: {string.Join(", ", allowed)}");
         }
 
-        #endregion
+        private SchedulingResultDTO MapToDto(SchedulingResult result) => new()
+        {
+            HeuristicName = result.HeuristicName,
+            TotalDelayMinutes = result.TotalDelayMinutes,
+            RuntimeSeconds = result.RuntimeSeconds,
+            Entries = result.Entries.Select(e => new VesselScheduleEntryDTO
+            {
+                VesselVisitId = e.VesselVisitId,
+                VesselIMO = e.VesselIMO,
+                StartTime = e.StartTime,
+                EndTime = e.EndTime,
+                DelayMinutes = e.DelayMinutes,
+                NumberOfCranes = e.NumberOfCranes
+            }).ToList(),
+            Warnings = result.Warnings.ToList()
+        };
+
+        private double ComputeCraneHours(SchedulingResult result)
+        {
+            // For single-crane case: sum of 1 * duration per job
+            var totalMinutes = result.Entries
+                .Sum(e => (e.EndTime - e.StartTime).TotalMinutes * Math.Max(e.NumberOfCranes, 1));
+            return totalMinutes / 60.0;
+        }
+
+        private string BuildSequenceFacts(
+            IEnumerable<VesselScheduleEntry> entries,
+            Dictionary<string, VesselVisitNotificationDTO> idMap)
+        {
+            var sb = new StringBuilder();
+
+            // IMPORTANT: we reconstruct the prologId the same way as in BuildPrologVesselFacts
+            foreach (var entry in entries.OrderBy(e => e.StartTime))
+            {
+                var prologId = $"v_{entry.VesselVisitId:N}";
+                sb.AppendLine($"sequence({prologId}).");
+            }
+
+            return sb.ToString();
+        }
+
 
         private void AttachUserBearerToken()
         {
@@ -443,8 +656,5 @@ namespace WebApp.Models.Application.Services.Scheduling
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
         }
-
     }
-
-
 }
