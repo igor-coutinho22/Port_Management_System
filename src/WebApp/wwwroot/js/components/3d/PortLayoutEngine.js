@@ -186,15 +186,24 @@ class PortLayoutEngine {
 
         // 3. Scatter others (Trucks, etc.) near storage
         others.forEach((res, i) => {
-            const targetArea = storageLayouts[i % storageLayouts.length];
+            // Target "Container Yard North" specifically
+            const targetArea = storageLayouts.find(s => s.name === "Container Yard North") || storageLayouts[0];
+
             let x = 0, z = 0;
 
             if (targetArea) {
-                x = targetArea.x + (Math.random() - 0.5) * 50;
-                z = targetArea.z + targetArea.depth / 2 + 20;
+                // Place strictly INSIDE the yard boundaries
+                // Margin of 10 units from edge
+                const margin = 10;
+                const safeWidth = Math.max(0, targetArea.width - margin * 2);
+                const safeDepth = Math.max(0, targetArea.depth - margin * 2);
+
+                x = targetArea.x + (Math.random() - 0.5) * safeWidth;
+                z = targetArea.z + (Math.random() - 0.5) * safeDepth;
             } else {
-                x = (Math.random() - 0.5) * 200;
-                z = 50;
+                // Fallback
+                x = 0;
+                z = 100;
             }
 
             layouts.push({
@@ -204,7 +213,7 @@ class PortLayoutEngine {
                 height: 15,
                 radius: 4,
                 x: x,
-                y: 5,
+                y: 5, // On ground
                 z: z
             });
         });

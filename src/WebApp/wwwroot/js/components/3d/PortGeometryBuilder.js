@@ -268,15 +268,53 @@ class PortGeometryBuilder {
 
             return group;
         } else {
-            // Simple cylinder for other vehicles
-            const geo = new THREE.CylinderGeometry(radius, radius, height, 16);
-            const mat = this.materials.vehicleBody;
+            // Truck / Vehicle
+            const group = new THREE.Group();
 
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
+            // 1. Chassis
+            const chassisLength = height * 1.5; // "height" in DB is usually small for trucks, treat as length scale
+            const chassisWidth = radius * 2.5;
+            const chassisHeight = radius;
 
-            return mesh;
+            const chassisGeo = new THREE.BoxGeometry(chassisLength, chassisHeight, chassisWidth);
+            const chassis = new THREE.Mesh(chassisGeo, this.materials.vehicleBody);
+            chassis.position.y = chassisHeight + radius; // Above wheels
+            chassis.castShadow = true;
+            chassis.receiveShadow = true;
+            group.add(chassis);
+
+            // 2. Cabin
+            const cabinLength = chassisLength * 0.3;
+            const cabinHeight = chassisHeight * 1.2;
+            const cabinGeo = new THREE.BoxGeometry(cabinLength, cabinHeight, chassisWidth);
+            const cabin = new THREE.Mesh(cabinGeo, new THREE.MeshStandardMaterial({ color: 0xEEEEEE })); // White/Glass cabin
+            cabin.position.set(chassisLength / 2 - cabinLength / 2, chassisHeight * 2 + radius, 0);
+            cabin.castShadow = true;
+            cabin.receiveShadow = true;
+            group.add(cabin);
+
+            // 3. Wheels
+            const wheelRadius = radius * 0.6;
+            const wheelWidth = radius * 0.4;
+            const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelWidth, 16);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+
+            const positions = [
+                { x: chassisLength / 3, z: chassisWidth / 2 },
+                { x: chassisLength / 3, z: -chassisWidth / 2 },
+                { x: -chassisLength / 3, z: chassisWidth / 2 },
+                { x: -chassisLength / 3, z: -chassisWidth / 2 }
+            ];
+
+            positions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.rotation.x = Math.PI / 2;
+                wheel.position.set(pos.x, wheelRadius, pos.z);
+                wheel.castShadow = true;
+                group.add(wheel);
+            });
+
+            return group;
         }
     }
 
