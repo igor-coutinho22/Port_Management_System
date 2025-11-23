@@ -1,12 +1,13 @@
 namespace WebApp.Models.Domain.Scheduling
 {
-    /// <summary>
-    /// Represents the result of any scheduling algorithm within the domain layer.
-    /// </summary>
     public class SchedulingResult
     {
-        public string? Sequence { get; set; }
-        public double TotalDelay { get; set; }
+        public string HeuristicName { get; set; } = default!;
+        public double TotalDelayMinutes { get; set; }
         public double RuntimeSeconds { get; set; }
+        public List<VesselScheduleEntry> Entries { get; set; } = new();
+
+        // not enough staff for example
+        public List<string> Warnings { get; set; } = new();
     }
 }
