@@ -27,9 +27,14 @@ class PortDataFetcher {
 
         // Filter and enrich vessels
         const vessels = allVessels.filter(v => {
-            const visit = approvedVisits.find(visit => visit.vesselIMO === v.id);
+            // Handle potential casing differences (vesselIMO vs VesselIMO)
+            const visit = approvedVisits.find(visit => {
+                const visitImo = visit.vesselIMO || visit.VesselIMO;
+                return visitImo === v.id;
+            });
+
             if (visit) {
-                v.dockId = visit.dockId; // Attach assigned dock ID
+                v.dockId = visit.dockId || visit.DockId; // Attach assigned dock ID
                 return true;
             }
             return false;
@@ -58,8 +63,15 @@ class PortDataFetcher {
         // Fetch visits with status 'Approved' (Enum value 2 or string "Approved")
         // And filter by TODAY's date to show currently relevant vessels
         const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+        // Widen the search window to +/- 7 days to ensure we see vessels even if the DB has old seed data (tomorrow) 
+        // or if there are timezone discrepancies.
+        const start = new Date(now);
+        start.setDate(start.getDate() - 7);
+        const end = new Date(now);
+        end.setDate(end.getDate() + 7);
+
+        const startOfDay = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate(), 0, 0, 0)).toISOString();
+        const endOfDay = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate(), 23, 59, 59)).toISOString();
 
         const params = new URLSearchParams({
             status: "Approved",

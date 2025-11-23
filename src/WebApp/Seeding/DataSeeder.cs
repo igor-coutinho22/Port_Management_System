@@ -287,7 +287,7 @@ namespace WebApp.Seeding
                     var dock1 = docks[0].Id;
                     var dock2 = docks[1].Id;
 
-                    var targetDay = DateTime.UtcNow.Date.AddDays(1);
+                    var targetDay = DateTime.UtcNow.Date.AddDays(0);
 
                     // ===== Visit 1: Commercial, loading + unloading, early slot =====
                     var visit1 = new VesselVisitNotification(v1, dock1, targetDay, VisitPurpose.Commercial);

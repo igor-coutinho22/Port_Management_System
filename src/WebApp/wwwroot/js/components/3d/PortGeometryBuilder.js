@@ -63,35 +63,70 @@ class PortGeometryBuilder {
     // -----------------------------------------------------------------------------
     // VESSEL GEOMETRY
     // -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // VESSEL GEOMETRY
+    // -----------------------------------------------------------------------------
     createVessel(vessel) {
         const { length, width, height } = vessel;
 
         const group = new THREE.Group();
 
-        // Hull
-        const hullHeight = height * 0.7;
-        const hullGeo = new THREE.BoxGeometry(length, hullHeight, width);
-        // Adjust UVs for tiling
-        this.adjustUVs(hullGeo, length, hullHeight, width);
+        // Hull Dimensions
+        const hullHeight = height * 0.6;
 
+        // 1. Main Hull (Box)
+        const hullGeo = new THREE.BoxGeometry(length, hullHeight, width);
+        this.adjustUVs(hullGeo, length, hullHeight, width);
         const hull = new THREE.Mesh(hullGeo, this.materials.vesselHull);
         hull.position.y = hullHeight / 2;
         hull.castShadow = true;
         hull.receiveShadow = true;
         group.add(hull);
 
-        // Bridge/Superstructure
-        const bridgeLength = length * 0.2;
+        // 2. Bridge (Tower at Stern)
+        const bridgeLength = length * 0.15;
         const bridgeHeight = height * 0.5;
-        const bridgeWidth = width * 0.8;
+        const bridgeWidth = width * 0.9;
+
         const bridgeGeo = new THREE.BoxGeometry(bridgeLength, bridgeHeight, bridgeWidth);
         this.adjustUVs(bridgeGeo, bridgeLength, bridgeHeight, bridgeWidth);
-
         const bridge = new THREE.Mesh(bridgeGeo, this.materials.vesselBridge);
-        bridge.position.set(-length / 2 + bridgeLength, hullHeight + bridgeHeight / 2, 0); // Stern
+        // Place at stern (negative X relative to center, but we need to be careful with coordinates)
+        // Let's place it at the back end
+        bridge.position.set(-length / 2 + bridgeLength / 2 + 2, hullHeight + bridgeHeight / 2, 0);
         bridge.castShadow = true;
         bridge.receiveShadow = true;
         group.add(bridge);
+
+        // 3. Funnel (Cylinder on Bridge)
+        const funnelHeight = height * 0.3;
+        const funnelRadius = width * 0.1;
+        const funnelGeo = new THREE.CylinderGeometry(funnelRadius, funnelRadius, funnelHeight, 16);
+        const funnel = new THREE.Mesh(funnelGeo, new THREE.MeshStandardMaterial({ color: 0x333333 }));
+        funnel.position.set(-length / 2 + bridgeLength / 2 + 2, hullHeight + bridgeHeight + funnelHeight / 2, 0);
+        group.add(funnel);
+
+        // 4. Cargo (Containers) - Only for Container Ships or large vessels
+        if ((vessel.type || "").toLowerCase().includes("container") || length > 150) {
+            const cargoGroup = new THREE.Group();
+            // Area for cargo: from front of bridge to bow
+            const cargoLength = length - bridgeLength - 10;
+            const cargoWidth = width * 0.8;
+
+            // Reuse addDecorContainers but we need to ensure it places them relative to 0,0,0
+            // We'll pass 0 as groundHeight so they sit on the plane y=0 (which is the deck level for cargoGroup)
+            this.addDecorContainers(cargoGroup, cargoLength, cargoWidth, 0);
+
+            // Position cargo group on top of hull, shifted forward to cover the deck
+            // Center of cargo area is:
+            // Hull center is 0. Bridge is at back. Cargo is in front.
+            // Cargo center X = (Bridge Front + Bow) / 2
+            // Bridge Front X = -length/2 + bridgeLength
+            // Bow X = length/2
+            // Center X = (-length/2 + bridgeLength + length/2) / 2 = bridgeLength / 2
+            cargoGroup.position.set(bridgeLength / 2, hullHeight, 0);
+            group.add(cargoGroup);
+        }
 
         return group;
     }
