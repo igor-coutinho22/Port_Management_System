@@ -29,8 +29,14 @@ class PortDataFetcher {
         const vessels = allVessels.filter(v => {
             // Handle potential casing differences (vesselIMO vs VesselIMO)
             const visit = approvedVisits.find(visit => {
-                const visitImo = visit.vesselIMO || visit.VesselIMO;
-                return visitImo === v.id;
+                const visitImo = (visit.vesselIMO || visit.VesselIMO || "").toString().trim().toLowerCase();
+                const vesselId = (v.id || "").toString().trim().toLowerCase();
+
+                // Check if status is Approved
+                const status = (visit.status || visit.Status || "").toString();
+                const isApproved = status.toLowerCase() === "approved";
+
+                return visitImo === vesselId && isApproved;
             });
 
             if (visit) {
@@ -39,6 +45,8 @@ class PortDataFetcher {
             }
             return false;
         });
+
+        console.log(`[PortDataFetcher] Matched ${vessels.length} vessels from ${allVessels.length} total vessels and ${approvedVisits.length} visits.`);
 
         const staff = await safeFetch("staff", () => this.fetchStaff());
 
@@ -63,25 +71,37 @@ class PortDataFetcher {
         // Fetch visits with status 'Approved' (Enum value 2 or string "Approved")
         // And filter by TODAY's date to show currently relevant vessels
         const now = new Date();
-        // Widen the search window to +/- 7 days to ensure we see vessels even if the DB has old seed data (tomorrow) 
+        // Widen the search window to +/- 30 days to ensure we see vessels even if the DB has old seed data
         // or if there are timezone discrepancies.
         const start = new Date(now);
-        start.setDate(start.getDate() - 7);
+        start.setDate(start.getDate() - 30);
         const end = new Date(now);
-        end.setDate(end.getDate() + 7);
+        end.setDate(end.getDate() + 30);
 
         const startOfDay = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate(), 0, 0, 0)).toISOString();
         const endOfDay = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate(), 23, 59, 59)).toISOString();
 
+        // We fetch ALL visits in the date range to debug why they might not be showing up
+        // We will filter for "Approved" (and maybe others) client-side
         const params = new URLSearchParams({
-            status: "Approved",
+            // status: "Approved", // Commented out to fetch all statuses for debugging
             fromDate: startOfDay,
             toDate: endOfDay
         });
 
+        console.log(`[PortDataFetcher] Fetching visits from ${startOfDay} to ${endOfDay}`);
+
         const resp = await fetch(`/api/vesselvisitnotification/search?${params.toString()}`, { credentials: 'include' });
-        if (!resp.ok) throw new Error("Failed to fetch approved visits");
-        return await resp.json();
+
+        if (!resp.ok) {
+            // If 404 or 500 (likely "No results found" exception from backend), return empty
+            console.warn("[PortDataFetcher] No visits found or error fetching visits:", resp.status);
+            return [];
+        }
+
+        const visits = await resp.json();
+        console.log(`[PortDataFetcher] Fetched ${visits.length} visits:`, visits);
+        return visits;
     }
 
     // -------------------------------------------------------------------------

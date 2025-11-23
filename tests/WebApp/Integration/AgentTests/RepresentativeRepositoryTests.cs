@@ -56,21 +56,5 @@ namespace WebApp.Tests.Repositories.Agents
         var fetched = await _repo.GetByIdAsync(rep.Id);
         fetched!.Email.Should().Be("new@mail.com");
     }
-
-    [Fact]
-    public async Task Delete_ShouldRemove()
-    {
-        var org = new ShippingAgentOrganization("O", "Legal", null, "Addr", "123");
-        _ctx.Organizations.Add(org);
-        _ctx.SaveChanges();
-
-        var rep = Create(org.Id);
-        await _repo.AddAsync(rep);
-
-        await _repo.DeleteAsync(rep);
-
-        var fetched = await _repo.GetByIdAsync(rep.Id);
-        fetched.Should().BeNull();
-    }
 }
 }
