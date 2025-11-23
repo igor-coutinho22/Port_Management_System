@@ -28,6 +28,16 @@ namespace WebApp.Models.Domain.VesselVisits
 
         public List<CrewMember> Crew { get; private set; } = new();
 
+        public DateTime? ArrivalTime { get; private set; }
+        public DateTime? DesiredDepartureTime { get; private set; }
+
+        // Estimated loading duration in minutes for this visit (if any).
+        public int? EstimatedLoadingDurationMinutes { get; private set; }
+
+        // Estimated unloading duration in minutes for this visit (if any).
+        public int? EstimatedUnloadingDurationMinutes { get; private set; }
+
+
         private VesselVisitNotification() { }
 
         public VesselVisitNotification(string vesselIMO, Guid dockId, DateTime visitDate, VisitPurpose purpose)
@@ -198,5 +208,35 @@ namespace WebApp.Models.Domain.VesselVisits
             if (date < DateTime.UtcNow.Date)
                 throw new ArgumentException("Visit date cannot be in the past.");
         }
+
+        public void UpdateScheduleWindow(DateTime arrivalTime, DateTime desiredDepartureTime)
+        {
+            EnsureInProgress();
+
+            if (arrivalTime.Date != VisitDate.Date || desiredDepartureTime.Date != VisitDate.Date)
+                throw new ArgumentException("Arrival and desired departure must be on the same day as VisitDate.");
+
+            if (desiredDepartureTime <= arrivalTime)
+                throw new ArgumentException("Desired departure time must be after arrival time.");
+
+            CheckDateNotInPast(arrivalTime);
+
+            ArrivalTime = arrivalTime;
+            DesiredDepartureTime = desiredDepartureTime;
+        }
+        public void UpdateEstimatedDurations(int? loadingMinutes, int? unloadingMinutes)
+        {
+            EnsureInProgress();
+
+            if (loadingMinutes.HasValue && loadingMinutes.Value < 0)
+                throw new ArgumentException("Loading duration cannot be negative.", nameof(loadingMinutes));
+
+            if (unloadingMinutes.HasValue && unloadingMinutes.Value < 0)
+                throw new ArgumentException("Unloading duration cannot be negative.", nameof(unloadingMinutes));
+
+            EstimatedLoadingDurationMinutes = loadingMinutes;
+            EstimatedUnloadingDurationMinutes = unloadingMinutes;
+        }
+
     }
 }

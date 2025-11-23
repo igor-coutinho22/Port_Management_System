@@ -1,13 +1,14 @@
 namespace WebApp.Models.Application.DTOs
 {
-    /// <summary>
-    /// Data Transfer Object representing the result of a scheduling computation.
-    /// Used to expose heuristic scheduling results via API.
-    /// </summary>
+    
     public class SchedulingResultDTO
     {
-        public string? Sequence { get; set; }
-        public double TotalDelay { get; set; }
+        public string HeuristicName { get; set; } = default!;
+        public double TotalDelayMinutes { get; set; }
         public double RuntimeSeconds { get; set; }
+
+        public List<VesselScheduleEntryDTO> Entries { get; set; } = new();
+
+        public List<string> Warnings { get; set; } = new();
     }
 }

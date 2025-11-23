@@ -463,6 +463,13 @@ class ApiService {
         return this.get('/me');
     }
     
+    // Scheduling
+    async generateDailySchedule(targetDate, heuristic) {
+        const body = { targetDate, heuristic };
+        return this.post('/scheduling/daily', body);
+    }
+
+
 }
 
 const apiService = new ApiService();

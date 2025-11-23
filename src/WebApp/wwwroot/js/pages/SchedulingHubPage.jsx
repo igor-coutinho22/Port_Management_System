@@ -1,178 +1,287 @@
-// Scheduling Hub Page - Algorithm execution and results display
-console.log('⚙️ SchedulingHubPage.jsx is loading...');
+
+const HEURISTICS = [
+    { value: "minimum_slack_time", label: "Minimum Slack Time" },
+    { value: "early_departure_time", label: "Earliest Departure First" },
+    { value: "arrived_shortest_departure_time", label: "Arrived – Shortest Departure" },
+    { value: "atc", label: "ATC (Apparent Tardiness Cost)" },
+    { value: "optimal", label: "Optimal (all permutations – slow)" }
+];
+
+function formatDateInputValue(date) {
+    // date: JS Date -> "YYYY-MM-DD"
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+function formatDateTime(value) {
+    if (!value) return "";
+    // Works for both ISO strings and "2025-11-24T08:00:00Z"
+    const dt = new Date(value);
+    if (isNaN(dt.getTime())) return value; // fallback: show raw
+    return dt.toLocaleString();
+}
 
 const SchedulingHubPage = () => {
-    const { t } = useTranslation();
-    const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('heuristic');
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [result, setResult] = React.useState(null);
+    const [targetDate, setTargetDate] = React.useState(
+        formatDateInputValue(new Date())
+    );
+    const [heuristic, setHeuristic] = React.useState("atc");
+    const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(null);
+    const [result, setResult] = React.useState(null);
 
-    const algorithms = [
-        {
-            id: 'heuristic',
-            name: t('schedulingHubPage.controls.heuristic.name'),
-            description: t('schedulingHubPage.controls.heuristic.description'),
-            color: '#27ae60',
-            available: true
-        },
-        {
-            id: 'optimal',
-            name: t('schedulingHubPage.controls.optimal.name'),
-            description: t('schedulingHubPage.controls.optimal.description'),
-            color: '#3498db',
-            available: false
-        }
-    ];
-
-    const runScheduling = async () => {
-        setIsLoading(true);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         setError(null);
         setResult(null);
+        setLoading(true);
 
         try {
-            const response = await fetch('/api/scheduling/heuristic');
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
+            console.log("Calling scheduling API with:", { targetDate, heuristic });
+            const data = await apiService.generateDailySchedule(targetDate, heuristic);
+            console.log("Scheduling result:", data);
             setResult(data);
         } catch (err) {
-            console.error('Scheduling error:', err);
-            setError(err.message || 'Failed to compute schedule. Make sure SWI-Prolog is installed.');
+            console.error("Scheduling error:", err);
+            setError(err?.message || "Failed to generate schedule.");
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
-    const selectedAlgo = algorithms.find(a => a.id === selectedAlgorithm);
+    const resolvedEntries = React.useMemo(() => {
+        if (!result) return [];
+        // handle PascalCase vs camelCase just in case
+        return result.entries || result.Entries || [];
+    }, [result]);
+
+    const totalDelay =
+        (result && (result.totalDelayMinutes ?? result.totalDelay ?? result.TotalDelayMinutes ?? result.TotalDelay)) || 0;
+
+    const runtimeSeconds =
+        (result && (result.runtimeSeconds ?? result.RuntimeSeconds)) || 0;
+
+    const heuristicName =
+        (result && (result.heuristicName ?? result.HeuristicName)) || heuristic;
+
+    const warnings =
+        (result && (result.warnings ?? result.Warnings)) || [];
+
+    const displayedDate =
+        (result && (result.targetDate ?? result.TargetDate)) || targetDate;
 
     return (
         <div className="page-section">
             <div className="hub-header">
-                <h2 className="page-title">
-                    {t('schedulingHubPage.title')}
-                </h2>
-                <p>{t('schedulingHubPage.description')}</p>
+                <h2 className="page-title">Planning &amp; Scheduling</h2>
+                <p>
+                    Generate a daily schedule for vessel loading/unloading operations and
+                    see delays relative to desired departure times.
+                </p>
             </div>
 
-            {/* Algorithm Selection */}
-            <div className="scheduling-controls">
-                <div className="algorithm-selector">
-                    <label htmlFor="algorithm-select">
-                        <strong>{t('schedulingHubPage.controls.selectAlgorithm')}</strong>
-                    </label>
-                    <select
-                        id="algorithm-select"
-                        value={selectedAlgorithm}
-                        onChange={(e) => setSelectedAlgorithm(e.target.value)}
-                        className="algorithm-dropdown"
+            {/* Form card */}
+            <div className="operations-container">
+                <div className="operation-section">
+                    <div
+                        className="operation-header expanded"
+                        style={{ borderLeftColor: "#3498db" }}
                     >
-                        {algorithms.map(algo => (
-                            <option
-                                key={algo.id}
-                                value={algo.id}
-                                disabled={!algo.available}
-                            >
-                                {algo.name} {!algo.available ? t('schedulingHubPage.controls.comingSoon') : ''}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                        <div className="operation-info">
+                            <h3 className="operation-title">Run Scheduling Heuristic</h3>
+                            <p className="operation-description">
+                                Select a day and heuristic, then compute the best sequence of
+                                vessels for the single dock.
+                            </p>
+                        </div>
+                        <div className="operation-controls">
+                            <span className="http-method" style={{ backgroundColor: "#3498db" }}>
+                                POST
+                            </span>
+                        </div>
+                    </div>
 
-                <div className="algorithm-description" style={{ borderLeftColor: selectedAlgo?.color }}>
-                    <h3>{selectedAlgo?.name}</h3>
-                    <p>{selectedAlgo?.description}</p>
-                </div>
+                    <div className="operation-content">
+                        <div className="operation-body">
+                            <form onSubmit={handleSubmit} className="form-container">
+                                <div className="form-grid" style={{ gap: 24 }}>
+                                    <div className="form-group">
+                                        <label>
+                                            Target date <span className="required">*</span>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            className="form-input"
+                                            value={targetDate}
+                                            onChange={(e) => setTargetDate(e.target.value)}
+                                            required
+                                        />
+                                    </div>
 
-                <button
-                    className="run-scheduling-btn"
-                    onClick={runScheduling}
-                    disabled={isLoading || !selectedAlgo?.available}
-                    style={{ backgroundColor: selectedAlgo?.color }}
-                >
-                    {isLoading ? t('schedulingHubPage.runButton.inProgress') : t('schedulingHubPage.runButton.default')}
-                </button>
+                                    <div className="form-group">
+                                        <label>
+                                            Heuristic <span className="required">*</span>
+                                        </label>
+                                        <select
+                                            className="form-input"
+                                            value={heuristic}
+                                            onChange={(e) => setHeuristic(e.target.value)}
+                                        >
+                                            {HEURISTICS.map((h) => (
+                                                <option key={h.value} value={h.value}>
+                                                    {h.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className="form-actions"
+                                    style={{ marginTop: 24, display: "flex", gap: 12 }}
+                                >
+                                    <button
+                                        type="submit"
+                                        className="submit-btn"
+                                        disabled={loading}
+                                    >
+                                        {loading ? "Computing…" : "Generate schedule"}
+                                    </button>
+                                </div>
+                            </form>
+
+                            {error && (
+                                <div
+                                    className="error"
+                                    style={{ marginTop: 16, color: "crimson" }}
+                                >
+                                    {error}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Error Display */}
-            {error && (
-                <div className="error-message">
-                    <h3>{t('schedulingHubPage.error.title')}</h3>
-                    <p>{error}</p>
-                    <small>
-                        <strong>{t('schedulingHubPage.error.troubleshooting')}</strong> {t('schedulingHubPage.error.message')}
-                    </small>
-                </div>
-            )}
-
-            {/* Results Display */}
-            {result && (
-                <div className="scheduling-results">
-                    <h3>{t('schedulingHubPage.results.title')}</h3>
-
-                    <div className="results-grid">
-                        <div className="result-card">
-                            <div className="card-icon">🚢</div>
-                            <div className="card-content">
-                                <h4>{t('schedulingHubPage.results.sequence')}</h4>
-                                <p className="result-value sequence-value">
-                                    {result.sequence || 'N/A'}
+            {/* Results section */}
+            {result && !loading && (
+                <div className="operations-container" style={{ marginTop: 24 }}>
+                    <div className="operation-section">
+                        <div
+                            className="operation-header expanded"
+                            style={{ borderLeftColor: "#2ecc71" }}
+                        >
+                            <div className="operation-info">
+                                <h3 className="operation-title">Schedule Result</h3>
+                                <p className="operation-description">
+                                    Day: <strong>{displayedDate}</strong> | Heuristic:{" "}
+                                    <strong>{heuristicName}</strong>
                                 </p>
-                                <small>{t('schedulingHubPage.results.sequence.description')}</small>
                             </div>
                         </div>
 
-                        <div className="result-card">
-                            <div className="card-icon">⏱️</div>
-                            <div className="card-content">
-                                <h4>{t('schedulingHubPage.results.totalDelay')}</h4>
-                                <p className="result-value">
-                                    {result.totalDelay !== undefined ? result.totalDelay : 'N/A'}
-                                    <span className="unit">{t('schedulingHubPage.results.totalDelay.unit')}</span>
-                                </p>
-                                <small>{t('schedulingHubPage.results.totalDelay.description')}</small>
-                            </div>
-                        </div>
+                        <div className="operation-content">
+                            <div className="operation-body">
+                                <div
+                                    className="summary-cards"
+                                    style={{
+                                        display: "flex",
+                                        flexWrap: "wrap",
+                                        gap: 16,
+                                        marginBottom: 16,
+                                    }}
+                                >
+                                    <div className="summary-card">
+                                        <div className="summary-label">Total delay</div>
+                                        <div className="summary-value">
+                                            {Math.round(totalDelay)} min
+                                        </div>
+                                    </div>
+                                    <div className="summary-card">
+                                        <div className="summary-label">Runtime</div>
+                                        <div className="summary-value">
+                                            {runtimeSeconds.toFixed
+                                                ? runtimeSeconds.toFixed(3)
+                                                : runtimeSeconds}{" "}
+                                            s
+                                        </div>
+                                    </div>
+                                    <div className="summary-card">
+                                        <div className="summary-label">Scheduled vessels</div>
+                                        <div className="summary-value">{resolvedEntries.length}</div>
+                                    </div>
+                                </div>
 
-                        <div className="result-card">
-                            <div className="card-icon">⚡</div>
-                            <div className="card-content">
-                                <h4>{t('schedulingHubPage.results.computationTime')}</h4>
-                                <p className="result-value">
-                                    {result.runtimeSeconds !== undefined
-                                        ? result.runtimeSeconds.toFixed(4)
-                                        : 'N/A'}
-                                    <span className="unit">{t('schedulingHubPage.results.computationTime.unit')}</span>
-                                </p>
-                                <small>{t('schedulingHubPage.results.computationTime.description')}</small>
+                                {warnings.length > 0 && (
+                                    <div
+                                        className="warning-box"
+                                        style={{
+                                            marginBottom: 16,
+                                            padding: 12,
+                                            borderRadius: 4,
+                                            backgroundColor: "#fff8e1",
+                                            border: "1px solid #f1c40f",
+                                            color: "#8a6d1d",
+                                        }}
+                                    >
+                                        <strong>Warnings:</strong>
+                                        <ul style={{ marginTop: 4 }}>
+                                            {warnings.map((w, idx) => (
+                                                <li key={idx}>{w}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {resolvedEntries.length === 0 ? (
+                                    <div>No vessels found for this day.</div>
+                                ) : (
+                                    <div className="table-wrapper">
+                                        <table className="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Vessel IMO</th>
+                                                    <th>Visit ID</th>
+                                                    <th>Start Time</th>
+                                                    <th>End Time</th>
+                                                    <th>Delay (min)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {resolvedEntries.map((e, idx) => (
+                                                    <tr key={e.vesselVisitId || e.VesselVisitId || idx}>
+                                                        <td>{idx + 1}</td>
+                                                        <td>{e.vesselIMO || e.VesselIMO}</td>
+                                                        <td>{e.vesselVisitId || e.VesselVisitId}</td>
+                                                        <td>{formatDateTime(e.startTime || e.StartTime)}</td>
+                                                        <td>{formatDateTime(e.endTime || e.EndTime)}</td>
+                                                        <td>
+                                                            {e.delayMinutes ??
+                                                                e.DelayMinutes ??
+                                                                0}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
-
-                    <div className="results-note">
-                        <strong>{t('schedulingHubPage.results.note')}</strong> {t('schedulingHubPage.results.note.message')}
-                    </div>
                 </div>
             )}
 
-            {/* Info Section */}
-            {!result && !error && !isLoading && (
-                <div className="info-section">
-                    <h3>{t('schedulingHubPage.info.title')}</h3>
-                    <p>
-                        {t('schedulingHubPage.info.description')}
-                    </p>
-                    <ul>
-                        <li><strong>{t('schedulingHubPage.info.heuristic')}</strong></li>
-                        <li><strong>{t('schedulingHubPage.info.optimal')}</strong></li>
-                    </ul>
+            {loading && (
+                <div style={{ marginTop: 16 }} className="loading-indicator">
+                    Running Prolog heuristic…
                 </div>
             )}
         </div>
     );
 };
 
-console.log('SchedulingHubPage component loaded! ⚙️');
+window.SchedulingHubPage = SchedulingHubPage;

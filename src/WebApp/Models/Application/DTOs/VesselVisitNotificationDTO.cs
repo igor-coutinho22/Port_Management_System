@@ -14,6 +14,11 @@ namespace WebApp.Models.Application.DTOs
         public CargoManifestDTO? LoadingManifest { get; set; }
         public CargoManifestDTO? UnloadingManifest { get; set; }
         public List<CrewMemberDTO> Crew { get; set; } = new();
+
+        public DateTime? ArrivalTime { get; set; }
+        public DateTime? DesiredDepartureTime { get; set; }
+        public int? EstimatedLoadingDurationMinutes { get; set; }
+        public int? EstimatedUnloadingDurationMinutes { get; set; }
     }
 
 

@@ -107,7 +107,7 @@ function UpdateUserRolesForm({ onDone }) {
             </div>
             <div className="form-actions" style={{ marginTop: 24, display: 'flex', gap: 12 }}>
                 <button className="submit-btn" disabled={busy}>
-                    {busy ? "Saving…" : <><span>💾</span> Save roles</>}
+                    {busy ? "Saving…" : <><span></span> Save roles</>}
                 </button>
             </div>
             {msg && <div className={`message ${msg.includes('error') ? 'error' : 'info'}`}>{msg}</div>}

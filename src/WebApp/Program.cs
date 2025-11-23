@@ -152,6 +152,7 @@ builder.Services.AddHttpClient("DomainBackend", client =>
         new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
 
+builder.Services.AddHttpContextAccessor();
 
 // ---------- MVC / JSON ----------
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>

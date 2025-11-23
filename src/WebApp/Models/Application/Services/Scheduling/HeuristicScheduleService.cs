@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using WebApp.Models.Domain.Scheduling;
@@ -13,19 +14,22 @@ namespace WebApp.Models.Application.Services.Scheduling
         private readonly string _prologFilePath;
         private readonly HttpClient _httpClient;
         private readonly ILogger<HeuristicScheduleService> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private bool _prologChecked;
 
         public HeuristicScheduleService(
             IHttpClientFactory httpClientFactory,
             ILogger<HeuristicScheduleService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
             _httpClient = httpClientFactory.CreateClient("DomainBackend");
+            _httpContextAccessor = httpContextAccessor;
 
             _prologFilePath = Path.Combine(
                 AppContext.BaseDirectory,
-                "Domain", "Scheduling", "scheduling_heuristic.pl");
+                "Models", "Domain", "Scheduling", "heuristic_schedule.pl");
         }
 
         public async Task<SchedulingResult> GenerateDailyScheduleAsync(
@@ -40,7 +44,7 @@ namespace WebApp.Models.Application.Services.Scheduling
 
             var stopwatch = Stopwatch.StartNew();
 
-            // 1) Get visits for that day via REST
+            // 1) Fetch approved visits for the selected day via REST
             var visits = await GetVisitsForDateAsync(targetDate, cancellationToken);
 
             if (!visits.Any())
@@ -58,14 +62,14 @@ namespace WebApp.Models.Application.Services.Scheduling
             // 2) Build Prolog facts & ID map
             var (vesselFacts, idMap) = BuildPrologVesselFacts(visits, targetDate);
 
-            // 3) Run the chosen heuristic in Prolog
+            // 3) Run specific heuristic
             var (seqLine, delayLine) =
                 await RunPrologAsync(vesselFacts, heuristicAtom, cancellationToken);
 
-            // 4) Parse sequence
+            // 4) Parse the sequence returned by Prolog
             var entries = ParseSeqTripletsLine(seqLine, idMap, targetDate);
 
-            // 5) Parse delay
+            // 5) Parse total delay
             if (!double.TryParse(delayLine, out var totalDelay))
                 throw new InvalidOperationException($"Could not parse delay value from Prolog: '{delayLine}'");
 
@@ -81,7 +85,8 @@ namespace WebApp.Models.Application.Services.Scheduling
             };
         }
 
-        #region Prolog availability (Option A)
+
+        #region Prolog Availability Check (Option A)
 
         private void EnsurePrologAvailable()
         {
@@ -124,7 +129,9 @@ namespace WebApp.Models.Application.Services.Scheduling
 
         #endregion
 
-        #region REST calls to other modules
+
+
+        #region REST: Fetch Vessel Visit Notifications
 
         private sealed class VesselVisitNotificationDTO
         {
@@ -132,17 +139,24 @@ namespace WebApp.Models.Application.Services.Scheduling
             public string VesselIMO { get; set; } = default!;
             public DateTime VisitDate { get; set; }
             public string Status { get; set; } = default!;
-            // TODO: extend with ArrivalTime, DesiredDepartureTime, etc. if needed
+            public string Purpose { get; set; } = default!;
+
+            public DateTime? ArrivalTime { get; set; }
+            public DateTime? DesiredDepartureTime { get; set; }
+            public int? EstimatedLoadingDurationMinutes { get; set; }
+            public int? EstimatedUnloadingDurationMinutes { get; set; }
         }
 
         private async Task<IReadOnlyList<VesselVisitNotificationDTO>> GetVisitsForDateAsync(
             DateOnly targetDate,
             CancellationToken cancellationToken)
         {
+
+            AttachUserBearerToken();
+
             var from = targetDate.ToDateTime(TimeOnly.MinValue);
             var to = targetDate.ToDateTime(TimeOnly.MaxValue);
 
-            // Assuming "Approved" is a valid status string in your search endpoint
             var url =
                 $"/api/vesselvisitnotification/search" +
                 $"?status=Approved" +
@@ -150,15 +164,15 @@ namespace WebApp.Models.Application.Services.Scheduling
                 $"&toDate={Uri.EscapeDataString(to.ToString("O"))}";
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
+
             if (!response.IsSuccessStatusCode)
             {
                 var body = await response.Content.ReadAsStringAsync(cancellationToken);
                 throw new InvalidOperationException(
-                    $"Error fetching vessel visits. Status: {response.StatusCode}, Body: {body}");
+                    $"Error fetching vessel visits. Status={response.StatusCode}, Body={body}");
             }
 
-            var list = await response.Content.ReadFromJsonAsync<List<VesselVisitNotificationDTO>>(
-                cancellationToken: cancellationToken)
+            var list = await response.Content.ReadFromJsonAsync<List<VesselVisitNotificationDTO>>(cancellationToken: cancellationToken)
                        ?? new List<VesselVisitNotificationDTO>();
 
             return list;
@@ -166,7 +180,9 @@ namespace WebApp.Models.Application.Services.Scheduling
 
         #endregion
 
-        #region Prolog facts
+
+
+        #region Build Prolog Facts
 
         private (string Facts, Dictionary<string, VesselVisitNotificationDTO> IdMap)
             BuildPrologVesselFacts(
@@ -181,81 +197,84 @@ namespace WebApp.Models.Application.Services.Scheduling
                 var prologId = $"v_{visit.Id:N}";
                 idMap[prologId] = visit;
 
-                var arrivalMinutes = GetArrivalTimeMinutes(visit, targetDate);
-                var departureMinutes = GetDepartureTimeMinutes(visit, targetDate);
-                var loadingMinutes = GetLoadingTimeMinutes(visit);
-                var unloadingMinutes = GetUnloadingTimeMinutes(visit);
+                var arrival = GetArrivalTimeMinutes(visit, targetDate);
+                var departure = GetDepartureTimeMinutes(visit, targetDate);
+                var loading = GetLoadingTimeMinutes(visit);
+                var unloading = GetUnloadingTimeMinutes(visit);
 
                 sb.AppendLine(
-                    $"vessel({prologId},{arrivalMinutes},{departureMinutes},{loadingMinutes},{unloadingMinutes}).");
+                    $"vessel({prologId},{arrival},{departure},{loading},{unloading}).");
             }
 
             return (sb.ToString(), idMap);
         }
 
-        // -------- TODOs: domain-specific time logic (you fill these) --------
 
         private int GetArrivalTimeMinutes(VesselVisitNotificationDTO visit, DateOnly targetDate)
         {
-            // Example if VisitDate already encodes arrival with time-of-day:
-            // var dt = visit.VisitDate;
-            // var midnight = targetDate.ToDateTime(TimeOnly.MinValue);
-            // return (int)(dt - midnight).TotalMinutes;
+            if (!visit.ArrivalTime.HasValue)
+                throw new InvalidOperationException("ArrivalTime is required for scheduling.");
 
-            throw new NotImplementedException("GetArrivalTimeMinutes must be implemented.");
+            var dt = visit.ArrivalTime.Value;
+            var midnight = targetDate.ToDateTime(TimeOnly.MinValue);
+            return (int)(dt - midnight).TotalMinutes;
         }
 
         private int GetDepartureTimeMinutes(VesselVisitNotificationDTO visit, DateOnly targetDate)
         {
-            // Requires a desired departure DateTime somewhere in your DTO/entity.
-            throw new NotImplementedException("GetDepartureTimeMinutes must be implemented.");
+            if (!visit.DesiredDepartureTime.HasValue)
+                throw new InvalidOperationException("DesiredDepartureTime is required for scheduling.");
+
+            var dt = visit.DesiredDepartureTime.Value;
+            var midnight = targetDate.ToDateTime(TimeOnly.MinValue);
+            return (int)(dt - midnight).TotalMinutes;
         }
 
         private int GetLoadingTimeMinutes(VesselVisitNotificationDTO visit)
-        {
-            // Derive from manifests / cargo data (or approximate).
-            throw new NotImplementedException("GetLoadingTimeMinutes must be implemented.");
-        }
+            => visit.EstimatedLoadingDurationMinutes ?? 0;
 
         private int GetUnloadingTimeMinutes(VesselVisitNotificationDTO visit)
-        {
-            // Same as loading.
-            throw new NotImplementedException("GetUnloadingTimeMinutes must be implemented.");
-        }
+            => visit.EstimatedUnloadingDurationMinutes ?? 0;
 
         #endregion
 
-        #region Running Prolog
+
+
+        #region Run Prolog
 
         private async Task<(string SeqLine, string DelayLine)> RunPrologAsync(
-            string vesselFacts,
-            string heuristicAtom,
-            CancellationToken cancellationToken)
+    string vesselFacts,
+    string heuristicAtom,
+    CancellationToken cancellationToken)
         {
-            var tempFile = Path.Combine(
-                Path.GetTempPath(),
-                $"schedule_{Guid.NewGuid():N}.pl");
+            var tempFile = Path.Combine(Path.GetTempPath(), $"schedule_{Guid.NewGuid():N}.pl");
 
             try
             {
                 var script = new StringBuilder();
 
+                // 1) Load your heuristics file
                 script.AppendLine($":- consult('{EscapePathForProlog(_prologFilePath)}').");
-                script.AppendLine(":- initialization(main).");
                 script.AppendLine();
-                script.AppendLine(vesselFacts);
-                script.AppendLine($@"
-main :-
-    run_heuristic({heuristicAtom}),
-    halt.
-");
+
+                // 2) Assert all vessel facts as normal top-level facts
+                script.AppendLine("% Vessel facts (generated by C#):");
+                script.AppendLine(vesselFacts);   // ex: vessel(v_..., 360, 600, 60, 30).
+                script.AppendLine();
+
+                // 3) Define main/0 that just runs the chosen heuristic and halts
+                script.AppendLine("main :-");
+                script.AppendLine($"    run_heuristic({heuristicAtom}),");
+                script.AppendLine("    halt.");
+                script.AppendLine();
 
                 await File.WriteAllTextAsync(tempFile, script.ToString(), cancellationToken);
 
                 var psi = new ProcessStartInfo
                 {
                     FileName = PrologCommandName,
-                    Arguments = $"-q -f \"{tempFile}\"",
+                    // -q = quiet, -s script file, -g main, -t halt on failure
+                    Arguments = $"-q -s \"{tempFile}\" -g main -t halt",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -268,17 +287,38 @@ main :-
                 var stdoutTask = process.StandardOutput.ReadToEndAsync();
                 var stderrTask = process.StandardError.ReadToEndAsync();
 
-                await Task.WhenAll(stdoutTask, stderrTask);
-                await process.WaitForExitAsync(cancellationToken);
+                // Timeout protection (10s)
+                var waitTask = process.WaitForExitAsync(cancellationToken);
+                var completed = await Task.WhenAny(
+                    waitTask,
+                    Task.Delay(TimeSpan.FromSeconds(10), cancellationToken));
 
-                var stdout = stdoutTask.Result;
-                var stderr = stderrTask.Result;
+                if (completed != waitTask)
+                {
+                    try { process.Kill(entireProcessTree: true); } catch { /* ignore */ }
+
+                    var so = await stdoutTask;
+                    var se = await stderrTask;
+                    _logger.LogError(
+                        "Prolog process timed out. Stdout: {Stdout} Stderr: {Stderr}",
+                        so, se);
+
+                    throw new InvalidOperationException("Prolog scheduling timed out.");
+                }
+
+                await waitTask; // ensure it really exited
+
+                var stdout = await stdoutTask;
+                var stderr = await stderrTask;
 
                 if (process.ExitCode != 0)
                 {
-                    _logger.LogError("Prolog error. Exit {ExitCode}. Stderr: {Stderr}",
+                    _logger.LogError(
+                        "Prolog exited with code {ExitCode}. Stderr: {Stderr}",
                         process.ExitCode, stderr);
-                    throw new InvalidOperationException("Prolog scheduling failed. See logs for details.");
+
+                    throw new InvalidOperationException(
+                        $"Prolog scheduling failed. ExitCode={process.ExitCode}. Stderr={stderr}");
                 }
 
                 var lines = stdout
@@ -288,8 +328,9 @@ main :-
 
                 if (lines.Length < 2)
                 {
+                    _logger.LogError("Unexpected Prolog output. Stdout: {Stdout}", stdout);
                     throw new InvalidOperationException(
-                        $"Unexpected Prolog output. Expected 2 lines, got {lines.Length}. Output: {stdout}");
+                        $"Unexpected Prolog output. Expected 2 lines, got {lines.Length}. Output:\n{stdout}");
                 }
 
                 var seqLine = lines[0];
@@ -299,26 +340,19 @@ main :-
             }
             finally
             {
-                try
-                {
-                    if (File.Exists(tempFile))
-                        File.Delete(tempFile);
-                }
-                catch
-                {
-                    // ignore cleanup failures
-                }
+                try { if (File.Exists(tempFile)) File.Delete(tempFile); }
+                catch { /* ignore cleanup failures */ }
             }
         }
 
-        private static string EscapePathForProlog(string path)
-        {
-            return path.Replace("\\", "\\\\");
-        }
+        private string EscapePathForProlog(string path)
+            => path.Replace("\\", "\\\\");
 
         #endregion
 
-        #region Parsing sequence
+
+
+        #region Parse Sequence Returned by Prolog
 
         private List<VesselScheduleEntry> ParseSeqTripletsLine(
             string seqLine,
@@ -329,7 +363,7 @@ main :-
             var matches = Regex.Matches(seqLine, pattern);
 
             var entries = new List<VesselScheduleEntry>();
-            var dayStart = targetDate.ToDateTime(TimeOnly.MinValue);
+            var midnight = targetDate.ToDateTime(TimeOnly.MinValue);
 
             foreach (Match match in matches)
             {
@@ -339,29 +373,21 @@ main :-
 
                 if (!int.TryParse(startStr, out var startMinutes) ||
                     !int.TryParse(endStr, out var endMinutes))
-                {
-                    throw new InvalidOperationException(
-                        $"Could not parse start/end minutes from Prolog term: '{match.Value}'");
-                }
+                    throw new InvalidOperationException($"Invalid Prolog tuple: {match.Value}");
 
                 if (!idMap.TryGetValue(idAtom, out var visit))
-                    throw new InvalidOperationException($"Unknown vessel ID from Prolog: '{idAtom}'");
+                    throw new InvalidOperationException($"Unknown vessel ID: {idAtom}");
 
-                var startTime = dayStart.AddMinutes(startMinutes);
-                var endTime = dayStart.AddMinutes(endMinutes);
-
-                var entry = new VesselScheduleEntry
+                entries.Add(new VesselScheduleEntry
                 {
                     VesselVisitId = visit.Id,
                     VesselIMO = visit.VesselIMO,
-                    StartTime = startTime,
-                    EndTime = endTime,
+                    StartTime = midnight.AddMinutes(startMinutes),
+                    EndTime = midnight.AddMinutes(endMinutes),
                     AssignedCraneId = null,
                     StaffMecNumbers = new List<string>(),
-                    DelayMinutes = 0 // optional: compute per-vessel delay here
-                };
-
-                entries.Add(entry);
+                    DelayMinutes = 0
+                });
             }
 
             return entries;
@@ -369,37 +395,56 @@ main :-
 
         #endregion
 
-        #region Heuristic validation
 
-        private string NormalizeHeuristicName(string heuristicName)
-        {
-            // make it Prolog-atom friendly: lowercase, replace spaces/dashes with underscore
-            var norm = heuristicName
-                .Trim()
-                .ToLowerInvariant()
-                .Replace("-", "_")
-                .Replace(" ", "_");
-            return norm;
-        }
 
-        private void ValidateHeuristic(string heuristicAtom)
+        #region Heuristic Validation
+
+        private string NormalizeHeuristicName(string name) =>
+            name.Trim().ToLower().Replace("-", "_").Replace(" ", "_");
+
+        private void ValidateHeuristic(string heuristic)
         {
-            // restrict to the ones you actually implemented in Prolog
             var allowed = new HashSet<string>
             {
                 "minimum_slack_time",
                 "early_departure_time",
                 "arrived_shortest_departure_time",
-                "atc"
+                "atc",
+                "optimal"
             };
 
-            if (!allowed.Contains(heuristicAtom))
-            {
+            if (!allowed.Contains(heuristic))
                 throw new ArgumentException(
-                    $"Unknown heuristic '{heuristicAtom}'. Allowed: {string.Join(", ", allowed)}");
-            }
+                    $"Unknown heuristic '{heuristic}'. Allowed: {string.Join(", ", allowed)}");
         }
 
         #endregion
+
+        private void AttachUserBearerToken()
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext == null)
+                return;
+
+            var authHeader = httpContext.Request.Headers["Authorization"].ToString();
+            if (string.IsNullOrWhiteSpace(authHeader))
+                return;
+
+            // Expect "Bearer <token>"
+            const string bearerPrefix = "Bearer ";
+            if (!authHeader.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var token = authHeader.Substring(bearerPrefix.Length).Trim();
+            if (string.IsNullOrEmpty(token))
+                return;
+
+            // Set on outgoing HttpClient
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+
     }
+
+
 }

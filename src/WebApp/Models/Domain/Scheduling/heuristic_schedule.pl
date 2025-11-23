@@ -3,21 +3,6 @@
 
 :-dynamic shortest_delay/2.
 
-
-vessel(va, 6, 63, 10, 16).
-vessel(vb, 23, 50, 9, 7).
-vessel(vc, 8, 40, 5, 12).
-vessel(vd, 27, 40, 0, 8).
-vessel(ve, 36, 70, 12, 0).
-vessel(vf, 40, 60, 8, 6).
-vessel(vg, 52, 80, 9, 10).
-vessel(vi, 61, 90, 13, 8).
-vessel(vj, 74, 100, 7, 7).
-vessel(vk, 81, 110, 6, 8).
-%vessel(vl, 90, 140, 22, 18).
-%vessel(vm, 112, 140, 8, 7).
-%vessel(vn, 82, 135, 13, 12).
-
 sequence_temporization(LV,SeqTriplets):-
 		sequence_temporization1(0,LV,SeqTriplets).
 
@@ -41,14 +26,8 @@ sum_delays([(V,_,TEndLoad)|LV],S):-
 
 
 obtain_seq_shortest_delay(SeqBetterTriplets, SShortestDelay):-
-    get_time(Ti),
     (obtain_seq_shortest_delay1;true),
-    retract(shortest_delay(SeqBetterTriplets, SShortestDelay)),
-    write('Better Sequence: '),write(SeqBetterTriplets),nl,
-    write('Shortest Delay: '),write(SShortestDelay),nl,
-    get_time(Tf),
-    T is Tf-Ti,
-    write('Time to generate the shortest delay solution: '),write(T),nl.
+    retract(shortest_delay(SeqBetterTriplets, SShortestDelay)).
 
 
 obtain_seq_shortest_delay1:-
@@ -92,7 +71,6 @@ findall((Departure,V),vessel(V,_,Departure,_,_),LDV),
 sort(LDV,LDVSorted),
 obtain_vessels(LDVSorted,SeqV),
 sequence_temporization(SeqV,SeqTripletsH),
-write('SeqTripletsH='),write(SeqTripletsH),nl,
 sum_delays(SeqTripletsH,SDelaysH),!.
 
 
@@ -103,7 +81,6 @@ findall((ProcTime,V),(vessel(V,_,_,Loading,Unloading),ProcTime is Loading+Unload
 sort(LDV,LDVSorted),
 obtain_vessels(LDVSorted,SeqV),
 sequence_temporization(SeqV,SeqTripletsH),
-write('SeqTripletsH='),write(SeqTripletsH),nl,
 sum_delays(SeqTripletsH,SDelaysH),!.
 
 % MINIMUM SLCAK TIME
@@ -113,7 +90,6 @@ findall((Slack,V),(vessel(V,Arrival,Departure,Loading,Unloading),TotalTime is De
 sort(LDV,LDVSorted),
 obtain_vessels(LDVSorted,SeqV),
 sequence_temporization(SeqV,SeqTripletsH),
-write('SeqTripletsH='),write(SeqTripletsH),nl,
 sum_delays(SeqTripletsH,SDelaysH),!.
 
 
@@ -127,13 +103,12 @@ sum_delays(SeqTripletsH,SDelaysH),!.
 
 % ORDERS THE VESSELS THAT ALREADY ARRIVED AT THE TIME THE DOCK IS FREE AND SORTS BASED ON DEPARTURE TIME
 
-HeuristicArrivedShortestDepartureTime(SeqTripletsH,SDelaysH):-
+heuristic_arrived_shortest_departure_time(SeqTripletsH,SDelaysH):-
 findall((Departure,Arrival,V),vessel(V,Arrival,Departure,_,_),LDV),
 sort(LDV,LDVSorted),
 orderArrived(LDVSorted,0,R),
 obtain_vessels(R,SeqV),
 sequence_temporization(SeqV,SeqTripletsH),
-write('SeqTripletsH='),write(SeqTripletsH),nl,
 sum_delays(SeqTripletsH,SDelaysH),!.
 
 % Base case: no more vessels to schedule
@@ -196,7 +171,7 @@ earliest_arrival([(_D, A, _V) | Rest], Acc, MinA) :-
 
 
 
-% MAIN HEURISTIC: ATC (Apparent Tardiness Cost) 
+% MAIN HEURISTIC: ATC (Apparent Tardiness Cost)
 
 
 heuristic_atc(SeqTripletsH, SDelaysH) :-
@@ -331,6 +306,8 @@ call_heuristic(arrived_shortest_departure_time, SeqTripletsH, SDelaysH) :-
 call_heuristic(atc, SeqTripletsH, SDelaysH) :-
     heuristic_atc(SeqTripletsH, SDelaysH).
 
+call_heuristic(optimal, SeqTripletsH, SDelaysH) :-
+    obtain_seq_shortest_delay(SeqTripletsH, SDelaysH).
 
 
 % [(vd,27,34),(vf,40,53),...]

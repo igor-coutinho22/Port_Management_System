@@ -36,7 +36,11 @@ namespace WebApp.Models.Application.Mappers
                     Name = c.Name,
                     CitizenId = c.CitizenId,
                     Nationality = c.Nationality
-                }).ToList()
+                }).ToList(),
+                ArrivalTime = entity.ArrivalTime,
+                DesiredDepartureTime = entity.DesiredDepartureTime,
+                EstimatedLoadingDurationMinutes = entity.EstimatedLoadingDurationMinutes,
+                EstimatedUnloadingDurationMinutes = entity.EstimatedUnloadingDurationMinutes
             };
         }
 
@@ -77,6 +81,12 @@ namespace WebApp.Models.Application.Mappers
             }
             foreach (var member in dto.Crew)
                 entity.AddCrewMember(CrewMapper.ToEntity(member));
+
+            if (dto.ArrivalTime.HasValue && dto.DesiredDepartureTime.HasValue)
+                entity.UpdateScheduleWindow(dto.ArrivalTime.Value, dto.DesiredDepartureTime.Value);
+
+            if (dto.EstimatedLoadingDurationMinutes.HasValue || dto.EstimatedUnloadingDurationMinutes.HasValue)
+                entity.UpdateEstimatedDurations(dto.EstimatedLoadingDurationMinutes, dto.EstimatedUnloadingDurationMinutes);
 
             return entity;
         }
