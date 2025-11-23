@@ -1,24 +1,34 @@
-/*using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Models.Domain.Scheduling.Interfaces;
-namespace PortApi.Controllers;
+using WebApp.Models.Domain.Scheduling.Services;
 
+[Authorize("RequireOperator")]
 [ApiController]
 [Route("api/[controller]")]
-public class SchedulingController{
-    private readonly IHeuristicScheduleService _heuristicService;
-    public SchedulingController(
-        IHeuristicScheduleService heuristicService
-        )
+public class SchedulingController : ControllerBase
+{
+    private readonly IHeuristicScheduleService _scheduleService;
+
+    public SchedulingController(IHeuristicScheduleService scheduleService)
     {
-        _heuristicService = heuristicService;
+        _scheduleService = scheduleService;
     }
 
-    [HttpGet]
-    public IActionResult GetSchedule([FromQuery] string mode = "heuristic")
+    [HttpPost("daily")]
+    public async Task<IActionResult> GenerateDailySchedule(
+        [FromBody] DailyScheduleRequestDTO request,
+        CancellationToken cancellationToken)
     {
-        var vessels = GetTodayVessels();
-        var result = _heuristicService.ComputeSchedule(vessels);
+        if (request.TargetDate == default)
+            return BadRequest("TargetDate is required.");
+        if (string.IsNullOrWhiteSpace(request.Heuristic))
+            return BadRequest("Heuristic is required.");
+
+        var result = await _scheduleService.GenerateDailyScheduleAsync(
+            request.TargetDate,
+            request.Heuristic,
+            cancellationToken);
+
         return Ok(result);
     }
-}*/
+}
