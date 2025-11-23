@@ -1,5 +1,5 @@
 // Vessels Management Hub Page - Swagger-style expandable interface
-console.log('🚢 VesselsHubPage.jsx is loading...');
+console.log('SVesselsHubPage.jsx is loading...');
 
 const VesselsHubPage = () => {
     const { t } = useTranslation();
@@ -37,35 +37,35 @@ const VesselsHubPage = () => {
     const sections = [
         {
             id: 'register',
-            title: `📝 ${t('vessels.hub.page.register.title')}`,
+            title: `${t('vessels.hub.page.register.title')}`,
             description: t('vessels.hub.page.register.desc'),
             color: '#27ae60',
             component: 'RegisterVesselForm'
         },
         {
             id: 'search',
-            title: `🔍 ${t('vessels.hub.page.search.title')}`,
+            title: `${t('vessels.hub.page.search.title')}`,
             description: t('vessels.hub.page.search.desc'),
             color: '#3498db',
             component: 'SearchVesselsForm'
         },
         {
             id: 'getByImo',
-            title: `🎯 ${t('vessels.hub.page.get_by_imo.title')}`,
+            title: `${t('vessels.hub.page.get_by_imo.title')}`,
             description: t('vessels.hub.page.get_by_imo.desc'),
             color: '#2980b9',
             component: 'GetVesselByImoForm'
         },
         {
             id: 'edit',
-            title: `✏️ ${t('vessels.hub.page.edit.title')}`,
+            title: `${t('vessels.hub.page.edit.title')}`,
             description: t('vessels.hub.page.edit.desc'),
             color: '#f39c12',
             component: 'EditVesselForm'
         },
         {
             id: 'delete',
-            title: `🗑️ ${t('vessels.hub.page.delete.title')}`,
+            title: `${t('vessels.hub.page.delete.title')}`,
             description: t('vessels.hub.page.delete.desc'),
             color: '#e74c3c',
             component: 'DeleteVesselForm'
@@ -76,7 +76,7 @@ const VesselsHubPage = () => {
         <div className="page-section">
             <div className="hub-header">
                 <h2 className="page-title">
-                    🚢 {t('vessels.hub.page.main.title')}
+                    {t('vessels.hub.page.main.title')}
                 </h2>
                 <p>{t('vessels.hub.page.main.desc')}</p>
             </div>
@@ -201,4 +201,4 @@ const VesselsQuickTable = ({ vessels, onRefresh }) => {
     );
 };
 
-console.log('VesselsHubPage component loaded! 🚢');
+console.log('VesselsHubPage component loaded!');
