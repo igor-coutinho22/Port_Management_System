@@ -187,23 +187,52 @@ class PortGeometryBuilder {
     }
 
     addDecorContainers(group, areaWidth, areaDepth, groundHeight) {
-        const containerSize = 5;
-        const numContainers = Math.floor((areaWidth * areaDepth) / 500);
+        const containerWidth = 5;
+        const containerDepth = 10; // BoxGeometry(5, 5, 10) -> Z is 10
+        const gap = 2;
 
-        const geo = new THREE.BoxGeometry(containerSize, containerSize, containerSize * 2);
-        // UVs for container
-        this.adjustUVs(geo, containerSize, containerSize, containerSize * 2, 0.2); // Smaller scale
+        const cellWidth = containerWidth + gap; // 7
+        const cellDepth = containerDepth + gap; // 12
 
-        for (let i = 0; i < numContainers; i++) {
-            const mat = this.materials.container[Math.floor(Math.random() * this.materials.container.length)];
-            const mesh = new THREE.Mesh(geo, mat);
+        // Calculate grid capacity
+        const cols = Math.floor((areaWidth - 10) / cellWidth);
+        const rows = Math.floor((areaDepth - 10) / cellDepth);
 
-            const x = (Math.random() - 0.5) * (areaWidth - 10);
-            const z = (Math.random() - 0.5) * (areaDepth - 10);
+        // Limit total containers
+        const maxContainers = Math.min(cols * rows, 50);
 
-            mesh.position.set(x, groundHeight / 2 + containerSize / 2, z);
-            mesh.castShadow = true;
-            group.add(mesh);
+        // Center the grid
+        const startX = -((cols * cellWidth) / 2) + cellWidth / 2;
+        const startZ = -((rows * cellDepth) / 2) + cellDepth / 2;
+
+        const geo = new THREE.BoxGeometry(containerWidth, containerWidth, containerDepth);
+        this.adjustUVs(geo, containerWidth, containerWidth, containerDepth, 0.2);
+
+        let count = 0;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (count >= maxContainers) return;
+
+                // Randomly skip some spots
+                if (Math.random() > 0.4) {
+                    const mat = this.materials.container[Math.floor(Math.random() * this.materials.container.length)];
+                    const mesh = new THREE.Mesh(geo, mat);
+
+                    const x = startX + c * cellWidth;
+                    const z = startZ + r * cellDepth;
+
+                    // Stack height (randomly 1 to 3 high)
+                    const stackHeight = Math.floor(Math.random() * 3) + 1;
+
+                    for (let h = 0; h < stackHeight; h++) {
+                        const stackMesh = mesh.clone();
+                        stackMesh.position.set(x, groundHeight + containerWidth / 2 + h * containerWidth, z);
+                        stackMesh.castShadow = true;
+                        group.add(stackMesh);
+                    }
+                    count++;
+                }
+            }
         }
     }
 
@@ -268,15 +297,53 @@ class PortGeometryBuilder {
 
             return group;
         } else {
-            // Simple cylinder for other vehicles
-            const geo = new THREE.CylinderGeometry(radius, radius, height, 16);
-            const mat = this.materials.vehicleBody;
+            // Truck / Vehicle
+            const group = new THREE.Group();
 
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
+            // 1. Chassis
+            const chassisLength = height * 1.5; // "height" in DB is usually small for trucks, treat as length scale
+            const chassisWidth = radius * 2.5;
+            const chassisHeight = radius;
 
-            return mesh;
+            const chassisGeo = new THREE.BoxGeometry(chassisLength, chassisHeight, chassisWidth);
+            const chassis = new THREE.Mesh(chassisGeo, this.materials.vehicleBody);
+            chassis.position.y = chassisHeight + radius; // Above wheels
+            chassis.castShadow = true;
+            chassis.receiveShadow = true;
+            group.add(chassis);
+
+            // 2. Cabin
+            const cabinLength = chassisLength * 0.3;
+            const cabinHeight = chassisHeight * 1.2;
+            const cabinGeo = new THREE.BoxGeometry(cabinLength, cabinHeight, chassisWidth);
+            const cabin = new THREE.Mesh(cabinGeo, new THREE.MeshStandardMaterial({ color: 0xEEEEEE })); // White/Glass cabin
+            cabin.position.set(chassisLength / 2 - cabinLength / 2, chassisHeight * 2 + radius, 0);
+            cabin.castShadow = true;
+            cabin.receiveShadow = true;
+            group.add(cabin);
+
+            // 3. Wheels
+            const wheelRadius = radius * 0.6;
+            const wheelWidth = radius * 0.4;
+            const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelWidth, 16);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+
+            const positions = [
+                { x: chassisLength / 3, z: chassisWidth / 2 },
+                { x: chassisLength / 3, z: -chassisWidth / 2 },
+                { x: -chassisLength / 3, z: chassisWidth / 2 },
+                { x: -chassisLength / 3, z: -chassisWidth / 2 }
+            ];
+
+            positions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.rotation.x = Math.PI / 2;
+                wheel.position.set(pos.x, wheelRadius, pos.z);
+                wheel.castShadow = true;
+                group.add(wheel);
+            });
+
+            return group;
         }
     }
 

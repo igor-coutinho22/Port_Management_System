@@ -27,7 +27,7 @@ class PortLayoutEngine {
         const storageLayouts = this.layoutStorageAreas(storageAreas, dockLayouts);
         const resourceLayouts = this.layoutResources(resources, storageLayouts, dockLayouts);
         const vesselLayouts = this.layoutVessels(vessels || [], dockLayouts);
-        const staffLayouts = this.layoutStaff(staff || []);
+        const staffLayouts = this.layoutStaff(staff || [], dockLayouts);
 
         return {
             docks: dockLayouts,
@@ -186,15 +186,24 @@ class PortLayoutEngine {
 
         // 3. Scatter others (Trucks, etc.) near storage
         others.forEach((res, i) => {
-            const targetArea = storageLayouts[i % storageLayouts.length];
+            // Target "Container Yard North" specifically
+            const targetArea = storageLayouts.find(s => s.name === "Container Yard North") || storageLayouts[0];
+
             let x = 0, z = 0;
 
             if (targetArea) {
-                x = targetArea.x + (Math.random() - 0.5) * 50;
-                z = targetArea.z + targetArea.depth / 2 + 20;
+                // Place strictly INSIDE the yard boundaries
+                // Margin of 10 units from edge
+                const margin = 10;
+                const safeWidth = Math.max(0, targetArea.width - margin * 2);
+                const safeDepth = Math.max(0, targetArea.depth - margin * 2);
+
+                x = targetArea.x + (Math.random() - 0.5) * safeWidth;
+                z = targetArea.z + (Math.random() - 0.5) * safeDepth;
             } else {
-                x = (Math.random() - 0.5) * 200;
-                z = 50;
+                // Fallback
+                x = 0;
+                z = 100;
             }
 
             layouts.push({
@@ -204,7 +213,7 @@ class PortLayoutEngine {
                 height: 15,
                 radius: 4,
                 x: x,
-                y: 5,
+                y: 5, // On ground
                 z: z
             });
         });
@@ -232,14 +241,20 @@ class PortLayoutEngine {
 
             if (dock) {
                 // Place alongside the dock
-                // Assuming dock is along X, we place vessel along X, slightly offset in Z
-                x = dock.x;
+                // Check if another vessel is already at this dock
+                const vesselsAtDock = layouts.filter(l => l.dockId === dock.id).length;
+                // Use a safe length offset (e.g. 300) because vessels are moored lengthwise (stern-to-bow)
+                // and can be up to ~250m long.
+                const offset = vesselsAtDock * 300;
+
+                x = dock.x + offset;
                 z = dock.z - dock.depth / 2 - width / 2 - 5; // 5 units gap
                 angle = 0;
             } else {
                 // Anchor out at sea if no dock assigned (fallback)
-                x = (i - vessels.length / 2) * 150;
-                z = -200;
+                // Increase spacing to avoid collisions
+                x = (i - vessels.length / 2) * 400; // Increased from 150 to 400
+                z = -300 - (i % 3) * 100; // Stagger depth too
                 angle = 0;
             }
 
@@ -248,6 +263,7 @@ class PortLayoutEngine {
                 name: v.name,
                 type: "Vessel",
                 vesselType: v.type,
+                dockId: v.dockId, // Store dockId for collision check above
                 length: length,
                 width: width,
                 height: (v.height || 20) * this.scale,
@@ -264,32 +280,39 @@ class PortLayoutEngine {
     // -----------------------------------------------------------------------------
     // STAFF LAYOUT
     // -----------------------------------------------------------------------------
-    layoutStaff(staffList) {
+    // -----------------------------------------------------------------------------
+    // STAFF LAYOUT
+    // -----------------------------------------------------------------------------
+    layoutStaff(staffList, dockLayouts) {
         const layouts = [];
 
-        // Place staff in a grid near the docks
-        let startX = -100;
-        let startZ = 80; // Between docks and storage
-        let col = 0;
-        let row = 0;
-        const spacing = 10;
+        // Place staff on the docks
+        staffList.forEach((s, i) => {
+            // Assign to a random dock
+            const dock = dockLayouts.length > 0 ? dockLayouts[i % dockLayouts.length] : null;
 
-        staffList.forEach(s => {
+            let x = 0, z = 50; // Default safe zone if no docks
+
+            if (dock) {
+                // Place somewhere on the dock surface
+                // Dock is centered at dock.x, dock.z with dimensions dock.width, dock.depth
+                x = dock.x + (Math.random() - 0.5) * (dock.width - 10);
+                z = dock.z + (Math.random() - 0.5) * (dock.depth - 10);
+            } else {
+                // Fallback: Place on a "pier" or safe ground area
+                x = (i % 5) * 10;
+                z = 50 + (Math.floor(i / 5) * 10);
+            }
+
             layouts.push({
                 id: s.id,
                 name: s.name,
                 type: "Staff",
                 status: s.status,
-                x: startX + col * spacing,
-                y: 5, // Standing on ground
-                z: startZ + row * spacing
+                x: x,
+                y: 15, // Standing on ground
+                z: z
             });
-
-            col++;
-            if (col > 10) {
-                col = 0;
-                row++;
-            }
         });
 
         return layouts;

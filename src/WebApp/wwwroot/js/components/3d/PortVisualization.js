@@ -136,7 +136,7 @@ class PortVisualization {
     // MINIMAP SETUP (Orthographic top-down camera)
     // -----------------------------------------------------------------------------
     setupMinimap() {
-        const size = 220; // minimap resolution
+        const size = 110; // minimap resolution
         this.minimapSize = size;
 
         // Mini-map camera
@@ -381,8 +381,8 @@ class PortVisualization {
     // -----------------------------------------------------------------------------
     addWaterPlane() {
         const geo = new THREE.PlaneGeometry(10000, 10000);
-        const mat = new THREE.MeshPhongMaterial({
-            color: 0x006994, // Darker blue from placeholder
+        const mat = new THREE.MeshStandardMaterial({
+            color: 0x006994,
             transparent: true,
             opacity: 0.8,
             side: THREE.DoubleSide
