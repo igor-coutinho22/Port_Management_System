@@ -1,5 +1,5 @@
 // Storage Areas Management Hub Page - Swagger-style expandable interface
-console.log('🏭 StorageAreasHubPage.jsx is loading...');
+console.log('StorageAreasHubPage.jsx is loading...');
 
 const StorageAreasHubPage = () => {
     const { t } = useTranslation();
@@ -277,4 +277,4 @@ const StorageAreasQuickTable = ({ storageAreas, onRefresh }) => {
     );
 };
 
-console.log('StorageAreasHubPage component loaded! 🏭');
+console.log('StorageAreasHubPage component loaded!');

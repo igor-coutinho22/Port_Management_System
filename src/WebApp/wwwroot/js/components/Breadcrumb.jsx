@@ -15,52 +15,52 @@ const Breadcrumb = ({ currentPage, onNavigate }) => {
             'resources': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.resources', 'Resources'), page: 'resources', icon: '📦' }
+                { label: t('entities.resources', 'Resources'), page: 'resources'}
             ],
             'vessels': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.vessels', 'Vessels'), page: 'vessels', icon: '🚢' }
+                { label: t('entities.vessels', 'Vessels'), page: 'vessels'}
             ],
             'vessel-types': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.vessel_types', 'Vessel Types'), page: 'vessel-types', icon: '🛳️' }
+                { label: t('entities.vessel_types', 'Vessel Types'), page: 'vessel-types'}
             ],
             'docks': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.docks', 'Docks'), page: 'docks', icon: '🏭' }
+                { label: t('entities.docks', 'Docks'), page: 'docks'}
             ],
             'storage-areas': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.storage_areas', 'Storage Areas'), page: 'storage-areas', icon: '🏪' }
+                { label: t('entities.storage_areas', 'Storage Areas'), page: 'storage-areas'}
             ],
             'organizations': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.organizations', 'Organizations'), page: 'organizations', icon: '🏢' }
+                { label: t('entities.organizations', 'Organizations'), page: 'organizations'}
             ],
             'representatives': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.representatives', 'Representatives'), page: 'representatives', icon: '👨‍💼' }
+                { label: t('entities.representatives', 'Representatives'), page: 'representatives'}
             ],
             'staff': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.staff', 'Staff'), page: 'staff', icon: '👷‍♂️' }
+                { label: t('entities.staff', 'Staff'), page: 'staff'}
             ],
             'vessel-visit-notifications': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.notifications', 'Notifications'), page: 'vessel-visit-notifications', icon: '📋' }
+                { label: t('entities.notifications', 'Notifications'), page: 'vessel-visit-notifications'}
             ],
             'qualifications': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
-                { label: t('entities.qualifications', 'Qualifications'), page: 'qualifications', icon: '🎓' }
+                { label: t('entities.qualifications', 'Qualifications'), page: 'qualifications'}
             ],
             '3d-view': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
@@ -68,7 +68,19 @@ const Breadcrumb = ({ currentPage, onNavigate }) => {
             ],
             'api-docs': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
-                { label: t('nav.api_docs', 'API Documentation'), page: 'api-docs', icon: '📚' }
+                { label: t('nav.api_docs', 'API Documentation'), page: 'api-docs'}
+            ],
+            'scheduling': [
+                { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
+                { label: t('nav.scheduling', 'Scheduling'), page: 'scheduling', icon: '📅' }
+            ],
+            'admin-users': [
+                { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
+                { label: t('nav.admin_users', 'Admin Users'), page: 'admin-users', icon: '👤' }
+            ],
+            'vvn-hub-for-representatives': [
+                { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
+                { label: t('nav.vvn_representatives', 'Notifications (representatives)'), page: 'vvn-hub-for-representatives', icon: '🔔' }
             ]
         };
 

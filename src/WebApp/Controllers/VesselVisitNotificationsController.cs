@@ -25,6 +25,7 @@ namespace WebApp.Controllers
         }
 
         // GET: api/vesselvisitnotification
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult> GetAllAsync()
         {
@@ -33,6 +34,7 @@ namespace WebApp.Controllers
         }
 
         // GET: api/vesselvisitnotification/search
+        [AllowAnonymous]
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<VesselVisitNotificationDTO>>> SearchAsync(
             [FromQuery] string? vesselIMO,
