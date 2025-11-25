@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,12 +16,12 @@ namespace WebApp.Migrations
                 name: "ActivationInvites",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExpiresUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Used = table.Column<bool>(type: "bit", nullable: false),
-                    TempPassword = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    ExpiresUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Used = table.Column<bool>(type: "boolean", nullable: false),
+                    TempPassword = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,10 +32,10 @@ namespace WebApp.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -45,22 +46,22 @@ namespace WebApp.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    FullName = table.Column<string>(type: "text", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -71,13 +72,13 @@ namespace WebApp.Migrations
                 name: "Organizations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Identifier = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    LegalName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    AlternativeNames = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    TaxNumber = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Identifier = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    LegalName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    AlternativeNames = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Address = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    TaxNumber = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -88,8 +89,8 @@ namespace WebApp.Migrations
                 name: "Qualifications",
                 columns: table => new
                 {
-                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                    Code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -100,12 +101,12 @@ namespace WebApp.Migrations
                 name: "Resources",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ResourceType = table.Column<int>(type: "int", nullable: false),
-                    OperationalCapacity = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    SetupTime = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ResourceType = table.Column<int>(type: "integer", nullable: false),
+                    OperationalCapacity = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    SetupTime = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -116,12 +117,12 @@ namespace WebApp.Migrations
                 name: "Staff",
                 columns: table => new
                 {
-                    MecanographicNumber = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ShortName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OperationalWindow = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    MecanographicNumber = table.Column<string>(type: "text", nullable: false),
+                    ShortName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    Phone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    OperationalWindow = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -132,14 +133,14 @@ namespace WebApp.Migrations
                 name: "StorageAreas",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    MaxCapacityTeu = table.Column<int>(type: "int", nullable: false),
-                    CurrentOccupancyTeu = table.Column<int>(type: "int", nullable: false),
-                    StorageAreaType = table.Column<int>(type: "int", nullable: false),
-                    SpecializedCargoType = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    MaxCapacityTeu = table.Column<int>(type: "integer", nullable: false),
+                    CurrentOccupancyTeu = table.Column<int>(type: "integer", nullable: false),
+                    StorageAreaType = table.Column<int>(type: "integer", nullable: false),
+                    SpecializedCargoType = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -150,11 +151,11 @@ namespace WebApp.Migrations
                 name: "VesselTypes",
                 columns: table => new
                 {
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    MaxBays = table.Column<int>(type: "int", nullable: false),
-                    MaxRows = table.Column<int>(type: "int", nullable: false),
-                    MaxTiers = table.Column<int>(type: "int", nullable: false)
+                    Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    MaxBays = table.Column<int>(type: "integer", nullable: false),
+                    MaxRows = table.Column<int>(type: "integer", nullable: false),
+                    MaxTiers = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -165,11 +166,11 @@ namespace WebApp.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -186,11 +187,11 @@ namespace WebApp.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -207,10 +208,10 @@ namespace WebApp.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -227,8 +228,8 @@ namespace WebApp.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -251,10 +252,10 @@ namespace WebApp.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -271,14 +272,14 @@ namespace WebApp.Migrations
                 name: "Representatives",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
-                    CitizenId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    Nationality = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
+                    CitizenId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Nationality = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
+                    Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Phone = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -295,14 +296,14 @@ namespace WebApp.Migrations
                 name: "ResourceQualificationRequirements",
                 columns: table => new
                 {
-                    ResourceId = table.Column<string>(type: "nvarchar(50)", nullable: false),
-                    QualificationCode = table.Column<string>(type: "nvarchar(50)", nullable: false)
+                    ResourceId = table.Column<string>(type: "character varying(50)", nullable: false),
+                    QualificationCode = table.Column<string>(type: "character varying(50)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ResourceQualificationRequirements", x => new { x.ResourceId, x.QualificationCode });
                     table.ForeignKey(
-                        name: "FK_ResourceQualificationRequirements_Qualifications_QualificationCode",
+                        name: "FK_ResourceQualificationRequirements_Qualifications_Qualificat~",
                         column: x => x.QualificationCode,
                         principalTable: "Qualifications",
                         principalColumn: "Code",
@@ -319,8 +320,8 @@ namespace WebApp.Migrations
                 name: "QualificationLinks",
                 columns: table => new
                 {
-                    StaffMecanographicNumber = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    QualificationCode = table.Column<string>(type: "nvarchar(50)", nullable: false),
+                    StaffMecanographicNumber = table.Column<string>(type: "text", nullable: false),
+                    QualificationCode = table.Column<string>(type: "character varying(50)", nullable: false),
                     DateObtained = table.Column<DateOnly>(type: "date", nullable: true),
                     ExpiryDate = table.Column<DateOnly>(type: "date", nullable: true)
                 },
@@ -345,13 +346,13 @@ namespace WebApp.Migrations
                 name: "Docks",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    LengthMeters = table.Column<double>(type: "float", nullable: false),
-                    DepthMeters = table.Column<double>(type: "float", nullable: false),
-                    MaxDraftMeters = table.Column<double>(type: "float", nullable: false),
-                    ContainerYardId = table.Column<int>(type: "int", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Location = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    LengthMeters = table.Column<double>(type: "double precision", nullable: false),
+                    DepthMeters = table.Column<double>(type: "double precision", nullable: false),
+                    MaxDraftMeters = table.Column<double>(type: "double precision", nullable: false),
+                    ContainerYardId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -367,12 +368,12 @@ namespace WebApp.Migrations
                 name: "DockStorageAreaConnections",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DockId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StorageAreaId = table.Column<int>(type: "int", nullable: false),
-                    DistanceMeters = table.Column<double>(type: "float", nullable: false),
-                    TravelSeconds = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DockId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StorageAreaId = table.Column<int>(type: "integer", nullable: false),
+                    DistanceMeters = table.Column<double>(type: "double precision", nullable: false),
+                    TravelSeconds = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -389,15 +390,15 @@ namespace WebApp.Migrations
                 name: "Vessels",
                 columns: table => new
                 {
-                    IMO = table.Column<string>(type: "nvarchar(7)", maxLength: 7, nullable: false),
-                    VesselName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    OperatorName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    VesselTypeName = table.Column<string>(type: "nvarchar(50)", nullable: false),
-                    RequiredCraneCount = table.Column<int>(type: "int", nullable: false),
-                    RequiredDockLength = table.Column<double>(type: "float", nullable: false),
-                    Bays = table.Column<int>(type: "int", nullable: false),
-                    Rows = table.Column<int>(type: "int", nullable: false),
-                    Tiers = table.Column<int>(type: "int", nullable: false)
+                    IMO = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    VesselName = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    OperatorName = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    VesselTypeName = table.Column<string>(type: "character varying(50)", nullable: false),
+                    RequiredCraneCount = table.Column<int>(type: "integer", nullable: false),
+                    RequiredDockLength = table.Column<double>(type: "double precision", nullable: false),
+                    Bays = table.Column<int>(type: "integer", nullable: false),
+                    Rows = table.Column<int>(type: "integer", nullable: false),
+                    Tiers = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -414,8 +415,8 @@ namespace WebApp.Migrations
                 name: "DockVesselType",
                 columns: table => new
                 {
-                    DockId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VesselTypeId = table.Column<string>(type: "nvarchar(50)", nullable: false)
+                    DockId = table.Column<Guid>(type: "uuid", nullable: false),
+                    VesselTypeId = table.Column<string>(type: "character varying(50)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -438,16 +439,16 @@ namespace WebApp.Migrations
                 name: "VesselVisitNotifications",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VesselIMO = table.Column<string>(type: "nvarchar(7)", nullable: false),
-                    VisitDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DockId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Purpose = table.Column<int>(type: "int", nullable: false),
-                    ArrivalTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DesiredDepartureTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EstimatedLoadingDurationMinutes = table.Column<int>(type: "int", nullable: true),
-                    EstimatedUnloadingDurationMinutes = table.Column<int>(type: "int", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    VesselIMO = table.Column<string>(type: "character varying(7)", nullable: false),
+                    VisitDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DockId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Purpose = table.Column<int>(type: "integer", nullable: false),
+                    ArrivalTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DesiredDepartureTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    EstimatedLoadingDurationMinutes = table.Column<int>(type: "integer", nullable: true),
+                    EstimatedUnloadingDurationMinutes = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -464,10 +465,10 @@ namespace WebApp.Migrations
                 name: "CargoManifests",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoadingManifestForId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UnloadingManifestForId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    LoadingManifestForId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UnloadingManifestForId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -479,7 +480,7 @@ namespace WebApp.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CargoManifests_VesselVisitNotifications_UnloadingManifestForId",
+                        name: "FK_CargoManifests_VesselVisitNotifications_UnloadingManifestFo~",
                         column: x => x.UnloadingManifestForId,
                         principalTable: "VesselVisitNotifications",
                         principalColumn: "Id",
@@ -490,17 +491,17 @@ namespace WebApp.Migrations
                 name: "CrewMembers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CitizenId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Nationality = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    VesselVisitNotificationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CitizenId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Nationality = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    VesselVisitNotificationId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CrewMembers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CrewMembers_VesselVisitNotifications_VesselVisitNotificationId",
+                        name: "FK_CrewMembers_VesselVisitNotifications_VesselVisitNotificatio~",
                         column: x => x.VesselVisitNotificationId,
                         principalTable: "VesselVisitNotifications",
                         principalColumn: "Id",
@@ -511,17 +512,17 @@ namespace WebApp.Migrations
                 name: "DecisionLogs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Outcome = table.Column<int>(type: "int", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    VesselVisitNotificationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Outcome = table.Column<int>(type: "integer", nullable: false),
+                    Message = table.Column<string>(type: "text", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    VesselVisitNotificationId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DecisionLogs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DecisionLogs_VesselVisitNotifications_VesselVisitNotificationId",
+                        name: "FK_DecisionLogs_VesselVisitNotifications_VesselVisitNotificati~",
                         column: x => x.VesselVisitNotificationId,
                         principalTable: "VesselVisitNotifications",
                         principalColumn: "Id",
@@ -532,8 +533,8 @@ namespace WebApp.Migrations
                 name: "Containers",
                 columns: table => new
                 {
-                    Identifier = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
-                    CargoManifestId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    Identifier = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false),
+                    CargoManifestId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -555,8 +556,7 @@ namespace WebApp.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -582,22 +582,19 @@ namespace WebApp.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CargoManifests_LoadingManifestForId",
                 table: "CargoManifests",
                 column: "LoadingManifestForId",
-                unique: true,
-                filter: "[LoadingManifestForId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CargoManifests_UnloadingManifestForId",
                 table: "CargoManifests",
                 column: "UnloadingManifestForId",
-                unique: true,
-                filter: "[UnloadingManifestForId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Containers_CargoManifestId",
@@ -634,8 +631,7 @@ namespace WebApp.Migrations
                 name: "IX_Organizations_AlternativeNames",
                 table: "Organizations",
                 column: "AlternativeNames",
-                unique: true,
-                filter: "[AlternativeNames] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Organizations_Identifier",
