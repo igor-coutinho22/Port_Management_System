@@ -1,0 +1,199 @@
+@startuml
+title C4 Level 4 – Code / Classes (Resources & Qualifications)
+
+skinparam class {
+  RoundCorner 10
+  Shadowing true
+}
+
+' ==== Controllers ====
+class ResourcesController {
+  + Task<ActionResult<IEnumerable<ResourceDTO>>> GetResources(...)
+  + Task<ActionResult<ResourceDTO>> GetResourceById(string id)
+  + Task<ActionResult<ResourceDTO>> PostResource(ResourceDTO dto)
+  + Task<IActionResult> PutResource(string id, ResourceDTO dto)
+  + Task<IActionResult> ActivateResource(string id)
+  + Task<IActionResult> DeactivateResource(string id)
+  + Task<IActionResult> PutInMaintenance(string id)
+  + Task<IActionResult> EndMaintenance(string id)
+  + Task<IActionResult> DeleteResource(string id)
+}
+
+class QualificationsController {
+  + Task<ActionResult<IEnumerable<QualificationDTO>>> GetAll()
+  + Task<ActionResult<QualificationDTO>> GetByCode(string code)
+  + Task<ActionResult<QualificationDTO>> Post(QualificationDTO dto)
+  + Task<IActionResult> Put(string code, QualificationDTO dto)
+  + Task<IActionResult> Delete(string code)
+}
+
+' ==== Services ====
+interface IResourceService {
+  + Task<List<Resource>> GetAllResourcesAsync()
+  + Task<Resource?> GetResourceByIdAsync(string id)
+  + Task RegisterResourceAsync(Resource resource)
+  + Task UpdateResourceAsync(Resource resource)
+  + Task ActivateAsync(string id)
+  + Task DeactivateAsync(string id)
+  + Task PutInMaintenanceAsync(string id)
+  + Task EndMaintenanceAsync(string id)
+  + Task DeleteAsync(string id)
+}
+
+class ResourceService {
+  - IResourceRepository _resourceRepository
+  - IQualificationRepository _qualificationRepository
+  + ...implements IResourceService...
+}
+
+interface IQualificationService {
+  + Task<List<Qualification>> GetAllAsync()
+  + Task<Qualification?> GetByCodeAsync(string code)
+  + Task RegisterQualificationAsync(string code, string name)
+  + Task UpdateQualificationAsync(Qualification qualification)
+  + Task DeleteAsync(string code)
+}
+
+class QualificationService {
+  - IQualificationRepository _qualificationRepository
+  + ...implements IQualificationService...
+}
+
+' ==== Repositories ====
+interface IResourceRepository {
+  + Task AddAsync(Resource r)
+  + Task<Resource?> GetByIdAsync(string id)
+  + Task<List<Resource>> GetAllAsync()
+  + Task UpdateAsync(Resource r)
+  + Task DeleteAsync(string id)
+}
+
+class ResourceRepository {
+  - PortManagementContext _context
+  + ...implements IResourceRepository...
+}
+
+interface IQualificationRepository {
+  + Task AddAsync(Qualification q)
+  + Task<Qualification?> GetByCodeAsync(string code)
+  + Task<Qualification?> GetByNameAsync(string name)
+  + Task<List<Qualification>> GetAllAsync()
+  + Task UpdateAsync(Qualification q)
+  + Task DeleteAsync(string code)
+  + Task DeleteAsync(Qualification q)
+}
+
+class QualificationRepository {
+  - PortManagementContext _context
+  + ...implements IQualificationRepository...
+}
+
+' ==== DbContext ====
+class PortManagementContext {
+  + DbSet<Resource> Resources
+  + DbSet<Qualification> Qualifications
+  + DbSet<QualificationLink> QualificationLinks
+  + DbSet<IdentityUser> Users
+  + ...
+}
+
+' ==== Domain entities ====
+class Resource {
+  + string Id
+  + string? Description
+  + int OperationalCapacity
+  + ResourceType ResourceType
+  + int SetupTime
+  + ResourceAvailabilityStatus Status
+  + ICollection<Qualification> QualificationRequirements
+
+  + void Activate()
+  + void Deactivate()
+  + void PutInMaintenance()
+  + void EndMaintenance()
+}
+
+enum ResourceType {
+  STSCrane
+  RTGC
+  YardTruck
+  ...
+}
+
+enum ResourceAvailabilityStatus {
+  Active
+  Inactive
+  Maintenance
+}
+
+class Qualification {
+  + string Code
+  + string Name
+}
+
+class QualificationLink {
+  + string StaffMecanographicNumber
+  + string QualificationCode
+  + DateTime DateObtained
+  + DateTime? ExpiryDate
+}
+
+' ==== DTOs & Mappers ====
+class ResourceDTO {
+  + string? Id
+  + string? Description
+  + int OperationalCapacity
+  + ResourceType ResourceType
+  + int SetupTime
+  + ResourceAvailabilityStatus Status
+  + ISet<QualificationDTO> QualificationRequirements
+}
+
+class QualificationDTO {
+  + string? Code
+  + string? Name
+}
+
+class ResourceMapper {
+  + static ResourceDTO ToDTO(Resource r)
+  + static Resource ToDomain(ResourceDTO dto)
+}
+
+class QualificationMapper {
+  + static QualificationDTO ToDTO(Qualification q)
+  + static Qualification ToDomain(QualificationDTO dto)
+}
+
+' ==== Relations ====
+ResourcesController --> IResourceService
+ResourcesController --> ResourceMapper
+
+QualificationsController --> IQualificationService
+QualificationsController --> QualificationMapper
+
+IResourceService <|.. ResourceService
+IQualificationService <|.. QualificationService
+
+ResourceService --> IResourceRepository
+ResourceService --> IQualificationRepository
+
+IResourceRepository <|.. ResourceRepository
+IQualificationRepository <|.. QualificationRepository
+
+ResourceRepository --> PortManagementContext
+QualificationRepository --> PortManagementContext
+
+PortManagementContext --> Resource
+PortManagementContext --> Qualification
+PortManagementContext --> QualificationLink
+
+Resource --> ResourceType
+Resource --> ResourceAvailabilityStatus
+Resource "1" *-- "*" Qualification : QualificationRequirements
+
+ResourceMapper --> Resource
+ResourceMapper --> ResourceDTO
+QualificationMapper --> Qualification
+QualificationMapper --> QualificationDTO
+
+@enduml

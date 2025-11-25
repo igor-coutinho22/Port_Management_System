@@ -1,0 +1,28 @@
+@startuml
+title C4 Level 1 – System Context (Resources) – Azure CIAM Architecture
+
+actor "Logistics Operator" as Operator
+
+cloud "Azure Entra CIAM\n(Hosted Login + Token Issuer)" as CIAM
+cloud "Microsoft Graph API" as Graph
+
+rectangle "Port Management System" as PMS {
+    rectangle "Resources API\n(ASP.NET Core WebApp)" as API
+}
+
+database "Azure SQL Database\n(Resources, Qualifications, etc.)" as SQL
+
+
+Operator --> CIAM : Login (OAuth2 / OIDC)
+Manager --> CIAM : Login\n(OAuth2 / OIDC)
+
+CIAM --> Operator : ID Token + Access Token
+CIAM --> Manager : ID Token + Access Token
+
+Operator --> API : HTTPS + Bearer Token\n(manage resources)
+Manager --> API : HTTPS + Bearer Token\n(maintenance, activation)
+
+API --> SQL : EF Core\nCRUD operations
+
+API --> Graph : Get user metadata,\nroles, groups
+@enduml

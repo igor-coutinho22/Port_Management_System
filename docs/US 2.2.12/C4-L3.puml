@@ -1,0 +1,54 @@
+@startuml
+title C4 Level 3 – Components in WebApp (Resources)
+
+skinparam rectangle {
+  RoundCorner 15
+  Shadowing true
+}
+
+package "WebApp (Resources API)" {
+
+  rectangle "ResourcesController\n(Controller)" as ResourcesController
+  rectangle "QualificationsController\n(Controller)" as QualificationsController
+
+  rectangle "ResourceService\n:IResourceService\n(Application Service)" as ResourceService
+  rectangle "QualificationService\n:IQualificationService\n(Application Service)" as QualificationService
+
+  rectangle "ResourceRepository\n:IResourceRepository\n(Repository)" as ResourceRepository
+  rectangle "QualificationRepository\n:IQualificationRepository\n(Repository)" as QualificationRepository
+
+  rectangle "ResourceMapper\n(static)" as ResourceMapper
+  rectangle "QualificationMapper\n(static)" as QualificationMapper
+
+  rectangle "Domain Model\n(Resource, Qualification,\nEnums, validation)" as DomainModel
+
+  rectangle "PortManagementContext\n(EF Core DbContext)" as DbContext
+
+  rectangle "[Authorize]\nPolicies / Filters" as Authz
+}
+
+actor "Caller (UI / Tests)" as Caller
+
+Caller --> ResourcesController : HTTP / JSON
+Caller --> QualificationsController : HTTP / JSON
+
+ResourcesController --> ResourceService
+ResourcesController --> ResourceMapper
+ResourcesController --> Authz
+
+QualificationsController --> QualificationService
+QualificationsController --> QualificationMapper
+QualificationsController --> Authz
+
+ResourceService --> ResourceRepository
+ResourceService --> QualificationRepository : (for requirements, etc.)\n(optional)
+
+QualificationService --> QualificationRepository
+
+ResourceRepository --> DbContext
+QualificationRepository --> DbContext
+
+ResourceMapper --> DomainModel
+QualificationMapper --> DomainModel
+
+@enduml
