@@ -62,7 +62,7 @@ class PortDataFetcher {
     }
 
     async fetchTextureConfig() {
-        const resp = await fetch("data/textures.json");
+        const resp = await fetch("data/textures.json?v=2");
         if (!resp.ok) throw new Error("Failed to fetch texture config");
         return await resp.json();
     }
@@ -197,7 +197,7 @@ class PortDataFetcher {
             id: v.imo,
             name: v.vesselName,
             type: v.vesselTypeName,
-            length: v.requiredDockLength || 100,
+            length: 150,
             width: (v.rows || 10) * 3, // Estimate width
             height: (v.tiers || 5) * 3, // Estimate height
             operator: v.operatorName

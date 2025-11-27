@@ -12,13 +12,15 @@ class PortGeometryBuilder {
                 new THREE.MeshStandardMaterial({ color: 0x0000AA }),
                 new THREE.MeshStandardMaterial({ color: 0xAAAA00 })
             ],
-            warehouseWall: new THREE.MeshStandardMaterial({ color: 0x999999 }),
-            warehouseRoof: new THREE.MeshStandardMaterial({ color: 0x8B0000 }),
+            warehouseWall: new THREE.MeshStandardMaterial({ color: 0xFF0000 }),
+            warehouseRoof: new THREE.MeshStandardMaterial({ color: 0xFFFFFF }),
             craneBody: new THREE.MeshStandardMaterial({ color: 0xFFD700 }),
             vehicleBody: new THREE.MeshStandardMaterial({ color: 0x607D8B }),
-            vesselHull: new THREE.MeshStandardMaterial({ color: 0x333333 }),
+            vesselHull: new THREE.MeshStandardMaterial({ color: 0xAAAAAA }),
             vesselBridge: new THREE.MeshStandardMaterial({ color: 0xEEEEEE }),
-            staffBody: new THREE.MeshStandardMaterial({ color: 0xFFA500 })
+            staffBody: new THREE.MeshStandardMaterial({ color: 0xFFA500 }),
+            water: new THREE.MeshStandardMaterial({ color: 0x006994 }),
+            asphalt: new THREE.MeshStandardMaterial({ color: 0xCCCCCC })
         };
 
         this.textureLoader = new THREE.TextureLoader();
@@ -27,24 +29,32 @@ class PortGeometryBuilder {
     loadTextures(config) {
         if (!config || !config.materials) return;
 
-        const loadMat = (matName, targetMat) => {
+        const loadMat = (matName, diffuse, targetMat, repeat) => {
             const conf = config.materials[matName];
             if (!conf) return;
 
-            if (conf.colorMap) {
+            if (conf.colorMap && diffuse) {
                 this.textureLoader.load(conf.colorMap, (tex) => {
                     tex.wrapS = THREE.RepeatWrapping;
                     tex.wrapT = THREE.RepeatWrapping;
                     targetMat.map = tex;
                     targetMat.needsUpdate = true;
+                    if (repeat) {
+                        targetMat.map.repeat.set(repeat, repeat);
+                    }
+
                 });
             }
-            if (conf.normalMap) {
+            if (conf.normalMap && !diffuse) {
                 this.textureLoader.load(conf.normalMap, (tex) => {
                     tex.wrapS = THREE.RepeatWrapping;
                     tex.wrapT = THREE.RepeatWrapping;
+                    tex.colorSpace = THREE.NoColorSpace;
                     targetMat.normalMap = tex;
                     targetMat.needsUpdate = true;
+                    if (repeat) {
+                        targetMat.normalMap.repeat.set(repeat, repeat);
+                    }
                 });
             }
             if (conf.roughness !== undefined) targetMat.roughness = conf.roughness;
@@ -52,12 +62,16 @@ class PortGeometryBuilder {
         };
 
         // Apply to specific materials
-        loadMat("concrete", this.materials.dock);
-        loadMat("concrete", this.materials.yardSurface);
-        loadMat("metal", this.materials.vesselHull);
-        loadMat("metal", this.materials.craneBody);
-        loadMat("container", this.materials.container[0]); // Apply to first container type for now
-        // We could clone materials for other container colors but keep the texture
+        loadMat("concrete", true, this.materials.dock, null);
+        loadMat("concrete", true, this.materials.yardSurface, null);
+        loadMat("metal", true, this.materials.vesselHull, null);
+        loadMat("metal", false, this.materials.vesselBridge, null);
+        loadMat("metal", true, this.materials.craneBody, null);
+        this.materials.container.forEach(c => { loadMat("container", true, c, null); });
+        loadMat("water", true, this.materials.water, 100);
+        loadMat("metal", true, this.materials.warehouseRoof, null);
+        loadMat("metal", false, this.materials.warehouseWall, null);
+        loadMat("asphalt", true, this.materials.asphalt, 100);
     }
 
     // -----------------------------------------------------------------------------
@@ -185,6 +199,7 @@ class PortGeometryBuilder {
 
         return group;
     }
+
 
     addDecorContainers(group, areaWidth, areaDepth, groundHeight) {
         const containerWidth = 5;

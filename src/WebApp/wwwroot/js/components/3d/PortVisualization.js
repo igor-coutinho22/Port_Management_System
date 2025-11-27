@@ -208,9 +208,11 @@ class PortVisualization {
     // -----------------------------------------------------------------------------
 
     async loadPortData() {
+        THREE.Cache.enabled = false;
         console.log("PortVisualization: loadPortData called");
         this.clearScene();
         this.addWaterPlane();
+        this.addGroundPlane();
 
         try {
             const data = await this.dataFetcher.loadAll();
@@ -277,7 +279,7 @@ class PortVisualization {
         if (!obj || obj instanceof THREE.Sprite) return;
 
         this.handleSelection(obj);
-        this.flyToObject(obj.position);
+        this.flyToObject(obj.position || this.findParent(obj).position);
     }
 
     handleSelection(obj) {
@@ -286,10 +288,7 @@ class PortVisualization {
         }
 
         // Handle groups (like warehouses)
-        let target = obj;
-        if (obj.parent instanceof THREE.Group) {
-            target = obj.parent; // Select the group logic if needed, but visual highlight is on mesh
-        }
+        let target = this.findParent;
 
         this.selectedObject = obj;
 
@@ -300,6 +299,14 @@ class PortVisualization {
         if (this.onSelect && (obj.userData || target.userData)) {
             this.onSelect(obj.userData || target.userData);
         }
+    }
+
+    findParent(obj) {
+        let target = obj;
+        if (obj.parent instanceof THREE.Group) {
+            target = obj.parent; // Select the group logic if needed, but visual highlight is on mesh
+        }
+        return target;
     }
 
     // -----------------------------------------------------------------------------
@@ -381,18 +388,22 @@ class PortVisualization {
     // -----------------------------------------------------------------------------
     addWaterPlane() {
         const geo = new THREE.PlaneGeometry(10000, 10000);
-        const mat = new THREE.MeshStandardMaterial({
-            color: 0x006994,
-            transparent: true,
-            opacity: 0.8,
-            side: THREE.DoubleSide
-        });
-
+        const mat = this.geometryBuilder.materials.water;
         const water = new THREE.Mesh(geo, mat);
         water.rotation.x = -Math.PI / 2;
         water.position.y = -0.5; // Slightly below 0
 
         this.scene.add(water);
+        // We don't push water to this.objects if we don't want to interact with it
+    }
+
+    addGroundPlane() {
+        const geo = new THREE.BoxGeometry(10000, 2, 520);
+        const mat = this.geometryBuilder.materials.asphalt;
+        const ground = new THREE.Mesh(geo, mat);
+        ground.position.y = 0.5; // Less below 0
+        ground.position.z = 300; //just after docks
+        this.scene.add(ground);
         // We don't push water to this.objects if we don't want to interact with it
     }
 

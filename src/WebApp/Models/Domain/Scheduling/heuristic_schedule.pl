@@ -207,7 +207,7 @@ atc_schedule(Jobs, T, [V | RestOrder]) :-
     !,
     % Average processing time of all remaining jobs
     avg_p(Jobs, Pbar),
-    K is 3.0,               % tuning parameter, try 2.0–4.0 if you want
+    K is 3.0,               % tuning parameter, try 2.0-4.0 if you want
 
     % Choose job with best (max) ATC priority index
     best_atc_job(Arrived, T, Pbar, K, v(V, A, D, P)),

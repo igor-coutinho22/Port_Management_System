@@ -9,11 +9,11 @@
         "metal": {
             "colorMap": "textures/metal_diffuse.png",
             "normalMap": "textures/metal_normal.png",
-            "roughness": 0.4,
+            "roughness": 0.2,
             "metalness": 0.8
         },
         "water": {
-            "colorMap": "textures/water_diffuse.png",
+            "colorMap": "textures/WaterTest.png?v=2",
             "normalMap": "textures/water_normal.png",
             "roughness": 0.1,
             "metalness": 0.1
@@ -23,6 +23,12 @@
             "normalMap": "textures/container_normal.png",
             "roughness": 0.6,
             "metalness": 0.3
+        },
+        "asphalt": {
+            "colorMap": "textures/asphalt.png",
+            "normalMap": "textures/asphalt.png",
+            "roughness": 0.8,
+            "metalness": 0.1
         }
     }
 }
