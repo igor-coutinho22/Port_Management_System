@@ -253,7 +253,7 @@ class PortVisualization {
 
         // End
         this.flyToTarget.set(pos.x, pos.y, pos.z);
-        this.flyToPos.set(pos.x + 180, pos.y + 120, pos.z + 180);
+        this.flyToPos.set(pos.x + 180, pos.y + 120, pos.z + 180 || this.controls.target);
     }
 
     updateFlyTo() {
@@ -275,11 +275,12 @@ class PortVisualization {
     // CLICK SELECTION
     // -----------------------------------------------------------------------------
     onPointerDown(e) {
-        const obj = this.castRay(e);
+        const cast = this.castRay(e);
+        const obj = cast.object
         if (!obj || obj instanceof THREE.Sprite) return;
 
         this.handleSelection(obj);
-        this.flyToObject(obj.position || this.findParent(obj).position);
+        this.flyToObject(cast.point);
     }
 
     handleSelection(obj) {
@@ -313,7 +314,7 @@ class PortVisualization {
     // HOVER TOOLTIP
     // -----------------------------------------------------------------------------
     onPointerMove(e) {
-        const obj = this.castRay(e);
+        const obj = this.castRay(e)?.object || null;
 
         if (!obj || obj instanceof THREE.Sprite) {
             this.hoveredObject = null;
@@ -359,7 +360,7 @@ class PortVisualization {
         this.raycaster.setFromCamera(this.pointer, this.camera);
         const hits = this.raycaster.intersectObjects(this.objects, true); // recursive for groups
 
-        return hits.length ? hits[0].object : null;
+        return hits.length ? hits[0] : null;
     }
 
     // -----------------------------------------------------------------------------
