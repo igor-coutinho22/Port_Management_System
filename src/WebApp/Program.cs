@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using WebApp.Models.Application.Services;
-using Npgsql; 
+using Npgsql;
 using WebApp.Models.Application.Services.Qualifications;
 using WebApp.Models.Application.Services.Resources;
 using WebApp.Models.Application.Services.StaffService;
@@ -44,7 +44,11 @@ builder.Logging.AddConsole();
 
 // ---------- Database ----------
 builder.Services.AddDbContext<PortManagementContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    npgsqlOptions =>
+        {
+            npgsqlOptions.UseAdminDatabase("efadmin");
+        })
 );
 
 // ---------- CORS ----------
