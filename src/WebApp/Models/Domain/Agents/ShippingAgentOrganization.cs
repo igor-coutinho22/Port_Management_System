@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using WebApp.Models.Domain.VesselVisits;
 
 namespace WebApp.Models.Domain.Agents
 {
@@ -11,6 +12,7 @@ namespace WebApp.Models.Domain.Agents
         public string Address { get; private set; } = default!;
         public string TaxNumber { get; private set; } = default!;
         public bool IsActive { get; private set; } = true;
+        public ICollection<VesselVisitNotification> VesselVisitNotifications { get; private set; } = new List<VesselVisitNotification>();
 
         public ICollection<Representative> Representatives { get; private set; } = new List<Representative>();
 
@@ -48,6 +50,15 @@ namespace WebApp.Models.Domain.Agents
                 throw new InvalidOperationException($"A representative with citizen ID '{rep.CitizenId}' already exists in this organization.");
 
             Representatives.Add(rep);
+        }
+
+        public void AddVesselVisitNotification(VesselVisitNotification notification)
+        {
+            if (notification is null) throw new ArgumentNullException(nameof(notification));
+            if (notification.ShippingAgentOrganizationId != Id)
+                throw new InvalidOperationException("Organization did not match.");
+
+            VesselVisitNotifications.Add(notification);
         }
 
         public void EnsureHasAtLeastOneRepresentative(bool mustBeActive = false)

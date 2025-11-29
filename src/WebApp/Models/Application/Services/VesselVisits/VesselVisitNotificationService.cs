@@ -11,15 +11,17 @@ namespace WebApp.Models.Application.Services
         private readonly IVesselVisitNotificationRepository _repository;
         private readonly IVesselRepository _vesselRepository;
         private readonly IDockRepository _dockRepository;
-
+        private readonly IOrganizationRepository _organizationRepository;
         public VesselVisitNotificationService(
             IVesselVisitNotificationRepository repository,
             IVesselRepository vesselRepository,
-            IDockRepository dockRepository)
+            IDockRepository dockRepository,
+            IOrganizationRepository organizationRepository)
         {
             _repository = repository;
             _vesselRepository = vesselRepository;
             _dockRepository = dockRepository;
+            _organizationRepository = organizationRepository;
         }
 
         public async Task<IEnumerable<VesselVisitNotificationDTO>> GetAllAsync()
@@ -35,6 +37,11 @@ namespace WebApp.Models.Application.Services
 
         public async Task CreateAsync(VesselVisitNotification vvn)
         {
+            // Ensuere Organization exists
+            var organization = await _organizationRepository.GetByIdAsync(vvn.ShippingAgentOrganizationId);
+            if (organization == null)
+                throw new InvalidOperationException($"Organization with ID {vvn.ShippingAgentOrganizationId} not found.");
+
             // Ensure vessel exists (by IMO)
             var vessel = await _vesselRepository.GetByIMOAsync(vvn.VesselIMO!);
             if (vessel == null)
@@ -57,6 +64,8 @@ namespace WebApp.Models.Application.Services
                     );
                 }
             }
+
+            organization.AddVesselVisitNotification(vvn);
 
             await _repository.AddAsync(vvn);
         }
@@ -236,10 +245,15 @@ namespace WebApp.Models.Application.Services
             var dock = await _dockRepository.GetByIdAsync(vvn.DockId);
             if (dock == null)
                 throw new InvalidOperationException("Dock not found.");
-            
+
+            // Apply all updates using the domain entity's methods
             existingVisit.UpdateDockId(vvn.DockId);
             existingVisit.UpdateVisitDate(vvn.VisitDate);
             existingVisit.UpdatePurpose(vvn.Purpose);
+            existingVisit.UpdateScheduleWindow(vvn.ArrivalTime, vvn.DesiredDepartureTime);
+            existingVisit.UpdateEstimatedDurations(vvn.EstimatedLoadingDurationMinutes, vvn.EstimatedUnloadingDurationMinutes);
+
+            // Save the fully updated entity
             await _repository.UpdateAsync(existingVisit);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using WebApp.Models.Domain.Agents;
 using WebApp.Models.Domain.Vessels;
 
 namespace WebApp.Models.Domain.VesselVisits
@@ -16,6 +17,8 @@ namespace WebApp.Models.Domain.VesselVisits
         public Guid Id { get; private set; }
         public string VesselIMO { get; private set; } = default!;
         public Vessel Vessel { get; private set; } = default!;
+        public Guid ShippingAgentOrganizationId { get; private set; } = default!;
+        public ShippingAgentOrganization ShippingAgentOrganization { get; private set; } = default!;
 
         public DateTime VisitDate { get; private set; }
         public Guid DockId { get; private set; }
@@ -28,35 +31,52 @@ namespace WebApp.Models.Domain.VesselVisits
 
         public List<CrewMember> Crew { get; private set; } = new();
 
-        public DateTime? ArrivalTime { get; private set; }
-        public DateTime? DesiredDepartureTime { get; private set; }
+        public DateTime ArrivalTime { get; private set; }
+        public DateTime DesiredDepartureTime { get; private set; }
 
         // Estimated loading duration in minutes for this visit (if any).
-        public int? EstimatedLoadingDurationMinutes { get; private set; }
+        public int EstimatedLoadingDurationMinutes { get; private set; }
 
         // Estimated unloading duration in minutes for this visit (if any).
-        public int? EstimatedUnloadingDurationMinutes { get; private set; }
+        public int EstimatedUnloadingDurationMinutes { get; private set; }
 
 
         private VesselVisitNotification() { }
 
-        public VesselVisitNotification(string vesselIMO, Guid dockId, DateTime visitDate, VisitPurpose purpose)
+        public VesselVisitNotification(Guid shippingAgentOrganizationId, string vesselIMO, Guid dockId, DateTime visitDate, VisitPurpose purpose, DateTime arrivalTime, DateTime desiredDepartureTime, int estimatedLoadingDurationMinutes, int estimatedUnloadingDurationMinutes)
         {
             Id = Guid.NewGuid();
+            ShippingAgentOrganizationId = shippingAgentOrganizationId;
             VesselIMO = vesselIMO;
             DockId = dockId;
             CheckDateNotInPast(visitDate);
-            VisitDate = visitDate;
+            VisitDate = DateTime.SpecifyKind(visitDate, DateTimeKind.Utc);
             Purpose = purpose;
             Status = VesselVisitStatus.InProgress;
+            CheckDateNotInPast(arrivalTime);
+            ArrivalTime = DateTime.SpecifyKind(arrivalTime, DateTimeKind.Utc);
+            CheckDepartureTimeIsAfterArrival(desiredDepartureTime);
+            DesiredDepartureTime = DateTime.SpecifyKind(desiredDepartureTime, DateTimeKind.Utc);
+            CheckDurationIsNonNegative(estimatedLoadingDurationMinutes, "EstimatedLoadingDurationMinutes");
+            CheckDurationIsNonNegative(estimatedUnloadingDurationMinutes, "EstimatedUnloadingDurationMinutes");
+            EstimatedLoadingDurationMinutes = estimatedLoadingDurationMinutes;
+            EstimatedUnloadingDurationMinutes = estimatedUnloadingDurationMinutes;
         }
 
-        public void Update(Guid dockId, DateTime visitDate, VisitPurpose purpose)
+        public void Update(Guid dockId, DateTime visitDate, VisitPurpose purpose, DateTime arrivalTime, DateTime desiredDepartureTime, int estimatedLoadingDurationMinutes, int estimatedUnloadingDurationMinutes)
         {
             DockId = dockId;
             CheckDateNotInPast(visitDate);
-            VisitDate = visitDate;
+            VisitDate = DateTime.SpecifyKind(visitDate, DateTimeKind.Utc);
             Purpose = purpose;
+            CheckDateNotInPast(arrivalTime);
+            ArrivalTime = DateTime.SpecifyKind(arrivalTime, DateTimeKind.Utc);
+            CheckDepartureTimeIsAfterArrival(desiredDepartureTime);
+            DesiredDepartureTime = DateTime.SpecifyKind(desiredDepartureTime, DateTimeKind.Utc);
+            CheckDurationIsNonNegative(estimatedLoadingDurationMinutes, "EstimatedLoadingDurationMinutes");
+            CheckDurationIsNonNegative(estimatedUnloadingDurationMinutes, "EstimatedUnloadingDurationMinutes");
+            EstimatedLoadingDurationMinutes = estimatedLoadingDurationMinutes;
+            EstimatedUnloadingDurationMinutes = estimatedUnloadingDurationMinutes;
         }
 
         public void AddLoadingManifest(CargoManifest manifest)
@@ -133,12 +153,6 @@ namespace WebApp.Models.Domain.VesselVisits
             return log;
         }
 
-        private void LogDecision(DecisionOutcome outcome, string message)
-        {
-            var details = $"{message} (Crew verified: {Crew.Count}).";
-            DecisionLogs.Add(new DecisionLog(outcome, details));
-        }
-
         public List<DecisionLog> DecisionLogs { get; private set; } = new();
 
         public void UpdatePurpose(VisitPurpose newPurpose)
@@ -209,29 +223,38 @@ namespace WebApp.Models.Domain.VesselVisits
                 throw new ArgumentException("Visit date cannot be in the past.");
         }
 
+        private void CheckDepartureTimeIsAfterArrival(DateTime date)
+        {
+            if (date <= ArrivalTime)
+                throw new ArgumentException("Desired departure time must be after arrival time.");
+        }
+
+        private void CheckDurationIsNonNegative(int? duration, string fieldName)
+        {
+            if (duration.HasValue && duration.Value < 0)
+                throw new ArgumentException($"{fieldName} cannot be negative.", fieldName);
+        }
+
         public void UpdateScheduleWindow(DateTime arrivalTime, DateTime desiredDepartureTime)
         {
             EnsureInProgress();
-
-            if (arrivalTime.Date != VisitDate.Date || desiredDepartureTime.Date != VisitDate.Date)
-                throw new ArgumentException("Arrival and desired departure must be on the same day as VisitDate.");
 
             if (desiredDepartureTime <= arrivalTime)
                 throw new ArgumentException("Desired departure time must be after arrival time.");
 
             CheckDateNotInPast(arrivalTime);
 
-            ArrivalTime = arrivalTime;
-            DesiredDepartureTime = desiredDepartureTime;
+            ArrivalTime = DateTime.SpecifyKind(arrivalTime, DateTimeKind.Utc);
+            DesiredDepartureTime = DateTime.SpecifyKind(desiredDepartureTime, DateTimeKind.Utc);
         }
-        public void UpdateEstimatedDurations(int? loadingMinutes, int? unloadingMinutes)
+        public void UpdateEstimatedDurations(int loadingMinutes, int unloadingMinutes)
         {
             EnsureInProgress();
 
-            if (loadingMinutes.HasValue && loadingMinutes.Value < 0)
+            if (loadingMinutes < 0)
                 throw new ArgumentException("Loading duration cannot be negative.", nameof(loadingMinutes));
 
-            if (unloadingMinutes.HasValue && unloadingMinutes.Value < 0)
+            if (unloadingMinutes < 0)
                 throw new ArgumentException("Unloading duration cannot be negative.", nameof(unloadingMinutes));
 
             EstimatedLoadingDurationMinutes = loadingMinutes;

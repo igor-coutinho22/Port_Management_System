@@ -161,7 +161,11 @@ builder.Services.AddHttpContextAccessor();
 // ---------- MVC / JSON ----------
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+    // Configure JSON options to handle object cycles and set naming policy.
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.MaxDepth = 64; // Increase max depth for complex objects
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase; // Keep camelCase for JS
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); // Serialize enums as strings
 });
 builder.Services.AddRazorPages();
 

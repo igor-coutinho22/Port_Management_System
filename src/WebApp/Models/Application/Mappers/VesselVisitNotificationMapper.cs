@@ -11,6 +11,7 @@ namespace WebApp.Models.Application.Mappers
             {
                 Id = entity.Id,
                 VesselIMO = entity.VesselIMO,
+                ShippingAgentOrganizationId = entity.ShippingAgentOrganizationId,
                 DockId = entity.DockId,
                 VisitDate = entity.VisitDate,
                 Status = entity.Status.ToString(),
@@ -47,10 +48,15 @@ namespace WebApp.Models.Application.Mappers
         public static VesselVisitNotification ToEntity(VesselVisitNotificationDTO dto)
         {
             var entity = new VesselVisitNotification(
+                dto.ShippingAgentOrganizationId,
                 dto.VesselIMO!,
                 dto.DockId,
                 dto.VisitDate,
-                Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true)
+                Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true),
+                dto.ArrivalTime,
+                dto.DesiredDepartureTime,
+                dto.EstimatedLoadingDurationMinutes,
+                dto.EstimatedUnloadingDurationMinutes
             );
 
             // Optional: add manifests if present
@@ -82,12 +88,6 @@ namespace WebApp.Models.Application.Mappers
             foreach (var member in dto.Crew)
                 entity.AddCrewMember(CrewMapper.ToEntity(member));
 
-            if (dto.ArrivalTime.HasValue && dto.DesiredDepartureTime.HasValue)
-                entity.UpdateScheduleWindow(dto.ArrivalTime.Value, dto.DesiredDepartureTime.Value);
-
-            if (dto.EstimatedLoadingDurationMinutes.HasValue || dto.EstimatedUnloadingDurationMinutes.HasValue)
-                entity.UpdateEstimatedDurations(dto.EstimatedLoadingDurationMinutes, dto.EstimatedUnloadingDurationMinutes);
-
             return entity;
         }
 
@@ -102,7 +102,11 @@ namespace WebApp.Models.Application.Mappers
             entity.Update(
                 dockId: dto.DockId,
                 visitDate: dto.VisitDate,
-                purpose: Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true)
+                purpose: Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true),
+                arrivalTime: entity.ArrivalTime,
+                desiredDepartureTime: entity.DesiredDepartureTime,
+                estimatedLoadingDurationMinutes: entity.EstimatedLoadingDurationMinutes,
+                estimatedUnloadingDurationMinutes: entity.EstimatedUnloadingDurationMinutes
             );
         }
 

@@ -18,6 +18,7 @@ namespace WebApp.Models.Infrastructure.Repositories
         {
             return await _context.Organizations
                 .Include(o => o.Representatives)
+                .Include(o => o.VesselVisitNotifications) // Eager load notifications
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
@@ -25,6 +26,7 @@ namespace WebApp.Models.Infrastructure.Repositories
         {
             return await _context.Organizations
                 .Include(o => o.Representatives)
+                .Include(o => o.VesselVisitNotifications) // Eager load notifications
                 .FirstOrDefaultAsync(o => o.TaxNumber == taxNumber);
         }
 
@@ -50,6 +52,7 @@ namespace WebApp.Models.Infrastructure.Repositories
         {
             return await _context.Organizations
                 .Include(o => o.Representatives)
+                .Include(o => o.VesselVisitNotifications)
                 .OrderBy(o => o.LegalName)
                 .ToListAsync();
         }
@@ -58,6 +61,7 @@ namespace WebApp.Models.Infrastructure.Repositories
         {
             var query = _context.Organizations
                 .Include(o => o.Representatives)
+                .Include(o => o.VesselVisitNotifications) // Eager load notifications
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(name))

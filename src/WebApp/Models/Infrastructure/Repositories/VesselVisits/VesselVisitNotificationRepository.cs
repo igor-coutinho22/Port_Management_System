@@ -20,6 +20,7 @@ namespace WebApp.Models.Infrastructure.Repositories
                 .Include(v => v.LoadingManifest).ThenInclude(m => m!.Containers)
                 .Include(v => v.UnloadingManifest).ThenInclude(m => m!.Containers)
                 .Include(v => v.Crew)
+                .Include(v => v.ShippingAgentOrganization)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -30,6 +31,7 @@ namespace WebApp.Models.Infrastructure.Repositories
                 .Include(v => v.LoadingManifest).ThenInclude(m => m!.Containers)
                 .Include(v => v.UnloadingManifest).ThenInclude(m => m!.Containers)
                 .Include(v => v.Crew)
+                .Include(v => v.ShippingAgentOrganization)
                 .FirstOrDefaultAsync(v => v.Id == id);
         }
 

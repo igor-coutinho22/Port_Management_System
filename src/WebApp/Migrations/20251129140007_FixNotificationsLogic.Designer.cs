@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251125122935_Initial")]
-    partial class Initial
+    [Migration("20251129140007_FixNotificationsLogic")]
+    partial class FixNotificationsLogic
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -682,23 +682,26 @@ namespace WebApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("ArrivalTime")
+                    b.Property<DateTime>("ArrivalTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DesiredDepartureTime")
+                    b.Property<DateTime>("DesiredDepartureTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("DockId")
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("EstimatedLoadingDurationMinutes")
+                    b.Property<int>("EstimatedLoadingDurationMinutes")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("EstimatedUnloadingDurationMinutes")
+                    b.Property<int>("EstimatedUnloadingDurationMinutes")
                         .HasColumnType("integer");
 
                     b.Property<int>("Purpose")
                         .HasColumnType("integer");
+
+                    b.Property<Guid>("ShippingAgentOrganizationId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -712,6 +715,8 @@ namespace WebApp.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ShippingAgentOrganizationId");
 
                     b.HasIndex("VesselIMO");
 
@@ -968,11 +973,19 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.VesselVisitNotification", b =>
                 {
+                    b.HasOne("WebApp.Models.Domain.Agents.ShippingAgentOrganization", "ShippingAgentOrganization")
+                        .WithMany("VesselVisitNotifications")
+                        .HasForeignKey("ShippingAgentOrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("WebApp.Models.Domain.Vessels.Vessel", "Vessel")
                         .WithMany()
                         .HasForeignKey("VesselIMO")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("ShippingAgentOrganization");
 
                     b.Navigation("Vessel");
                 });
@@ -991,6 +1004,8 @@ namespace WebApp.Migrations
             modelBuilder.Entity("WebApp.Models.Domain.Agents.ShippingAgentOrganization", b =>
                 {
                     b.Navigation("Representatives");
+
+                    b.Navigation("VesselVisitNotifications");
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.Qualifications.Qualification", b =>

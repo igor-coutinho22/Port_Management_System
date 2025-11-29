@@ -193,14 +193,18 @@ const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
 	const { t } = useTranslation();
 	const [vessels, setVessels] = React.useState([]);
 	const [docks, setDocks] = React.useState([]);
+	const [shippingAgentOrganizations, setShippingAgentOrganizations] = React.useState([]);
 
 	React.useEffect(() => {
 		// Fetch all vessels and docks once for name lookup
 		async function fetchMeta() {
 			const v = await apiService.getVessels();
+			const o = await apiService.getOrganizations(); // Fetch organizations
 			const d = await apiService.getDocks();
 			setVessels(v || []);
 			setDocks(d || []);
+			setShippingAgentOrganizations(o || []); // And save them to state
+
 		}
 		fetchMeta();
 	}, []);
@@ -212,6 +216,10 @@ const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
 	function getDockName(id) {
 		const dock = docks.find(d => d.id === id);
 		return dock ? dock.name || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
+	}
+	function getOrganizationLegalName(id) {
+		const org = shippingAgentOrganizations.find(o => o.id === id);
+		return org ? org.legalName || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
 	}
 
 	return (
@@ -239,6 +247,11 @@ const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
 								<th>{t('vesselVisitNotificationsHubPage.table.crewSize')}</th>
 								<th>{t('vesselVisitNotificationsHubPage.table.loadingManifest')}</th>
 								<th>{t('vesselVisitNotificationsHubPage.table.unloadingManifest')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.organization')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.arrivalTime')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.departureTime')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.loadingTime')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.unloadingTime')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -265,6 +278,11 @@ const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
 											? n.unloadingManifest.containers.map(c => c.identifier).join(', ')
 											: <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
 									</td>
+									<td>{getOrganizationLegalName(n.shippingAgentOrganizationId) || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.arrivalTime ? new Date(n.arrivalTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.desiredDepartureTime ? new Date(n.desiredDepartureTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.estimatedLoadingDurationMinutes != null ? `${n.estimatedLoadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.estimatedUnloadingDurationMinutes != null ? `${n.estimatedUnloadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
 								</tr>
 							))}
 						</tbody>

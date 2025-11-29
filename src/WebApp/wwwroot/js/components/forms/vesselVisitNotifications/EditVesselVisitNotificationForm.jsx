@@ -9,7 +9,11 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
         dockId: '',
         visitDate: '',
         status: '',
-        purpose: ''
+        purpose: '',
+        arrivalTime: '',
+        desiredDepartureTime: '',
+        estimatedLoadingDurationMinutes: 0,
+        estimatedUnloadingDurationMinutes: 0,
     });
     const [notification, setNotification] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -28,37 +32,6 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
         if (message.text) setMessage({ type: '', text: '' });
-    };
-
-    // Crew dynamic handlers (copied from Register form)
-    const handleCrewChange = (idx, field, value) => {
-        setFormData(prev => {
-            const crew = [...prev.crew];
-            crew[idx][field] = value;
-            return { ...prev, crew };
-        });
-        if (message.text) setMessage({ type: '', text: '' });
-    };
-    const addCrewMember = () => {
-        setFormData(prev => ({ ...prev, crew: [...prev.crew, { name: '', citizenId: '', nationality: '' }] }));
-    };
-    const removeCrewMember = (idx) => {
-        setFormData(prev => ({ ...prev, crew: prev.crew.filter((_, i) => i !== idx) }));
-    };
-
-    // Manifest handlers (copied from Register form)
-    const handleManifestChange = (type, idx, value) => {
-        setFormData(prev => {
-            const manifest = [...(prev[type] || [])];
-            manifest[idx] = value;
-            return { ...prev, [type]: manifest };
-        });
-    };
-    const addManifestContainer = (type) => {
-        setFormData(prev => ({ ...prev, [type]: [...(prev[type] || []), ''] }));
-    };
-    const removeManifestContainer = (type, idx) => {
-        setFormData(prev => ({ ...prev, [type]: (prev[type] || []).filter((_, i) => i !== idx) }));
     };
 
     // Validate GUID format
@@ -90,7 +63,11 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
                     dockId: data.dockId || '',
                     visitDate: data.visitDate ? data.visitDate.substring(0, 10) : '',
                     status: data.status || '',
-                    purpose: data.purpose || ''
+                    purpose: data.purpose || '',
+                    arrivalTime: data.arrivalTime ? data.arrivalTime.substring(0, 16) : '',
+                    desiredDepartureTime: data.desiredDepartureTime ? data.desiredDepartureTime.substring(0, 16) : '',
+                    estimatedLoadingDurationMinutes: data.estimatedLoadingDurationMinutes || 0,
+                    estimatedUnloadingDurationMinutes: data.estimatedUnloadingDurationMinutes || 0,
                 });
 
                 if (data.status !== 'InProgress') {
@@ -126,8 +103,11 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
         setMessage({ type: '', text: '' });
         try {
             // Validate required fields
-            if (!formData.dockId?.trim() || !formData.visitDate?.trim() || !formData.purpose?.trim()) {
+            if (!formData.dockId?.trim() || !formData.visitDate?.trim() || !formData.purpose?.trim() || !formData.arrivalTime || !formData.desiredDepartureTime) {
                 throw new Error('All fields are required');
+            }
+            if (new Date(formData.desiredDepartureTime) <= new Date(formData.arrivalTime)) {
+                throw new Error('Desired departure time must be after arrival time.');
             }
 
             // Purpose change validation: if changing from Maintenance to Commercial, must have at least one manifest
@@ -147,7 +127,12 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
             const updateData = {
                 dockId: formData.dockId,
                 visitDate: formData.visitDate,
-                purpose: formData.purpose
+                purpose: formData.purpose,
+                // Ensure full ISO 8601 format for dates to be correctly parsed by the backend.
+                arrivalTime: new Date(formData.arrivalTime).toISOString(),
+                desiredDepartureTime: new Date(formData.desiredDepartureTime).toISOString(),
+                estimatedLoadingDurationMinutes: parseInt(formData.estimatedLoadingDurationMinutes, 10),
+                estimatedUnloadingDurationMinutes: parseInt(formData.estimatedUnloadingDurationMinutes, 10),
             };
             await apiService.editVesselVisitNotificationWhileInProgress(formData.id, updateData);
             setMessage({ type: 'success', text: 'Notification updated successfully' });
@@ -163,7 +148,15 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
     const handleClear = () => {
         setSearchData({ id: '' });
         setFormData({
-            id: '', vesselIMO: '', dockId: '', visitDate: '', status: '', purpose: '', crew: [], loadingManifest: null, unloadingManifest: null
+            id: '',
+            dockId: '',
+            visitDate: '',
+            status: '',
+            purpose: '',
+            arrivalTime: '',
+            desiredDepartureTime: '',
+            estimatedLoadingDurationMinutes: 0,
+            estimatedUnloadingDurationMinutes: 0,
         });
         setNotification(null);
         setHasSearched(false);
@@ -291,6 +284,54 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
                                 <option value="Maintenance">Maintenance</option>
                             </select>
                             <small className="form-help">Purpose of visit</small>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="editArrivalTime">Arrival Time <span className="required">*</span></label>
+                            <input
+                                type="datetime-local"
+                                id="editArrivalTime"
+                                name="arrivalTime"
+                                value={formData.arrivalTime}
+                                onChange={handleFormInputChange}
+                                className="form-input"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="editDesiredDepartureTime">Desired Departure Time <span className="required">*</span></label>
+                            <input
+                                type="datetime-local"
+                                id="editDesiredDepartureTime"
+                                name="desiredDepartureTime"
+                                value={formData.desiredDepartureTime}
+                                onChange={handleFormInputChange}
+                                className="form-input"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="editEstimatedLoadingDurationMinutes">Est. Loading Time (min)</label>
+                            <input
+                                type="number"
+                                id="editEstimatedLoadingDurationMinutes"
+                                name="estimatedLoadingDurationMinutes"
+                                value={formData.estimatedLoadingDurationMinutes}
+                                onChange={handleFormInputChange}
+                                className="form-input"
+                                min="0"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="editEstimatedUnloadingDurationMinutes">Est. Unloading Time (min)</label>
+                            <input
+                                type="number"
+                                id="editEstimatedUnloadingDurationMinutes"
+                                name="estimatedUnloadingDurationMinutes"
+                                value={formData.estimatedUnloadingDurationMinutes}
+                                onChange={handleFormInputChange}
+                                className="form-input"
+                                min="0"
+                            />
                         </div>
                     </div>
                     <div className="form-actions">

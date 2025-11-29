@@ -41,6 +41,12 @@ namespace WebApp.Models.Infrastructure.Configurations
              .WithOne(r => r.Organization)
              .HasForeignKey(r => r.OrganizationId)
              .OnDelete(DeleteBehavior.Cascade);
+            
+            b.HasMany(x => x.VesselVisitNotifications)
+             .WithOne(vvn => vvn.ShippingAgentOrganization)
+             .HasForeignKey(vvn => vvn.ShippingAgentOrganizationId)
+             .OnDelete(DeleteBehavior.Cascade);
+        
         }
     }
 }

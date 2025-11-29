@@ -261,29 +261,29 @@ namespace WebApp.Models.Application.Services.Scheduling
 
         private int GetArrivalTimeMinutes(VesselVisitNotificationDTO visit, DateOnly targetDate)
         {
-            if (!visit.ArrivalTime.HasValue)
+            if (visit.ArrivalTime == default)
                 throw new InvalidOperationException("ArrivalTime is required for scheduling.");
 
-            var dt = visit.ArrivalTime.Value;
+            var dt = visit.ArrivalTime;
             var midnight = targetDate.ToDateTime(TimeOnly.MinValue);
             return (int)(dt - midnight).TotalMinutes;
         }
 
         private int GetDepartureTimeMinutes(VesselVisitNotificationDTO visit, DateOnly targetDate)
         {
-            if (!visit.DesiredDepartureTime.HasValue)
+            if (visit.DesiredDepartureTime == default)
                 throw new InvalidOperationException("DesiredDepartureTime is required for scheduling.");
 
-            var dt = visit.DesiredDepartureTime.Value;
+            var dt = visit.DesiredDepartureTime;
             var midnight = targetDate.ToDateTime(TimeOnly.MinValue);
             return (int)(dt - midnight).TotalMinutes;
         }
 
         private int GetLoadingTimeMinutes(VesselVisitNotificationDTO visit)
-            => visit.EstimatedLoadingDurationMinutes ?? 0;
+            => visit.EstimatedLoadingDurationMinutes;
 
         private int GetUnloadingTimeMinutes(VesselVisitNotificationDTO visit)
-            => visit.EstimatedUnloadingDurationMinutes ?? 0;
+            => visit.EstimatedUnloadingDurationMinutes;
 
         private async Task<(string SeqLine, string DelayLine)> RunPrologAsync(
             string vesselFacts,
@@ -515,7 +515,7 @@ namespace WebApp.Models.Application.Services.Scheduling
                 entries.Add(new VesselScheduleEntry
                 {
                     VesselVisitId = visit.Id,
-                    VesselIMO = visit.VesselIMO,
+                    VesselIMO = visit.VesselIMO!,
                     StartTime = midnight.AddMinutes(startMinutes),
                     EndTime = midnight.AddMinutes(endMinutes),
                     AssignedCraneId = null,
@@ -559,7 +559,7 @@ namespace WebApp.Models.Application.Services.Scheduling
                 entries.Add(new VesselScheduleEntry
                 {
                     VesselVisitId = visit.Id,
-                    VesselIMO = visit.VesselIMO,
+                    VesselIMO = visit.VesselIMO!,
                     StartTime = midnight.AddMinutes(startMinutes),
                     EndTime = midnight.AddMinutes(endMinutes),
                     NumberOfCranes = cranes,

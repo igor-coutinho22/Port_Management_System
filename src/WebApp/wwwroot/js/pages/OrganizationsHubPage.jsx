@@ -188,6 +188,7 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
                                 <th>{t('organizationsHubPage.table.address')}</th>
                                 <th>{t('organizationsHubPage.table.taxNumber')}</th>
                                 <th>{t('organizationsHubPage.table.representatives')}</th>
+                                <th>{t('organizationsHubPage.table.notifications')}</th>
                                 <th>{t('organizationsHubPage.table.status')}</th>
                             </tr>
                         </thead>
@@ -209,6 +210,9 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
                                             ))
                                             : <span style={{ color: '#b8eaff' }}>{t('organizationsHubPage.table.none')}</span>
                                         }
+                                    </td>
+                                    <td>
+                                        {org.vesselVisitNotifications ? org.vesselVisitNotifications.length : 0}
                                     </td>
                                     <td>
                                         <span className={`status-badge status-${org.isActive === true ? 'true' : 'false'}`}>

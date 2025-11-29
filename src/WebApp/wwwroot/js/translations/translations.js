@@ -773,6 +773,7 @@ window.translations = {
     "organizationsHubPage.table.address": "Address",
     "organizationsHubPage.table.taxNumber": "Tax Number",
     "organizationsHubPage.table.representatives": "Representatives",
+    "organizationsHubPage.table.notifications": "Notifications",
     "organizationsHubPage.table.status": "Status",
     "organizationsHubPage.table.none": "None",
     "organizationsHubPage.table.active": "Active",
@@ -1137,6 +1138,11 @@ window.translations = {
     "vesselVisitNotificationsHubPage.table.loadingManifest": "Loading Manifest",
     "vesselVisitNotificationsHubPage.table.unloadingManifest":
       "Unloading Manifest",
+    "vesselVisitNotificationsHubPage.table.organization": "Organization",
+    "vesselVisitNotificationsHubPage.table.arrivalTime": "Arrival Time",
+    "vesselVisitNotificationsHubPage.table.departureTime": "Departure Time",
+    "vesselVisitNotificationsHubPage.table.loadingTime": "Loading Time",
+    "vesselVisitNotificationsHubPage.table.unloadingTime": "Unloading Time",
     "vesselVisitNotificationsHubPage.table.notAvailable": "N/A",
     "vesselVisitNotificationsHubPage.table.none": "None",
     // Sections
@@ -3229,6 +3235,7 @@ window.translations = {
     "organizationsHubPage.table.address": "Endereço",
     "organizationsHubPage.table.taxNumber": "Número Fiscal",
     "organizationsHubPage.table.representatives": "Representantes",
+    "organizationsHubPage.table.notifications": "Notificações",
     "organizationsHubPage.table.status": "Estado",
     "organizationsHubPage.table.none": "Nenhum",
     "organizationsHubPage.table.active": "Ativo",
@@ -3362,6 +3369,11 @@ window.translations = {
     "vesselVisitNotificationsHubPage.table.crewSize": "Tamanho da Tripulação",
     "vesselVisitNotificationsHubPage.table.loadingManifest":
       "Manifesto de Carga",
+    "vesselVisitNotificationsHubPage.table.organization": "Organização",
+    "vesselVisitNotificationsHubPage.table.arrivalTime": "Tempo de Chegada",
+    "vesselVisitNotificationsHubPage.table.departureTime": "Tempo de Partida",
+    "vesselVisitNotificationsHubPage.table.loadingTime": "Tempo de Carregamento",
+    "vesselVisitNotificationsHubPage.table.unloadingTime": "Tempo de Descarregamento",
     "vesselVisitNotificationsHubPage.table.unloadingManifest":
       "Manifesto de Descarga",
     "vesselVisitNotificationsHubPage.table.notAvailable": "N/D",

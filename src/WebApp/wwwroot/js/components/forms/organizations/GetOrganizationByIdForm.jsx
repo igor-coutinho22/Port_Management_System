@@ -164,6 +164,20 @@ const GetOrganizationByIdForm = () => {
                                     )}
                                 </div>
                             </div>
+                            <div className="info-group full-width">
+                                <label>{t('organizationsHubPage.table.notifications')}</label>
+                                <div className="notifications-list">
+                                    {getAttr(organization, 'vesselVisitNotifications') && getAttr(organization, 'vesselVisitNotifications').length > 0 ? (
+                                        getAttr(organization, 'vesselVisitNotifications').map((notif, idx) => (
+                                            <div key={idx} className="notification-card" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                                                <span style={{ fontFamily: 'monospace', fontSize: '0.9em', color: '#b8eaff' }}>{getAttr(notif, 'id')}</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <span className="no-notifications">{t('organizationsHubPage.table.none')}</span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

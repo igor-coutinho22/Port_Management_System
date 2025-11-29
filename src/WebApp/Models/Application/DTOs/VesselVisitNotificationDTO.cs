@@ -6,6 +6,7 @@ namespace WebApp.Models.Application.DTOs
     {
         public Guid Id { get; set; }
         public string? VesselIMO { get; set; }
+        public Guid ShippingAgentOrganizationId { get; set; }
         public Guid DockId { get; set; }
         public DateTime VisitDate { get; set; }
         public string Status { get; set; } = string.Empty;
@@ -15,10 +16,10 @@ namespace WebApp.Models.Application.DTOs
         public CargoManifestDTO? UnloadingManifest { get; set; }
         public List<CrewMemberDTO> Crew { get; set; } = new();
 
-        public DateTime? ArrivalTime { get; set; }
-        public DateTime? DesiredDepartureTime { get; set; }
-        public int? EstimatedLoadingDurationMinutes { get; set; }
-        public int? EstimatedUnloadingDurationMinutes { get; set; }
+        public DateTime ArrivalTime { get; set; }
+        public DateTime DesiredDepartureTime { get; set; }
+        public int EstimatedLoadingDurationMinutes { get; set; }
+        public int EstimatedUnloadingDurationMinutes { get; set; }
     }
 
 

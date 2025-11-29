@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class FixNotificationsLogic : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -441,18 +441,25 @@ namespace WebApp.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     VesselIMO = table.Column<string>(type: "character varying(7)", nullable: false),
+                    ShippingAgentOrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
                     VisitDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DockId = table.Column<Guid>(type: "uuid", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     Purpose = table.Column<int>(type: "integer", nullable: false),
-                    ArrivalTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DesiredDepartureTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    EstimatedLoadingDurationMinutes = table.Column<int>(type: "integer", nullable: true),
-                    EstimatedUnloadingDurationMinutes = table.Column<int>(type: "integer", nullable: true)
+                    ArrivalTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DesiredDepartureTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EstimatedLoadingDurationMinutes = table.Column<int>(type: "integer", nullable: false),
+                    EstimatedUnloadingDurationMinutes = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_VesselVisitNotifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VesselVisitNotifications_Organizations_ShippingAgentOrganiz~",
+                        column: x => x.ShippingAgentOrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_VesselVisitNotifications_Vessels_VesselIMO",
                         column: x => x.VesselIMO,
@@ -679,6 +686,11 @@ namespace WebApp.Migrations
                 column: "VesselTypeName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_VesselVisitNotifications_ShippingAgentOrganizationId",
+                table: "VesselVisitNotifications",
+                column: "ShippingAgentOrganizationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_VesselVisitNotifications_VesselIMO",
                 table: "VesselVisitNotifications",
                 column: "VesselIMO");
@@ -745,9 +757,6 @@ namespace WebApp.Migrations
                 name: "Staff");
 
             migrationBuilder.DropTable(
-                name: "Organizations");
-
-            migrationBuilder.DropTable(
                 name: "Qualifications");
 
             migrationBuilder.DropTable(
@@ -758,6 +767,9 @@ namespace WebApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "StorageAreas");
+
+            migrationBuilder.DropTable(
+                name: "Organizations");
 
             migrationBuilder.DropTable(
                 name: "Vessels");

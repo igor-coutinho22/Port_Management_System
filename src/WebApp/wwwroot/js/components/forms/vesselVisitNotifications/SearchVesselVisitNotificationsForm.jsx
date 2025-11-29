@@ -21,6 +21,21 @@ const SearchVesselVisitNotificationsForm = () => {
     const [isLoading, setIsLoading] = React.useState(false);
     const [hasSearched, setHasSearched] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
+    const [shippingAgentOrganizations, setShippingAgentOrganizations] = React.useState([]);
+
+    React.useEffect(() => {
+		// Fetch all vessels and docks once for name lookup
+		async function fetchMeta() {
+			const orgs = await apiService.getOrganizations();
+			setShippingAgentOrganizations(orgs || []); // And save them to state
+		}
+		fetchMeta();
+	}, []);
+
+    function getOrganizationLegalName(id) {
+		const org = shippingAgentOrganizations.find(o => o.id === id);
+		return org ? org.legalName || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
+	}
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -184,6 +199,11 @@ const SearchVesselVisitNotificationsForm = () => {
                                     <th>Date</th>
                                     <th>Purpose</th>
                                     <th>Status</th>
+									<th>Organization</th>
+									<th>Arrival Time</th>
+									<th>Departure Time</th>
+									<th>Loading Time</th>
+									<th>Unloading Time</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -200,6 +220,11 @@ const SearchVesselVisitNotificationsForm = () => {
 											{notification.status || 'N/A'}
 										</span>
 									</td>
+									<td>{getOrganizationLegalName(notification.shippingAgentOrganizationId)}</td>
+									<td>{notification.arrivalTime ? new Date(notification.arrivalTime).toLocaleString() : 'N/A'}</td>
+									<td>{notification.desiredDepartureTime ? new Date(notification.desiredDepartureTime).toLocaleString() : 'N/A'}</td>
+									<td>{notification.estimatedLoadingDurationMinutes != null ? `${notification.estimatedLoadingDurationMinutes} min` : 'N/A'}</td>
+                                    <td>{notification.estimatedUnloadingDurationMinutes != null ? `${notification.estimatedUnloadingDurationMinutes} min` : 'N/A'}</td>
                                         <td>
                                             <button className="btn-small view-btn" onClick={() => handleViewDetails(notification.id)}>
                                                 👁️ View

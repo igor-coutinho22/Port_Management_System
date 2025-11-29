@@ -276,8 +276,9 @@ namespace WebApp.Seeding
             {
                 var vessels = await context.Set<Vessel>().ToListAsync();
                 var docks = await context.Set<Dock>().ToListAsync();
+                var organizations = await context.Set<ShippingAgentOrganization>().ToListAsync();
 
-                if (vessels.Count >= 4 && docks.Count >= 2)
+                if (vessels.Count >= 4 && docks.Count >= 2 && organizations.Count >= 2)
                 {
                     var v1 = vessels[0].IMO;
                     var v2 = vessels[1].IMO;
@@ -287,10 +288,35 @@ namespace WebApp.Seeding
                     var dock1 = docks[0].Id;
                     var dock2 = docks[1].Id;
 
+                    var org1 = organizations[0];
+                    var org2 = organizations[1];
+
+
                     var targetDay = DateTime.UtcNow.Date.AddDays(0);
 
+                    var arrivalTime1 = targetDay.AddHours(6);  // 06:00
+                    var arrivalTime2 = targetDay.AddHours(11); // 11:00
+                    var arrivalTime3 = targetDay.AddHours(13); // 13:00
+                    var arrivalTime4 = targetDay.AddHours(15); // 15:00
+
+                    var departureTime1 = targetDay.AddHours(10); // 10:00
+                    var departureTime2 = targetDay.AddHours(15); // 15:00
+                    var departureTime3 = targetDay.AddHours(18); // 18:00
+                    var departureTime4 = targetDay.AddHours(18); // 18:00
+
+                    var loadingDuration1 = 60;
+                    var loadingDuration2 = 90;
+                    var loadingDuration3 = 40;
+                    var loadingDuration4 = 30;
+
+                    var unloadingDuration1 = 45;
+                    var unloadingDuration2 = 30;
+                    var unloadingDuration3 = 120;
+                    var unloadingDuration4 = 0;
+
+
                     // ===== Visit 1: Commercial, loading + unloading, early slot =====
-                    var visit1 = new VesselVisitNotification(v1, dock1, targetDay, VisitPurpose.Commercial);
+                    var visit1 = new VesselVisitNotification(org1.Id, v1, dock1, targetDay, VisitPurpose.Commercial, arrivalTime1, departureTime1, loadingDuration1, unloadingDuration1);
 
                     visit1.AddCrewMember(new CrewMember("John Doe", "C1234", "PT"));
 
@@ -313,9 +339,11 @@ namespace WebApp.Seeding
                     );
                     visit1.MarkAsSubmitted();
                     _ = visit1.Approve();
+                    
+                    org1.AddVesselVisitNotification(visit1);
 
                     // ===== Visit 2: Commercial, mostly loading, mid-day =====
-                    var visit2 = new VesselVisitNotification(v2, dock1, targetDay, VisitPurpose.Commercial);
+                    var visit2 = new VesselVisitNotification(org1.Id, v2, dock1, targetDay, VisitPurpose.Commercial, arrivalTime2, departureTime2, loadingDuration2, unloadingDuration2);
                     visit2.AddCrewMember(new CrewMember("Maria Silva", "C4567", "ES"));
 
                     var loadingManifest2 = new CargoManifest(CargoManifestType.Loading);
@@ -334,8 +362,10 @@ namespace WebApp.Seeding
                     visit2.MarkAsSubmitted();
                     _ = visit2.Approve();
 
+                    org1.AddVesselVisitNotification(visit2);
+
                     // ===== Visit 3: Commercial, unloading only, afternoon =====
-                    var visit3 = new VesselVisitNotification(v3, dock2, targetDay, VisitPurpose.Commercial);
+                    var visit3 = new VesselVisitNotification(org2.Id, v3, dock2, targetDay, VisitPurpose.Commercial, arrivalTime3, departureTime3, loadingDuration3, unloadingDuration3);
                     visit3.AddCrewMember(new CrewMember("Carlos Mendes", "C78910", "BR"));
 
                     var unloadingManifest3 = new CargoManifest(CargoManifestType.Unloading);
@@ -353,8 +383,10 @@ namespace WebApp.Seeding
                     visit3.MarkAsSubmitted();
                     _ = visit3.Approve();
 
+                    org2.AddVesselVisitNotification(visit3);
+
                     // ===== Visit 4: Commercial, both ops, tight window =====
-                    var visit4 = new VesselVisitNotification(v4, dock2, targetDay, VisitPurpose.Commercial);
+                    var visit4 = new VesselVisitNotification(org2.Id, v4, dock2, targetDay, VisitPurpose.Commercial, arrivalTime4, departureTime4, loadingDuration4, unloadingDuration4);
                     visit4.AddCrewMember(new CrewMember("Eva Liu", "C9999", "CN"));
 
                     var loadingManifest4 = new CargoManifest(CargoManifestType.Loading);
@@ -376,7 +408,10 @@ namespace WebApp.Seeding
                     visit4.MarkAsSubmitted();
                     _ = visit4.Approve();
 
+                    org2.AddVesselVisitNotification(visit4);
+
                     await context.AddRangeAsync(visit1, visit2, visit3, visit4);
+                    context.UpdateRange(org1, org2); // Track changes to organizations
                     await context.SaveChangesAsync();
                     logger.LogInformation("Seeded 4 schedulable Vessel Visit Notifications with valid ISO 6346 containers.");
                 }

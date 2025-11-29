@@ -12,14 +12,20 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
     const [formData, setFormData] = React.useState({
         vesselIMO: '',
+        shippingAgentOrganizationId: '',
         dockId: '',
         visitDate: '',
+        arrivalTime: '',
+        desiredDepartureTime: '',
+        estimatedLoadingDurationMinutes: 0,
+        estimatedUnloadingDurationMinutes: 0,
         purpose: '',
         crew: [{ name: '', citizenId: '', nationality: '' }],
         loadingManifest: [],
         unloadingManifest: [],
     });
     const [docks, setDocks] = React.useState([]);
+    const [organizations, setOrganizations] = React.useState([]);
     const [vessels, setVessels] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
@@ -28,6 +34,7 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
     React.useEffect(() => {
         loadDocks();
         loadVessels();
+        loadOrganizations();
     }, []);
 
     const loadDocks = async () => {
@@ -46,6 +53,16 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
         } catch (error) {
             console.error('Error loading vessels:', error);
             setMessage({ type: 'error', text: 'Failed to load vessels' });
+        }
+    };
+    const loadOrganizations = async () => {
+        try {
+            const orgList = await apiService.getOrganizations();
+            // Filter for active organizations only
+            setOrganizations(orgList.filter(org => org.isActive));
+        } catch (error) {
+            console.error('Error loading organizations:', error);
+            setMessage({ type: 'error', text: 'Failed to load organizations' });
         }
     };
 
@@ -98,6 +115,12 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
             if (!formData.vesselIMO?.trim()) throw new Error('Vessel is required');
             if (!formData.dockId?.trim()) throw new Error('Dock is required');
             if (!formData.visitDate?.trim()) throw new Error('Visit date is required');
+            if (!formData.shippingAgentOrganizationId?.trim()) throw new Error('Organization is required');
+            if (!formData.arrivalTime) throw new Error('Arrival time is required');
+            if (!formData.desiredDepartureTime) throw new Error('Desired departure time is required');
+            if (formData.estimatedLoadingDurationMinutes < 0) throw new Error('Loading duration cannot be negative');
+            if (formData.estimatedUnloadingDurationMinutes < 0) throw new Error('Unloading duration cannot be negative');
+
             if (!formData.purpose?.trim()) throw new Error('Purpose is required');
             if (!formData.crew || formData.crew.length === 0 || formData.crew.some(c => !c.name.trim() || !c.citizenId.trim() || !c.nationality.trim())) {
                 throw new Error('All crew members must have name, citizen ID, and nationality');
@@ -134,8 +157,13 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
             // Transform data to match backend DTO
             const notificationData = {
                 VesselIMO: formData.vesselIMO,
+                ShippingAgentOrganizationId: formData.shippingAgentOrganizationId,
                 DockId: formData.dockId,
                 VisitDate: formData.visitDate,
+                ArrivalTime: formData.arrivalTime,
+                DesiredDepartureTime: formData.desiredDepartureTime,
+                EstimatedLoadingDurationMinutes: parseInt(formData.estimatedLoadingDurationMinutes, 10),
+                EstimatedUnloadingDurationMinutes: parseInt(formData.estimatedUnloadingDurationMinutes, 10),
                 Purpose: formData.purpose,
                 Crew: formData.crew,
                 LoadingManifest: loadingManifest,
@@ -146,8 +174,13 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
             setMessage({ type: 'success', text: 'Vessel visit notification registered successfully!' });
             setFormData({
                 vesselIMO: '',
+                shippingAgentOrganizationId: '',
                 dockId: '',
                 visitDate: '',
+                arrivalTime: '',
+                desiredDepartureTime: '',
+                estimatedLoadingDurationMinutes: 0,
+                estimatedUnloadingDurationMinutes: 0,
                 purpose: '',
                 crew: [{ name: '', citizenId: '', nationality: '' }],
                 loadingManifest: [],
@@ -191,6 +224,22 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
                         <small className="form-help">Select vessel by name/IMO</small>
                     </div>
                     <div className="form-group">
+                        <label htmlFor="shippingAgentOrganizationId">Organization <span className="required">*</span></label>
+                        <select
+                            id="shippingAgentOrganizationId"
+                            name="shippingAgentOrganizationId"
+                            value={formData.shippingAgentOrganizationId}
+                            onChange={handleInputChange}
+                            className="form-input"
+                            required
+                        >
+                            <option value="">Select organization...</option>
+                            {organizations.map(org => (
+                                <option key={org.id} value={org.id}>{org.legalName}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="form-group">
                         <label htmlFor="dockId">Dock <span className="required">*</span></label>
                         <select
                             id="dockId"
@@ -219,6 +268,54 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
                             required
                         />
                         <small className="form-help">Date of vessel visit</small>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="arrivalTime">Arrival Time <span className="required">*</span></label>
+                        <input
+                            type="datetime-local"
+                            id="arrivalTime"
+                            name="arrivalTime"
+                            value={formData.arrivalTime}
+                            onChange={handleInputChange}
+                            className="form-input"
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="desiredDepartureTime">Desired Departure Time <span className="required">*</span></label>
+                        <input
+                            type="datetime-local"
+                            id="desiredDepartureTime"
+                            name="desiredDepartureTime"
+                            value={formData.desiredDepartureTime}
+                            onChange={handleInputChange}
+                            className="form-input"
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="estimatedLoadingDurationMinutes">Est. Loading Time (min)</label>
+                        <input
+                            type="number"
+                            id="estimatedLoadingDurationMinutes"
+                            name="estimatedLoadingDurationMinutes"
+                            value={formData.estimatedLoadingDurationMinutes}
+                            onChange={handleInputChange}
+                            className="form-input"
+                            min="0"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="estimatedUnloadingDurationMinutes">Est. Unloading Time (min)</label>
+                        <input
+                            type="number"
+                            id="estimatedUnloadingDurationMinutes"
+                            name="estimatedUnloadingDurationMinutes"
+                            value={formData.estimatedUnloadingDurationMinutes}
+                            onChange={handleInputChange}
+                            className="form-input"
+                            min="0"
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="purpose">Purpose <span className="required">*</span></label>
@@ -345,8 +442,13 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
                         onClick={() => {
                             setFormData({
                                 vesselIMO: '',
+                                shippingAgentOrganizationId: '',
                                 dockId: '',
                                 visitDate: '',
+                                arrivalTime: '',
+                                desiredDepartureTime: '',
+                                estimatedLoadingDurationMinutes: 0,
+                                estimatedUnloadingDurationMinutes: 0,
                                 purpose: '',
                                 crew: [{ name: '', citizenId: '', nationality: '' }],
                                 loadingManifest: [],

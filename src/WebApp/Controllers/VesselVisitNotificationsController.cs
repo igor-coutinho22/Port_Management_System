@@ -102,6 +102,7 @@ namespace WebApp.Controllers
         }
 
         // PUT: api/vesselvisitnotification/{id}/submit
+        [Authorize(Roles = "Representative")]
         [HttpPut("{id:guid}/submit")]
         public async Task<IActionResult> SubmitAsync(Guid id)
         {
