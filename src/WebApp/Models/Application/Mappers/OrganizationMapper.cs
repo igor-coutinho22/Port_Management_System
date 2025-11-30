@@ -20,7 +20,8 @@ namespace WebApp.Models.Application.Mappers
                 Address = org.Address,
                 TaxNumber = org.TaxNumber,
                 IsActive = org.IsActive,
-                Representatives = org.Representatives.Select(RepresentativeMapper.ToDto).ToList()
+                Representatives = org.Representatives.Select(RepresentativeMapper.ToDto).ToList(),
+                VesselVisitNotifications = org.VesselVisitNotifications.Select(VesselVisitNotificationMapper.ToDTO).ToList()
             };
         }
 
