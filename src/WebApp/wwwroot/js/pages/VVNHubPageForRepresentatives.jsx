@@ -3,45 +3,52 @@ console.log('VVNHubPageForRepresentatives.jsx is loading...');
 
 const VVNHubPageForRepresentatives = () => {
     const { t } = useTranslation();
-    const { user } = window.apiService.getCurrentUser(); // Get the full user object
+    const { 
+        currentUser: user,       // Map 'currentUser' (from Context) to 'user' (for this file)
+        isLoadingUser: userLoading // Map 'isLoadingUser' (from Context) to 'userLoading'
+    } = useUser();
+    // --- ADD THIS DEBUGGING BLOCK ---
+    console.log("Current User Object:", user);
+    console.log("Organization ID Check:", user?.organizationId);
+    // --------------------------------
     const [expandedSection, setExpandedSection] = React.useState(null); // Default to open for better UX
     const [notifications, setNotifications] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
-    const [showQuickView, setShowQuickView] = React.useState(false); // Default to true for representatives
-    const [orgIdMissing, setOrgIdMissing] = React.useState(false);
+    const [showQuickView, setShowQuickView] = React.useState(true); // Default to true for representatives
 
     // Toggle section expansion
     const toggleSection = (sectionName) => {
         setExpandedSection(expandedSection === sectionName ? null : sectionName);
     };
 
-    // Load all notifications for quick view
-    const loadNotifications = async () => {
-        const organizationId = user?.organizationId;
-        if (!organizationId) {
-            console.error("CRITICAL: Organization ID not found for the current representative user. The /api/me endpoint might not be populating it.");
-            setOrgIdMissing(true);
-            return; // Don't fetch if there's no org ID
-        }
-        setIsLoading(true);
-        try {
-            const data = await apiService.getVesselVisitNotificationsByOrganization(organizationId);
-            setNotifications(data);
-        } catch (error) {
-            console.error('Error loading notifications:', error);
-            setNotifications([]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
+    // This effect will run when the component mounts and whenever organizationId or showQuickView changes.
+    // It fetches notifications only when a valid organizationId is available.
     React.useEffect(() => {
-        // Load notifications if the view is open AND we have an organization ID
-        if (showQuickView && user?.organizationId) {
-            setOrgIdMissing(false); // Reset missing flag if we have an ID
-            loadNotifications();
-        }
-    }, [showQuickView, user?.organizationId]); // Re-run if user object changes
+        const loadNotifications = async () => {
+            // Do not fetch if the user is still loading, if there's no organizationId, or if the view is hidden
+            if (userLoading || !user?.organizationId || !showQuickView) {
+                setNotifications([]); // Clear notifications if conditions aren't met
+                return;
+            }
+
+            setIsLoading(true);
+            try {
+                const data = await window.apiService.getVesselVisitNotificationsByOrganization(user.organizationId);
+                setNotifications(data);
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                setNotifications([]); // Set to empty on error
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadNotifications();
+    }, [user?.organizationId, userLoading, showQuickView]); // Dependency array
+
+    if (userLoading) {
+        return <div className="loading">{t('loading')}</div>;
+    }
 
     // Filtered sections - ONLY Submit is included
     const sections = [
@@ -80,22 +87,13 @@ const VVNHubPageForRepresentatives = () => {
                     <div className="quick-view-panel">
                         {isLoading ? (
                             <div className="loading">{t('vesselVisitNotificationsHubPage.quickView.loading')}</div>
-                        ) : orgIdMissing ? (
+                        ) : !user?.organizationId ? (
                             <div className="no-data error-panel">
                                 <h3>Organization Not Found</h3>
                                 <p>Your user account is not linked to an organization. Please contact an administrator.</p>
-                                {/* --- DEBUG PANEL START --- */}
-                                <div style={{ marginTop: '20px', padding: '10px', background: '#333', borderRadius: '4px', border: '1px solid #555' }}>
-                                    <h4 style={{ color: '#f39c12', margin: '0 0 10px 0' }}>Debugging Info: `user` Object</h4>
-                                    <pre style={{ color: 'white', background: 'black', padding: '10px', borderRadius: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                                        {JSON.stringify(user, null, 2)}
-                                    </pre>
-                                    <p style={{ fontSize: '0.9em', color: '#ccc', marginTop: '10px' }}>This panel shows the user data received from the backend. Notice that `organizationId` is missing.</p>
-                                </div>
-                                {/* --- DEBUG PANEL END --- */}
                             </div>
                         ) : (
-                            <VVNRepresentativeQuickTable notifications={notifications} onRefresh={loadNotifications} />
+                            <VVNRepresentativeQuickTable notifications={notifications} onRefresh={() => {}} />
                         )}
                     </div>
                 )}
@@ -130,7 +128,7 @@ const VVNHubPageForRepresentatives = () => {
                         {expandedSection === section.id && (
                             <div className="operation-content">
                                 <div className="operation-body">
-                                    {section.component === 'SubmitVesselVisitNotificationForm' && <SubmitVesselVisitNotificationForm onSuccess={loadNotifications} />}
+                                    {section.component === 'SubmitVesselVisitNotificationForm' && <SubmitVesselVisitNotificationForm onSuccess={() => {}} />}
                                 </div>
                             </div>
                         )}
@@ -142,21 +140,40 @@ const VVNHubPageForRepresentatives = () => {
 };
 
 // Specific Quick Table for the Representative view to avoid name conflicts.
+// Specific Quick Table for the Representative view
 const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
     const { t } = useTranslation();
     const [vessels, setVessels] = React.useState([]);
     const [docks, setDocks] = React.useState([]);
     const [shippingAgentOrganizations, setShippingAgentOrganizations] = React.useState([]);
 
-
     React.useEffect(() => {
         async function fetchMeta() {
-            const v = await apiService.getVessels();
-            const d = await apiService.getDocks();
-            const orgs = await apiService.getOrganizations();
-            setShippingAgentOrganizations(orgs || []);
-            setVessels(v || []);
-            setDocks(d || []);
+            // 1. Fetch Vessels (Safe)
+            try {
+                const v = await window.apiService.getVessels();
+                setVessels(v || []);
+            } catch (err) {
+                console.warn("Could not load vessels:", err);
+            }
+
+            // 2. Fetch Docks (Safe)
+            try {
+                const d = await window.apiService.getDocks();
+                setDocks(d || []);
+            } catch (err) {
+                console.warn("Could not load docks:", err);
+            }
+
+            // 3. Fetch Organizations (Safe & Restricted)
+            try {
+                // Representatives might get a 403 here. We catch it so the app doesn't crash.
+                const orgs = await window.apiService.getOrganizations(true);
+                setShippingAgentOrganizations(orgs || []);
+            } catch (err) {
+                console.warn("Could not load organizations (Expected if Representative):", err);
+                // We leave the list empty. The table will just show the ID instead of the Name.
+            }
         }
         fetchMeta();
     }, []);
@@ -184,6 +201,8 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
                 <div className="no-data">
                     <h3>{t('vesselVisitNotificationsHubPage.quickView.noData.title')}</h3>
                     <p>{t('vesselVisitNotificationsHubPage.quickView.noData.description')}</p>
+                    {/* DEBUG: Remove this line after testing */}
+                    <p style={{fontSize: '0.8em', color: '#666'}}>Debug: API called, result is empty.</p>
                 </div>
             ) : (
                 <div className="table-container">
@@ -196,45 +215,23 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
                                 <th>{t('vesselVisitNotificationsHubPage.table.visitDate')}</th>
                                 <th>{t('vesselVisitNotificationsHubPage.table.status')}</th>
                                 <th>{t('vesselVisitNotificationsHubPage.table.purpose')}</th>
-                                <th>{t('vesselVisitNotificationsHubPage.table.crewSize')}</th>
-                                <th>{t('vesselVisitNotificationsHubPage.table.loadingManifest')}</th>
-                                <th>{t('vesselVisitNotificationsHubPage.table.unloadingManifest')}</th>
                                 <th>{t('vesselVisitNotificationsHubPage.table.organization')}</th>
-                                <th>{t('vesselVisitNotificationsHubPage.table.arrivalTime')}</th>
-                                <th>{t('vesselVisitNotificationsHubPage.table.departureTime')}</th>
-                                <th>{t('vesselVisitNotificationsHubPage.table.loadingTime')}</th>
-                                <th>{t('vesselVisitNotificationsHubPage.table.unloadingTime')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {notifications.map((n) => (
                                 <tr key={n.id}>
-                                    <td className="id-cell">{n.id || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-                                    <td>{n.vesselIMO ? `${n.vesselIMO} (${getVesselName(n.vesselIMO)})` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-                                    <td>{n.dockId ? `${n.dockId} (${getDockName(n.dockId)})` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-                                    <td>{n.visitDate ? new Date(n.visitDate).toLocaleDateString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+                                    <td className="id-cell">{n.id}</td>
+                                    <td>{n.vesselIMO ? `${n.vesselIMO} (${getVesselName(n.vesselIMO)})` : '-'}</td>
+                                    <td>{n.dockId ? `${n.dockId} (${getDockName(n.dockId)})` : '-'}</td>
+                                    <td>{n.visitDate ? new Date(n.visitDate).toLocaleDateString() : '-'}</td>
                                     <td>
                                         <span className={`status-badge status-${(n.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
-                                            {n.status || t('vesselVisitNotificationsHubPage.table.notAvailable')}
+                                            {n.status}
                                         </span>
                                     </td>
-                                    <td>{n.purpose || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-                                    <td>{n.crew ? n.crew.length : 0}</td>
-                                    <td>
-                                        {n.loadingManifest && n.loadingManifest.containers && n.loadingManifest.containers.length > 0
-                                            ? n.loadingManifest.containers.map(c => c.identifier).join(', ')
-                                            : <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
-                                    </td>
-                                    <td>
-                                        {n.unloadingManifest && n.unloadingManifest.containers && n.unloadingManifest.containers.length > 0
-                                            ? n.unloadingManifest.containers.map(c => c.identifier).join(', ')
-                                            : <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
-                                    </td>
-                                    <td>{getOrganizationLegalName(n.shippingAgentOrganizationId) || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-                                    <td>{n.arrivalTime ? new Date(n.arrivalTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-                                    <td>{n.desiredDepartureTime ? new Date(n.desiredDepartureTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-                                    <td>{n.estimatedLoadingDurationMinutes != null ? `${n.estimatedLoadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-                                    <td>{n.estimatedUnloadingDurationMinutes != null ? `${n.estimatedUnloadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+                                    <td>{n.purpose}</td>
+                                    <td>{getOrganizationLegalName(n.shippingAgentOrganizationId)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -245,4 +242,4 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
     );
 };
 
-console.log('VVNHubPageForRepresentatives.jsx component loaded!');
+console.log('VVNHubPageForRepresentatives component loaded!');

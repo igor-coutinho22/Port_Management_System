@@ -4,7 +4,7 @@ using WebApp.Models.Domain.VesselVisits.Services;
 
 namespace WebApp.Controllers
 {
-    [Authorize(Roles = "RequireRepresentative")]
+    [Authorize("RequireRepresentative")]
     [ApiController]
     [Route("api/[controller]")]
     public class NotificationsForRepresentativesController : ControllerBase
