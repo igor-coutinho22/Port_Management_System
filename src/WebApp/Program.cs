@@ -342,8 +342,10 @@ app.MapGet("/api/admin/debug-user", async (
 
 
 // ---- Helper endpoint: who am I (from token/claims) ----
-app.MapGet("/api/me", (HttpContext http) =>
+app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
 {
+    // This endpoint now needs to be async and injects the DbContext
+
     if (!http.User.Identity?.IsAuthenticated ?? true)
         return Results.Unauthorized();
 
@@ -366,7 +368,31 @@ app.MapGet("/api/me", (HttpContext http) =>
     if (roles.Length == 0)
         return Results.StatusCode(StatusCodes.Status403Forbidden);
 
-    return Results.Ok(new { email, firstName = first, lastName = last, name, roles });
+    // ** START OF NEW LOGIC **
+    Guid? organizationId = null;
+    if (roles.Contains("Representative") && !string.IsNullOrEmpty(email))
+    {
+        // If the user is a representative, look up their organization ID in the database.
+        var representative = await db.Representatives
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Email.ToLower() == email.ToLower());
+
+        if (representative != null)
+        {
+            organizationId = representative.OrganizationId;
+        }
+    }
+    // ** END OF NEW LOGIC **
+
+    return Results.Ok(new { 
+        email, 
+        firstName = first, 
+        lastName = last, 
+        name, 
+        roles, 
+        organizationId // The newly added field
+    });
+
 }).RequireAuthorization();
 
 
