@@ -5,6 +5,7 @@ namespace WebApp.Models.Domain.VesselVisits.Services
     public interface IVesselVisitNotificationService
     {
         Task<IEnumerable<VesselVisitNotificationDTO>> GetAllAsync();
+        Task<IEnumerable<VesselVisitNotificationDTO>> GetAllOnOrgAsync(Guid organizationId);
         Task<IEnumerable<VesselVisitNotificationDTO>> SearchAsync(VesselVisitNotificationFilterDTO filter);
         Task<VesselVisitNotification?> GetByIdAsync(Guid id);
         Task CreateAsync(VesselVisitNotification vvn);

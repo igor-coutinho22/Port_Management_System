@@ -265,5 +265,11 @@ namespace WebApp.Models.Application.Services
 
             await _repository.DeleteAsync(visitToDelete);
         }
+
+        public async Task<IEnumerable<VesselVisitNotificationDTO>> GetAllOnOrgAsync(Guid organizationId)
+        {
+            var visits = await _repository.GetAllOnOrgAsync(organizationId);
+            return visits.Select(VesselVisitNotificationMapper.ToDTO);
+        }
     }
 }

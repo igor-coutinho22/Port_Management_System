@@ -10,6 +10,7 @@ namespace WebApp.Models.Application.DTOs
         public string? TaxNumber { get; set; }
         public bool IsActive { get; set; }
         public List<RepresentativeDto> Representatives { get; set; } = new();
+        public List<VesselVisitNotificationDTO> VesselVisitNotifications { get; set; } = new();
     };
 
     public class CreateOrganizationDto

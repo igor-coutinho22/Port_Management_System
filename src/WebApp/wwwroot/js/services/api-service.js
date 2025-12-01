@@ -393,6 +393,12 @@ class ApiService {
     async getVesselVisitNotifications() {
         return this.get('/vesselvisitnotification');
     }
+
+    async getVesselVisitNotificationsByOrganization(organizationId) {
+        return this.get(`/notificationsForRepresentatives?organizationId=${organizationId}`);
+    }
+
+
     async getVesselVisitNotificationById(id) {
         return this.get(`/vesselvisitnotification/${id}`);
     }

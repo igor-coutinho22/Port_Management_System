@@ -52,6 +52,11 @@ namespace WebApp.Models.Application.DTOs
         public Guid DockId { get; set; }
         public DateTime VisitDate { get; set; }
         public string Purpose { get; set; } = string.Empty;
+        public DateTime ArrivalTime { get; set; }
+        public DateTime DesiredDepartureTime { get; set; }
+        public int EstimatedLoadingDurationMinutes { get; set; }
+        public int EstimatedUnloadingDurationMinutes { get; set; }
+
     }
 
     public class VesselVisitNotificationFilterDTO

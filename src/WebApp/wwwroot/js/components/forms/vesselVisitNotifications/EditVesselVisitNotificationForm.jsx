@@ -125,14 +125,13 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
 
             // Prepare DTO for backend (only updatable fields)
             const updateData = {
-                dockId: formData.dockId,
-                visitDate: formData.visitDate,
-                purpose: formData.purpose,
-                // Ensure full ISO 8601 format for dates to be correctly parsed by the backend.
-                arrivalTime: new Date(formData.arrivalTime).toISOString(),
-                desiredDepartureTime: new Date(formData.desiredDepartureTime).toISOString(),
-                estimatedLoadingDurationMinutes: parseInt(formData.estimatedLoadingDurationMinutes, 10),
-                estimatedUnloadingDurationMinutes: parseInt(formData.estimatedUnloadingDurationMinutes, 10),
+                DockId: formData.dockId,
+                VisitDate: formData.visitDate,
+                Purpose: formData.purpose,
+                ArrivalTime: new Date(formData.arrivalTime).toISOString(),
+                DesiredDepartureTime: new Date(formData.desiredDepartureTime).toISOString(),
+                EstimatedLoadingDurationMinutes: parseInt(formData.estimatedLoadingDurationMinutes, 10),
+                EstimatedUnloadingDurationMinutes: parseInt(formData.estimatedUnloadingDurationMinutes, 10),
             };
             await apiService.editVesselVisitNotificationWhileInProgress(formData.id, updateData);
             setMessage({ type: 'success', text: 'Notification updated successfully' });

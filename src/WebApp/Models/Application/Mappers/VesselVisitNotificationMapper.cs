@@ -103,10 +103,10 @@ namespace WebApp.Models.Application.Mappers
                 dockId: dto.DockId,
                 visitDate: dto.VisitDate,
                 purpose: Enum.Parse<VisitPurpose>(dto.Purpose, ignoreCase: true),
-                arrivalTime: entity.ArrivalTime,
-                desiredDepartureTime: entity.DesiredDepartureTime,
-                estimatedLoadingDurationMinutes: entity.EstimatedLoadingDurationMinutes,
-                estimatedUnloadingDurationMinutes: entity.EstimatedUnloadingDurationMinutes
+                arrivalTime: dto.ArrivalTime,
+                desiredDepartureTime: dto.DesiredDepartureTime,
+                estimatedLoadingDurationMinutes: dto.EstimatedLoadingDurationMinutes,
+                estimatedUnloadingDurationMinutes: dto.EstimatedUnloadingDurationMinutes
             );
         }
 
