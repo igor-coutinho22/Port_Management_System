@@ -15,7 +15,7 @@ public class VesselVisitNotificationTests
     public void Constructor_ShouldInitialize_AllProperties()
     {
         // Act
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
 
         // Assert
         vvn.Id.Should().NotBeEmpty();
@@ -35,7 +35,7 @@ public class VesselVisitNotificationTests
     public void AddLoadingManifest_ShouldAdd_WhenTypeIsLoading()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         var manifest = new CargoManifest(CargoManifestType.Loading);
 
         // Act
@@ -49,7 +49,7 @@ public class VesselVisitNotificationTests
     public void AddLoadingManifest_ShouldThrow_WhenTypeIsUnloading()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         var invalidManifest = new CargoManifest(CargoManifestType.Unloading);
 
         // Act & Assert
@@ -62,7 +62,7 @@ public class VesselVisitNotificationTests
     public void AddUnloadingManifest_ShouldAdd_WhenTypeIsUnloading()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         var manifest = new CargoManifest(CargoManifestType.Unloading);
 
         // Act
@@ -76,7 +76,7 @@ public class VesselVisitNotificationTests
     public void AddUnloadingManifest_ShouldThrow_WhenTypeIsLoading()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         var invalidManifest = new CargoManifest(CargoManifestType.Loading);
 
         // Act & Assert
@@ -89,7 +89,7 @@ public class VesselVisitNotificationTests
     public void AddCrewMember_ShouldAdd_ValidCrewMember()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
 
         // Act
         vvn.AddCrewMember(new CrewMember("John Doe", "CIT123", "PT"));
@@ -105,7 +105,7 @@ public class VesselVisitNotificationTests
     public void MarkAsSubmitted_ShouldChangeStatus_ForMaintenanceVisit()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Maintenance);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
 
         // Act
         vvn.MarkAsSubmitted();
@@ -118,7 +118,7 @@ public class VesselVisitNotificationTests
     public void MarkAsSubmitted_ShouldThrow_ForCommercialVisitWithoutManifests()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
 
         // Act & Assert
         var act = () => vvn.MarkAsSubmitted();
@@ -130,7 +130,7 @@ public class VesselVisitNotificationTests
     public void MarkAsSubmitted_ShouldSucceed_ForCommercialVisitWithLoadingManifest()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         vvn.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
 
         // Act
@@ -144,7 +144,7 @@ public class VesselVisitNotificationTests
     public void MarkAsSubmitted_ShouldThrow_WhenAlreadySubmitted()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Maintenance);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         vvn.MarkAsSubmitted();
 
         // Act & Assert
@@ -157,7 +157,7 @@ public class VesselVisitNotificationTests
     public void UpdatePurpose_ShouldUpdate_WhenStatusIsInProgress()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
 
         // Act
         vvn.UpdatePurpose(VisitPurpose.Maintenance);
@@ -170,7 +170,7 @@ public class VesselVisitNotificationTests
     public void UpdatePurpose_ShouldThrow_WhenStatusIsNotInProgress()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         vvn.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
         vvn.MarkAsSubmitted();
 
@@ -184,7 +184,7 @@ public class VesselVisitNotificationTests
     public void UpdateDockId_ShouldUpdate_WhenStatusIsInProgress()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         var newDockId = Guid.NewGuid();
 
         // Act
@@ -198,7 +198,7 @@ public class VesselVisitNotificationTests
     public void UpdateVisitDate_ShouldUpdate_WhenStatusIsInProgress()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         var newDate = _validVisitDate.AddDays(1);
 
         // Act
@@ -212,7 +212,7 @@ public class VesselVisitNotificationTests
     public void UpdateLoadingManifest_ShouldUpdate_WhenStatusIsInProgress()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         var newManifest = new CargoManifest(CargoManifestType.Loading);
 
         // Act
@@ -226,7 +226,7 @@ public class VesselVisitNotificationTests
     public void UpdateLoadingManifest_ShouldSetToNull_WhenPassedNull()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         vvn.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
 
         // Act
@@ -240,7 +240,7 @@ public class VesselVisitNotificationTests
     public void UpdateLoadingManifest_ShouldThrow_WhenManifestTypeIsIncorrect()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         var wrongManifest = new CargoManifest(CargoManifestType.Unloading);
 
         // Act & Assert
@@ -253,7 +253,7 @@ public class VesselVisitNotificationTests
     public void UpdateCrew_ShouldReplaceCrew_WhenStatusIsInProgress()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         vvn.AddCrewMember(new CrewMember("Original", "CIT001", "PT"));
         
         var newCrew = new List<CrewMember>
@@ -276,7 +276,7 @@ public class VesselVisitNotificationTests
     public void UpdateCrew_ShouldClearCrew_WhenPassedEmptyList()
     {
         // Arrange
-        var vvn = new VesselVisitNotification(ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, _validDockId, _validVisitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         vvn.AddCrewMember(new CrewMember("John Doe", "CIT123", "PT"));
 
         // Act
