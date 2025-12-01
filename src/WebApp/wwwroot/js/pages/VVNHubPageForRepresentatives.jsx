@@ -3,7 +3,7 @@ console.log('VVNHubPageForRepresentatives.jsx is loading...');
 
 const VVNHubPageForRepresentatives = () => {
     const { t } = useTranslation();
-    const { user } = useUser(); // Get the full user object
+    const { user } = window.apiService.getCurrentUser(); // Get the full user object
     const [expandedSection, setExpandedSection] = React.useState(null); // Default to open for better UX
     const [notifications, setNotifications] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -65,7 +65,7 @@ const VVNHubPageForRepresentatives = () => {
 
             {/* Quick Data View Button */}
             <div className="quick-view-container">
-                <button 
+                <button
                     className={`quick-view-btn ${showQuickView ? 'active' : ''}`}
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
@@ -105,7 +105,7 @@ const VVNHubPageForRepresentatives = () => {
             <div className="operations-container">
                 {sections.map((section) => (
                     <div key={section.id} className="operation-section">
-                        <div 
+                        <div
                             className={`operation-header ${expandedSection === section.id ? 'expanded' : ''}`}
                             onClick={() => toggleSection(section.id)}
                             style={{ borderLeftColor: section.color }}
@@ -115,8 +115,8 @@ const VVNHubPageForRepresentatives = () => {
                                 <p className="operation-description">{section.description}</p>
                             </div>
                             <div className="operation-controls">
-                                <span 
-                                    className="http-method" 
+                                <span
+                                    className="http-method"
                                     style={{ backgroundColor: section.color }}
                                 >
                                     {section.id.toUpperCase()}
@@ -170,9 +170,9 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
         return dock ? dock.name || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
     }
     function getOrganizationLegalName(id) {
-		const org = shippingAgentOrganizations.find(o => o.id === id);
-		return org ? org.legalName || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
-	}
+        const org = shippingAgentOrganizations.find(o => o.id === id);
+        return org ? org.legalName || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
+    }
 
     return (
         <div className="quick-table-container">
@@ -197,13 +197,13 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
                                 <th>{t('vesselVisitNotificationsHubPage.table.status')}</th>
                                 <th>{t('vesselVisitNotificationsHubPage.table.purpose')}</th>
                                 <th>{t('vesselVisitNotificationsHubPage.table.crewSize')}</th>
-								<th>{t('vesselVisitNotificationsHubPage.table.loadingManifest')}</th>
-								<th>{t('vesselVisitNotificationsHubPage.table.unloadingManifest')}</th>
-								<th>{t('vesselVisitNotificationsHubPage.table.organization')}</th>
-								<th>{t('vesselVisitNotificationsHubPage.table.arrivalTime')}</th>
-								<th>{t('vesselVisitNotificationsHubPage.table.departureTime')}</th>
-								<th>{t('vesselVisitNotificationsHubPage.table.loadingTime')}</th>
-								<th>{t('vesselVisitNotificationsHubPage.table.unloadingTime')}</th>
+                                <th>{t('vesselVisitNotificationsHubPage.table.loadingManifest')}</th>
+                                <th>{t('vesselVisitNotificationsHubPage.table.unloadingManifest')}</th>
+                                <th>{t('vesselVisitNotificationsHubPage.table.organization')}</th>
+                                <th>{t('vesselVisitNotificationsHubPage.table.arrivalTime')}</th>
+                                <th>{t('vesselVisitNotificationsHubPage.table.departureTime')}</th>
+                                <th>{t('vesselVisitNotificationsHubPage.table.loadingTime')}</th>
+                                <th>{t('vesselVisitNotificationsHubPage.table.unloadingTime')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -221,20 +221,20 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
                                     <td>{n.purpose || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
                                     <td>{n.crew ? n.crew.length : 0}</td>
                                     <td>
-										{n.loadingManifest && n.loadingManifest.containers && n.loadingManifest.containers.length > 0
-											? n.loadingManifest.containers.map(c => c.identifier).join(', ')
-											: <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
-									</td>
-									<td>
-										{n.unloadingManifest && n.unloadingManifest.containers && n.unloadingManifest.containers.length > 0
-											? n.unloadingManifest.containers.map(c => c.identifier).join(', ')
-											: <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
-									</td>
+                                        {n.loadingManifest && n.loadingManifest.containers && n.loadingManifest.containers.length > 0
+                                            ? n.loadingManifest.containers.map(c => c.identifier).join(', ')
+                                            : <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
+                                    </td>
+                                    <td>
+                                        {n.unloadingManifest && n.unloadingManifest.containers && n.unloadingManifest.containers.length > 0
+                                            ? n.unloadingManifest.containers.map(c => c.identifier).join(', ')
+                                            : <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
+                                    </td>
                                     <td>{getOrganizationLegalName(n.shippingAgentOrganizationId) || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-									<td>{n.arrivalTime ? new Date(n.arrivalTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-									<td>{n.desiredDepartureTime ? new Date(n.desiredDepartureTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-									<td>{n.estimatedLoadingDurationMinutes != null ? `${n.estimatedLoadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
-									<td>{n.estimatedUnloadingDurationMinutes != null ? `${n.estimatedUnloadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+                                    <td>{n.arrivalTime ? new Date(n.arrivalTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+                                    <td>{n.desiredDepartureTime ? new Date(n.desiredDepartureTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+                                    <td>{n.estimatedLoadingDurationMinutes != null ? `${n.estimatedLoadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+                                    <td>{n.estimatedUnloadingDurationMinutes != null ? `${n.estimatedUnloadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
                                 </tr>
                             ))}
                         </tbody>

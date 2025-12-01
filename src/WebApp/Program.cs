@@ -349,8 +349,10 @@ app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
     if (!http.User.Identity?.IsAuthenticated ?? true)
         return Results.Unauthorized();
 
-    var email = http.User.FindFirst("emails")?.Value
-                ?? http.User.FindFirst("email")?.Value;
+    var email = http.User.FindFirst("email")?.Value ??
+                http.User.FindFirst("emails")?.Value ??
+                http.User.FindFirst(ClaimTypes.Email)?.Value ??
+                http.User.FindFirst("preferred_username")?.Value;
 
     var first = http.User.FindFirst("given_name")?.Value ?? "";
     var last = http.User.FindFirst("family_name")?.Value ?? "";
@@ -372,6 +374,7 @@ app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
     Guid? organizationId = null;
     if (roles.Contains("Representative") && !string.IsNullOrEmpty(email))
     {
+
         // If the user is a representative, look up their organization ID in the database.
         var representative = await db.Representatives
             .AsNoTracking()
@@ -384,12 +387,13 @@ app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
     }
     // ** END OF NEW LOGIC **
 
-    return Results.Ok(new { 
-        email, 
-        firstName = first, 
-        lastName = last, 
-        name, 
-        roles, 
+    return Results.Ok(new
+    {
+        email,
+        firstName = first,
+        lastName = last,
+        name,
+        roles,
         organizationId // The newly added field
     });
 
