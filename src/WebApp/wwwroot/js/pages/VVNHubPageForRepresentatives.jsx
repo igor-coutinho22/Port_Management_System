@@ -1,65 +1,67 @@
-// Vessel Visit Notifications Hub Page (Representatives View) - Swagger-style expandable interface
+// Vessel Visit Notifications Hub Page (Representatives View)
 console.log('VVNHubPageForRepresentatives.jsx is loading...');
 
 const VVNHubPageForRepresentatives = () => {
     const { t } = useTranslation();
+    
+    // 1. Get User Context (Crucial for Organization ID)
     const { 
-        currentUser: user,       // Map 'currentUser' (from Context) to 'user' (for this file)
-        isLoadingUser: userLoading // Map 'isLoadingUser' (from Context) to 'userLoading'
-    } = useUser();
-    // --- ADD THIS DEBUGGING BLOCK ---
-    console.log("Current User Object:", user);
-    console.log("Organization ID Check:", user?.organizationId);
-    // --------------------------------
-    const [expandedSection, setExpandedSection] = React.useState(null); // Default to open for better UX
+        currentUser: user,       
+        isLoadingUser: userLoading 
+    } = useUser(); 
+
+    const [expandedSection, setExpandedSection] = React.useState(null); 
     const [notifications, setNotifications] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
-    const [showQuickView, setShowQuickView] = React.useState(true); // Default to true for representatives
+    // Default to true for reps, or false if you prefer matching the admin page exactly
+    const [showQuickView, setShowQuickView] = React.useState(true); 
 
     // Toggle section expansion
     const toggleSection = (sectionName) => {
         setExpandedSection(expandedSection === sectionName ? null : sectionName);
     };
 
-    // This effect will run when the component mounts and whenever organizationId or showQuickView changes.
-    // It fetches notifications only when a valid organizationId is available.
+    // 2. Load Notifications Logic (Specific to Representative)
+    const loadNotifications = React.useCallback(async () => {
+        // Guard: Need user and org ID
+        if (!user || !user.organizationId) return;
+
+        setIsLoading(true);
+        try {
+            // Representative API Call
+            const data = await window.apiService.getVesselVisitNotificationsByOrganization(user.organizationId);
+            setNotifications(data || []);
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+            setNotifications([]); 
+        } finally {
+            setIsLoading(false);
+        }
+    }, [user]);
+
+    // 3. Effect: Load data when Quick View is open and User is ready
     React.useEffect(() => {
-        const loadNotifications = async () => {
-            // Do not fetch if the user is still loading, if there's no organizationId, or if the view is hidden
-            if (userLoading || !user?.organizationId || !showQuickView) {
-                setNotifications([]); // Clear notifications if conditions aren't met
-                return;
-            }
+        if (!userLoading && user?.organizationId && showQuickView) {
+            loadNotifications();
+        }
+    }, [showQuickView, userLoading, user, loadNotifications]);
 
-            setIsLoading(true);
-            try {
-                const data = await window.apiService.getVesselVisitNotificationsByOrganization(user.organizationId);
-                setNotifications(data);
-            } catch (error) {
-                console.error('Error loading notifications:', error);
-                setNotifications([]); // Set to empty on error
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadNotifications();
-    }, [user?.organizationId, userLoading, showQuickView]); // Dependency array
-
-    if (userLoading) {
-        return <div className="loading">{t('loading')}</div>;
-    }
-
-    // Filtered sections - ONLY Submit is included
+    // 4. Sections Configuration (Easy to add more later)
     const sections = [
         {
             id: 'submit',
             title: t('vesselVisitNotificationsHubPage.section.submit.title'),
             description: t('vesselVisitNotificationsHubPage.section.submit.description'),
-            color: '#16a085',
+            color: '#16a085', // Teal color for Submit
             component: 'SubmitVesselVisitNotificationForm'
         }
+        // Future sections (Edit, View, etc.) can be added here easily
     ];
+
+    // Loading State for User Context
+    if (userLoading) {
+        return <div className="loading">{t('loading')}</div>;
+    }
 
     return (
         <div className="page-section">
@@ -90,16 +92,19 @@ const VVNHubPageForRepresentatives = () => {
                         ) : !user?.organizationId ? (
                             <div className="no-data error-panel">
                                 <h3>Organization Not Found</h3>
-                                <p>Your user account is not linked to an organization. Please contact an administrator.</p>
+                                <p>Your user account is not linked to an organization.</p>
                             </div>
                         ) : (
-                            <VVNRepresentativeQuickTable notifications={notifications} onRefresh={() => {}} />
+                            <VVNRepresentativeQuickTable 
+                                notifications={notifications} 
+                                onRefresh={loadNotifications} 
+                            />
                         )}
                     </div>
                 )}
             </div>
 
-            {/* Swagger-style Expandable Sections (Submit Only) */}
+            {/* Swagger-style Expandable Sections */}
             <div className="operations-container">
                 {sections.map((section) => (
                     <div key={section.id} className="operation-section">
@@ -113,8 +118,8 @@ const VVNHubPageForRepresentatives = () => {
                                 <p className="operation-description">{section.description}</p>
                             </div>
                             <div className="operation-controls">
-                                <span
-                                    className="http-method"
+                                <span 
+                                    className="http-method" 
                                     style={{ backgroundColor: section.color }}
                                 >
                                     {section.id.toUpperCase()}
@@ -128,7 +133,10 @@ const VVNHubPageForRepresentatives = () => {
                         {expandedSection === section.id && (
                             <div className="operation-content">
                                 <div className="operation-body">
-                                    {section.component === 'SubmitVesselVisitNotificationForm' && <SubmitVesselVisitNotificationForm onSuccess={() => {}} />}
+                                    {/* Component Rendering Logic */}
+                                    {section.component === 'SubmitVesselVisitNotificationForm' && (
+                                        <SubmitVesselVisitNotificationForm onSuccess={loadNotifications} />
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -139,8 +147,9 @@ const VVNHubPageForRepresentatives = () => {
     );
 };
 
-// Specific Quick Table for the Representative view to avoid name conflicts.
-// Specific Quick Table for the Representative view
+// ----------------------------------------------------------------------
+// Specific Quick Table for the Representative view (Resilient to 403s)
+// ----------------------------------------------------------------------
 const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
     const { t } = useTranslation();
     const [vessels, setVessels] = React.useState([]);
@@ -153,27 +162,19 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
             try {
                 const v = await window.apiService.getVessels();
                 setVessels(v || []);
-            } catch (err) {
-                console.warn("Could not load vessels:", err);
-            }
+            } catch (err) { console.warn("Could not load vessels:", err); }
 
             // 2. Fetch Docks (Safe)
             try {
                 const d = await window.apiService.getDocks();
                 setDocks(d || []);
-            } catch (err) {
-                console.warn("Could not load docks:", err);
-            }
+            } catch (err) { console.warn("Could not load docks:", err); }
 
-            // 3. Fetch Organizations (Safe & Restricted)
+            // 3. Fetch Organizations (Catch 403 Forbidden for Reps)
             try {
-                // Representatives might get a 403 here. We catch it so the app doesn't crash.
-                const orgs = await window.apiService.getOrganizations(true);
+                const orgs = await window.apiService.getOrganizations(true); 
                 setShippingAgentOrganizations(orgs || []);
-            } catch (err) {
-                console.warn("Could not load organizations (Expected if Representative):", err);
-                // We leave the list empty. The table will just show the ID instead of the Name.
-            }
+            } catch (err) { console.warn("Could not load organizations (Expected for Reps):", err); }
         }
         fetchMeta();
     }, []);
@@ -201,8 +202,6 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
                 <div className="no-data">
                     <h3>{t('vesselVisitNotificationsHubPage.quickView.noData.title')}</h3>
                     <p>{t('vesselVisitNotificationsHubPage.quickView.noData.description')}</p>
-                    {/* DEBUG: Remove this line after testing */}
-                    <p style={{fontSize: '0.8em', color: '#666'}}>Debug: API called, result is empty.</p>
                 </div>
             ) : (
                 <div className="table-container">
