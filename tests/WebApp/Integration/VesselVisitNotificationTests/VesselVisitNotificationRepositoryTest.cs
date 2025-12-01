@@ -30,7 +30,7 @@ public class VesselVisitNotificationRepositoryTest
         // Arrange
         var dockId = Guid.NewGuid();
         var visitDate = DateTime.UtcNow;
-        var vvn = new VesselVisitNotification(ValidIMO, dockId, visitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId, visitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
 
         // Act
         await _repository.AddAsync(vvn);
@@ -66,8 +66,8 @@ public class VesselVisitNotificationRepositoryTest
         var dockId2 = Guid.NewGuid();
         var visitDate = DateTime.UtcNow;
         
-        var vvn1 = new VesselVisitNotification(ValidIMO, dockId1, visitDate, VisitPurpose.Commercial);
-        var vvn2 = new VesselVisitNotification("2345674", dockId2, visitDate.AddDays(1), VisitPurpose.Maintenance);
+        var vvn1 = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId1, visitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn2 = new VesselVisitNotification(Guid.NewGuid(), "2345674", dockId2, visitDate.AddDays(1), VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         
         await _repository.AddAsync(vvn1);
         await _repository.AddAsync(vvn2);
@@ -90,9 +90,9 @@ public class VesselVisitNotificationRepositoryTest
         var dockId = Guid.NewGuid();
         var visitDate = DateTime.UtcNow;
         
-        var vvn1 = new VesselVisitNotification(specificIMO, dockId, visitDate, VisitPurpose.Commercial);
-        var vvn2 = new VesselVisitNotification("1111117", dockId, visitDate, VisitPurpose.Maintenance);
-        var vvn3 = new VesselVisitNotification(specificIMO, dockId, visitDate.AddDays(1), VisitPurpose.Commercial);
+        var vvn1 = new VesselVisitNotification(Guid.NewGuid(), specificIMO, dockId, visitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn2 = new VesselVisitNotification(Guid.NewGuid(), "1111117", dockId, visitDate, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn3 = new VesselVisitNotification(Guid.NewGuid(), specificIMO, dockId, visitDate.AddDays(1), VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         
         await _repository.AddAsync(vvn1);
         await _repository.AddAsync(vvn2);
@@ -114,9 +114,9 @@ public class VesselVisitNotificationRepositoryTest
         var dockId = Guid.NewGuid();
         var visitDate = DateTime.UtcNow;
         
-        var vvn1 = new VesselVisitNotification(ValidIMO, dockId, visitDate, VisitPurpose.Commercial);
-        var vvn2 = new VesselVisitNotification("2345674", dockId, visitDate, VisitPurpose.Maintenance);
-        var vvn3 = new VesselVisitNotification("3456781", dockId, visitDate, VisitPurpose.Commercial);
+        var vvn1 = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId, visitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn2 = new VesselVisitNotification(Guid.NewGuid(), "2345674", dockId, visitDate, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn3 = new VesselVisitNotification(Guid.NewGuid(), "3456781", dockId, visitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         
         // Submit one of them
         vvn2.MarkAsSubmitted();
@@ -145,10 +145,10 @@ public class VesselVisitNotificationRepositoryTest
         var dockId = Guid.NewGuid();
         var baseDate = DateTime.UtcNow.Date;
         
-        var vvn1 = new VesselVisitNotification(ValidIMO, dockId, baseDate.AddDays(3), VisitPurpose.Commercial);
-        var vvn2 = new VesselVisitNotification("2345674", dockId, baseDate, VisitPurpose.Maintenance);
-        var vvn3 = new VesselVisitNotification("3456781", dockId, baseDate.AddDays(2), VisitPurpose.Commercial);
-        var vvn4 = new VesselVisitNotification("4567898", dockId, baseDate.AddDays(5), VisitPurpose.Maintenance);
+        var vvn1 = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId, baseDate.AddDays(3), VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn2 = new VesselVisitNotification(Guid.NewGuid(), "2345674", dockId, baseDate, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn3 = new VesselVisitNotification(Guid.NewGuid(), "3456781", dockId, baseDate.AddDays(2), VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn4 = new VesselVisitNotification(Guid.NewGuid(), "4567898", dockId, baseDate.AddDays(5), VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         
         await _repository.AddAsync(vvn1);
         await _repository.AddAsync(vvn2);
@@ -173,7 +173,7 @@ public class VesselVisitNotificationRepositoryTest
         var dockId = Guid.NewGuid();
         var visitDate = DateTime.UtcNow;
         
-        var vvn = new VesselVisitNotification(ValidIMO, dockId, visitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId, visitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         vvn.AddLoadingManifest(new CargoManifest(CargoManifestType.Loading));
         vvn.AddUnloadingManifest(new CargoManifest(CargoManifestType.Unloading));
         vvn.AddCrewMember(new CrewMember("Captain", "CIT001", "PT"));
@@ -204,7 +204,7 @@ public class VesselVisitNotificationRepositoryTest
         // Arrange
         var dockId = Guid.NewGuid();
         var visitDate = DateTime.UtcNow;
-        var vvn = new VesselVisitNotification(ValidIMO, dockId, visitDate, VisitPurpose.Commercial);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId, visitDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
         
         await _repository.AddAsync(vvn);
         await _context.SaveChangesAsync();
