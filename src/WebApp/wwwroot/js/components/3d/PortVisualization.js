@@ -360,6 +360,8 @@ class PortVisualization {
         this.raycaster.setFromCamera(this.pointer, this.camera);
         const hits = this.raycaster.intersectObjects(this.objects, true); // recursive for groups
 
+        console.warn(hits.length ? "Hovering: " + hits[0].name + "\n" + hits[0] : "Hovering no object");
+
         return hits.length ? hits[0] : null;
     }
 
@@ -399,11 +401,11 @@ class PortVisualization {
     }
 
     addGroundPlane() {
-        const geo = new THREE.BoxGeometry(10000, 2, 520);
+        const geo = new THREE.BoxGeometry(10000, 2, 5020);
         const mat = this.geometryBuilder.materials.asphalt;
         const ground = new THREE.Mesh(geo, mat);
         ground.position.y = 0.5; // Less below 0
-        ground.position.z = 300; //just after docks
+        ground.position.z = 2550; //just after docks
         this.scene.add(ground);
         // We don't push water to this.objects if we don't want to interact with it
     }
