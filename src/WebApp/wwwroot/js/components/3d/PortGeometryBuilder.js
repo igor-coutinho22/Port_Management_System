@@ -29,7 +29,7 @@ class PortGeometryBuilder {
     loadTextures(config) {
         if (!config || !config.materials) return;
 
-        const loadMat = (matName, diffuse, targetMat, repeat) => {
+        const loadMat = (matName, diffuse, targetMat, repeatA, repeatB) => {
             const conf = config.materials[matName];
             if (!conf) return;
 
@@ -39,8 +39,8 @@ class PortGeometryBuilder {
                     tex.wrapT = THREE.RepeatWrapping;
                     targetMat.map = tex;
                     targetMat.needsUpdate = true;
-                    if (repeat) {
-                        targetMat.map.repeat.set(repeat, repeat);
+                    if (repeatA || repeatB) {
+                        targetMat.map.repeat.set(repeatA || 0, repeatB || 0);
                     }
 
                 });
@@ -52,8 +52,8 @@ class PortGeometryBuilder {
                     tex.colorSpace = THREE.NoColorSpace;
                     targetMat.normalMap = tex;
                     targetMat.needsUpdate = true;
-                    if (repeat) {
-                        targetMat.normalMap.repeat.set(repeat, repeat);
+                    if (repeatA || repeatB) {
+                        targetMat.normalMap.repeat.set(repeatA || 0, repeatB || 0);
                     }
                 });
             }
@@ -62,16 +62,16 @@ class PortGeometryBuilder {
         };
 
         // Apply to specific materials
-        loadMat("concrete", true, this.materials.dock, null);
-        loadMat("concrete", true, this.materials.yardSurface, null);
-        loadMat("metal", true, this.materials.vesselHull, null);
-        loadMat("metal", false, this.materials.vesselBridge, null);
-        loadMat("metal", true, this.materials.craneBody, null);
-        this.materials.container.forEach(c => { loadMat("container", true, c, null); });
-        loadMat("water", true, this.materials.water, 100);
-        loadMat("metal", true, this.materials.warehouseRoof, null);
-        loadMat("metal", false, this.materials.warehouseWall, null);
-        loadMat("asphalt", true, this.materials.asphalt, 100);
+        loadMat("concrete", true, this.materials.dock, null, null);
+        loadMat("concrete", true, this.materials.yardSurface, null, null);
+        loadMat("metal", true, this.materials.vesselHull, null, null);
+        loadMat("metal", false, this.materials.vesselBridge, null, null);
+        loadMat("metal", true, this.materials.craneBody, null, null);
+        this.materials.container.forEach(c => { loadMat("container", true, c, null, null); });
+        loadMat("water", true, this.materials.water, 100, 100);
+        loadMat("metal", true, this.materials.warehouseRoof, null, null);
+        loadMat("metal", false, this.materials.warehouseWall, null, null);
+        loadMat("asphalt", true, this.materials.asphalt, 100, 50);
     }
 
     // -----------------------------------------------------------------------------
