@@ -6,6 +6,7 @@ namespace WebApp.Models.Domain.VesselVisits
     public interface IVesselVisitNotificationRepository
     {
         Task<IEnumerable<VesselVisitNotification>> GetAllAsync();
+        Task<IEnumerable<VesselVisitNotification>> GetAllOnOrgAsync(Guid organizationId);
         Task<VesselVisitNotification?> GetByIdAsync(Guid id);
         Task AddAsync(VesselVisitNotification notification);
         Task UpdateAsync(VesselVisitNotification notification);

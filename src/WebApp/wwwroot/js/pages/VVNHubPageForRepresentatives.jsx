@@ -3,10 +3,12 @@ console.log('VVNHubPageForRepresentatives.jsx is loading...');
 
 const VVNHubPageForRepresentatives = () => {
     const { t } = useTranslation();
+    const { user } = useUser(); // Get the full user object
     const [expandedSection, setExpandedSection] = React.useState(null); // Default to open for better UX
     const [notifications, setNotifications] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const [showQuickView, setShowQuickView] = React.useState(false); // Default to true for representatives
+    const [orgIdMissing, setOrgIdMissing] = React.useState(false);
 
     // Toggle section expansion
     const toggleSection = (sectionName) => {
@@ -15,9 +17,15 @@ const VVNHubPageForRepresentatives = () => {
 
     // Load all notifications for quick view
     const loadNotifications = async () => {
+        const organizationId = user?.organizationId;
+        if (!organizationId) {
+            console.error("CRITICAL: Organization ID not found for the current representative user. The /api/me endpoint might not be populating it.");
+            setOrgIdMissing(true);
+            return; // Don't fetch if there's no org ID
+        }
         setIsLoading(true);
         try {
-            const data = await apiService.getVesselVisitNotifications();
+            const data = await apiService.getVesselVisitNotificationsByOrganization(organizationId);
             setNotifications(data);
         } catch (error) {
             console.error('Error loading notifications:', error);
@@ -28,10 +36,12 @@ const VVNHubPageForRepresentatives = () => {
     };
 
     React.useEffect(() => {
-        if (showQuickView) {
+        // Load notifications if the view is open AND we have an organization ID
+        if (showQuickView && user?.organizationId) {
+            setOrgIdMissing(false); // Reset missing flag if we have an ID
             loadNotifications();
         }
-    }, [showQuickView]);
+    }, [showQuickView, user?.organizationId]); // Re-run if user object changes
 
     // Filtered sections - ONLY Submit is included
     const sections = [
@@ -70,6 +80,20 @@ const VVNHubPageForRepresentatives = () => {
                     <div className="quick-view-panel">
                         {isLoading ? (
                             <div className="loading">{t('vesselVisitNotificationsHubPage.quickView.loading')}</div>
+                        ) : orgIdMissing ? (
+                            <div className="no-data error-panel">
+                                <h3>Organization Not Found</h3>
+                                <p>Your user account is not linked to an organization. Please contact an administrator.</p>
+                                {/* --- DEBUG PANEL START --- */}
+                                <div style={{ marginTop: '20px', padding: '10px', background: '#333', borderRadius: '4px', border: '1px solid #555' }}>
+                                    <h4 style={{ color: '#f39c12', margin: '0 0 10px 0' }}>Debugging Info: `user` Object</h4>
+                                    <pre style={{ color: 'white', background: 'black', padding: '10px', borderRadius: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                                        {JSON.stringify(user, null, 2)}
+                                    </pre>
+                                    <p style={{ fontSize: '0.9em', color: '#ccc', marginTop: '10px' }}>This panel shows the user data received from the backend. Notice that `organizationId` is missing.</p>
+                                </div>
+                                {/* --- DEBUG PANEL END --- */}
+                            </div>
                         ) : (
                             <VVNRepresentativeQuickTable notifications={notifications} onRefresh={loadNotifications} />
                         )}
@@ -122,11 +146,15 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
     const { t } = useTranslation();
     const [vessels, setVessels] = React.useState([]);
     const [docks, setDocks] = React.useState([]);
+    const [shippingAgentOrganizations, setShippingAgentOrganizations] = React.useState([]);
+
 
     React.useEffect(() => {
         async function fetchMeta() {
             const v = await apiService.getVessels();
             const d = await apiService.getDocks();
+            const orgs = await apiService.getOrganizations();
+            setShippingAgentOrganizations(orgs || []);
             setVessels(v || []);
             setDocks(d || []);
         }
@@ -141,6 +169,10 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
         const dock = docks.find(d => d.id === id);
         return dock ? dock.name || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
     }
+    function getOrganizationLegalName(id) {
+		const org = shippingAgentOrganizations.find(o => o.id === id);
+		return org ? org.legalName || t('vesselVisitNotificationsHubPage.table.notAvailable') : t('vesselVisitNotificationsHubPage.table.notAvailable');
+	}
 
     return (
         <div className="quick-table-container">
@@ -167,6 +199,11 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
                                 <th>{t('vesselVisitNotificationsHubPage.table.crewSize')}</th>
 								<th>{t('vesselVisitNotificationsHubPage.table.loadingManifest')}</th>
 								<th>{t('vesselVisitNotificationsHubPage.table.unloadingManifest')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.organization')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.arrivalTime')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.departureTime')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.loadingTime')}</th>
+								<th>{t('vesselVisitNotificationsHubPage.table.unloadingTime')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -193,6 +230,11 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
 											? n.unloadingManifest.containers.map(c => c.identifier).join(', ')
 											: <span style={{ color: '#888' }}>{t('vesselVisitNotificationsHubPage.table.none')}</span>}
 									</td>
+                                    <td>{getOrganizationLegalName(n.shippingAgentOrganizationId) || t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.arrivalTime ? new Date(n.arrivalTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.desiredDepartureTime ? new Date(n.desiredDepartureTime).toLocaleString() : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.estimatedLoadingDurationMinutes != null ? `${n.estimatedLoadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
+									<td>{n.estimatedUnloadingDurationMinutes != null ? `${n.estimatedUnloadingDurationMinutes} min` : t('vesselVisitNotificationsHubPage.table.notAvailable')}</td>
                                 </tr>
                             ))}
                         </tbody>

@@ -101,30 +101,7 @@ namespace WebApp.Controllers
             }
         }
 
-        // PUT: api/vesselvisitnotification/{id}/submit
-        [Authorize(Roles = "Representative")]
-        [HttpPut("{id:guid}/submit")]
-        public async Task<IActionResult> SubmitAsync(Guid id)
-        {
-            try
-            {
-                await _service.SubmitAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error while submitting Vessel Visit Notification.");
-                return StatusCode(500, "Internal server error");
-            }
-        }
+        
 
         // PUT: api/vesselvisitnotification/{id}/approve
         [HttpPut("{id:guid}/approve")]

@@ -103,5 +103,17 @@ namespace WebApp.Models.Infrastructure.Repositories
             _context.VesselVisitNotifications.Update(notification);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<VesselVisitNotification>> GetAllOnOrgAsync(Guid organizationId)
+        {
+            return await _context.VesselVisitNotifications
+                .Where(v => v.ShippingAgentOrganization.Id == organizationId)
+                .Include(v => v.LoadingManifest).ThenInclude(m => m!.Containers)
+                .Include(v => v.UnloadingManifest).ThenInclude(m => m!.Containers)
+                .Include(v => v.Crew)
+                .Include(v => v.ShippingAgentOrganization)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }
