@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for VesselVisitNotification Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for notification management.")
+
+Container_Boundary(api, "API Application") {
+    Component(vvnController, "VesselVisitNotificationsController", "ASP.NET Core Controller", "Handles HTTP requests for notification operations.")
+    Component(vvnService, "VesselVisitNotificationService", "Domain Service", "Implements business logic for notification management.")
+    Component(vvnRepo, "VesselVisitNotificationRepository", "Repository", "Handles data access for VesselVisitNotification entities.")
+    Component(vvnEntity, "VesselVisitNotification", "Domain Entity", "Represents a vessel visit notification.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores notification data.")
+
+Rel(webApp, vvnController, "Makes API calls to", "JSON/HTTPS")
+Rel(vvnController, vvnService, "Uses")
+Rel(vvnService, vvnRepo, "Uses")
+Rel(vvnRepo, vvnEntity, "Returns/Saves")
+Rel(vvnRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+SHOW_PERSON_OUTLINE()
+
+title System Context Diagram for VesselVisitNotification Aggregate
+
+Person(shippingAgent, "Shipping Agent", "Requests vessel visits.")
+Person(portAuthority, "Port Authority", "Approves or rejects vessel visits.")
+
+System(portSystem, "Port Management System", "Manages port operations, including vessel visit notifications.")
+
+Rel(shippingAgent, portSystem, "Submits Notifications", "HTTPS")
+Rel(portAuthority, portSystem, "Reviews Notifications", "HTTPS")
+
+@enduml

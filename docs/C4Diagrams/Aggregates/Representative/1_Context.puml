@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+SHOW_PERSON_OUTLINE()
+
+title System Context Diagram for Representative Aggregate
+
+Person(shippingAgent, "Shipping Agent", "Represents a shipping company.")
+Person(admin, "Admin", "Manages representatives and organizations.")
+
+System(portSystem, "Port Management System", "Manages port operations, including representatives.")
+
+Rel(shippingAgent, portSystem, "Registers/Updates Profile", "HTTPS")
+Rel(admin, portSystem, "Validates Representatives", "HTTPS")
+
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for Users Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for user management.")
+
+Container_Boundary(api, "API Application") {
+    Component(usersController, "UsersAdminController", "ASP.NET Core Controller", "Handles HTTP requests for user administration.")
+    Component(userManager, "UserManager", "ASP.NET Identity", "Manages user creation, deletion, and roles.")
+    Component(userEntity, "ApplicationUser", "Domain Entity", "Represents a user.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores user data.")
+
+Rel(webApp, usersController, "Makes API calls to", "JSON/HTTPS")
+Rel(usersController, userManager, "Uses")
+Rel(userManager, database, "Reads/Writes", "Entity Framework")
+Rel(userManager, userEntity, "Manages")
+
+@enduml

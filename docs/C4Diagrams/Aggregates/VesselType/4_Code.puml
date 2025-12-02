@@ -1,0 +1,17 @@
+@startuml
+title Code Diagram for VesselType Aggregate
+
+package "Domain Layer" {
+    class VesselType <<AggregateRoot>> {
+        +Name : string <<PK>>
+        +Description : string
+        +MaxBays : int
+        +MaxRows : int
+        +MaxTiers : int
+        +MaxTEUCapacity : int <<computed>>
+        --
+        +CreateForUpdate(name: string, description: string, maxBays: int, maxRows: int, maxTiers: int) : VesselType <<static>>
+    }
+}
+
+@enduml

@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+SHOW_PERSON_OUTLINE()
+
+title System Context Diagram for Staff Aggregate
+
+Person(admin, "Admin", "Administers the system and manages staff.")
+Person(staff, "Staff Member", "A member of the port staff.")
+
+System(portSystem, "Port Management System", "Manages port operations, including staff management.")
+
+Rel(admin, portSystem, "Manages Staff", "HTTPS")
+Rel(staff, portSystem, "Views Schedule/Status", "HTTPS")
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+
+title Container Diagram for Crew Aggregate
+
+Person(shippingAgent, "Shipping Agent", "Submits crew lists.")
+
+System_Boundary(c1, "Port Management System") {
+    Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for crew management.")
+    Container(api, "API Application", "ASP.NET Core", "Handles crew data via notifications.")
+    ContainerDb(database, "Database", "SQL Server", "Stores crew data.")
+}
+
+Rel(shippingAgent, webApp, "Uses", "HTTPS")
+Rel(webApp, api, "Makes API calls to", "JSON/HTTPS")
+Rel(api, database, "Reads from and writes to", "Entity Framework/SQL")
+
+@enduml

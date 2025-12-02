@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for Vessel Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for vessel management.")
+
+Container_Boundary(api, "API Application") {
+    Component(vesselController, "VesselsController", "ASP.NET Core Controller", "Handles HTTP requests for vessel operations.")
+    Component(vesselService, "VesselService", "Domain Service", "Implements business logic for vessel management.")
+    Component(vesselRepo, "VesselRepository", "Repository", "Handles data access for Vessel entities.")
+    Component(vesselEntity, "Vessel", "Domain Entity", "Represents a vessel.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores vessel data.")
+
+Rel(webApp, vesselController, "Makes API calls to", "JSON/HTTPS")
+Rel(vesselController, vesselService, "Uses")
+Rel(vesselService, vesselRepo, "Uses")
+Rel(vesselRepo, vesselEntity, "Returns/Saves")
+Rel(vesselRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

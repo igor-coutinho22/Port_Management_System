@@ -1,0 +1,20 @@
+@startuml
+title Code Diagram for Dock Aggregate
+
+package "Domain Layer" {
+    class Dock <<AggregateRoot>> {
+        +Id : Guid <<PK>>
+        +Name : string
+        +Location : string
+        +LengthMeters : double
+        +DepthMeters : double
+        +MaxDraftMeters : double
+        +AllowedVesselTypeNames : List<string> <<FK to VesselType>>
+        --
+        +Update(name: string, location: string, length: double, depth: double, maxDraft: double, allowedVesselTypes: List<VesselType>) : void
+        +AllowVesselType(vesselType: VesselType) : void
+        +DisallowVesselType(vesselType: VesselType) : void
+    }
+}
+
+@enduml

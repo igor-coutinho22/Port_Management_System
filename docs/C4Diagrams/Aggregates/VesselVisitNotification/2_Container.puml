@@ -1,0 +1,20 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+
+title Container Diagram for VesselVisitNotification Aggregate
+
+Person(shippingAgent, "Shipping Agent", "Requests vessel visits.")
+
+System_Boundary(c1, "Port Management System") {
+    Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for notification management.")
+    Container(api, "API Application", "ASP.NET Core", "Handles notification management logic and data.")
+    ContainerDb(database, "Database", "SQL Server", "Stores notification data.")
+}
+
+Rel(shippingAgent, webApp, "Uses", "HTTPS")
+Rel(webApp, api, "Makes API calls to", "JSON/HTTPS")
+Rel(api, database, "Reads from and writes to", "Entity Framework/SQL")
+
+@enduml

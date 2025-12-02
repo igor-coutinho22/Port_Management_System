@@ -1,0 +1,51 @@
+@startuml
+title Code Diagram for StorageArea Aggregate
+
+package "Domain Layer" {
+    abstract class StorageArea <<AggregateRoot>> {
+        +Id : int <<PK>>
+        +Name : string
+        +Type : StorageAreaType
+        +MaxCapacityTeu : int
+        +CurrentOccupancyTeu : int
+        +DockConnections : ICollection<DockStorageAreaInfo>
+        --
+        +CanAddTeus(teusToAdd: int) : bool
+        +ChangeMaxCapacity(newMaxCapacityTeu: int) : void
+        +UpdateCurrentOccupancy(newOccupancyTeu: int) : void
+        {abstract} +GetUsageDescription() : string
+    }
+
+    class ContainerYard {
+        +DockIds : List<Guid> <<FK to Dock>>
+        --
+        +GetUsageDescription() : string
+    }
+
+    class Warehouse {
+        +SpecializedCargoType : string
+        --
+        +UpdateCargoType(newType: string) : void
+        +GetUsageDescription() : string
+    }
+
+    enum StorageAreaType {
+        ContainerYard
+        Warehouse
+    }
+
+    class DockStorageAreaInfo <<Entity>> {
+        +Id : int <<PK>>
+        +DockId : Guid <<FK>>
+        +StorageAreaId : int <<FK>>
+        +DistanceMeters : double
+        +TravelSeconds : int
+    }
+}
+
+ContainerYard -up-|> StorageArea : is a
+Warehouse -up-|> StorageArea : is a
+StorageArea --> "1..*" DockStorageAreaInfo : contains
+StorageArea --> StorageAreaType : uses
+
+@enduml

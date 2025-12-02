@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for Crew Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for crew management.")
+
+Container_Boundary(api, "API Application") {
+    Component(vvnController, "VesselVisitNotificationsController", "ASP.NET Core Controller", "Handles crew operations via notifications.")
+    Component(vvnService, "VesselVisitNotificationService", "Domain Service", "Manages crew members within notifications.")
+    Component(vvnRepo, "VesselVisitNotificationRepository", "Repository", "Persists crew data.")
+    Component(crewEntity, "CrewMember", "Domain Entity", "Represents a crew member.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores crew data.")
+
+Rel(webApp, vvnController, "Makes API calls to", "JSON/HTTPS")
+Rel(vvnController, vvnService, "Uses")
+Rel(vvnService, vvnRepo, "Uses")
+Rel(vvnRepo, crewEntity, "Returns/Saves")
+Rel(vvnRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

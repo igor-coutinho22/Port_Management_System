@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+SHOW_PERSON_OUTLINE()
+
+title System Context Diagram for Crew Aggregate
+
+Person(shippingAgent, "Shipping Agent", "Submits crew lists.")
+Person(portAuthority, "Port Authority", "Validates crew.")
+
+System(portSystem, "Port Management System", "Manages port operations, including crew lists.")
+
+Rel(shippingAgent, portSystem, "Submits Crew Lists", "HTTPS")
+Rel(portAuthority, portSystem, "Checks Crew", "HTTPS")
+
+@enduml

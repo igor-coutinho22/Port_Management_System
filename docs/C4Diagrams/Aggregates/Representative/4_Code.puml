@@ -1,0 +1,32 @@
+@startuml
+title Code Diagram for Representative Aggregate
+
+package "Domain Layer" {
+    class Representative <<AggregateRoot>> {
+        +Id : Guid <<PK>>
+        +OrganizationId : Guid <<FK>>
+        +Name : string
+        +CitizenId : string
+        +Nationality : string
+        +Email : string
+        +Phone : string
+        +IsActive : bool
+        --
+        +Update(...) : void
+        +SetActive(isActive: bool) : void
+    }
+
+    class ShippingAgentOrganization <<Entity>> {
+          +Id : Guid <<PK>>
+          +LegalName : string
+          +AlternativeNames : string
+          +Address : string
+          +TaxNumber : string
+          --
+          +Update(...) : void
+    }
+}
+
+Representative "1..*" --> "1" ShippingAgentOrganization : is part of
+
+@enduml

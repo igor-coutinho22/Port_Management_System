@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for Qualification Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for qualification management.")
+
+Container_Boundary(api, "API Application") {
+    Component(qualController, "QualificationsController", "ASP.NET Core Controller", "Handles HTTP requests for qualification operations.")
+    Component(qualService, "QualificationService", "Domain Service", "Implements business logic for qualification management.")
+    Component(qualRepo, "QualificationRepository", "Repository", "Handles data access for Qualification entities.")
+    Component(qualEntity, "Qualification", "Domain Entity", "Represents a qualification.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores qualification data.")
+
+Rel(webApp, qualController, "Makes API calls to", "JSON/HTTPS")
+Rel(qualController, qualService, "Uses")
+Rel(qualService, qualRepo, "Uses")
+Rel(qualRepo, qualEntity, "Returns/Saves")
+Rel(qualRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+title Code Diagram for Resource Aggregate
+
+package "Domain Layer" {
+    class Resource <<AggregateRoot>> {
+        +Id : string <<PK>>
+        +Description : string
+        +ResourceType : ResourceType
+        +OperationalCapacity : int
+        +Status : ResourceAvailabilityStatus
+        +SetupTime : int
+        +QualificationCodes : List<string> <<FK to Qualification>>
+    }
+
+    enum ResourceType {
+        STSCrane
+        YardCrane
+        Truck
+        Tractor
+    }
+
+    enum ResourceAvailabilityStatus {
+        Active
+        Maintenance
+        Inactive
+    }
+}
+
+Resource --> ResourceType : uses
+Resource --> ResourceAvailabilityStatus : uses
+
+@enduml

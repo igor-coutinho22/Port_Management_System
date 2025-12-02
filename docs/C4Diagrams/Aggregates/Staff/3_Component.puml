@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for Staff Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for staff management.")
+
+Container_Boundary(api, "API Application") {
+    Component(staffController, "StaffController", "ASP.NET Core Controller", "Handles HTTP requests for staff operations.")
+    Component(staffService, "StaffService", "Domain Service", "Implements business logic for staff management.")
+    Component(staffRepo, "StaffRepository", "Repository", "Handles data access for Staff entities.")
+    Component(staffEntity, "Staff", "Domain Entity", "Represents a staff member.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores staff data.")
+
+Rel(webApp, staffController, "Makes API calls to", "JSON/HTTPS")
+Rel(staffController, staffService, "Uses")
+Rel(staffService, staffRepo, "Uses")
+Rel(staffRepo, staffEntity, "Returns/Saves")
+Rel(staffRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

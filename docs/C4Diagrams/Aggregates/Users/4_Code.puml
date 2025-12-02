@@ -1,0 +1,14 @@
+@startuml
+title Code Diagram for Users Aggregate
+
+package "Domain Layer" {
+    class ApplicationUser <<AggregateRoot>> {
+        +Id : string <<PK>>
+        +UserName : string
+        +Email : string
+        +EmailConfirmed : bool
+        +FullName : string
+    }
+}
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+title Code Diagram for Staff Aggregate
+
+package "Domain Layer" {
+    class Staff <<AggregateRoot>> {
+        +MecanographicNumber : string <<PK>>
+        +ShortName : string
+        +Email : string
+        +Phone : string
+        +Status : StaffStatus
+        +OperationalWindow : string
+        +QualificationLinks : ICollection<QualificationLink>
+        --
+        +Activate() : void
+        +Deactivate() : void
+    }
+
+    enum StaffStatus {
+        Available
+        Unavailable
+    }
+
+    class QualificationLink <<Entity>> {
+        +StaffMecanographicNumber : string <<FK>>
+        +QualificationCode : string <<FK>>
+    }
+}
+
+Staff "1" --> "0..*" QualificationLink : has
+Staff --> StaffStatus : uses
+
+@enduml

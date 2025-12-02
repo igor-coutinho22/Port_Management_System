@@ -1,0 +1,255 @@
+@startuml GeneratedDomainModel
+title Shipping Port Management System - Generated Domain Model
+
+package "Agents Aggregate" {
+    class Representative {
+        +Id : Guid
+        +OrganizationId : Guid
+        +Name : string
+        +CitizenId : string
+        +Nationality : string
+        +Email : string
+        +Phone : string
+        +IsActive : bool
+    }
+
+    class ShippingAgentOrganization {
+        +Id : Guid
+        +Identifier : string
+        +LegalName : string
+        +AlternativeNames : string
+        +Address : string
+        +TaxNumber : string
+        +IsActive : bool
+    }
+
+    Representative "1..*" --> "1" ShippingAgentOrganization : belongs to
+}
+
+package "Docks Aggregate" {
+    class Dock {
+        +Id : Guid
+        +Name : string
+        +Location : string
+        +LengthMeters : double
+        +DepthMeters : double
+        +MaxDraftMeters : double
+    }
+}
+
+package "Qualifications Aggregate" {
+    class Qualification {
+        +Code : string
+        +Name : string
+    }
+}
+
+package "Resources Aggregate" {
+    class Resource {
+        +Id : string
+        +Description : string
+        +ResourceType : ResourceType
+        +OperationalCapacity : int
+        +Status : ResourceAvailabilityStatus
+        +SetupTime : int
+    }
+
+    enum ResourceType {
+        STSCrane
+        YardCrane
+        Truck
+        Tractor
+    }
+
+    enum ResourceAvailabilityStatus {
+        Active
+        Inactive
+        UnderMaintenance
+    }
+
+    Resource --> ResourceType
+    Resource --> ResourceAvailabilityStatus
+    Resource "0..*" --> "0..*" Qualification : requires
+}
+
+package "Staff Aggregate" {
+    class Staff {
+        +MecanographicNumber : string
+        +ShortName : string
+        +Email : string
+        +Phone : string
+        +Status : StaffStatus
+        +OperationalWindow : string
+    }
+
+    class QualificationLink {
+        +StaffMecanographicNumber : string
+        +QualificationCode : string
+        +DateObtained : DateOnly?
+        +ExpiryDate : DateOnly?
+    }
+
+    enum StaffStatus {
+        Available
+        Unavailable
+        Inactive
+        OnLeave
+        Training
+    }
+
+    Staff --> StaffStatus
+    Staff "1" --> "0..*" QualificationLink : has
+    QualificationLink --> "1" Qualification : references
+}
+
+package "StorageArea Aggregate" {
+    abstract class StorageArea {
+        +Id : int
+        +Name : string
+        +Type : StorageAreaType
+        +MaxCapacityTeu : int
+        +CurrentOccupancyTeu : int
+    }
+
+    class ContainerYard {
+    }
+
+    class Warehouse {
+        +SpecializedCargoType : string
+    }
+
+    class DockStorageAreaConnection {
+        +Id : int
+        +DockId : Guid
+        +StorageAreaId : int
+        +DistanceMeters : double
+        +TravelSeconds : int
+    }
+
+    enum StorageAreaType {
+        ContainerYard
+        Warehouse
+    }
+
+    StorageArea <|-- ContainerYard
+    StorageArea <|-- Warehouse
+    StorageArea --> StorageAreaType
+    StorageArea "1" --> "0..*" DockStorageAreaConnection : connected to
+    DockStorageAreaConnection --> "1" Dock : connects to
+    ContainerYard "0..*" --> "0..*" Dock : serves
+}
+
+package "Users Aggregate" {
+    class ApplicationUser {
+        +FullName : string
+    }
+}
+
+package "Vessels Aggregate" {
+    class Vessel {
+        +IMO : string
+        +VesselName : string
+        +OperatorName : string
+        +VesselTypeName : string
+        +RequiredCraneCount : int
+        +RequiredDockLength : double
+        +Bays : int
+        +Rows : int
+        +Tiers : int
+    }
+
+    class VesselType {
+        +Name : string
+        +Description : string
+        +MaxBays : int
+        +MaxRows : int
+        +MaxTiers : int
+        +MaxTEUCapacity : int
+    }
+
+    class VesselGrid <<ValueObject>> {
+        +Bays : int
+        +Rows : int
+        +Tiers : int
+    }
+
+    Vessel --> "1" VesselType : is type
+    Vessel --> "1" VesselGrid : has layout
+    Dock "0..*" --> "0..*" VesselType : allows
+}
+
+package "VesselVisits Aggregate" {
+    class VesselVisitNotification {
+        +Id : Guid
+        +VesselIMO : string
+        +ShippingAgentOrganizationId : Guid
+        +VisitDate : DateTime
+        +DockId : Guid
+        +Status : VesselVisitStatus
+        +Purpose : VisitPurpose
+        +ArrivalTime : DateTime
+        +DesiredDepartureTime : DateTime
+        +EstimatedLoadingDurationMinutes : int
+        +EstimatedUnloadingDurationMinutes : int
+    }
+
+    class CargoManifest {
+        +Id : Guid
+        +Type : CargoManifestType
+    }
+
+    class Container {
+        +Identifier : string
+    }
+
+    class CrewMember {
+        +Id : Guid
+        +Name : string
+        +CitizenId : string
+        +Nationality : string
+    }
+
+    class DecisionLog {
+        +Id : Guid
+        +Outcome : DecisionOutcome
+        +Message : string
+        +Timestamp : DateTime
+    }
+
+    enum VesselVisitStatus {
+        InProgress
+        Submitted
+        Approved
+        Rejected
+    }
+
+    enum VisitPurpose {
+        Commercial
+        Maintenance
+    }
+
+    enum CargoManifestType {
+        Loading
+        Unloading
+    }
+
+    enum DecisionOutcome {
+        Approved
+        Rejected
+    }
+
+    VesselVisitNotification --> VesselVisitStatus
+    VesselVisitNotification --> VisitPurpose
+    VesselVisitNotification --> "1" Vessel : visits
+    VesselVisitNotification --> "1" ShippingAgentOrganization : requested by
+    VesselVisitNotification --> "1" Dock : assigned to
+    VesselVisitNotification "1" --> "0..1" CargoManifest : loading manifest
+    VesselVisitNotification "1" --> "0..1" CargoManifest : unloading manifest
+    VesselVisitNotification "1" --> "0..*" CrewMember : has crew
+    VesselVisitNotification "1" --> "0..*" DecisionLog : has decisions
+    CargoManifest --> CargoManifestType
+    CargoManifest "1" --> "0..*" Container : contains
+    DecisionLog --> DecisionOutcome
+}
+
+@enduml
