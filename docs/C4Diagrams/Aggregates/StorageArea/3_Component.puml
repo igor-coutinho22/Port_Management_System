@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for StorageArea Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for storage area management.")
+
+Container_Boundary(api, "API Application") {
+    Component(saController, "StorageAreasController", "ASP.NET Core Controller", "Handles HTTP requests for storage area operations.")
+    Component(saService, "StorageAreaService", "Domain Service", "Implements business logic for storage area management.")
+    Component(saRepo, "StorageAreaRepository", "Repository", "Handles data access for StorageArea entities.")
+    Component(saEntity, "StorageArea", "Domain Entity", "Represents a storage area (Container Yard or Warehouse).")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores storage area data.")
+
+Rel(webApp, saController, "Makes API calls to", "JSON/HTTPS")
+Rel(saController, saService, "Uses")
+Rel(saService, saRepo, "Uses")
+Rel(saRepo, saEntity, "Returns/Saves")
+Rel(saRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

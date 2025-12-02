@@ -1,0 +1,39 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for Representative Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for representative management.")
+
+Container_Boundary(api, "API Application") {
+    Component(repController, "RepresentativesController", "ASP.NET Core Controller", "Handles HTTP requests for representative operations.")
+    Component(orgController, "OrganizationsController", "ASP.NET Core Controller", "Handles HTTP requests for organization operations.")
+    
+    Component(repService, "RepresentativeService", "Domain Service", "Implements business logic for representatives.")
+    Component(orgService, "OrganizationService", "Domain Service", "Implements business logic for organizations.")
+    
+    Component(repRepo, "RepresentativeRepository", "Repository", "Handles data access for Representative entities.")
+    Component(orgRepo, "OrganizationRepository", "Repository", "Handles data access for Organization entities.")
+    
+    Component(repEntity, "Representative", "Domain Entity", "Represents a shipping agent representative.")
+    Component(orgEntity, "ShippingAgentOrganization", "Domain Entity", "Represents a shipping agent organization.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores representative data.")
+
+Rel(webApp, repController, "Makes API calls to", "JSON/HTTPS")
+Rel(webApp, orgController, "Makes API calls to", "JSON/HTTPS")
+
+Rel(repController, repService, "Uses")
+Rel(orgController, orgService, "Uses")
+
+Rel(repService, repRepo, "Uses")
+Rel(orgService, orgRepo, "Uses")
+
+Rel(repRepo, repEntity, "Returns/Saves")
+Rel(orgRepo, orgEntity, "Returns/Saves")
+
+Rel(repRepo, database, "Reads/Writes", "Entity Framework")
+Rel(orgRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

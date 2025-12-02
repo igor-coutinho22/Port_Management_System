@@ -28,8 +28,8 @@ const SubmitVesselVisitNotificationForm = ({ onSuccess }) => {
                 if (onSuccess) onSuccess();
             }, 2000);
         } catch (error) {
-            if (error.message && error.message.toLowerCase().includes('not found')) {
-                setMessage({ type: 'info', text: `Notification with ID ${notificationId.trim()} not found.` });
+            if (error.message) {
+                setMessage({ type: 'error', text: error.message });
             } else {
                 setMessage({ type: 'error', text: 'Failed to submit notification. Please try again.' });
             }

@@ -4,16 +4,16 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
     const { t } = useTranslation();
     
     const allManagementEntities = [
-        { id: 'resources', titleKey: 'entities.resources', icon: '📦', descKey: 'entities.resources_desc' },
-        { id: 'vessels', titleKey: 'entities.vessels', icon: '🚢', descKey: 'entities.vessels_desc' },
-        { id: 'vessel-types', titleKey: 'entities.vessel_types', icon: '🛳️', descKey: 'entities.vessel_types_desc' },
-        { id: 'docks', titleKey: 'entities.docks', icon: '🏭', descKey: 'entities.docks_desc' },
-        { id: 'storage-areas', titleKey: 'entities.storage_areas', icon: '🏪', descKey: 'entities.storage_areas_desc' },
-        { id: 'organizations', titleKey: 'entities.organizations', icon: '🏢', descKey: 'entities.organizations_desc' },
-        { id: 'representatives', titleKey: 'entities.representatives', icon: '👨‍💼', descKey: 'entities.representatives_desc' },
-        { id: 'staff', titleKey: 'entities.staff', icon: '👷‍♂️', descKey: 'entities.staff_desc' },
-        { id: 'vessel-visit-notifications', titleKey: 'entities.notifications', icon: '📋', descKey: 'entities.notifications_desc' },
-        { id: 'qualifications', titleKey: 'entities.qualifications', icon: '🎓', descKey: 'entities.qualifications_desc' }
+        { id: 'resources', titleKey: 'entities.resources', descKey: 'entities.resources_desc' },
+        { id: 'vessels', titleKey: 'entities.vessels', descKey: 'entities.vessels_desc' },
+        { id: 'vessel-types', titleKey: 'entities.vessel_types', descKey: 'entities.vessel_types_desc' },
+        { id: 'docks', titleKey: 'entities.docks', descKey: 'entities.docks_desc' },
+        { id: 'storage-areas', titleKey: 'entities.storage_areas', descKey: 'entities.storage_areas_desc' },
+        { id: 'organizations', titleKey: 'entities.organizations', descKey: 'entities.organizations_desc' },
+        { id: 'representatives', titleKey: 'entities.representatives', descKey: 'entities.representatives_desc' },
+        { id: 'staff', titleKey: 'entities.staff', descKey: 'entities.staff_desc' },
+        { id: 'vessel-visit-notifications', titleKey: 'entities.notifications', descKey: 'entities.notifications_desc' },
+        { id: 'qualifications', titleKey: 'entities.qualifications', descKey: 'entities.qualifications_desc' }
     ];
 
     // Filter entities based on user permissions
@@ -82,7 +82,7 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
                                     }
                                 }}
                             >
-                                <span className="item-icon">⚙️</span>
+                                <span className="item-icon"></span>
                                 <div className="item-content">
                                     <span className="item-title">{t('management.overview', 'Overview')}</span>
                                     <span className="item-desc">{t('management.overview_desc', 'Management hub')}</span>

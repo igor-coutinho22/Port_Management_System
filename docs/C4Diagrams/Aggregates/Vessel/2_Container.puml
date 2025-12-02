@@ -1,0 +1,20 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+
+title Container Diagram for Vessel Aggregate
+
+Person(admin, "Admin", "Administers the system and manages vessels.")
+
+System_Boundary(c1, "Port Management System") {
+    Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for vessel management.")
+    Container(api, "API Application", "ASP.NET Core", "Handles vessel management logic and data.")
+    ContainerDb(database, "Database", "SQL Server", "Stores vessel data.")
+}
+
+Rel(admin, webApp, "Uses", "HTTPS")
+Rel(webApp, api, "Makes API calls to", "JSON/HTTPS")
+Rel(api, database, "Reads from and writes to", "Entity Framework/SQL")
+
+@enduml

@@ -422,7 +422,7 @@ class ApiService {
     }
 
     async submitVesselVisitNotification(id) {
-        return this.put(`/vesselvisitnotification/${id}/submit`);
+        return this.put(`/notificationsForRepresentatives/${id}/submit`);
     }
 
     async approveVesselVisitNotification(id, dockId) {

@@ -1,0 +1,51 @@
+@startuml
+title Code Diagram for VesselVisitNotification Aggregate
+
+package "Domain Layer" {
+    class VesselVisitNotification <<AggregateRoot>> {
+        +Id : Guid <<PK>>
+        +VesselIMO : string <<FK>>
+        +VisitDate : DateTime
+        +DockId : Guid <<FK>>
+        +Status : VesselVisitStatus
+        +Purpose : VisitPurpose
+        +LoadingManifest : CargoManifest
+        +UnloadingManifest : CargoManifest
+        +Crew : List<CrewMember>
+        +DecisionLogs : List<DecisionLog>
+        --
+        +MarkAsSubmitted() : void
+        +Approve(officerId: Guid, dockId: Guid) : void
+        +Reject(officerId: Guid, reason: string) : void
+    }
+
+    enum VesselVisitStatus {
+        InProgress
+        Submitted
+        Approved
+        Rejected
+    }
+
+    enum VisitPurpose {
+        Commercial
+        Maintenance
+    }
+
+    class CargoManifest <<Entity>> {
+        +Id : Guid <<PK>>
+        +Type : CargoManifestType
+    }
+
+    class DecisionLog <<Entity>> {
+        +Id : Guid <<PK>>
+        +Outcome : DecisionOutcome
+        +Details : string
+    }
+}
+
+VesselVisitNotification --> VesselVisitStatus : uses
+VesselVisitNotification --> VisitPurpose : uses
+VesselVisitNotification --> "0..2" CargoManifest : manifest
+VesselVisitNotification --> "1..*" DecisionLog : has decisions
+
+@enduml

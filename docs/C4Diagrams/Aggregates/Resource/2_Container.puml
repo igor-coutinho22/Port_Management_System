@@ -1,0 +1,20 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+
+title Container Diagram for Resource Aggregate
+
+Person(admin, "Admin", "Administers the system and manages resources.")
+
+System_Boundary(c1, "Port Management System") {
+    Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for resource management.")
+    Container(api, "API Application", "ASP.NET Core", "Handles resource management logic and data.")
+    ContainerDb(database, "Database", "SQL Server", "Stores resource data.")
+}
+
+Rel(admin, webApp, "Uses", "HTTPS")
+Rel(webApp, api, "Makes API calls to", "JSON/HTTPS")
+Rel(api, database, "Reads from and writes to", "Entity Framework/SQL")
+
+@enduml

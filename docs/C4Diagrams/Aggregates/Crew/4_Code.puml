@@ -1,0 +1,14 @@
+@startuml
+title Code Diagram for Crew Aggregate
+
+package "Domain Layer" {
+    class CrewMember <<Entity>> {
+        +Id : Guid <<PK>>
+        +Name : string
+        +CitizenId : string
+        +Nationality : string
+        +VesselVisitNotificationId : Guid <<FK>>
+    }
+}
+
+@enduml

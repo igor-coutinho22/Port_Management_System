@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for Resource Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for resource management.")
+
+Container_Boundary(api, "API Application") {
+    Component(resController, "ResourcesController", "ASP.NET Core Controller", "Handles HTTP requests for resource operations.")
+    Component(resService, "ResourceService", "Domain Service", "Implements business logic for resource management.")
+    Component(resRepo, "ResourceRepository", "Repository", "Handles data access for Resource entities.")
+    Component(resEntity, "Resource", "Domain Entity", "Represents a port resource.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores resource data.")
+
+Rel(webApp, resController, "Makes API calls to", "JSON/HTTPS")
+Rel(resController, resService, "Uses")
+Rel(resService, resRepo, "Uses")
+Rel(resRepo, resEntity, "Returns/Saves")
+Rel(resRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

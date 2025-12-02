@@ -1,0 +1,41 @@
+@startuml
+title Code Diagram for Vessel Aggregate
+
+package "Domain Layer" {
+    class Vessel <<AggregateRoot>> {
+        +IMO : string <<PK>>
+        +VesselName : string
+        +OperatorName : string
+        +VesselTypeName : string <<FK>>
+        +RequiredCraneCount : int
+        +RequiredDockLength : double
+        +Bays : int
+        +Rows : int
+        +Tiers : int
+        +CargoGrid : VesselGrid <<NotMapped>>
+        --
+        +IsValidIMO(imo: string) : bool <<static>>
+    }
+
+    class VesselGrid <<ValueObject>> {
+        +Containers : Container[,,]
+        +Bays : int
+        +Rows : int
+        +Tiers : int
+        --
+        +CanPlaceContainer(bay: int, row: int, tier: int) : bool
+        +PlaceContainer(container: Container, bay: int, row: int, tier: int) : void
+        +RemoveContainer(bay: int, row: int, tier: int) : Container
+    }
+
+    class Container <<ValueObject>> {
+        +Id : Guid
+        +Type : string
+        +Weight : double
+    }
+}
+
+Vessel "1" --> "1" VesselGrid : has
+VesselGrid --> "0..*" Container : contains
+
+@enduml

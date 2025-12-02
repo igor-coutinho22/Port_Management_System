@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for Dock Aggregate
+
+Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for dock management.")
+
+Container_Boundary(api, "API Application") {
+    Component(dockController, "DocksController", "ASP.NET Core Controller", "Handles HTTP requests for dock operations.")
+    Component(dockService, "DockService", "Domain Service", "Implements business logic for dock management.")
+    Component(dockRepo, "DockRepository", "Repository", "Handles data access for Dock entities.")
+    Component(dockEntity, "Dock", "Domain Entity", "Represents a dock.")
+}
+
+ContainerDb(database, "Database", "SQL Server", "Stores dock data.")
+
+Rel(webApp, dockController, "Makes API calls to", "JSON/HTTPS")
+Rel(dockController, dockService, "Uses")
+Rel(dockService, dockRepo, "Uses")
+Rel(dockRepo, dockEntity, "Returns/Saves")
+Rel(dockRepo, database, "Reads/Writes", "Entity Framework")
+
+@enduml

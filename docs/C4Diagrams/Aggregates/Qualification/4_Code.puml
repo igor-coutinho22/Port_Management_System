@@ -1,0 +1,19 @@
+@startuml
+title Code Diagram for Qualification Aggregate
+
+package "Domain Layer" {
+    class Qualification <<AggregateRoot>> {
+        +Code : string <<PK>>
+        +Name : string
+        +QualificationLinks : ICollection<QualificationLink>
+    }
+
+    class QualificationLink <<Entity>> {
+        +StaffMecanographicNumber : string <<FK>>
+        +QualificationCode : string <<FK>>
+    }
+}
+
+Qualification "1" --> "0..*" QualificationLink : linked to
+
+@enduml
