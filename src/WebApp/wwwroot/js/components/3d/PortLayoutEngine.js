@@ -11,12 +11,12 @@ class PortLayoutEngine {
 
         // Spacing between major port zones
         this.dockSpacing = 50;
-        this.storageSpacing = 20;
+        this.storageSpacing = 40;
 
         // Base positions
         this.waterLineZ = 0;
         this.dockZ = 20; // Docks start slightly inland from water line
-        this.storageZ = 60; // Storage areas behind docks
+        this.storageZ = 150; // Storage areas behind docks
     }
 
     // -----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ class PortLayoutEngine {
         const layouts = [];
 
         // Simple grid layout for storage areas
-        const itemsPerRow = dockLayouts.size;
+        const itemsPerRow = 4;
         let row = 0;
         let col = 0;
 
@@ -111,6 +111,24 @@ class PortLayoutEngine {
 
             const x = startX + col * cellWidth + cellWidth / 2;
             const z = startZ + row * cellDepth + cellDepth / 2;
+
+            layouts.push({
+                id: sa.id,
+                name: sa.name,
+                subtype: sa.subtype,
+                width,
+                depth,
+                height,
+                x,
+                y: height / 2,
+                z
+            });
+
+            col++;
+            if (col >= itemsPerRow) {
+                col = 0;
+                row++;
+            }
         });
 
         return layouts;
