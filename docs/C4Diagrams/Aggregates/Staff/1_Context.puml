@@ -5,12 +5,12 @@ SHOW_PERSON_OUTLINE()
 
 title System Context Diagram for Staff Aggregate
 
-Person(admin, "Admin", "Administers the system and manages staff.")
+Person(operator, "Logistics Operator", "Manages staff.")
 Person(staff, "Staff Member", "A member of the port staff.")
 
 System(portSystem, "Port Management System", "Manages port operations, including staff management.")
 
-Rel(admin, portSystem, "Manages Staff", "HTTPS")
+Rel(operator, portSystem, "Manages Staff", "HTTPS")
 Rel(staff, portSystem, "Views Schedule/Status", "HTTPS")
 
 @enduml

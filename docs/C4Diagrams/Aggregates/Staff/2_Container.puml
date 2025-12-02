@@ -5,7 +5,7 @@ SHOW_PERSON_OUTLINE()
 
 title Container Diagram for Staff Aggregate
 
-Person(admin, "Admin", "Administers the system and manages staff.")
+Person(operator, "Logistics Operator", "Manages staff.")
 
 System_Boundary(c1, "Port Management System") {
     Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for staff management.")

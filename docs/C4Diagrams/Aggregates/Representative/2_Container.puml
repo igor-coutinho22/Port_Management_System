@@ -5,7 +5,7 @@ SHOW_PERSON_OUTLINE()
 
 title Container Diagram for Representative Aggregate
 
-Person(shippingAgent, "Shipping Agent", "Represents a shipping company.")
+Person(shippingAgent, "Shipping Agent Representative", "Represents a shipping company.")
 
 System_Boundary(c1, "Port Management System") {
     Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for representative management.")
