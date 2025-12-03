@@ -1,0 +1,29 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@example.com",
+      "password": "***REMOVED***",
+      "role": "Administrator"
+    },
+    {
+      "id": 2,
+      "email": "user@example.com",
+      "password": "***REMOVED***",
+      "role": "User"
+    }
+  ],
+  "testData": {
+    "vessel": {
+      "name": "Test Vessel",
+      "imo": "1234567",
+      "mmsi": "123456789",
+      "type": "Container Ship"
+    },
+    "dock": {
+      "name": "Dock A",
+      "code": "DOCK-A",
+      "capacity": 1000
+    }
+  }
+}

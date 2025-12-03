@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "cypress:open": "cypress open --e2e",
+    "cypress:run": "cypress run --e2e",
+    "cypress:run:headed": "cypress run --e2e --headed",
+    "cypress:run:spec": "cypress run --e2e --spec"
+  },
+  "devDependencies": {
+    "cypress": "^15.7.1",
+    "typescript": "^5.9.3"
+  }
+}
