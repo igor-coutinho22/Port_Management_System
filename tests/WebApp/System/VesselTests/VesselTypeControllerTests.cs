@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Collections.Generic;
 
-public class VesselTypeControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
+[Collection("WebApp Factory Collection")]
+public class VesselTypeControllerTests : IAsyncLifetime
 {
     private readonly HttpClient _client;
     private readonly string _testRunId;

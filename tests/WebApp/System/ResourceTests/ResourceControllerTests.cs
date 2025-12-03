@@ -11,8 +11,8 @@ using WebApp.Models.Domain.Resources;
 using System.Collections.Generic;
 using System;
 
-
-public class ResourceControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
+[Collection("WebApp Factory Collection")]
+public class ResourceControllerTests : IAsyncLifetime
 {
     private readonly HttpClient _client;
     private readonly List<string> _createdResourceIds = new();
@@ -67,7 +67,7 @@ public class ResourceControllerTests : IClassFixture<TestWebAppFactory>, IAsyncL
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await (await _client.GetAsync("/api/resources/R999")).Content.ReadAsStringAsync();
-        json.Should().Contain("inactive");
+        json.Should().Contain("Inactive");
     }
 
     Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;

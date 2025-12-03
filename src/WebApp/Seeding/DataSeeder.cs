@@ -16,22 +16,16 @@ using WebApp.Models.Domain.Vessels;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.StorageArea;
 using StorageAreaBase = WebApp.Models.Domain.StorageArea.StorageArea;
-using System.Collections.Generic; // for List<T>
+using System.Collections.Generic;
+using Microsoft.Data.Sqlite; // for List<T>
 
 namespace WebApp.Seeding
 {
     public static class DataSeeder
     {
 
-        public static async Task SeedDomainDataAsync(IServiceProvider services)
+        public static async Task SeedDomainDataAsync(PortManagementContext context, ILogger logger)
         {
-            using var scope = services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<PortManagementContext>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DataSeeder");
-
-            if (context.Database.IsRelational())
-                await context.Database.MigrateAsync();
-
             // === QUALIFICATIONS ===
             if (!await context.Set<Qualification>().AnyAsync())
             {
@@ -213,13 +207,13 @@ namespace WebApp.Seeding
 
                 var docks = new List<Dock>
                 {
-                    new("Dock A", "North Terminal", 300.0, 15.0, 12.0, 
+                    new("Dock A", "North Terminal", 300.0, 15.0, 12.0,
                         new List<VesselType> { vesselTypes[0], vesselTypes[2] }), // Container Ship, Tanker
                     
-                    new("Dock B", "South Terminal", 250.0, 12.0, 10.0, 
+                    new("Dock B", "South Terminal", 250.0, 12.0, 10.0,
                         new List<VesselType> { vesselTypes[1], vesselTypes[3] }), // Bulk Carrier, RoRo Ship
                     
-                    new("Dock C", "East Terminal", 400.0, 18.0, 15.0, 
+                    new("Dock C", "East Terminal", 400.0, 18.0, 15.0,
                         new List<VesselType> { vesselTypes[0], vesselTypes[1], vesselTypes[2] }) // Multi-purpose
                 };
 
@@ -245,7 +239,7 @@ namespace WebApp.Seeding
                 await context.SaveChangesAsync();
                 logger.LogInformation("Seeded {Count} Vessels.", vessels.Count);
             }
-            
+
             // === STORAGE AREAS ===
             if (!await context.Set<StorageAreaBase>().AnyAsync())
             {
@@ -339,7 +333,7 @@ namespace WebApp.Seeding
                     );
                     visit1.MarkAsSubmitted();
                     _ = visit1.Approve();
-                    
+
                     org1.AddVesselVisitNotification(visit1);
 
                     // ===== Visit 2: Commercial, mostly loading, mid-day =====
@@ -423,6 +417,16 @@ namespace WebApp.Seeding
                     );
                 }
             }
+        }
+
+        public static async Task SeedDomainDataAsync(IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<PortManagementContext>();
+            var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("DataSeeder");
+
+            await SeedDomainDataAsync(context, logger);
         }
     }
 }

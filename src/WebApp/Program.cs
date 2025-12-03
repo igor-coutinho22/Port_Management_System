@@ -33,8 +33,7 @@ using WebApp.Models.Security;
 using WebApp.Security;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models.Domain.Scheduling.Services;
-
-Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -233,7 +232,6 @@ builder.Services.AddScoped<IGraphUserService, GraphUserService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IHeuristicScheduleService, HeuristicScheduleService>();
 
-
 var backendClientId = ciam["BackendApp:ClientId"];
 var backendClientSecret = ciam["BackendApp:ClientSecret"];
 var extAppNoDashes = ciam["ExtensionsAppIdNoDashes"];
@@ -264,16 +262,24 @@ builder.Services.AddScoped<IGraphUserService, GraphUserService>();
 var app = builder.Build();
 
 // ---------- DB migrate + seed ONLY domain data ----------
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        var db = services.GetRequiredService<PortManagementContext>();
-        if (db.Database.IsRelational())
-            db.Database.Migrate();
+        var context = services.GetRequiredService<PortManagementContext>();
+        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("DataSeeder");
 
-        await DataSeeder.SeedDomainDataAsync(services);
+        if (context.Database.ProviderName!.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
+        {
+            context.Database.EnsureCreated();
+        }
+        else
+        {
+            context.Database.Migrate();
+        }
     }
     catch (Exception ex)
     {
@@ -282,6 +288,7 @@ using (var scope = app.Services.CreateScope())
         throw;
     }
 }
+
 
 if (app.Environment.IsDevelopment())
 {

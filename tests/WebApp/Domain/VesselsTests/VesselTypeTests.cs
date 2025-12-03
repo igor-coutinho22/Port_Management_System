@@ -9,10 +9,10 @@ public class VesselTypeTests
     public void Constructor_ShouldInitialize_AllProperties()
     {
         // Arrange & Act
-        var vesselType = new VesselType("Container Ship", "Large container vessel", 20, 18, 8);
+        var vesselType = new VesselType("Container Ship Test", "Large container vessel", 20, 18, 8);
 
         // Assert
-        vesselType.Name.Should().Be("Container Ship");
+        vesselType.Name.Should().Be("Container Ship Test");
         vesselType.Description.Should().Be("Large container vessel");
         vesselType.MaxBays.Should().Be(20);
         vesselType.MaxRows.Should().Be(18);
@@ -46,24 +46,24 @@ public class VesselTypeTests
     public void Constructor_ShouldThrow_WhenDuplicateNameExists()
     {
         // Arrange
-        new VesselType("Bulk Carrier", "Dry bulk vessel", 15, 12, 6);
+        new VesselType("Bulk Carrier Test", "Dry bulk vessel", 15, 12, 6);
 
         // Act
-        var act = () => new VesselType("Bulk Carrier", "Another bulk vessel", 20, 14, 7);
+        var act = () => new VesselType("Bulk Carrier Test", "Another bulk vessel", 20, 14, 7);
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage("A vessel type with the name 'Bulk Carrier' already exists.");
+           .WithMessage("A vessel type with the name 'Bulk Carrier Test' already exists.");
     }
 
     [Fact]
     public void CreateForUpdate_ShouldCreate_WithoutAddingToRegistry()
     {
         // Arrange & Act
-        var vesselType = VesselType.CreateForUpdate("Tanker", "Oil tanker", 12, 10, 4);
+        var vesselType = VesselType.CreateForUpdate("Tanker Test", "Oil tanker", 12, 10, 4);
 
         // Assert
-        vesselType.Name.Should().Be("Tanker");
+        vesselType.Name.Should().Be("Tanker Test");
         vesselType.Description.Should().Be("Oil tanker");
         vesselType.MaxBays.Should().Be(12);
         vesselType.MaxRows.Should().Be(10);
@@ -164,12 +164,12 @@ public class VesselTypeTests
     public void ToString_ShouldReturn_FormattedString()
     {
         // Arrange
-        var vesselType = VesselType.CreateForUpdate("Ferry", "Passenger ferry", 8, 6, 2);
+        var vesselType = VesselType.CreateForUpdate("Ferry Test", "Passenger ferry", 8, 6, 2);
 
         // Act
         var result = vesselType.ToString();
 
         // Assert
-        result.Should().Be("Ferry - Passenger ferry (Max Bays: 8, Max Rows: 6, Max Tiers: 2, Max TEU Capacity: 96)");
+        result.Should().Be("Ferry Test - Passenger ferry (Max Bays: 8, Max Rows: 6, Max Tiers: 2, Max TEU Capacity: 96)");
     }
 }

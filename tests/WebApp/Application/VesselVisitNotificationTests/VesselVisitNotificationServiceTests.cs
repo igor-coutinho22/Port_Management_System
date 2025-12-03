@@ -14,6 +14,7 @@ using Xunit;
 using WebApp.Models.Domain.Vessels;
 using WebApp.Models.Application.Mappers;
 using WebApp.Models.Domain.Agents;
+using Microsoft.Kiota.Abstractions;
 
 public class VesselVisitNotificationServiceTests
 {
@@ -23,6 +24,7 @@ public class VesselVisitNotificationServiceTests
     private readonly StubOrganizationRepository _organizationRepo;
     private readonly VesselVisitNotificationService _service;
     private const string ValidIMO = "1234567";
+    private DateTime future = DateTime.UtcNow.Date.AddDays(1);
 
     public VesselVisitNotificationServiceTests()
     {
@@ -32,33 +34,33 @@ public class VesselVisitNotificationServiceTests
         _organizationRepo = new StubOrganizationRepository();
         _service = new VesselVisitNotificationService(_vesselVisitRepo, _vesselRepo, _dockRepo, _organizationRepo);
     }
-/*
-    [Fact]
-    public async Task CreateAsync_ShouldCreate_WhenValidDTO()
-    {
-        // Arrange
-        var dockId = Guid.NewGuid();
-        var dto = new VesselVisitNotificationDTO
+    /*
+        [Fact]
+        public async Task CreateAsync_ShouldCreate_WhenValidDTO()
         {
-            VesselIMO = ValidIMO,
-            DockId = dockId,
-            VisitDate = DateTime.UtcNow,
-            Purpose = VisitPurpose.Commercial.ToString(),
-            LoadingManifest = new CargoManifestDTO { Type = CargoManifestType.Loading.ToString() }
-        };
+            // Arrange
+            var dockId = Guid.NewGuid();
+            var dto = new VesselVisitNotificationDTO
+            {
+                VesselIMO = ValidIMO,
+                DockId = dockId,
+                VisitDate = DateTime.UtcNow.Date.AddDays(1),
+                Purpose = VisitPurpose.Commercial.ToString(),
+                LoadingManifest = new CargoManifestDTO { Type = CargoManifestType.Loading.ToString() }
+            };
 
-        // Act
-        var created = VesselVisitNotificationMapper.ToEntity(dto);
-        await _service.CreateAsync(created);
+            // Act
+            var created = VesselVisitNotificationMapper.ToEntity(dto);
+            await _service.CreateAsync(created);
 
-        // Assert
-        created.Should().NotBeNull();
-        created.VesselIMO.Should().Be(ValidIMO);
-        created.DockId.Should().Be(dockId);
-        created.Purpose.Should().Be(VisitPurpose.Commercial);
-        created.Status.Should().Be(VesselVisitStatus.InProgress);
-    }
-*/
+            // Assert
+            created.Should().NotBeNull();
+            created.VesselIMO.Should().Be(ValidIMO);
+            created.DockId.Should().Be(dockId);
+            created.Purpose.Should().Be(VisitPurpose.Commercial);
+            created.Status.Should().Be(VesselVisitStatus.InProgress);
+        }
+    */
     [Fact]
     public async Task CreateAsync_ShouldThrow_WhenVesselNotFound()
     {
@@ -67,8 +69,12 @@ public class VesselVisitNotificationServiceTests
         {
             VesselIMO = "nonexistent",
             DockId = Guid.NewGuid(),
-            VisitDate = DateTime.UtcNow,
-            Purpose = VisitPurpose.Commercial.ToString()
+            VisitDate = future,
+            Purpose = VisitPurpose.Commercial.ToString(),
+            ArrivalTime = future.AddHours(8),
+            DesiredDepartureTime = future.AddHours(18),
+            EstimatedLoadingDurationMinutes = 60,
+            EstimatedUnloadingDurationMinutes = 60
         };
 
         // Act & Assert
@@ -86,8 +92,12 @@ public class VesselVisitNotificationServiceTests
         {
             VesselIMO = ValidIMO,
             DockId = Guid.Empty, // This will cause dock not found
-            VisitDate = DateTime.UtcNow,
-            Purpose = VisitPurpose.Commercial.ToString()
+            VisitDate = future,
+            Purpose = VisitPurpose.Commercial.ToString(),
+            ArrivalTime = future.AddHours(8),
+            DesiredDepartureTime = future.AddHours(18),
+            EstimatedLoadingDurationMinutes = 60,
+            EstimatedUnloadingDurationMinutes = 60
         };
 
         // Act & Assert
@@ -103,8 +113,10 @@ public class VesselVisitNotificationServiceTests
         // Arrange
         var dockId1 = Guid.NewGuid();
         var dockId2 = Guid.NewGuid();
-        var vvn1 = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId1, DateTime.UtcNow, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
-        var vvn2 = new VesselVisitNotification(Guid.NewGuid(), "2345674", dockId2, DateTime.UtcNow.AddDays(1), VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var date1 = DateTime.UtcNow.Date.AddDays(1);
+        var date2 = DateTime.UtcNow.Date.AddDays(2);
+        var vvn1 = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId1, date1, VisitPurpose.Commercial, date1.AddHours(2), date1.AddHours(4), 60, 60);
+        var vvn2 = new VesselVisitNotification(Guid.NewGuid(), "2345674", dockId2, date2.AddDays(2), VisitPurpose.Maintenance, date2.AddHours(2), date2.AddHours(4), 60, 60);
 
         await _vesselVisitRepo.AddAsync(vvn1);
         await _vesselVisitRepo.AddAsync(vvn2);
@@ -123,7 +135,8 @@ public class VesselVisitNotificationServiceTests
     {
         // Arrange
         var dockId = Guid.NewGuid();
-        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId, DateTime.UtcNow, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var date = DateTime.UtcNow.Date.AddDays(1);
+        var vvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, dockId, date, VisitPurpose.Commercial, date.AddHours(2), date.AddHours(4), 60, 60);
         await _vesselVisitRepo.AddAsync(vvn);
 
         // Act
@@ -151,10 +164,11 @@ public class VesselVisitNotificationServiceTests
         // Arrange
         var orgId = Guid.NewGuid();
         var dockId = Guid.NewGuid();
-        var vvn = new VesselVisitNotification(orgId, ValidIMO, dockId, DateTime.UtcNow, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var date = DateTime.UtcNow.Date.AddDays(1);
+        var vvn = new VesselVisitNotification(orgId, ValidIMO, dockId, date, VisitPurpose.Commercial, date.AddHours(2), date.AddHours(4), 60, 60);
         await _vesselVisitRepo.AddAsync(vvn);
 
-        var updatedVvn = new VesselVisitNotification(orgId, ValidIMO, dockId, DateTime.UtcNow, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(3), DateTime.UtcNow.AddHours(5), 70, 70);
+        var updatedVvn = new VesselVisitNotification(orgId, ValidIMO, dockId, date, VisitPurpose.Maintenance, date.AddHours(3), date.AddHours(5), 70, 70);
 
         // Act
         await _service.UpdateAsync(vvn.Id, updatedVvn);
@@ -168,7 +182,8 @@ public class VesselVisitNotificationServiceTests
     public async Task UpdateAsync_ShouldThrow_WhenNotFound()
     {
         // Arrange
-        var updatedVvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, Guid.NewGuid(), DateTime.UtcNow, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(3), DateTime.UtcNow.AddHours(5), 70, 70);
+        var date = DateTime.UtcNow.Date.AddDays(1);
+        var updatedVvn = new VesselVisitNotification(Guid.NewGuid(), ValidIMO, Guid.NewGuid(), date, VisitPurpose.Maintenance, date.AddHours(3), date.AddHours(5), 70, 70);
 
         // Act & Assert
         var act = async () => await _service.UpdateAsync(Guid.NewGuid(), updatedVvn);
@@ -182,7 +197,8 @@ public class VesselVisitNotificationServiceTests
         // Arrange
         var orgId = Guid.NewGuid();
         var dockId = Guid.NewGuid();
-        var vvn = new VesselVisitNotification(orgId, ValidIMO, dockId, DateTime.UtcNow, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(3), 50, 50);
+        var date = DateTime.UtcNow.Date.AddDays(1);
+        var vvn = new VesselVisitNotification(orgId, ValidIMO, dockId, date, VisitPurpose.Maintenance, date.AddHours(1), date.AddHours(3), 50, 50);
         await _vesselVisitRepo.AddAsync(vvn);
 
         // Act
@@ -209,9 +225,10 @@ public class VesselVisitNotificationServiceTests
         const string searchIMO = "9876543";
         var dockId = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        var vvn1 = new VesselVisitNotification(orgId, searchIMO, dockId, DateTime.UtcNow, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
-        var vvn2 = new VesselVisitNotification(orgId, ValidIMO, dockId, DateTime.UtcNow, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
-        var vvn3 = new VesselVisitNotification(orgId, searchIMO, dockId, DateTime.UtcNow.AddDays(1), VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var date = DateTime.UtcNow.Date.AddDays(1);
+        var vvn1 = new VesselVisitNotification(orgId, searchIMO, dockId, date, VisitPurpose.Commercial, date.AddHours(2), date.AddHours(4), 60, 60);
+        var vvn2 = new VesselVisitNotification(orgId, ValidIMO, dockId, date, VisitPurpose.Maintenance, date.AddHours(2), date.AddHours(4), 60, 60);
+        var vvn3 = new VesselVisitNotification(orgId, searchIMO, dockId, date.AddDays(1), VisitPurpose.Commercial, date.AddHours(2), date.AddHours(4), 60, 60);
 
         await _vesselVisitRepo.AddAsync(vvn1);
         await _vesselVisitRepo.AddAsync(vvn2);
@@ -233,8 +250,9 @@ public class VesselVisitNotificationServiceTests
         // Arrange
         var dockId = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        var vvn1 = new VesselVisitNotification(orgId, ValidIMO, dockId, DateTime.UtcNow, VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(3), 50, 50);
-        var vvn2 = new VesselVisitNotification(orgId, "2345674", dockId, DateTime.UtcNow, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(3), 50, 50);
+        var date = DateTime.UtcNow.Date.AddDays(1);
+        var vvn1 = new VesselVisitNotification(orgId, ValidIMO, dockId, date, VisitPurpose.Maintenance, date.AddHours(1), date.AddHours(3), 50, 50);
+        var vvn2 = new VesselVisitNotification(orgId, "2345674", dockId, date, VisitPurpose.Commercial, date.AddHours(1), date.AddHours(3), 50, 50);
         vvn1.MarkAsSubmitted(); // Change status to Submitted
 
         await _vesselVisitRepo.AddAsync(vvn1);
@@ -257,9 +275,9 @@ public class VesselVisitNotificationServiceTests
         var dockId = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         var baseDate = DateTime.UtcNow.Date;
-        var vvn1 = new VesselVisitNotification(orgId, ValidIMO, dockId, baseDate, VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
-        var vvn2 = new VesselVisitNotification(orgId, "2345674", dockId, baseDate.AddDays(2), VisitPurpose.Maintenance, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
-        var vvn3 = new VesselVisitNotification(orgId, "3456781", dockId, baseDate.AddDays(5), VisitPurpose.Commercial, DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(4), 60, 60);
+        var vvn1 = new VesselVisitNotification(orgId, ValidIMO, dockId, baseDate, VisitPurpose.Commercial, baseDate.AddHours(2), baseDate.AddHours(4), 60, 60);
+        var vvn2 = new VesselVisitNotification(orgId, "2345674", dockId, baseDate.AddDays(2), VisitPurpose.Maintenance, baseDate.AddHours(2), baseDate.AddHours(4), 60, 60);
+        var vvn3 = new VesselVisitNotification(orgId, "3456781", dockId, baseDate.AddDays(5), VisitPurpose.Commercial, baseDate.AddHours(2), baseDate.AddHours(4), 60, 60);
         await _vesselVisitRepo.AddAsync(vvn1);
         await _vesselVisitRepo.AddAsync(vvn2);
         await _vesselVisitRepo.AddAsync(vvn3);

@@ -9,7 +9,8 @@ using Xunit;
 using System.Collections.Generic;
 using WebApp.Models.Domain.StorageArea;
 
-public class StorageAreaControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
+[Collection("WebApp Factory Collection")]
+public class StorageAreaControllerTests : IAsyncLifetime
 {
     private readonly HttpClient _client;
     private readonly string _testRunId;

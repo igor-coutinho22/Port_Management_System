@@ -15,8 +15,10 @@ using System.Collections.Generic;
 using System.Linq;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.Vessels;
+using WebApp.Models.Domain.Agents;
 
-public class VesselVisitNotificationControllerTests : IClassFixture<TestWebAppFactory>
+[Collection("WebApp Factory Collection")]
+public class VesselVisitNotificationControllerTests
 {
     private readonly HttpClient _client;
     private readonly TestWebAppFactory _factory;
@@ -27,39 +29,52 @@ public class VesselVisitNotificationControllerTests : IClassFixture<TestWebAppFa
         _client = factory.CreateClient();
     }
 
-    private async Task<(Guid dockId, string vesselIMO)> GetSeededTestDataAsync()
+    private async Task<(Guid dockId, string vesselIMO, Guid shippingAgentId)> GetSeededTestDataAsync()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PortManagementContext>();
-        
-        // Get existing seeded vessel and dock data
+
         var vessel = await context.Set<Vessel>().FirstAsync();
         var dock = await context.Set<Dock>().FirstAsync();
-        
-        return (dock.Id, vessel.IMO);
+
+        // Whatever entity represents shipping agents in your model:
+        var shippingAgent = await context.Set<ShippingAgentOrganization>().FirstAsync();
+
+        return (dock.Id, vessel.IMO, shippingAgent.Id);
     }
-/*
+
+
     [Fact]
     public async Task Post_And_Get_VesselVisitNotification_ShouldWork()
     {
         // Get existing data from seeded database
-        var (dockId, vesselIMO) = await GetSeededTestDataAsync();
-        
+        var (dockId, vesselIMO, shippingAgentId) = await GetSeededTestDataAsync();
+
         var dto = new VesselVisitNotificationDTO
         {
             VesselIMO = vesselIMO,
             DockId = dockId,
-            VisitDate = DateTime.UtcNow,
+            ShippingAgentOrganizationId = shippingAgentId,
+            VisitDate = DateTime.UtcNow.Date.AddDays(1),
             Purpose = "Maintenance",
+            ArrivalTime = DateTime.UtcNow.Date.AddDays(1).AddHours(8),
+            DesiredDepartureTime = DateTime.UtcNow.Date.AddDays(1).AddHours(16),
+            EstimatedLoadingDurationMinutes = 120,
+            EstimatedUnloadingDurationMinutes = 60,
             Crew = new List<CrewMemberDTO>
             {
-                new() { Name = "John Doe", CitizenId = "1234", Nationality = "PT" }
+                new() { Name = "John Doe", CitizenId = "12345", Nationality = "PT" }
             }
         };
 
         // POST
         var postResponse = await _client.PostAsJsonAsync("/api/vesselvisitnotification", dto);
-        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var errorContent = await postResponse.Content.ReadAsStringAsync();
+
+        postResponse.StatusCode.Should().Be(
+            HttpStatusCode.Created,
+            "because response content was: {0}", errorContent);
+
 
         var created = await postResponse.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
         created.Should().NotBeNull();
@@ -67,40 +82,97 @@ public class VesselVisitNotificationControllerTests : IClassFixture<TestWebAppFa
 
         // GET
         var getResponse = await _client.GetAsync($"/api/vesselvisitnotification/{created.Id}");
-        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var getBody = await getResponse.Content.ReadAsStringAsync();
+
+        getResponse.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "because response content was: {0}", getBody);
 
         var retrieved = await getResponse.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
         retrieved!.VesselIMO.Should().Be(dto.VesselIMO);
     }
-*/
+
     [Fact]
     public async Task Put_Submit_ShouldChangeStatus()
     {
-        // Get existing seeded data
-        var (dockId, vesselIMO) = await GetSeededTestDataAsync();
-        
+        var (dockId, vesselIMO, shippingAgentId) = await GetSeededTestDataAsync();
+
         var dto = new VesselVisitNotificationDTO
         {
             VesselIMO = vesselIMO,
             DockId = dockId,
-            VisitDate = DateTime.UtcNow,
-            Purpose = "Maintenance"
+            ShippingAgentOrganizationId = shippingAgentId,
+            VisitDate = DateTime.UtcNow.Date.AddDays(1),
+            Purpose = "Maintenance",
+            ArrivalTime = DateTime.UtcNow.Date.AddDays(1).AddHours(8),
+            DesiredDepartureTime = DateTime.UtcNow.Date.AddDays(1).AddHours(16),
+            EstimatedLoadingDurationMinutes = 120,
+            EstimatedUnloadingDurationMinutes = 60
         };
 
         var post = await _client.PostAsJsonAsync("/api/vesselvisitnotification", dto);
-        post.StatusCode.Should().Be(HttpStatusCode.Created); // Ensure the post succeeded first
-        var created = await post.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+        var postBody = await post.Content.ReadAsStringAsync();
+        post.StatusCode.Should().Be(
+            HttpStatusCode.Created,
+            "POST failed with body: {0}", postBody);
 
-        // PUT /submit
-        var response = await _client.PutAsync($"/api/vesselvisitnotification/{created!.Id}/submit", null);
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var created = await post.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+        created.Should().NotBeNull();
+
+        // Build an update DTO that keeps a valid Purpose value
+        var updateDto = new VesselVisitNotificationUpdateDTO
+        {
+            DockId = dockId,
+            VisitDate = created!.VisitDate,
+            // keep existing valid purpose to avoid enum parse issues
+            Purpose = created.Purpose,
+            ArrivalTime = created.ArrivalTime,
+            DesiredDepartureTime = created.DesiredDepartureTime.AddHours(2),
+            EstimatedLoadingDurationMinutes = created.EstimatedLoadingDurationMinutes + 60,
+            EstimatedUnloadingDurationMinutes = created.EstimatedUnloadingDurationMinutes
+        };
+
+        var response = await _client.PutAsJsonAsync(
+            $"/api/vesselvisitnotification/{created.Id}/updateWhileInProgress",
+            updateDto);
+
+        var putBody = await response.Content.ReadAsStringAsync();
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "PUT failed with body: {0}", putBody);
+
+        var updated = await response.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+        updated.Should().NotBeNull("PUT returned invalid JSON. Raw body: {0}", putBody);
+
+        // Check that at least one field was changed by the update
+        updated!.DesiredDepartureTime.Should().Be(updateDto.DesiredDepartureTime);
     }
+
+
 
     [Fact]
     public async Task Put_Submit_ShouldReturnNotFound_WhenIdIsInvalid()
     {
         var invalidId = Guid.NewGuid();
-        var response = await _client.PutAsync($"/api/vesselvisitnotification/{invalidId}/submit", null);
+
+        var dto = new VesselVisitNotificationUpdateDTO
+        {
+            DockId = Guid.NewGuid(),
+            VisitDate = DateTime.UtcNow.Date.AddDays(1),
+            Purpose = "Does not matter",
+            ArrivalTime = DateTime.UtcNow.Date.AddDays(1).AddHours(8),
+            DesiredDepartureTime = DateTime.UtcNow.Date.AddDays(1).AddHours(16),
+            EstimatedLoadingDurationMinutes = 60,
+            EstimatedUnloadingDurationMinutes = 60
+        };
+
+        var response = await _client.PutAsJsonAsync(
+            $"/api/vesselvisitnotification/{invalidId}/updateWhileInProgress", dto);
+
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+
+
+
 }

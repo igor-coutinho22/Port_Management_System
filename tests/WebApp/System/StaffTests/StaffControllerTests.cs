@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Collections.Generic;
 
-public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
+[Collection("WebApp Factory Collection")]
+public class StaffControllerTests : IAsyncLifetime
 {
     private readonly HttpClient _client;
     private readonly List<string> _createdStaffNumbers = new();
-     private readonly List<string> _createdQualificationCodes = new();
+    private readonly List<string> _createdQualificationCodes = new();
 
     public StaffControllerTests(TestWebAppFactory factory)
     {
@@ -37,16 +38,16 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
             qualifications = new object[] { } // explicit for completeness
         };
 
-    var post = await _client.PostAsJsonAsync("/api/staff", dto);
-    post.StatusCode.Should().Be(HttpStatusCode.Created);
-    _createdStaffNumbers.Add(staffNumber);
+        var post = await _client.PostAsJsonAsync("/api/staff", dto);
+        post.StatusCode.Should().Be(HttpStatusCode.Created);
+        _createdStaffNumbers.Add(staffNumber);
 
-    var get = await _client.GetAsync($"/api/staff/{staffNumber}");
-    get.StatusCode.Should().Be(HttpStatusCode.OK);
+        var get = await _client.GetAsync($"/api/staff/{staffNumber}");
+        get.StatusCode.Should().Be(HttpStatusCode.OK);
 
-    var body = await get.Content.ReadAsStringAsync();
-    body.Should().Contain("Alice");
-    body.Should().Contain(staffNumber);
+        var body = await get.Content.ReadAsStringAsync();
+        body.Should().Contain("Alice");
+        body.Should().Contain(staffNumber);
     }
 
     // -----------------------------------------------------------
@@ -68,26 +69,26 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
             qualifications = new object[] { }
         };
 
-    await _client.PostAsJsonAsync("/api/staff", dto);
-    _createdStaffNumbers.Add(staffNumber);
+        await _client.PostAsJsonAsync("/api/staff", dto);
+        _createdStaffNumbers.Add(staffNumber);
 
         // Ensure staff is unavailable before activation
         var staffBody = await (await _client.GetAsync($"/api/staff/{staffNumber}")).Content.ReadAsStringAsync();
-        staffBody.Should().Contain("unavailable");
+        staffBody.Should().Contain("Unavailable");
 
         // --- activate ---
         var activate = await _client.PatchAsync($"/api/staff/{staffNumber}/activate", null);
         activate.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var activatedBody = await (await _client.GetAsync($"/api/staff/{staffNumber}")).Content.ReadAsStringAsync();
-        activatedBody.Should().Contain("available");
+        activatedBody.Should().Contain("Available");
 
         // --- deactivate ---
         var deactivate = await _client.PatchAsync($"/api/staff/{staffNumber}/deactivate", null);
         deactivate.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var deactivatedBody = await (await _client.GetAsync($"/api/staff/{staffNumber}")).Content.ReadAsStringAsync();
-        deactivatedBody.Should().Contain("unavailable");
+        deactivatedBody.Should().Contain("Unavailable");
     }
 
     // -----------------------------------------------------------
@@ -109,8 +110,8 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
             qualifications = new object[] { }
         };
 
-    await _client.PostAsJsonAsync("/api/staff", dto);
-    _createdStaffNumbers.Add(staffNumber);
+        await _client.PostAsJsonAsync("/api/staff", dto);
+        _createdStaffNumbers.Add(staffNumber);
 
         // --- ensure qualification exists ---
         var qualificationCode = $"QX_{Guid.NewGuid().ToString("N").Substring(0, 8)}";
@@ -120,7 +121,7 @@ public class StaffControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLife
             name = "Crane Operator"
         };
         await _client.PostAsJsonAsync("/api/qualifications", qualificationCreateDto);
-         _createdQualificationCodes.Add(qualificationCode);
+        _createdQualificationCodes.Add(qualificationCode);
 
         // --- add qualification ---
         var qualificationDto = new

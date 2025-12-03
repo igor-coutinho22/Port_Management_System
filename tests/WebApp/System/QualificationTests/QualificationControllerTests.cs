@@ -10,7 +10,8 @@ using WebApp;
 using WebApp.Models.Application.DTOs;
 using Xunit;
 
-public class QualificationControllerTests : IClassFixture<TestWebAppFactory>, IAsyncLifetime
+[Collection("WebApp Factory Collection")]
+public class QualificationControllerTests : IAsyncLifetime
 {
     private readonly HttpClient _client;
     private readonly List<string> _createdQualificationCodes = new();
