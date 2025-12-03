@@ -6,11 +6,11 @@ SHOW_PERSON_OUTLINE()
 title System Context Diagram for Dock Aggregate
 
 Person(admin, "Admin", "Administers the system and manages docks.")
-Person(opsManager, "Operations Manager", "Manages port infrastructure including docks.")
+Person(officer, "Port Authority Officer", "Manages port infrastructure including docks.")
 
 System(portSystem, "Port Management System", "Manages port operations, including docks.")
 
 Rel(admin, portSystem, "Manages Docks", "HTTPS")
-Rel(opsManager, portSystem, "Views Dock Status", "HTTPS")
+Rel(officer, portSystem, "Views Dock Status", "HTTPS")
 
 @enduml

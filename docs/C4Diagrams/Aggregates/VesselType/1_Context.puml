@@ -5,10 +5,10 @@ SHOW_PERSON_OUTLINE()
 
 title System Context Diagram for VesselType Aggregate
 
-Person(admin, "Admin", "Administers the system and manages vessel types.")
+Person(officer, "Port Authority Officer", "Manages vessel types.")
 
 System(portSystem, "Port Management System", "Manages port operations, including vessel types.")
 
-Rel(admin, portSystem, "Manages Vessel Types", "HTTPS")
+Rel(officer, portSystem, "Manages Vessel Types", "HTTPS")
 
 @enduml

@@ -5,7 +5,7 @@ SHOW_PERSON_OUTLINE()
 
 title Container Diagram for Qualification Aggregate
 
-Person(admin, "Admin", "Administers the system and manages qualifications.")
+Person(operator, "Logistics Operator", "Manages qualifications.")
 
 System_Boundary(c1, "Port Management System") {
     Container(webApp, "Web Application", "React, TypeScript", "Provides the UI for qualification management.")
@@ -13,7 +13,7 @@ System_Boundary(c1, "Port Management System") {
     ContainerDb(database, "Database", "SQL Server", "Stores qualification data.")
 }
 
-Rel(admin, webApp, "Uses", "HTTPS")
+Rel(operator, webApp, "Uses", "HTTPS")
 Rel(webApp, api, "Makes API calls to", "JSON/HTTPS")
 Rel(api, database, "Reads from and writes to", "Entity Framework/SQL")
 
