@@ -14,6 +14,7 @@ if (!window.msalConfig || !window.loginRequest) {
   throw new Error("MSAL configuration missing");
 }
 
+
 // ---------- Global navigation (kept) ----------
 window.app = {
   navigate: (page) => {
