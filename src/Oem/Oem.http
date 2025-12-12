@@ -1,0 +1,6 @@
+@Oem_HostAddress = https://localhost:6001
+
+GET {{Oem_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

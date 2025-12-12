@@ -1,4 +1,7 @@
-// HTTP Client Service - Handles all API communications
+// --- CONFIGURATION ---
+const WEB_APP_API = "https://localhost:5001/api";  // Port 5001 (Vessels, Users)
+const OEM_API = "https://localhost:6001/api";          // Port 6001 (Scheduling, Plans)
+
 class ApiService {
     async _getApiAccessToken() {
         try {
@@ -30,12 +33,24 @@ class ApiService {
 
     // ---- Core request method (fetch) ----
     async request(endpoint, options = {}) {
-        const url = `${this.baseUrl}${endpoint}`;
+        
+        // --- ROUTING LOGIC: Choose the correct Backend ---
+        let targetBaseUrl = this.baseUrl; // Default is WebApp (5001)
 
-        // Start with defaults
+        // If asking for Sprint C features, switch to OEM (6001)
+        if (endpoint.includes('/scheduling') || 
+            endpoint.includes('/operation-plans') || 
+            endpoint.includes('/incidents') ||
+            endpoint.includes('/vessel-visit-executions')) {
+            
+            targetBaseUrl = OEM_API;
+        }
+
+        const url = `${targetBaseUrl}${endpoint}`;
+
+        // ... The rest is standard ...
         const headers = { ...this.defaultHeaders, ...(options.headers || {}) };
 
-        // Attach Bearer token if available
         try {
             const token = await this._getApiAccessToken();
             if (token && !headers.Authorization) {
@@ -45,7 +60,6 @@ class ApiService {
 
         const config = { ...options, headers };
 
-        // Add JSON body if data is provided
         if (options.data !== undefined) {
             config.body = JSON.stringify(options.data);
             if (!config.headers['Content-Type']) {
@@ -53,42 +67,27 @@ class ApiService {
             }
         }
 
-        // Debug (optional)
-        console.log(`API Request: ${config.method || 'GET'} ${url}`);
-        console.log('🔍 Request config:', config);
-        console.log('🔍 Request headers:', config.headers);
-        if (config.body) console.log('🔍 Request body:', config.body);
+        // Debug log to help you see which port is being called
+        console.log(`[API] ${config.method || 'GET'} ${url}`);
 
-        // Do the call
         const response = await fetch(url, config);
 
-        // Error path
         if (!response.ok) {
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
             try {
                 const ct = response.headers.get('content-type') || '';
                 if (ct.includes('application/json')) {
                     const data = await response.json();
-                    errorMessage = data.message || data.error || data.title || JSON.stringify(data) || errorMessage;
+                    errorMessage = data.message || data.error || JSON.stringify(data) || errorMessage;
                 } else {
                     const txt = await response.text();
                     if (txt && txt.trim()) errorMessage = txt;
                 }
-            } catch (parseErr) {
-                console.warn('Could not parse error response:', parseErr);
-            }
-            // If errorMessage is still generic, try to get plain text again
-            if (errorMessage.startsWith('HTTP') || !errorMessage.trim()) {
-                try {
-                    const txt = await response.text();
-                    if (txt && txt.trim()) errorMessage = txt;
-                } catch {}
-            }
+            } catch (parseErr) {}
             console.error(`API Error for ${url}:`, errorMessage);
             throw new Error(errorMessage);
         }
 
-        // Success path
         const ct = response.headers.get('content-type') || '';
         if (ct.includes('application/json')) return response.json();
         return response.text();
@@ -381,8 +380,12 @@ class ApiService {
     async deleteQualification(code) {
         return this.delete(`/qualifications/${encodeURIComponent(code)}`);
     }
-    constructor(baseUrl = '/api') {
-        this.baseUrl = baseUrl;
+
+    constructor() {
+        // DEFAULT: Point to MasterData (Port 5000)
+        // This fixes the "Unknown User" error because login/roles live here.
+        this.baseUrl = WEB_APP_API;
+        
         this.defaultHeaders = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'

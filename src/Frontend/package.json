@@ -1,12 +1,20 @@
 {
   "scripts": {
+    "start": "http-server wwwroot -p 5179 -c-1 -S -C cert.crt -K cert.key",
     "cypress:open": "cypress open --e2e",
     "cypress:run": "cypress run --e2e",
     "cypress:run:headed": "cypress run --e2e --headed",
     "cypress:run:spec": "cypress run --e2e --spec"
   },
+  "dependencies": {
+    "@azure/msal-browser": "^4.26.1",
+    "@azure/msal-react": "^3.0.21",
+    "axios": "^1.13.2"
+  },
   "devDependencies": {
     "cypress": "^15.7.1",
+    "http-server": "^14.1.1",
+    "mkcert": "^3.2.0",
     "typescript": "^5.9.3"
   }
 }

@@ -53,8 +53,10 @@ builder.Services.AddDbContext<PortManagementContext>(options =>
 // ---------- CORS ----------
 builder.Services.AddCors(opt =>
 {
-    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>()
-                  ?? new[] { "https://localhost:5179" };
+    // 1. Try to read from appsettings.json
+    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() 
+                  ?? new[] { "https://localhost:5179" }; // 2. Fallback if missing
+
     opt.AddDefaultPolicy(p => p
         .WithOrigins(origins)
         .AllowAnyHeader()
