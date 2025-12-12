@@ -46,6 +46,8 @@ class PortDataFetcher {
             return false;
         });
 
+        const containers = await safeFetch("containers", () => this.fetchContainers());
+
         console.log(`[PortDataFetcher] Matched ${vessels.length} vessels from ${allVessels.length} total vessels and ${approvedVisits.length} visits.`);
 
         const staff = await safeFetch("staff", () => this.fetchStaff());
@@ -57,6 +59,7 @@ class PortDataFetcher {
             resources,
             vessels,
             staff,
+            containers,
             errors
         };
     }
@@ -66,6 +69,13 @@ class PortDataFetcher {
         if (!resp.ok) throw new Error("Failed to fetch texture config");
         return await resp.json();
     }
+
+    async fetchModelConfig() {
+        const resp = await fetch("data/models.json");
+        if (!resp.ok) throw new Error("Failed to fetch model config");
+        return await resp.json();
+    }
+    
 
     async fetchApprovedVisits() {
         // Fetch visits with status 'Approved' (Enum value 2 or string "Approved")
@@ -220,6 +230,30 @@ class PortDataFetcher {
             email: s.email
         }));
     }
+
+    // -------------------------------------------------------------------------
+    // CONTAINERS
+    // -------------------------------------------------------------------------
+    async fetchContainers() {
+        const resp = await fetch("/api/containers", { credentials: "include" });
+        if (!resp.ok) throw new Error("Failed to fetch containers");
+
+        const list = await resp.json();
+
+        // i dont know if this is our actual DTO TODO
+        return list.map(c => ({
+            id: c.id || c.Id,
+            isoCode: c.isoCode || c.IsoCode,
+            sizeFt: c.sizeFt || c.SizeFt || 40,
+            status: c.status || c.Status,
+            owner: c.owner || c.OwnerName,
+            yardId: c.yardId || c.YardId,         // storage area ID
+            row: c.row || c.Row || 0,            // grid row
+            bay: c.bay || c.Bay || 0,            // grid column
+            tier: c.tier || c.Tier || 0          // vertical level
+        }));
+    }
+
 }
 
 // Expose globally

@@ -22,19 +22,21 @@ class PortLayoutEngine {
     // -----------------------------------------------------------------------------
     // MAIN ENTRY — compute positions for all port objects
     // -----------------------------------------------------------------------------
-    computeLayout({ docks, storageAreas, resources, vessels, staff }) {
+    computeLayout({ docks, storageAreas, resources, vessels, staff, containers }) {
         const dockLayouts = this.layoutDocks(docks);
         const storageLayouts = this.layoutStorageAreas(storageAreas, dockLayouts);
         const resourceLayouts = this.layoutResources(resources, storageLayouts, dockLayouts);
         const vesselLayouts = this.layoutVessels(vessels || [], dockLayouts);
         const staffLayouts = this.layoutStaff(staff || [], dockLayouts);
+        const containerLayouts = this.layoutContainers(containers || [], storageLayouts);
 
         return {
             docks: dockLayouts,
             storageAreas: storageLayouts,
             resources: resourceLayouts,
             vessels: vesselLayouts,
-            staff: staffLayouts
+            staff: staffLayouts,
+            containers: containerLayouts
         };
     }
 
@@ -308,6 +310,54 @@ class PortLayoutEngine {
 
         return layouts;
     }
+
+    // -----------------------------------------------------------------------------
+    // CONTAINERS LAYOUT (inside Container Yards)
+    // -----------------------------------------------------------------------------
+    layoutContainers(containers, storageLayouts) {
+        const layouts = [];
+
+        // 1. Group yards by ID for quick lookup
+        const yardById = new Map();
+        storageLayouts.forEach(sa => yardById.set(sa.id, sa));
+
+        // Choose cell size – reuse 5 x 10 from your decorative containers
+        const cellWidth = 7;   // include gap
+        const cellDepth = 12;
+
+        containers.forEach(c => {
+            const yard = yardById.get(c.yardId);
+            if (!yard) return; // container with invalid yard -> skip
+
+            // Yard is centered at yard.x, yard.z, dimensions yard.width, yard.depth
+            // We'll use row/bay to place it in a grid.
+
+            const originX = yard.x - yard.width / 2 + cellWidth / 2;
+            const originZ = yard.z - yard.depth / 2 + cellDepth / 2;
+
+            const x = originX + c.bay * cellWidth;
+            const z = originZ + c.row * cellDepth;
+
+            const containerHeight = 5; // same as your geo
+
+            const y = yard.y + yard.height / 2 + containerHeight / 2 + c.tier * containerHeight;
+
+            layouts.push({
+                id: c.id,
+                isoCode: c.isoCode,
+                sizeFt: c.sizeFt,
+                status: c.status,
+                owner: c.owner,
+                yardId: c.yardId,
+                x,
+                y,
+                z
+            });
+        });
+
+        return layouts;
+    }
+
 }
 
 // GLOBAL EXPORT
