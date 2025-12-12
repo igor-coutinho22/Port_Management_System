@@ -104,10 +104,8 @@ const ThreeDView = () => {
                 className="visualization-container"
                 style={{
                     width: '100%',
-                    height: '500px',
                     background: isLoading ? '#f0f0f0' : 'transparent',
                     position: 'relative',
-                    minHeight: '500px'
                 }}
             />
 

@@ -2,7 +2,8 @@
 .sidebar-toggle {
     position: fixed;
     left: 20px;
-    top: 100px; /* Just below the header with extra spacing */
+    top: 100px;
+    /* Just below the header with extra spacing */
     z-index: 1001;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -28,7 +29,8 @@
 }
 
 .sidebar-toggle.active {
-    left: 270px; /* Width of sidebar + padding */
+    left: 270px;
+    /* Width of sidebar + padding */
     background: var(--text-accent);
     color: white;
 }
@@ -53,7 +55,8 @@
 /* Main Sidebar */
 .management-sidebar {
     position: fixed;
-    top: 80px; /* Below header */
+    top: 80px;
+    /* Below header */
     left: 0;
     width: 250px;
     height: calc(100vh - 80px);
@@ -205,14 +208,20 @@
     transition: margin-left 0.3s ease;
 }
 
+.main-content.with-sidebar.full-width {
+    max-width: 100%;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .sidebar-toggle.active {
-        left: 20px; /* Reset position on tablet */
+        left: 20px;
+        /* Reset position on tablet */
     }
-    
+
     .main-content.with-sidebar {
-        margin-left: 0; /* No margin adjustment on tablet */
+        margin-left: 0;
+        /* No margin adjustment on tablet */
     }
 }
 
@@ -221,7 +230,7 @@
         width: 280px;
         box-shadow: 6px 0 25px var(--shadow);
     }
-    
+
     .sidebar-toggle {
         left: 10px;
         top: 95px;
@@ -230,7 +239,7 @@
         width: 36px;
         height: 36px;
     }
-    
+
     .sidebar-toggle.active {
         left: 10px;
     }
@@ -246,11 +255,11 @@
         top: 100px;
         height: calc(100vh - 120px);
     }
-    
+
     .management-sidebar.hidden {
         transform: translateX(-50%) translateY(100%);
     }
-    
+
     .management-sidebar.visible {
         transform: translateX(-50%) translateY(0);
     }
@@ -294,6 +303,7 @@
         opacity: 0;
         transform: translateX(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -304,8 +314,22 @@
     animation: slideInFromLeft 0.3s ease-out forwards;
 }
 
-.management-sidebar.visible .sidebar-item:nth-child(1) { animation-delay: 0.05s; }
-.management-sidebar.visible .sidebar-item:nth-child(2) { animation-delay: 0.1s; }
-.management-sidebar.visible .sidebar-item:nth-child(3) { animation-delay: 0.15s; }
-.management-sidebar.visible .sidebar-item:nth-child(4) { animation-delay: 0.2s; }
-.management-sidebar.visible .sidebar-item:nth-child(5) { animation-delay: 0.25s; }
+.management-sidebar.visible .sidebar-item:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.management-sidebar.visible .sidebar-item:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.management-sidebar.visible .sidebar-item:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.management-sidebar.visible .sidebar-item:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.management-sidebar.visible .sidebar-item:nth-child(5) {
+    animation-delay: 0.25s;
+}
