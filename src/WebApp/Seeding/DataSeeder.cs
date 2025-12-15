@@ -17,7 +17,8 @@ using WebApp.Models.Domain.Docks;
 using WebApp.Models.Domain.StorageArea;
 using StorageAreaBase = WebApp.Models.Domain.StorageArea.StorageArea;
 using System.Collections.Generic;
-using Microsoft.Data.Sqlite; // for List<T>
+using Microsoft.Data.Sqlite;
+using WebApp.Models.Domain.Containers; // for List<T>
 
 namespace WebApp.Seeding
 {
@@ -247,16 +248,17 @@ namespace WebApp.Seeding
 
                 var storageAreas = new List<StorageAreaBase>
                 {
-                    // Warehouses
-                    new Warehouse("Warehouse North", 500, 150, "Perishable"),
-                    new Warehouse("Warehouse South", 300, 80, "Hazardous"),
-                    new Warehouse("Warehouse Central", 400, 200, "General"),
+                    // Warehouses (removed currentOccupancyTeu)
+                    new Warehouse("Warehouse North", 500, "Perishable"),
+                    new Warehouse("Warehouse South", 300, "Hazardous"),
+                    new Warehouse("Warehouse Central", 400, "General"),
 
-                    // Container Yards
-                    new ContainerYard("Container Yard North", 1000, 350, new List<Dock> { docks[0] }),
-                    new ContainerYard("Container Yard South", 800, 200, new List<Dock> { docks[1] }),
-                    new ContainerYard("Container Yard Central", 1200, 600, new List<Dock> { docks[0], docks[2] })
+                    // Container Yards (removed currentOccupancyTeu)
+                    new ContainerYard("Container Yard North", 1000, new List<Dock> { docks[0] }),
+                    new ContainerYard("Container Yard South", 800, new List<Dock> { docks[1] }),
+                    new ContainerYard("Container Yard Central", 1200, new List<Dock> { docks[0], docks[2] })
                 };
+
 
                 await context.AddRangeAsync(storageAreas);
                 await context.SaveChangesAsync();
@@ -316,11 +318,11 @@ namespace WebApp.Seeding
 
                     var loadingManifest1 = new CargoManifest(CargoManifestType.Loading);
                     // VALID ISO 6346 IDs
-                    loadingManifest1.AddContainer(new Container("MSCU1000001"));
+                    loadingManifest1.AddContainer(new Container("MSCU1000001",1));
                     visit1.AddLoadingManifest(loadingManifest1);
 
                     var unloadingManifest1 = new CargoManifest(CargoManifestType.Unloading);
-                    unloadingManifest1.AddContainer(new Container("MSCU1000017"));
+                    unloadingManifest1.AddContainer(new Container("MSCU1000017",1));
                     visit1.AddUnloadingManifest(unloadingManifest1);
 
                     visit1.UpdateScheduleWindow(
@@ -341,8 +343,8 @@ namespace WebApp.Seeding
                     visit2.AddCrewMember(new CrewMember("Maria Silva", "C4567", "ES"));
 
                     var loadingManifest2 = new CargoManifest(CargoManifestType.Loading);
-                    loadingManifest2.AddContainer(new Container("MSCU1000022"));
-                    loadingManifest2.AddContainer(new Container("MSCU1000038"));
+                    loadingManifest2.AddContainer(new Container("MSCU1000022",1));
+                    loadingManifest2.AddContainer(new Container("MSCU1000038",1));
                     visit2.AddLoadingManifest(loadingManifest2);
 
                     visit2.UpdateScheduleWindow(
@@ -363,7 +365,7 @@ namespace WebApp.Seeding
                     visit3.AddCrewMember(new CrewMember("Carlos Mendes", "C78910", "BR"));
 
                     var unloadingManifest3 = new CargoManifest(CargoManifestType.Unloading);
-                    unloadingManifest3.AddContainer(new Container("MSCU1000043"));
+                    unloadingManifest3.AddContainer(new Container("MSCU1000043",1));
                     visit3.AddUnloadingManifest(unloadingManifest3);
 
                     visit3.UpdateScheduleWindow(
@@ -384,11 +386,11 @@ namespace WebApp.Seeding
                     visit4.AddCrewMember(new CrewMember("Eva Liu", "C9999", "CN"));
 
                     var loadingManifest4 = new CargoManifest(CargoManifestType.Loading);
-                    loadingManifest4.AddContainer(new Container("MSCU1000059"));
+                    loadingManifest4.AddContainer(new Container("MSCU1000059",1));
                     visit4.AddLoadingManifest(loadingManifest4);
 
                     var unloadingManifest4 = new CargoManifest(CargoManifestType.Unloading);
-                    unloadingManifest4.AddContainer(new Container("MSCU1000064"));
+                    unloadingManifest4.AddContainer(new Container("MSCU1000064",1));
                     visit4.AddUnloadingManifest(unloadingManifest4);
 
                     visit4.UpdateScheduleWindow(

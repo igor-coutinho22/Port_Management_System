@@ -1,5 +1,6 @@
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Domain.VesselVisits;
+using WebApp.Models.Domain.Containers;
 
 namespace WebApp.Models.Application.Mappers
 {
@@ -13,7 +14,8 @@ namespace WebApp.Models.Application.Mappers
                 Type = entity.Type.ToString(),
                 Containers = entity.Containers.Select(c => new ContainerDTO
                 {
-                    Identifier = c.Identifier
+                    Identifier = c.Identifier,
+                    Teu = c.Teu
                 }).ToList()
             };
         }
@@ -21,13 +23,15 @@ namespace WebApp.Models.Application.Mappers
         public static CargoManifest ToEntity(CargoManifestDTO dto)
         {
             var manifest = new CargoManifest(Enum.Parse<CargoManifestType>(dto.Type, ignoreCase: true));
+
             if (dto.Containers != null)
             {
                 foreach (var containerDto in dto.Containers)
                 {
-                    manifest.AddContainer(new Container(containerDto.Identifier));
+                    manifest.AddContainer(new Container(containerDto.Identifier, containerDto.Teu));
                 }
             }
+
             return manifest;
         }
     }

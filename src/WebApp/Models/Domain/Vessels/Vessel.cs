@@ -1,18 +1,13 @@
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Numerics;
-
 namespace WebApp.Models.Domain.Vessels
 {
     public class Vessel
     {
-        // stored in string because if it strats with 0 and is an int/long it will drop the 0
         public string IMO { get; private set; } = null!;
         public string VesselName { get; set; } = null!;
         public string OperatorName { get; set; } = null!;
 
-        [NotMapped]
-        public VesselGrid CargoGrid { get; set; } = null!;
+        // IMPORTANT: remove [NotMapped]
+        public VesselGrid CargoGrid { get; private set; } = null!;
 
         public string VesselTypeName { get; set; } = null!;
         public VesselType VesselType { get; set; } = null!;
@@ -24,8 +19,10 @@ namespace WebApp.Models.Domain.Vessels
         public int Rows { get; protected set; }
         public int Tiers { get; protected set; }
 
-        protected Vessel() { } // EF Core
-        public Vessel(string imo, string vesselName, string operatorName, VesselType vesselType, int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
+        protected Vessel() { }
+
+        public Vessel(string imo, string vesselName, string operatorName, VesselType vesselType,
+                     int bays, int rows, int tiers, int requiredCraneCount, double requiredDockLength)
         {
             if (!IsValidIMO(imo))
                 throw new ArgumentException("Invalid IMO", nameof(imo));
@@ -33,11 +30,9 @@ namespace WebApp.Models.Domain.Vessels
             IMO = imo;
             VesselName = vesselName;
             OperatorName = operatorName;
-            VesselType = vesselType ?? throw new ArgumentNullException(nameof(vesselType));
-            // populate FK so EF can persist the relation
-            VesselTypeName = vesselType.Name ?? throw new ArgumentException("VesselType must have a Name", nameof(vesselType));
 
-            CargoGrid = new VesselGrid(bays, rows, tiers);
+            VesselType = vesselType ?? throw new ArgumentNullException(nameof(vesselType));
+            VesselTypeName = vesselType.Name ?? throw new ArgumentException("VesselType must have a Name", nameof(vesselType));
 
             ValidateDimensions(bays, rows, tiers);
 
@@ -47,6 +42,18 @@ namespace WebApp.Models.Domain.Vessels
 
             RequiredCraneCount = requiredCraneCount;
             RequiredDockLength = requiredDockLength;
+
+            CargoGrid = new VesselGrid(bays, rows, tiers);
+        }
+
+        public void ResizeGrid(int bays, int rows, int tiers)
+        {
+            ValidateDimensions(bays, rows, tiers);
+            Bays = bays;
+            Rows = rows;
+            Tiers = tiers;
+
+            CargoGrid = new VesselGrid(bays, rows, tiers);
         }
 
         public static bool IsValidIMO(string imo)

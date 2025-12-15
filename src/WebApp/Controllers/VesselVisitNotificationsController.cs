@@ -55,6 +55,12 @@ namespace WebApp.Controllers
                 _logger.LogError(ex, "Unexpected error while searching Vessel Visit Notifications.");
                 return BadRequest(ex.Message);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while searching Vessel Visit Notifications.");
+                return StatusCode(500, ex.Message); // or a safe message if you prefer
+            }
+
         }
 
         // GET: api/vesselvisitnotification/{id}

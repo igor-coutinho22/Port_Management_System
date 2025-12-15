@@ -13,7 +13,7 @@ using WebApp.Models.Infrastructure.Configurations.VesselVisits;
 using WebApp.Models.Domain.Docks;
 using WebApp.Models.Infrastructure.Configurations.Docks;
 using WebApp.Models.Domain.Vessels;
-using WebApp.Models.Security;
+using WebApp.Models.Domain.Containers;
 
 namespace WebApp.Models.Context
 {
@@ -57,24 +57,15 @@ namespace WebApp.Models.Context
             modelBuilder.ApplyConfiguration(new DockConfiguration());
             modelBuilder.ApplyConfiguration(new QualificationLinkConfiguration());
             modelBuilder.ApplyConfiguration(new ResourceConfiguration());
+            modelBuilder.ApplyConfiguration(new StorageAreaConfiguration());
 
-            // Storage area hierarchy
-            modelBuilder.Entity<StorageArea>(builder =>
-            {
-                builder.HasKey(sa => sa.Id);
 
-                builder.Property(sa => sa.Name)
-                    .IsRequired()
-                    .HasMaxLength(200);
+            modelBuilder.Entity<StorageArea>()
+            .HasDiscriminator<StorageAreaType>("StorageAreaType")
+            .HasValue<ContainerYard>(StorageAreaType.ContainerYard)
+            .HasValue<Warehouse>(StorageAreaType.Warehouse);
 
-                builder.Property(sa => sa.MaxCapacityTeu).IsRequired();
-                builder.Property(sa => sa.CurrentOccupancyTeu).IsRequired();
 
-                builder
-                    .HasDiscriminator<StorageAreaType>("StorageAreaType")
-                    .HasValue<ContainerYard>(StorageAreaType.ContainerYard)
-                    .HasValue<Warehouse>(StorageAreaType.Warehouse);
-            });
 
             base.OnModelCreating(modelBuilder);
         }

@@ -1,29 +1,37 @@
 class PortDataFetcher {
 
+    constructor() {
+        this.apiBaseUrl = "https://localhost:5001";
+    }
+
+    api(path) {
+        // ensures no double slashes
+        return `${this.apiBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+    }
 
     async loadAll() {
         const errors = [];
 
-        const safeFetch = async (name, fn) => {
-            try {
-                return await fn();
-            } catch (err) {
+        const safeFetch = async (name, fn, fallback) => {
+            try { return await fn(); }
+            catch (err) {
                 console.error(`PortDataFetcher: Failed to load ${name}:`, err);
                 errors.push(`${name}: ${err.message}`);
-                return [];
+                return fallback;
             }
         };
 
-        const textureConfig = await safeFetch("textureConfig", () => this.fetchTextureConfig());
-        const docks = await safeFetch("docks", () => this.fetchDocks());
-        const storageAreas = await safeFetch("storageAreas", () => this.fetchStorageAreas());
-        const resources = await safeFetch("resources", () => this.fetchResources());
+        const textureConfig = await safeFetch("textureConfig", () => this.fetchTextureConfig(), null);
+        const modelConfig = await safeFetch("modelConfig", () => this.fetchModelConfig(), null);
+        const docks = await safeFetch("docks", () => this.fetchDocks(), null);
+        const storageAreas = await safeFetch("storageAreas", () => this.fetchStorageAreas(), null);
+        const resources = await safeFetch("resources", () => this.fetchResources(), null);
 
         // Fetch approved visits to filter vessels
-        const approvedVisits = await safeFetch("approvedVisits", () => this.fetchApprovedVisits());
+        const approvedVisits = await safeFetch("approvedVisits", () => this.fetchApprovedVisits(), null);
 
         // Fetch all vessels but filter them
-        const allVessels = await safeFetch("vessels", () => this.fetchVessels());
+        const allVessels = await safeFetch("vessels", () => this.fetchVessels(), null);
 
         // Filter and enrich vessels
         const vessels = allVessels.filter(v => {
@@ -48,15 +56,19 @@ class PortDataFetcher {
 
         console.log(`[PortDataFetcher] Matched ${vessels.length} vessels from ${allVessels.length} total vessels and ${approvedVisits.length} visits.`);
 
-        const staff = await safeFetch("staff", () => this.fetchStaff());
+        const containers = this.extractContainers(storageAreas, vessels);
+
+        const staff = await safeFetch("staff", () => this.fetchStaff(), null);
 
         return {
             textureConfig,
+            modelConfig,
             docks,
             storageAreas,
             resources,
             vessels,
             staff,
+            containers,
             errors
         };
     }
@@ -66,6 +78,14 @@ class PortDataFetcher {
         if (!resp.ok) throw new Error("Failed to fetch texture config");
         return await resp.json();
     }
+
+    async fetchModelConfig() {
+        const resp = await fetch("data/models.json");
+        if (!resp.ok) throw new Error("Failed to fetch model config");
+        return await resp.json();
+    }
+
+
 
     async fetchApprovedVisits() {
         // Fetch visits with status 'Approved' (Enum value 2 or string "Approved")
@@ -91,11 +111,11 @@ class PortDataFetcher {
 
         console.log(`[PortDataFetcher] Fetching visits from ${startOfDay} to ${endOfDay}`);
 
-        const resp = await fetch(`/api/vesselvisitnotification/search?${params.toString()}`, { credentials: 'include' });
+        const resp = await fetch(this.api(`/api/vesselvisitnotification/search?${params.toString()}`), { credentials: 'include' });
 
         if (!resp.ok) {
-            // If 404 or 500 (likely "No results found" exception from backend), return empty
-            console.warn("[PortDataFetcher] No visits found or error fetching visits:", resp.status);
+            const text = await resp.text().catch(() => "");
+            console.warn("[PortDataFetcher] Visits search failed:", resp.status, text);
             return [];
         }
 
@@ -108,7 +128,7 @@ class PortDataFetcher {
     // DOCKS
     // -------------------------------------------------------------------------
     async fetchDocks() {
-        const resp = await fetch("/api/docks", { credentials: 'include' });
+        const resp = await fetch(this.api("/api/docks"), { credentials: 'include' });
         if (!resp.ok) throw new Error("Failed to fetch docks");
 
         const docks = await resp.json();
@@ -128,7 +148,7 @@ class PortDataFetcher {
     // STORAGE AREAS (Warehouses + Container Yards)
     // -------------------------------------------------------------------------
     async fetchStorageAreas() {
-        const resp = await fetch("/api/storageAreas", { credentials: 'include' });
+        const resp = await fetch(this.api("/api/storageAreas"), { credentials: "include" });
         if (!resp.ok) throw new Error("Failed to fetch storage areas");
 
         const rawList = await resp.json();
@@ -136,20 +156,29 @@ class PortDataFetcher {
         return rawList.map(sa => {
             const common = sa.storageArea || sa.StorageArea || sa;
 
+            // IMPORTANT: container list might be on sa or on common depending on your DTO
+            const containerList = sa.containerList || sa.ContainerList || common.containerList || common.ContainerList || [];
+
             const base = {
                 id: common.id || common.Id,
                 name: common.name || common.Name,
                 type: common.type || common.Type || common.storageAreaType,
                 maxCapacityTeu: common.maxCapacityTeu || common.MaxCapacityTeu,
-                currentOccupancyTeu: common.currentOccupancyTeu || common.CurrentOccupancyTeu || 0
+                currentOccupancyTeu: common.currentOccupancyTeu || common.CurrentOccupancyTeu || 0,
+
+                // normalize container DTOs (Identifier/Teu)
+                containers: (containerList || []).map(c => ({
+                    id: c.identifier || c.Identifier,
+                    teu: c.teu || c.Teu
+                }))
             };
 
-            // Detect subtype
             if (sa.specializedCargoType || sa.SpecializedCargoType) {
                 return {
                     ...base,
                     subtype: "Warehouse",
-                    specializedCargoType: sa.specializedCargoType || sa.SpecializedCargoType
+                    specializedCargoType: sa.specializedCargoType || sa.SpecializedCargoType,
+                    containers: [] // don't render inside warehouses
                 };
             }
 
@@ -162,15 +191,16 @@ class PortDataFetcher {
                 };
             }
 
-            return { ...base, subtype: "Unknown" };
+            return { ...base, subtype: "Unknown", containers: [] };
         });
     }
+
 
     // -------------------------------------------------------------------------
     // RESOURCES (Cranes, trucks, tractors, etc.)
     // -------------------------------------------------------------------------
     async fetchResources() {
-        const resp = await fetch("/api/resources", { credentials: 'include' });
+        const resp = await fetch(this.api("/api/resources"), { credentials: 'include' });
         if (!resp.ok) throw new Error("Failed to fetch resources");
 
         const list = await resp.json();
@@ -188,7 +218,7 @@ class PortDataFetcher {
     // VESSELS
     // -------------------------------------------------------------------------
     async fetchVessels() {
-        const resp = await fetch("/api/vessels", { credentials: 'include' });
+        const resp = await fetch(this.api("/api/vessels"), { credentials: "include" });
         if (!resp.ok) throw new Error("Failed to fetch vessels");
 
         const list = await resp.json();
@@ -198,17 +228,19 @@ class PortDataFetcher {
             name: v.vesselName,
             type: v.vesselTypeName,
             length: 150,
-            width: (v.rows || 10) * 3, // Estimate width
-            height: (v.tiers || 5) * 3, // Estimate height
-            operator: v.operatorName
+            width: (v.rows || 10) * 3,
+            height: (v.tiers || 5) * 3,
+            operator: v.operatorName,
+            cargoGrid: v.cargoGrid || v.CargoGrid || null
         }));
     }
+
 
     // -------------------------------------------------------------------------
     // STAFF
     // -------------------------------------------------------------------------
     async fetchStaff() {
-        const resp = await fetch("/api/staff", { credentials: 'include' });
+        const resp = await fetch(this.api("/api/staff"), { credentials: 'include' });
         if (!resp.ok) throw new Error("Failed to fetch staff");
 
         const list = await resp.json();
@@ -220,6 +252,46 @@ class PortDataFetcher {
             email: s.email
         }));
     }
+
+    extractContainers(storageAreas, vessels) {
+        const out = [];
+
+        // --- from yards ---
+        for (const sa of storageAreas || []) {
+            if (sa.subtype !== "ContainerYard") continue;
+
+            const list = sa.containerList || sa.ContainerList || sa.containers || [];
+            for (const c of list) {
+                out.push({
+                    id: c.identifier || c.Identifier || c.id || c.Id,
+                    teu: c.teu || c.Teu || 1,
+                    locationType: "yard",
+                    yardId: sa.id
+                });
+            }
+        }
+
+        // --- from vessels ---
+        for (const v of vessels || []) {
+            const grid = v.cargoGrid || v.CargoGrid;
+            const flat = grid?.grid || grid?.Grid || [];
+            for (let i = 0; i < flat.length; i++) {
+                const c = flat[i];
+                if (!c) continue;
+                out.push({
+                    id: c.identifier || c.Identifier,
+                    teu: c.teu || c.Teu || 1,
+                    locationType: "vessel",
+                    vesselId: v.id,
+                    flatIndex: i
+                });
+            }
+        }
+
+        return out;
+    }
+
+
 }
 
 // Expose globally

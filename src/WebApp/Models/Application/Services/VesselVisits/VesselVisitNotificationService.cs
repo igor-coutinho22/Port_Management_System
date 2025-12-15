@@ -99,7 +99,7 @@ namespace WebApp.Models.Application.Services
             if (visit.DockId != dockId)
                 throw new InvalidOperationException("Dock ID must match the assigned dock for approval.");
 
-            DecisionLog log =  visit.Approve();
+            DecisionLog log = visit.Approve();
             await _repository.UpdateStatusToApprovedAsync(visit, log);
         }
 
@@ -180,7 +180,7 @@ namespace WebApp.Models.Application.Services
             }
 
             var visits = await _repository.GetAllAsync();
-            
+
             // Apply filters
             var filteredVisits = visits.AsQueryable();
 
@@ -197,13 +197,6 @@ namespace WebApp.Models.Application.Services
                 filteredVisits = filteredVisits.Where(v => v.VisitDate <= filter.ToDate.Value);
 
             var result = filteredVisits.ToList();
-            
-            // Check if no results found and provide meaningful message
-            if (!result.Any())
-            {
-                var filterDescription = BuildFilterDescription(filter);
-                throw new InvalidOperationException($"No vessel visit notifications found with the specified criteria.");
-            }
 
             return result.Select(VesselVisitNotificationMapper.ToDTO);
         }
@@ -211,19 +204,19 @@ namespace WebApp.Models.Application.Services
         private static string BuildFilterDescription(VesselVisitNotificationFilterDTO filter)
         {
             var criteria = new List<string>();
-            
+
             if (!string.IsNullOrEmpty(filter.VesselIMO))
                 criteria.Add($"Vessel IMO: {filter.VesselIMO}");
-            
+
             if (!string.IsNullOrEmpty(filter.Status))
                 criteria.Add($"Status: {filter.Status}");
-            
+
             if (filter.FromDate.HasValue)
                 criteria.Add($"From Date: {filter.FromDate.Value:yyyy-MM-dd}");
-            
+
             if (filter.ToDate.HasValue)
                 criteria.Add($"To Date: {filter.ToDate.Value:yyyy-MM-dd}");
-            
+
             return string.Join(", ", criteria);
         }
 

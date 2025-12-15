@@ -1,5 +1,6 @@
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Domain.VesselVisits;
+using WebApp.Models.Domain.Containers;
 
 namespace WebApp.Models.Application.Mappers
 {
@@ -16,28 +17,40 @@ namespace WebApp.Models.Application.Mappers
                 VisitDate = entity.VisitDate,
                 Status = entity.Status.ToString(),
                 Purpose = entity.Purpose.ToString(),
+
                 LoadingManifest = entity.LoadingManifest != null
                     ? new CargoManifestDTO
                     {
                         Id = entity.LoadingManifest.Id,
                         Type = entity.LoadingManifest.Type.ToString(),
-                        Containers = entity.LoadingManifest.Containers.Select(c => new ContainerDTO { Identifier = c.Identifier }).ToList()
+                        Containers = entity.LoadingManifest.Containers.Select(c => new ContainerDTO
+                        {
+                            Identifier = c.Identifier,
+                            Teu = c.Teu
+                        }).ToList()
                     }
                     : null,
+
                 UnloadingManifest = entity.UnloadingManifest != null
                     ? new CargoManifestDTO
                     {
                         Id = entity.UnloadingManifest.Id,
                         Type = entity.UnloadingManifest.Type.ToString(),
-                        Containers = entity.UnloadingManifest.Containers.Select(c => new ContainerDTO { Identifier = c.Identifier }).ToList()
+                        Containers = entity.UnloadingManifest.Containers.Select(c => new ContainerDTO
+                        {
+                            Identifier = c.Identifier,
+                            Teu = c.Teu
+                        }).ToList()
                     }
                     : null,
+
                 Crew = entity.Crew.Select(c => new CrewMemberDTO
                 {
                     Name = c.Name,
                     CitizenId = c.CitizenId,
                     Nationality = c.Nationality
                 }).ToList(),
+
                 ArrivalTime = entity.ArrivalTime,
                 DesiredDepartureTime = entity.DesiredDepartureTime,
                 EstimatedLoadingDurationMinutes = entity.EstimatedLoadingDurationMinutes,
@@ -59,32 +72,36 @@ namespace WebApp.Models.Application.Mappers
                 dto.EstimatedUnloadingDurationMinutes
             );
 
-            // Optional: add manifests if present
             if (dto.LoadingManifest != null)
             {
                 var manifest = new CargoManifest(CargoManifestType.Loading);
+
                 if (dto.LoadingManifest.Containers != null)
                 {
                     foreach (var containerDto in dto.LoadingManifest.Containers)
                     {
-                        manifest.AddContainer(new Container(containerDto.Identifier));
+                        manifest.AddContainer(new Container(containerDto.Identifier, containerDto.Teu));
                     }
                 }
+
                 entity.AddLoadingManifest(manifest);
             }
 
             if (dto.UnloadingManifest != null)
             {
                 var manifest = new CargoManifest(CargoManifestType.Unloading);
+
                 if (dto.UnloadingManifest.Containers != null)
                 {
                     foreach (var containerDto in dto.UnloadingManifest.Containers)
                     {
-                        manifest.AddContainer(new Container(containerDto.Identifier));
+                        manifest.AddContainer(new Container(containerDto.Identifier, containerDto.Teu));
                     }
                 }
+
                 entity.AddUnloadingManifest(manifest);
             }
+
             foreach (var member in dto.Crew)
                 entity.AddCrewMember(CrewMapper.ToEntity(member));
 

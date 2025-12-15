@@ -21,8 +21,7 @@ namespace WebApp.Models.Infrastructure.Configurations
             builder.Property(sa => sa.MaxCapacityTeu)
                 .IsRequired();
 
-            builder.Property(sa => sa.CurrentOccupancyTeu)
-                .IsRequired();
+            builder.Ignore(sa => sa.CurrentOccupancyTeu);
         }
     }
 }

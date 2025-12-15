@@ -21,7 +21,7 @@
         "container": {
             "colorMap": "textures/container_diffuse.png",
             "normalMap": "textures/container_normal.png",
-            "roughness": 0.6,
+            "roughness": 0.2,
             "metalness": 0.3
         },
         "asphalt": {

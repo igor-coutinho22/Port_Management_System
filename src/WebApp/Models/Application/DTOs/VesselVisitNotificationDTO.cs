@@ -22,26 +22,6 @@ namespace WebApp.Models.Application.DTOs
         public int EstimatedUnloadingDurationMinutes { get; set; }
     }
 
-
-    public class CargoManifestDTO
-    {
-        public Guid Id { get; set; }
-        public string Type { get; set; } = string.Empty;
-        public List<ContainerDTO> Containers { get; set; } = new();
-    }
-
-    public class ContainerDTO
-    {
-        public string Identifier { get; set; } = string.Empty;
-    }
-
-    public class CrewMemberDTO
-    {
-        public string Name { get; set; } = string.Empty;
-        public string CitizenId { get; set; } = string.Empty;
-        public string Nationality { get; set; } = string.Empty;
-    }
-
     public class RejectReasonDTO
     {
         public string Reason { get; set; } = string.Empty;

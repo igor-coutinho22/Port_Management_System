@@ -58,6 +58,10 @@ const AppWithGlobalNav = () => {
     const [sidebarVisible, setSidebarVisible] = React.useState(false);
     const [hamburgerMenuOpen, setHamburgerMenuOpen] = React.useState(false);
 
+    const basePage = typeof currentPage === "string"
+        ? currentPage.split("?")[0]
+        : "home";
+
     const handleNavigate = (page) => {
         console.log(`Navigating to: ${page}`);
         setIsLoading(true);
@@ -135,14 +139,6 @@ const AppWithGlobalNav = () => {
 
         // Log currentPage before the split
         console.log("currentPage before split:", currentPage);
-
-        // Ensure currentPage is a string before splitting
-        if (typeof currentPage === "string") {
-            var basePage = currentPage.split('?')[0];
-        } else {
-            console.warn("currentPage is not a string:", currentPage);
-            var basePage = "home"; // Default to home if not a string
-        }
 
         console.log("Base page after split:", basePage);
 
@@ -277,7 +273,8 @@ const AppWithGlobalNav = () => {
             />
 
             <main
-                className={`main-content ${isManagementSection && sidebarVisible ? "with-sidebar" : ""}`}
+                className={`main-content ${isManagementSection && sidebarVisible ? "with-sidebar" : ""
+                    } ${basePage === "3d-view" ? "full-width" : ""}`}
             >
                 <Breadcrumb currentPage={currentPage} onNavigate={handleNavigate} />
                 <ProtectedPage

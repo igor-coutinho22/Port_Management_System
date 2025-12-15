@@ -1,3 +1,5 @@
+using WebApp.Models.Domain.Containers;
+
 namespace WebApp.Models.Domain.VesselVisits
 {
     public class CargoManifest
