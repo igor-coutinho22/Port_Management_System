@@ -29,6 +29,12 @@
             "normalMap": "textures/asphalt.png",
             "roughness": 0.8,
             "metalness": 0.1
+        },
+        "sun": {
+            "colorMap": "textures/sun.png",
+            "normalMap": "textures/sun.png",
+            "roughness": 0,
+            "metalness": 0
         }
     }
 }

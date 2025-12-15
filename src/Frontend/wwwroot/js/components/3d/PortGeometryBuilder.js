@@ -20,18 +20,29 @@ class PortGeometryBuilder {
             vesselBridge: new THREE.MeshStandardMaterial({ color: 0xEEEEEE }),
             staffBody: new THREE.MeshStandardMaterial({ color: 0xFFA500 }),
             water: new THREE.MeshStandardMaterial({ color: 0x006994 }),
-            asphalt: new THREE.MeshStandardMaterial({ color: 0xCCCCCC })
+            asphalt: new THREE.MeshStandardMaterial({ color: 0xCCCCCC }),
+
+            // ✅ MINIMAL CHANGE: Sun should NOT be lit like normal objects.
+            // MeshBasicMaterial displays the PNG exactly (with alpha), no lighting washout.
+            sun: new THREE.MeshBasicMaterial({
+                color: 0xFFFFFF,
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide
+            })
         };
 
         this.textureLoader = new THREE.TextureLoader();
         this.gltfLoader = new THREE.GLTFLoader();
 
-        // key -> THREE.Object3D (root of imported model)
+        // key -> THREE.Object3D (root scene)
         this.models = {};
+        // key -> { url, transform, ... } from models.json
+        this.modelDefs = {};
     }
 
     // -------------------------------------------------------------------------
-    // TEXTURE LOADING (unchanged, just a bit nicer)
+    // TEXTURE LOADING
     // -------------------------------------------------------------------------
     loadTextures(config) {
         if (!config || !config.materials) return;
@@ -42,6 +53,27 @@ class PortGeometryBuilder {
 
             if (conf.colorMap && diffuse) {
                 this.textureLoader.load(conf.colorMap, (tex) => {
+
+                    // ✅ SPECIAL CASE: SUN PNG (alpha + no tiling + correct color)
+                    if (matName === "sun") {
+                        // r128: use encoding
+                        tex.encoding = THREE.sRGBEncoding;
+
+                        // Clamp so edges don't smear / tile
+                        tex.wrapS = THREE.ClampToEdgeWrapping;
+                        tex.wrapT = THREE.ClampToEdgeWrapping;
+
+                        // Smooth scaling (reduces pixelation)
+                        tex.minFilter = THREE.LinearMipmapLinearFilter;
+                        tex.magFilter = THREE.LinearFilter;
+                        tex.generateMipmaps = true;
+
+                        targetMat.map = tex;
+                        targetMat.needsUpdate = true;
+                        return;
+                    }
+
+                    // Everything else unchanged from your code:
                     tex.wrapS = THREE.RepeatWrapping;
                     tex.wrapT = THREE.RepeatWrapping;
                     tex.colorSpace = THREE.SRGBColorSpace;
@@ -53,6 +85,7 @@ class PortGeometryBuilder {
                     }
                 });
             }
+
             if (conf.normalMap && !diffuse) {
                 this.textureLoader.load(conf.normalMap, (tex) => {
                     tex.wrapS = THREE.RepeatWrapping;
@@ -66,6 +99,7 @@ class PortGeometryBuilder {
                     }
                 });
             }
+
             if (conf.roughness !== undefined) targetMat.roughness = conf.roughness;
             if (conf.metalness !== undefined) targetMat.metalness = conf.metalness;
         };
@@ -73,14 +107,20 @@ class PortGeometryBuilder {
         // Apply to specific materials
         loadMat("concrete", true, this.materials.dock, null, null);
         loadMat("concrete", true, this.materials.yardSurface, null, null);
+
         loadMat("metal", true, this.materials.vesselHull, null, null);
         loadMat("metal", false, this.materials.vesselBridge, null, null);
+
         loadMat("metal", true, this.materials.craneBody, null, null);
-        this.materials.container.forEach(c => { loadMat("container", true, c, null, null); });
+        this.materials.container.forEach(c => loadMat("container", true, c, null, null));
+
         loadMat("water", true, this.materials.water, 500, 250);
         loadMat("metal", true, this.materials.warehouseRoof, null, null);
         loadMat("metal", false, this.materials.warehouseWall, null, null);
         loadMat("asphalt", true, this.materials.asphalt, 500, 250);
+
+        // Sun texture
+        loadMat("sun", true, this.materials.sun, null, null);
     }
 
     // -------------------------------------------------------------------------
@@ -89,15 +129,17 @@ class PortGeometryBuilder {
     async loadModels(config) {
         if (!config || !config.models) return;
 
+        this.modelDefs = config.models;
+
         const entries = Object.entries(config.models);
         const promises = entries.map(([key, def]) => {
             const url = def.url;
             if (!url) return Promise.resolve();
 
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 this.gltfLoader.load(
                     url,
-                    gltf => {
+                    (gltf) => {
                         const scene = gltf.scene;
                         scene.traverse(obj => {
                             if (obj.isMesh) {
@@ -109,9 +151,9 @@ class PortGeometryBuilder {
                         resolve();
                     },
                     undefined,
-                    err => {
+                    (err) => {
                         console.error(`Failed to load model '${key}' from ${url}`, err);
-                        resolve(); // fail soft – keep going
+                        resolve();
                     }
                 );
             });
@@ -126,6 +168,7 @@ class PortGeometryBuilder {
     cloneModel(key) {
         const src = this.models[key];
         if (!src) return null;
+
         const clone = src.clone(true);
         clone.traverse(obj => {
             if (obj.isMesh) {
@@ -151,34 +194,62 @@ class PortGeometryBuilder {
         const scale = Math.min(scaleX, scaleY, scaleZ);
         object3D.scale.setScalar(scale);
 
-        // re-center around (0,0,0)
+        // Re-center around (0,0,0)
         const center = new THREE.Vector3();
         box.getCenter(center);
         center.multiplyScalar(scale);
         object3D.position.sub(center);
     }
 
-    // -----------------------------------------------------------------------------
+    applyModelTransformFromConfig(obj, key) {
+        const tr = this.modelDefs?.[key]?.transform;
+        if (!tr) return;
+
+        // Rotations (radians)
+        if (tr.rotateX !== undefined) obj.rotation.x += tr.rotateX;
+        if (tr.rotateY !== undefined) obj.rotation.y += tr.rotateY;
+        if (tr.rotateZ !== undefined) obj.rotation.z += tr.rotateZ;
+
+        // Post-fit scale multiplier
+        if (tr.scale !== undefined) obj.scale.multiplyScalar(tr.scale);
+
+        // Local offsets
+        if (tr.liftY !== undefined) obj.position.y += tr.liftY;
+        if (tr.offsetX !== undefined) obj.position.x += tr.offsetX;
+        if (tr.offsetZ !== undefined) obj.position.z += tr.offsetZ;
+    }
+
+    makeConfiguredInstance(key, fitW, fitH, fitD) {
+        const model = this.cloneModel(key);
+        if (!model) return null;
+
+        this.fitModelToBox(model, fitW, fitH, fitD);
+        this.applyModelTransformFromConfig(model, key);
+
+        const wrapper = new THREE.Group();
+        wrapper.add(model);
+        return wrapper;
+    }
+
+    // -------------------------------------------------------------------------
     // VESSEL GEOMETRY
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createVessel(vessel) {
         const { length, width, height, type } = vessel;
         const isContainer = (type || "").toLowerCase().includes("container");
 
-        // Try imported vessel
-        if (isContainer && this.models.containerShip) {
-            const base = this.cloneModel("containerShip");
+        // Imported vessel
+        if (this.models.containerShip) {
             const targetLength = length || 150;
             const targetWidth = width || 30;
             const targetHeight = height || 40;
 
-            this.fitModelToBox(base, targetLength, targetHeight, targetWidth);
-            return base;
+            const inst = this.makeConfiguredInstance("containerShip", targetLength, targetHeight, targetWidth);
+            if (inst) return inst;
         }
 
-        // Fallback procedural vessel
+        // Fallback procedural vessel...
         const group = new THREE.Group();
-
         const hullHeight = height * 0.6;
 
         const hullGeo = new THREE.BoxGeometry(length, hullHeight, width);
@@ -222,13 +293,12 @@ class PortGeometryBuilder {
         return group;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // STAFF GEOMETRY
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createStaff(staff) {
         const height = 10;
 
-        // Try imported staff (random from available variants)
         const staffKeys = [
             "maleWorkerYellow",
             "maleWorker",
@@ -238,83 +308,66 @@ class PortGeometryBuilder {
 
         if (staffKeys.length > 0) {
             const key = staffKeys[Math.floor(Math.random() * staffKeys.length)];
-            const imported = this.cloneModel(key);
-            this.fitModelToBox(imported, height * 0.5, height, height * 0.5);
-            return imported;
+            const inst = this.makeConfiguredInstance(key, height * 0.5, height, height * 0.5);
+            if (inst) return inst;
         }
 
         // Fallback procedural staff
         const radius = 1.5;
         const h = 5;
-
         const geo = new THREE.CylinderGeometry(radius, radius, h, 8);
         const mesh = new THREE.Mesh(geo, this.materials.staffBody);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-
         return mesh;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // DOCK GEOMETRY
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createDock(dock) {
         const { width, height, depth } = dock;
 
-        // Try imported dock (if you later add one)
-        const imported = this.cloneModel("dock");
-        if (imported) {
-            this.fitModelToBox(imported, width, height, depth);
-            return imported;
-        }
+        const inst = this.makeConfiguredInstance("dock", width, height, depth);
+        if (inst) return inst;
 
         // Fallback procedural dock
         const geometry = new THREE.BoxGeometry(width, height, depth);
         this.adjustUVs(geometry, width, height, depth);
-
         const mesh = new THREE.Mesh(geometry, this.materials.dock);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-
         return mesh;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // CONTAINER YARD GEOMETRY
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createContainerYard(area) {
         const { width, height, depth } = area;
 
-        // Try imported yard (if you add one later)
-        const imported = this.cloneModel("containerYard");
-        if (imported) {
-            this.fitModelToBox(imported, width, height, depth);
-            return imported;
-        }
+        const inst = this.makeConfiguredInstance("containerYard", width, height, depth);
+        if (inst) return inst;
 
         // Fallback flat pad
         const group = new THREE.Group();
-
         const groundGeo = new THREE.BoxGeometry(width, height, depth);
         this.adjustUVs(groundGeo, width, height, depth);
-
         const ground = new THREE.Mesh(groundGeo, this.materials.yardSurface);
         ground.castShadow = true;
         ground.receiveShadow = true;
         group.add(ground);
-
         return group;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // CONTAINER GEOMETRY
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createContainer(container) {
         const containerWidth = 5;
         const containerHeight = 5;
         const containerDepth = 10;
 
-        // Try imported containers (gray/orange/rusty) – pick random
         const containerModelKeys = [
             "cargoContainerGray",
             "cargoContainerOrange",
@@ -323,9 +376,8 @@ class PortGeometryBuilder {
 
         if (containerModelKeys.length > 0) {
             const key = containerModelKeys[Math.floor(Math.random() * containerModelKeys.length)];
-            const imported = this.cloneModel(key);
-            this.fitModelToBox(imported, containerWidth, containerHeight, containerDepth);
-            return imported;
+            const inst = this.makeConfiguredInstance(key, containerWidth, containerHeight, containerDepth);
+            if (inst) return inst;
         }
 
         // Fallback box container
@@ -339,7 +391,6 @@ class PortGeometryBuilder {
         const mesh = new THREE.Mesh(geo, mat);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-
         return mesh;
     }
 
@@ -353,7 +404,6 @@ class PortGeometryBuilder {
 
         const cols = Math.floor((areaWidth - 10) / cellWidth);
         const rows = Math.floor((areaDepth - 10) / cellDepth);
-
         const maxContainers = Math.min(cols * rows, 50);
 
         const startX = -((cols * cellWidth) / 2) + cellWidth / 2;
@@ -388,25 +438,20 @@ class PortGeometryBuilder {
         }
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // WAREHOUSE GEOMETRY
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createWarehouse(area) {
         const { width, height, depth } = area;
 
-        // Try imported warehouse
-        const imported = this.cloneModel("warehouse");
-        if (imported) {
-            this.fitModelToBox(imported, width, height, depth);
-            return imported;
-        }
+        const inst = this.makeConfiguredInstance("warehouse", width, height, depth);
+        if (inst) return inst;
 
         // Fallback procedural warehouse
         const group = new THREE.Group();
 
         const wallGeo = new THREE.BoxGeometry(width, height, depth);
         this.adjustUVs(wallGeo, width, height, depth);
-
         const walls = new THREE.Mesh(wallGeo, this.materials.warehouseWall);
         walls.castShadow = true;
         walls.receiveShadow = true;
@@ -417,39 +462,33 @@ class PortGeometryBuilder {
         flatRoof.castShadow = true;
         flatRoof.receiveShadow = true;
         flatRoof.position.y = height / 2 + 1;
-
         group.add(flatRoof);
 
         return group;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // RESOURCES (CRANES / TRUCKS)
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createResource(resource) {
         const { radius, height, type } = resource;
         const typeStr = (type || resource.resourceType || "").toString().toLowerCase();
-        const isCrane = typeStr.includes("crane") ||
+
+        const isCrane =
+            typeStr.includes("crane") ||
             resource.resourceType === 0 ||
             resource.resourceType === 1;
 
         if (isCrane) {
-            // Select crane model based on type if possible
             let craneKey = null;
-            if (typeStr.includes("sts") && this.models.stsCrane) {
-                craneKey = "stsCrane";
-            } else if (typeStr.includes("yard") && this.models.yardCrane) {
-                craneKey = "yardCrane";
-            } else if (this.models.constructionCrane) {
-                craneKey = "constructionCrane";
-            } else if (this.models.yardCrane) {
-                craneKey = "yardCrane";
-            }
+            if (typeStr.includes("sts") && this.models.stsCrane) craneKey = "stsCrane";
+            else if (typeStr.includes("yard") && this.models.yardCrane) craneKey = "yardCrane";
+            else if (this.models.constructionCrane) craneKey = "constructionCrane";
+            else if (this.models.yardCrane) craneKey = "yardCrane";
 
             if (craneKey) {
-                const imported = this.cloneModel(craneKey);
-                this.fitModelToBox(imported, height, height, height * 0.5);
-                return imported;
+                const inst = this.makeConfiguredInstance(craneKey, height, height, height * 0.5);
+                if (inst) return inst;
             }
 
             // Fallback procedural crane
@@ -473,68 +512,68 @@ class PortGeometryBuilder {
             group.add(boom);
 
             return group;
-        } else {
-            // Try imported truck
-            if (this.models.truck) {
-                const imported = this.cloneModel("truck");
-                const chassisLength = height * 1.5;
-                const chassisWidth = radius * 2.5;
-                const chassisHeight = radius * 2.5;
-                this.fitModelToBox(imported, chassisLength, chassisHeight, chassisWidth);
-                return imported;
-            }
+        }
 
-            // Fallback procedural truck
-            const group = new THREE.Group();
-
+        // Trucks / vehicles
+        if (this.models.truck) {
             const chassisLength = height * 1.5;
             const chassisWidth = radius * 2.5;
-            const chassisHeight = radius;
+            const chassisHeight = radius * 2.5;
 
-            const chassisGeo = new THREE.BoxGeometry(chassisLength, chassisHeight, chassisWidth);
-            const chassis = new THREE.Mesh(chassisGeo, this.materials.vehicleBody);
-            chassis.position.y = chassisHeight + radius;
-            chassis.castShadow = true;
-            chassis.receiveShadow = true;
-            group.add(chassis);
-
-            const cabinLength = chassisLength * 0.3;
-            const cabinHeight = chassisHeight * 1.2;
-            const cabinGeo = new THREE.BoxGeometry(cabinLength, cabinHeight, chassisWidth);
-            const cabin = new THREE.Mesh(cabinGeo, new THREE.MeshStandardMaterial({ color: 0xEEEEEE }));
-            cabin.position.set(chassisLength / 2 - cabinLength / 2, chassisHeight * 2 + radius, 0);
-            cabin.castShadow = true;
-            cabin.receiveShadow = true;
-            group.add(cabin);
-
-            const wheelRadius = radius * 0.6;
-            const wheelWidth = radius * 0.4;
-            const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelWidth, 16);
-            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-
-            const positions = [
-                { x: chassisLength / 3, z: chassisWidth / 2 },
-                { x: chassisLength / 3, z: -chassisWidth / 2 },
-                { x: -chassisLength / 3, z: chassisWidth / 2 },
-                { x: -chassisLength / 3, z: -chassisWidth / 2 }
-            ];
-
-            positions.forEach(pos => {
-                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                wheel.rotation.x = Math.PI / 2;
-                wheel.position.set(pos.x, wheelRadius, pos.z);
-                wheel.receiveShadow = true;
-                wheel.castShadow = true;
-                group.add(wheel);
-            });
-
-            return group;
+            const inst = this.makeConfiguredInstance("truck", chassisLength, chassisHeight, chassisWidth);
+            if (inst) return inst;
         }
+
+        // Fallback procedural truck
+        const group = new THREE.Group();
+
+        const chassisLength = height * 1.5;
+        const chassisWidth = radius * 2.5;
+        const chassisHeight = radius;
+
+        const chassisGeo = new THREE.BoxGeometry(chassisLength, chassisHeight, chassisWidth);
+        const chassis = new THREE.Mesh(chassisGeo, this.materials.vehicleBody);
+        chassis.position.y = chassisHeight + radius;
+        chassis.castShadow = true;
+        chassis.receiveShadow = true;
+        group.add(chassis);
+
+        const cabinLength = chassisLength * 0.3;
+        const cabinHeight = chassisHeight * 1.2;
+        const cabinGeo = new THREE.BoxGeometry(cabinLength, cabinHeight, chassisWidth);
+        const cabin = new THREE.Mesh(cabinGeo, new THREE.MeshStandardMaterial({ color: 0xEEEEEE }));
+        cabin.position.set(chassisLength / 2 - cabinLength / 2, chassisHeight * 2 + radius, 0);
+        cabin.castShadow = true;
+        cabin.receiveShadow = true;
+        group.add(cabin);
+
+        const wheelRadius = radius * 0.6;
+        const wheelWidth = radius * 0.4;
+        const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelWidth, 16);
+        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+
+        const positions = [
+            { x: chassisLength / 3, z: chassisWidth / 2 },
+            { x: chassisLength / 3, z: -chassisWidth / 2 },
+            { x: -chassisLength / 3, z: chassisWidth / 2 },
+            { x: -chassisLength / 3, z: -chassisWidth / 2 }
+        ];
+
+        positions.forEach(pos => {
+            const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+            wheel.rotation.x = Math.PI / 2;
+            wheel.position.set(pos.x, wheelRadius, pos.z);
+            wheel.receiveShadow = true;
+            wheel.castShadow = true;
+            group.add(wheel);
+        });
+
+        return group;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // UTILS
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createLabel(text) {
         const canvas = document.createElement("canvas");
         canvas.width = 256;

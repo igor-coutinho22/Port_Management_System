@@ -160,7 +160,7 @@ class PortLayoutEngine {
                     radius: 5,
                     x: dock.x + (Math.random() - 0.5) * (dock.width - 20),
                     y: dock.height, // On top of dock
-                    z: dock.z - dock.depth / 2 + 5 // Near the water edge
+                    z: dock.z - dock.depth / 2 + 15 // Near the water edge
                 });
             }
         });

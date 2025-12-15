@@ -35,7 +35,7 @@ class PortVisualization {
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
-        this.controls.maxPolarAngle = Math.PI / 2 - 0.1; // Don't go below ground
+        this.controls.maxPolarAngle = Math.PI / 2; // Don't go below ground
         this.controls.minDistance = 100;
         this.controls.maxDistance = 2000;
 
@@ -88,9 +88,8 @@ class PortVisualization {
         // Handle resize
         window.addEventListener('resize', () => this.onWindowResize());
 
-        this.timeOfDay = 0.20; // 0..1
+        this.timeOfDay = 0.45; // 0..1
         this.dayDurationSeconds = 300; // 1 full day per 5 minutes
-
     }
 
     // -----------------------------------------------------------------------------
@@ -162,15 +161,15 @@ class PortVisualization {
         sunPivot.add(sun);
         this.sun = sun;
 
-        // Visible sun mesh
-        const sunGeom = new THREE.SphereGeometry(50, 32, 32);
-        const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+        const sunGeom = new THREE.PlaneGeometry(100, 100);
+        const sunMat = this.geometryBuilder.materials.sun;
+        sunMat.transparent = true;
+        sunMat.opacity = 0.75;
         const sunMesh = new THREE.Mesh(sunGeom, sunMat);
         sunMesh.position.copy(sun.position);
         sunPivot.add(sunMesh);
         this.sunMesh = sunMesh;
     }
-
 
     // -----------------------------------------------------------------------------
     // MINIMAP SETUP (Orthographic top-down camera)
@@ -246,7 +245,6 @@ class PortVisualization {
     // -----------------------------------------------------------------------------
     // LOAD PORT DATA
     // -----------------------------------------------------------------------------
-
     async loadPortData() {
         THREE.Cache.enabled = false;
         console.log("PortVisualization: loadPortData called");
@@ -321,7 +319,7 @@ class PortVisualization {
     // -----------------------------------------------------------------------------
     onPointerDown(e) {
         const cast = this.castRay(e);
-        const obj = cast?.object || null
+        const obj = cast?.object || null;
         if (!obj || obj instanceof THREE.Sprite) return;
 
         this.handleSelection(obj);
@@ -350,7 +348,7 @@ class PortVisualization {
     findParent(obj) {
         let target = obj;
         if (obj.parent instanceof THREE.Group) {
-            target = obj.parent; // Select the group logic if needed, but visual highlight is on mesh
+            target = obj.parent;
         }
         return target;
     }
@@ -403,7 +401,7 @@ class PortVisualization {
         this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
         this.raycaster.setFromCamera(this.pointer, this.camera);
-        const hits = this.raycaster.intersectObjects(this.objects, true); // recursive for groups
+        const hits = this.raycaster.intersectObjects(this.objects, true);
 
         return hits.length ? hits[0] : null;
     }
@@ -412,10 +410,8 @@ class PortVisualization {
     // CLEANUP
     // -----------------------------------------------------------------------------
     clearScene() {
-        // Remove all added objects
         this.objects.forEach(o => {
             this.scene.remove(o);
-            // Dispose logic
             if (o.geometry) o.geometry.dispose();
             if (o.material) {
                 if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
@@ -423,10 +419,6 @@ class PortVisualization {
             }
         });
         this.objects = [];
-
-        // Keep lights? For now, let's just clear objects list but scene.remove might need to be selective
-        // Actually, better to remove everything except lights/camera if possible, 
-        // or just remove what we tracked in this.objects
     }
 
     // -----------------------------------------------------------------------------
@@ -437,23 +429,21 @@ class PortVisualization {
         const mat = this.geometryBuilder.materials.water;
         const water = new THREE.Mesh(geo, mat);
         water.rotation.x = -Math.PI / 2;
-        water.position.y = -0.5; // Slightly below 0
-        water.position.z = -2450
+        water.position.y = -0.5;
+        water.position.z = -2450;
         water.receiveShadow = true;
         this.scene.add(water);
-        // We don't push water to this.objects because we don't want to interact with it
     }
 
     addGroundPlane() {
         const geo = new THREE.BoxGeometry(10000, 2, 5020);
         const mat = this.geometryBuilder.materials.asphalt;
         const ground = new THREE.Mesh(geo, mat);
-        ground.position.y = 0.5; // Less below 0
-        ground.position.z = 2550; //just after docks
+        ground.position.y = 0.5;
+        ground.position.z = 2550;
         ground.receiveShadow = true;
         ground.castShadow = false;
         this.scene.add(ground);
-        // We don't push ground to this.objects because we don't want to interact with it
     }
 
     // -----------------------------------------------------------------------------
@@ -471,7 +461,6 @@ class PortVisualization {
             const label = this.geometryBuilder.createLabel(d.name);
             label.position.set(d.x, d.y + 30, d.z);
             this.scene.add(label);
-            // Labels not interactive usually
         });
     }
 
@@ -486,7 +475,6 @@ class PortVisualization {
                     : this.geometryBuilder.createContainerYard(a);
 
             mesh.position.set(a.x, a.y, a.z);
-            // UserData on group
             mesh.userData = { ...a };
 
             this.scene.add(mesh);
@@ -511,7 +499,6 @@ class PortVisualization {
             this.objects.push(mesh);
         });
     }
-
 
     // -----------------------------------------------------------------------------
     // RESOURCES
@@ -580,7 +567,7 @@ class PortVisualization {
     // ANIMATION LOOP
     // -----------------------------------------------------------------------------
     animate() {
-        if (!this.renderer) return; // Stopped
+        if (!this.renderer) return;
 
         requestAnimationFrame(this.animate);
 
@@ -600,7 +587,6 @@ class PortVisualization {
         const time = now * 0.0001;
 
         this.updateWater(time);
-
         this.updateSun(deltaSec);
 
         // Render main scene
@@ -645,77 +631,61 @@ class PortVisualization {
     updateSun(deltaSec) {
         if (!this.sun || !this.sunMesh || !this.camera || !this.ambientLight) return;
 
-        // -----------------------------------------------
-        // TIME-OF-DAY 0..1
-        // -----------------------------------------------
-        const speed = 1 / this.dayDurationSeconds; // 1 full cycle per dayDurationSeconds
-        this.timeOfDay = (this.timeOfDay + deltaSec * speed) % 1; // 0..1
+        const speed = 1 / this.dayDurationSeconds;
+        this.timeOfDay = (this.timeOfDay + deltaSec * speed) % 1;
         const t = this.timeOfDay;
 
-        // -----------------------------------------------
-        // SUN ORBIT
-        // -----------------------------------------------
-        // Angle for full orbit (0..2π)
-        const angle = t * Math.PI * 2;
-
-        // Sun height: -1 (deep below) → 0 (horizon) → +1 (straight up)
+        const angle = -t * Math.PI * 2;
+        const southTilt = 0.25;
         const h = Math.sin(angle);
 
-        const radius = 5500; // must be < camera.far (you have 10000)
+
+        const radius = 5500;
         const y = h * radius;
-        const z = -Math.cos(angle) * radius; // keep sun on "sea side" (negative z for noon)
+        const z = -Math.cos(angle) * radius;
+        const x = h * radius * southTilt;
 
         this.sun.position.set(0, y, z);
         this.sunMesh.position.copy(this.sun.position);
-        this.sunMesh.visible = true; // always visible; we dim lights instead of hiding
+        this.sunMesh.visible = true;
 
         // Point light toward scene center
         this.sun.target.position.set(0, 0, 0);
         this.sun.target.updateMatrixWorld();
 
-        // -----------------------------------------------
-        // DAYLIGHT FACTOR based on sun height
-        // -----------------------------------------------
-        // twilight is a band around horizon where we fade smoothly
-        const twilight = 0.2; // tweak: 0.1 = sharper, 0.3 = softer
+        const twilight = 0.2;
         let lightFactor;
 
         if (h <= -twilight) {
-            // full night
             lightFactor = 0;
         } else if (h >= twilight) {
-            // full day
             lightFactor = 1;
         } else {
-            // smooth fade in [-twilight, +twilight]
-            const u = (h + twilight) / (2 * twilight); // -twilight -> 0, +twilight -> 1
-            lightFactor = u * u * (3 - 2 * u); // smoothstep
+            const u = (h + twilight) / (2 * twilight);
+            lightFactor = u * u * (3 - 2 * u);
         }
 
-        // -----------------------------------------------
         // KEEP SUN VISUALLY BIG – scale with distance
-        // -----------------------------------------------
         const dist = this.camera.position.distanceTo(this.sunMesh.position);
         if (dist > 0) {
-            const baseRadius = 50;     // original SphereGeometry radius
-            const apparentSize = 0.06; // increase to make sun look bigger on screen
-            const scale = (dist * apparentSize) / baseRadius;
+            const baseSize = 100;      // PlaneGeometry size
+            const apparentSize = 0.2; // same value you had
+            const scale = (dist * apparentSize) / baseSize;
             this.sunMesh.scale.setScalar(scale);
         }
 
-        // -----------------------------------------------
+        // ✅ BILLBOARD (MINIMAL: always face camera)
+        this.sunMesh.lookAt(this.camera.position);
+
         // SUN + AMBIENT INTENSITY
-        // -----------------------------------------------
         this.sun.intensity = 0.2 + 0.8 * lightFactor;
 
-        const minAmbient = 0.35; // moonlight
-        const maxAmbient = 0.6;  // daylight fill
+        const minAmbient = 0.35;
+        const maxAmbient = 0.6;
         this.ambientLight.intensity =
             minAmbient + (maxAmbient - minAmbient) * lightFactor;
 
-        // -----------------------------------------------
-        // AMBIENT COLOR (moonlight ↔ daylight)
-        // -----------------------------------------------
+        // AMBIENT COLOR
         const daylightColor = this.dayAmbientColor || new THREE.Color(0xffffff);
         const moonColor = this.nightAmbientColor || new THREE.Color(0x4d6f9a);
 
@@ -728,9 +698,7 @@ class PortVisualization {
             this.hemiLight.intensity = 0.4 * (1 - lightFactor);
         }
 
-        // -----------------------------------------------
-        // SKY BACKGROUND FADE (night ↔ day)
-        // -----------------------------------------------
+        // SKY BACKGROUND FADE
         const skyColor = new THREE.Color();
         skyColor.lerpColors(this.nightSkyColor, this.daySkyColor, lightFactor);
         this.scene.background = skyColor;
@@ -743,7 +711,7 @@ class PortVisualization {
         this.clearScene();
         this.renderer.dispose();
         this.hideTooltip();
-        this.renderer = null; // Stop loop
+        this.renderer = null;
     }
 }
 
