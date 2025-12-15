@@ -1,0 +1,9 @@
+{
+    "scripts": {
+        "dev": "concurrently \"cd src/Frontend && npm start\" \"cd src/Oem && dotnet run\" \"cd src/WebApp && dotnet run\""
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1"
+    }
+}
+
