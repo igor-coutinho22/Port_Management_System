@@ -57,7 +57,6 @@ namespace WebApp.Models.Application.Services
 
             existingYard.Name = yard.Name;
             existingYard.ChangeMaxCapacity(yard.MaxCapacityTeu);
-            existingYard.UpdateCurrentOccupancy(yard.CurrentOccupancyTeu);
             existingYard.DocksServed = yard.DocksServed;
 
             await _storageAreaRepo.UpdateContainerYardAsync(existingYard);
@@ -74,7 +73,6 @@ namespace WebApp.Models.Application.Services
 
             existingWarehouse.Name = warehouse.Name;
             existingWarehouse.ChangeMaxCapacity(warehouse.MaxCapacityTeu);
-            existingWarehouse.UpdateCurrentOccupancy(warehouse.CurrentOccupancyTeu);
             existingWarehouse.UpdateCargoType(warehouse.SpecializedCargoType!);
 
             await _storageAreaRepo.UpdateWarehouseAsync(existingWarehouse);

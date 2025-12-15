@@ -266,13 +266,6 @@ class PortVisualization {
             if (data.modelConfig) {
                 await this.geometryBuilder.loadModels(data.modelConfig);
             }
-            
-            // Initialize geometries
-            try {
-                await this.geometryBuilder.loadModels();
-            } catch (e) {
-                console.error("Error loading 3D models:", e);
-            }
 
             const layout = this.layoutEngine.computeLayout(data);
             console.log("PortVisualization: Layout computed", layout);
@@ -328,7 +321,7 @@ class PortVisualization {
     // -----------------------------------------------------------------------------
     onPointerDown(e) {
         const cast = this.castRay(e);
-        const obj = cast.object
+        const obj = cast?.object || null
         if (!obj || obj instanceof THREE.Sprite) return;
 
         this.handleSelection(obj);
@@ -411,8 +404,6 @@ class PortVisualization {
 
         this.raycaster.setFromCamera(this.pointer, this.camera);
         const hits = this.raycaster.intersectObjects(this.objects, true); // recursive for groups
-
-        console.warn(hits.length ? "Hovering: " + hits[0].name + "\n" + hits[0] : "Hovering no object");
 
         return hits.length ? hits[0] : null;
     }

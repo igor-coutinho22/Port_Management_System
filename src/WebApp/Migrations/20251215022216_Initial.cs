@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace WebApp.Migrations
 {
     /// <inheritdoc />
-    public partial class FixNotificationsLogic : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -136,9 +136,8 @@ namespace WebApp.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
                     MaxCapacityTeu = table.Column<int>(type: "integer", nullable: false),
-                    CurrentOccupancyTeu = table.Column<int>(type: "integer", nullable: false),
                     StorageAreaType = table.Column<int>(type: "integer", nullable: false),
                     SpecializedCargoType = table.Column<string>(type: "text", nullable: true)
                 },
@@ -393,6 +392,7 @@ namespace WebApp.Migrations
                     IMO = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
                     VesselName = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     OperatorName = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    CargoGrid = table.Column<string>(type: "jsonb", nullable: false),
                     VesselTypeName = table.Column<string>(type: "character varying(50)", nullable: false),
                     RequiredCraneCount = table.Column<int>(type: "integer", nullable: false),
                     RequiredDockLength = table.Column<double>(type: "double precision", nullable: false),
@@ -541,7 +541,9 @@ namespace WebApp.Migrations
                 columns: table => new
                 {
                     Identifier = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false),
-                    CargoManifestId = table.Column<Guid>(type: "uuid", nullable: true)
+                    Teu = table.Column<int>(type: "integer", nullable: false),
+                    CargoManifestId = table.Column<Guid>(type: "uuid", nullable: true),
+                    StorageAreaId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -552,6 +554,11 @@ namespace WebApp.Migrations
                         principalTable: "CargoManifests",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Containers_StorageAreas_StorageAreaId",
+                        column: x => x.StorageAreaId,
+                        principalTable: "StorageAreas",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -607,6 +614,11 @@ namespace WebApp.Migrations
                 name: "IX_Containers_CargoManifestId",
                 table: "Containers",
                 column: "CargoManifestId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Containers_StorageAreaId",
+                table: "Containers",
+                column: "StorageAreaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CrewMembers_VesselVisitNotificationId",

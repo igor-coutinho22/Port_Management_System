@@ -27,7 +27,6 @@ namespace WebApp.Models.Application.Mappers
             (
                 name: dto.StorageArea!.Name!,
                 maxCapacityTeu: dto.StorageArea!.MaxCapacityTeu,
-                currentOccupancyTeu: dto.StorageArea!.CurrentOccupancyTeu,
                 specializedCargoType: dto.SpecializedCargoType!
             );
         }
@@ -41,7 +40,6 @@ namespace WebApp.Models.Application.Mappers
                 id: id,
                 name: dto.StorageArea!.Name!,
                 maxCapacityTeu: dto.StorageArea!.MaxCapacityTeu,
-                currentOccupancyTeu: dto.StorageArea!.CurrentOccupancyTeu,
                 specializedCargoType: dto.SpecializedCargoType!
             );
         }

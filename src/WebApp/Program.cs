@@ -54,7 +54,7 @@ builder.Services.AddDbContext<PortManagementContext>(options =>
 builder.Services.AddCors(opt =>
 {
     // 1. Try to read from appsettings.json
-    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() 
+    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>()
                   ?? new[] { "https://localhost:5179" }; // 2. Fallback if missing
 
     opt.AddDefaultPolicy(p => p
@@ -281,6 +281,7 @@ using (var scope = app.Services.CreateScope())
         else
         {
             context.Database.Migrate();
+            await DataSeeder.SeedDomainDataAsync(context, logger);
         }
     }
     catch (Exception ex)

@@ -12,8 +12,8 @@ using WebApp.Models.Context;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(PortManagementContext))]
-    [Migration("20251129140007_FixNotificationsLogic")]
-    partial class FixNotificationsLogic
+    [Migration("20251215022216_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -314,6 +314,30 @@ namespace WebApp.Migrations
                     b.ToTable("Organizations");
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.Containers.Container", b =>
+                {
+                    b.Property<string>("Identifier")
+                        .HasMaxLength(11)
+                        .HasColumnType("character varying(11)");
+
+                    b.Property<Guid?>("CargoManifestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("StorageAreaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Teu")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Identifier");
+
+                    b.HasIndex("CargoManifestId");
+
+                    b.HasIndex("StorageAreaId");
+
+                    b.ToTable("Containers", (string)null);
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Docks.Dock", b =>
                 {
                     b.Property<Guid>("Id")
@@ -482,9 +506,6 @@ namespace WebApp.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CurrentOccupancyTeu")
-                        .HasColumnType("integer");
-
                     b.Property<int>("MaxCapacityTeu")
                         .HasColumnType("integer");
 
@@ -496,8 +517,9 @@ namespace WebApp.Migrations
                     b.Property<int>("StorageAreaType")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -601,22 +623,6 @@ namespace WebApp.Migrations
                         .IsUnique();
 
                     b.ToTable("CargoManifests", (string)null);
-                });
-
-            modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.Container", b =>
-                {
-                    b.Property<string>("Identifier")
-                        .HasMaxLength(11)
-                        .HasColumnType("character varying(11)");
-
-                    b.Property<Guid?>("CargoManifestId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Identifier");
-
-                    b.HasIndex("CargoManifestId");
-
-                    b.ToTable("Containers", (string)null);
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.CrewMember", b =>
@@ -731,6 +737,10 @@ namespace WebApp.Migrations
 
                     b.Property<int>("Bays")
                         .HasColumnType("integer");
+
+                    b.Property<string>("CargoGrid")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("OperatorName")
                         .IsRequired()
@@ -899,6 +909,18 @@ namespace WebApp.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("WebApp.Models.Domain.Containers.Container", b =>
+                {
+                    b.HasOne("WebApp.Models.Domain.VesselVisits.CargoManifest", null)
+                        .WithMany("Containers")
+                        .HasForeignKey("CargoManifestId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("WebApp.Models.Domain.StorageArea.StorageArea", null)
+                        .WithMany("ContainerList")
+                        .HasForeignKey("StorageAreaId");
+                });
+
             modelBuilder.Entity("WebApp.Models.Domain.Docks.Dock", b =>
                 {
                     b.HasOne("WebApp.Models.Domain.StorageArea.ContainerYard", null)
@@ -945,14 +967,6 @@ namespace WebApp.Migrations
                         .WithOne("UnloadingManifest")
                         .HasForeignKey("WebApp.Models.Domain.VesselVisits.CargoManifest", "UnloadingManifestForId")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.Container", b =>
-                {
-                    b.HasOne("WebApp.Models.Domain.VesselVisits.CargoManifest", null)
-                        .WithMany("Containers")
-                        .HasForeignKey("CargoManifestId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("WebApp.Models.Domain.VesselVisits.CrewMember", b =>
@@ -1020,6 +1034,8 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Domain.StorageArea.StorageArea", b =>
                 {
+                    b.Navigation("ContainerList");
+
                     b.Navigation("DockConnections");
                 });
 

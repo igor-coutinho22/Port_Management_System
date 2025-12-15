@@ -1,30 +1,28 @@
-using System.ComponentModel;
 using System.Text.Json.Serialization;
+using WebApp.Models.Domain.Containers;
 
 public class VesselGrid
 {
     [JsonInclude]
-    public Container?[] Grid{ get; private set; }
-    public int Bays { get; set; }
-    public int Rows { get; set; }
-    public int Tiers { get; set; }
+    public Container?[] Grid { get; private set; } = Array.Empty<Container?>();
 
-    public VesselGrid()
-    {
-        Bays = Rows = Tiers = 0;
-        Grid = Array.Empty<Container?>();
-    }
+    public int Bays { get; private set; }
+    public int Rows { get; private set; }
+    public int Tiers { get; private set; }
 
-    // Main constructor used in code
+    public VesselGrid() { } // for serializers/EF if needed
+
     [JsonConstructor]
-    public VesselGrid(int bays, int rows, int tiers, Container?[]? flat = null)
+    public VesselGrid(int bays, int rows, int tiers, Container?[]? grid = null)
     {
         Bays = bays;
         Rows = rows;
         Tiers = tiers;
-        Grid = flat ?? new Container?[bays * rows * tiers];
+
+        Grid = grid ?? new Container?[bays * rows * tiers];
+
         if (Grid.Length != bays * rows * tiers)
-            throw new ArgumentException("Flat length must equal bays*rows*tiers");
+            throw new ArgumentException("Grid length must equal bays*rows*tiers");
     }
 
     private int Index(int b, int r, int t) => b * (Rows * Tiers) + r * Tiers + t;

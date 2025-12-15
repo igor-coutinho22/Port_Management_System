@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using WebApp.Models.Domain.Containers;
 using WebApp.Models.Domain.VesselVisits;
 
 namespace WebApp.Models.Infrastructure.Configurations.VesselVisits

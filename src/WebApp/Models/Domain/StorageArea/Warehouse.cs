@@ -4,7 +4,6 @@ namespace WebApp.Models.Domain.StorageArea
 {
     public class Warehouse : StorageArea
     {
-        // Supports planning/assignment (e.g., 'refrigerated fruit destined for Warehouse A')
         public string? SpecializedCargoType { get; protected set; }
 
         protected Warehouse()
@@ -12,8 +11,8 @@ namespace WebApp.Models.Domain.StorageArea
             Type = StorageAreaType.Warehouse;
         }
 
-        public Warehouse(string name, int maxCapacityTeu, int currentOccupancyTeu, string specializedCargoType)
-            : base(StorageAreaType.Warehouse, name, maxCapacityTeu, currentOccupancyTeu)
+        public Warehouse(string name, int maxCapacityTeu, string specializedCargoType)
+            : base(StorageAreaType.Warehouse, name, maxCapacityTeu)
         {
             if (string.IsNullOrWhiteSpace(specializedCargoType))
                 throw new ArgumentException("Specialized cargo type cannot be empty.", nameof(specializedCargoType));
@@ -23,28 +22,30 @@ namespace WebApp.Models.Domain.StorageArea
 
         /// <summary>
         /// Creates a Warehouse for updates without generating a new ID.
-        /// Use this method when you need a Warehouse object for existing entities.
+        /// Prefer updating tracked entities instead of creating new instances.
         /// </summary>
-        public static Warehouse CreateForUpdate(int id, string name, int maxCapacityTeu, int currentOccupancyTeu, string specializedCargoType)
+        public static Warehouse CreateForUpdate(int id, string name, int maxCapacityTeu, string specializedCargoType)
         {
+            if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name cannot be empty.", nameof(name));
+            if (maxCapacityTeu < 0) throw new ArgumentOutOfRangeException(nameof(maxCapacityTeu));
+            if (string.IsNullOrWhiteSpace(specializedCargoType))
+                throw new ArgumentException("Specialized cargo type cannot be empty.", nameof(specializedCargoType));
+
             var warehouse = new Warehouse
             {
                 Name = name,
                 MaxCapacityTeu = maxCapacityTeu,
-                CurrentOccupancyTeu = currentOccupancyTeu,
                 SpecializedCargoType = specializedCargoType
             };
-            
-            // Set the ID directly to avoid generating a new one
+
             warehouse.Id = id;
             return warehouse;
         }
 
         public override string GetUsageDescription()
-        {
-            return $"Warehouse for cargo requiring additional handling/inspection ({SpecializedCargoType}).";
-        }
-        
+            => $"Warehouse for cargo requiring additional handling/inspection ({SpecializedCargoType}).";
+
         public void UpdateCargoType(string newCargoType)
         {
             if (string.IsNullOrWhiteSpace(newCargoType))
