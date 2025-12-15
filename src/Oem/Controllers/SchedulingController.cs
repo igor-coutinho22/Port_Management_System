@@ -50,15 +50,15 @@ public class SchedulingController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("whoami")]
-[Authorize] // Allow any authenticated user
-public IActionResult WhoAmI()
-{
-    return Ok(new 
-    { 
-        Name = User.Identity?.Name,
-        Claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList()
-    });
-}
+    /*[HttpGet("whoami")]
+    [Authorize] // Allow any authenticated user
+    public IActionResult WhoAmI()
+    {
+        return Ok(new
+        {
+            Name = User.Identity?.Name,
+            Claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList()
+        });
+    }*/
 
 }
