@@ -1,0 +1,103 @@
+using Oem.Models.Domain.OperationPlans;
+using Oem.Models.DTOs.OperationPlans;
+using Oem.Models.Application.DTOs;
+
+namespace Oem.Models.Mappers
+{
+    public static class OperationPlanMapper
+    {
+        // 1. Domain -> DTO (Reading from DB) - No changes needed here
+        public static OperationPlanDTO ToDto(OperationPlan domain)
+        {
+            return new OperationPlanDTO
+            {
+                Id = domain.Id,
+                ScheduleDate = domain.ScheduleDate,
+                HeuristicUsed = domain.HeuristicUsed,
+                Status = domain.Status.ToString(),
+                TotalDelayMinutes = domain.TotalDelayMinutes,
+                Items = domain.Items.Select(i => new OperationPlanItemDTO
+                {
+                    VesselVisitId = i.VesselVisitId,
+                    VesselIMO = i.VesselIMO,
+                    ServiceStartTime = i.ServiceStartTime,
+                    ServiceEndTime = i.ServiceEndTime,
+                    UnloadingStartTime = i.UnloadingStartTime,
+                    UnloadingEndTime = i.UnloadingEndTime,
+                    LoadingStartTime = i.LoadingStartTime,
+                    LoadingEndTime = i.LoadingEndTime,
+                    NumberOfCranes = i.NumberOfCranes
+                }).ToList()
+            };
+        }
+
+        // 2. DTO -> Domain (Creating new Plan) - FIXED for new Constructor
+        public static OperationPlan ToDomain(
+            CreateOperationPlanDTO dto, 
+            Dictionary<Guid, VesselVisitNotificationDTO> visitInfoMap) 
+        {
+            // 1. Create the Parent Plan
+            var plan = new OperationPlan(
+                dto.ScheduleDate,
+                dto.HeuristicUsed,
+                dto.TotalDelayMinutes,
+                dto.RuntimeSeconds,
+                dto.Author
+            );
+
+            foreach (var entry in dto.Entries)
+            {
+                // Safety check: ensure we have info for this visit
+                if (!visitInfoMap.TryGetValue(entry.VesselVisitId, out var visitData))
+                {
+                    // If missing, you might skip or throw. Skipping is safer for now.
+                    continue; 
+                }
+
+                // --- STEP A: Calculate Time Windows FIRST ---
+                
+                DateTime serviceStart = entry.StartTime;
+                DateTime serviceEnd = entry.EndTime;
+
+                // Calculate Ratio: Actual Allocated Time / Theoretical Needed Time
+                // This scales the loading/unloading windows to fit the Prolog result perfectly.
+                double theoreticalMinutes = visitData.EstimatedUnloadingDurationMinutes + visitData.EstimatedLoadingDurationMinutes;
+                double allocatedMinutes = (serviceEnd - serviceStart).TotalMinutes;
+                
+                // Avoid divide by zero
+                double ratio = theoreticalMinutes > 0 ? allocatedMinutes / theoreticalMinutes : 1;
+
+                // Calculate Unloading Window
+                DateTime unloadStart = serviceStart;
+                DateTime unloadEnd = unloadStart.AddMinutes(visitData.EstimatedUnloadingDurationMinutes * ratio);
+
+                // Calculate Loading Window (Immediately follows Unloading)
+                DateTime loadStart = unloadEnd;
+                DateTime loadEnd = loadStart.AddMinutes(visitData.EstimatedLoadingDurationMinutes * ratio);
+                
+                // (Optional) Hard-clamp the final end time to match ServiceEnd exactly to avoid millisecond drift
+                // loadEnd = serviceEnd; 
+
+                // --- STEP B: Instantiate using the Constructor ---
+
+                var item = new OperationPlanItem(
+                    plan.Id,
+                    entry.VesselVisitId,
+                    entry.VesselIMO,
+                    serviceStart,
+                    serviceEnd,
+                    unloadStart,
+                    unloadEnd,
+                    loadStart,
+                    loadEnd,
+                    entry.NumberOfCranes
+                );
+
+                // --- STEP C: Add to Parent ---
+                plan.AddItem(item);
+            }
+
+            return plan;
+        }
+    }
+}

@@ -1,4 +1,4 @@
-namespace WebApp.Models.Application.DTOs
+namespace Oem.Models.Application.DTOs
 {
     public class VesselScheduleEntryDTO
     {

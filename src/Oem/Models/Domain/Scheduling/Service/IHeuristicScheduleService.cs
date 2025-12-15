@@ -1,6 +1,6 @@
-using WebApp.Models.Domain.Scheduling;
+using Oem.Models.Domain.Scheduling;
 
-namespace WebApp.Models.Domain.Scheduling.Services;
+namespace Oem.Models.Domain.Scheduling.Services;
 public interface IHeuristicScheduleService
 {
     Task<SchedulingResult> GenerateDailyScheduleAsync(
