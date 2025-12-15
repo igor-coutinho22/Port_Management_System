@@ -24,7 +24,6 @@ using WebApp.Models.Infrastructure.Repositories.Resources;
 using WebApp.Models.Infrastructure.Repositories.StaffRepository;
 using WebApp.Models.Infrastructure.Repositories.VesselRepository;
 using WebApp.Models.Infrastructure.Repositories.VesselTypeRepository;
-using WebApp.Models.Application.Services.Scheduling;
 using WebApp.Seeding;
 using WebApp.Models.Domain.Staff.Interfaces;
 using WebApp.Models.Domain.VesselVisits;
@@ -32,7 +31,6 @@ using WebApp.Models.Domain.VesselVisits.Services;
 using WebApp.Models.Security;
 using WebApp.Security;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Models.Domain.Scheduling.Services;
 using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -232,7 +230,6 @@ builder.Services.AddScoped<IVesselVisitNotificationRepository, VesselVisitNotifi
 builder.Services.AddScoped<IVesselVisitNotificationService, VesselVisitNotificationService>();
 builder.Services.AddScoped<IGraphUserService, GraphUserService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
-builder.Services.AddScoped<IHeuristicScheduleService, HeuristicScheduleService>();
 
 var backendClientId = ciam["BackendApp:ClientId"];
 var backendClientSecret = ciam["BackendApp:ClientSecret"];
