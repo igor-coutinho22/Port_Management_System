@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Oem.Models.Application.DTOs;
 
 namespace Oem.Integration
 {
@@ -44,6 +45,32 @@ namespace Oem.Integration
                 _logger.LogError(ex, "Error validating Dock ID {Id}", dockId);
                 return false;
             }
+        }
+
+        public async Task<List<VesselVisitNotificationDTO>> GetApprovedVisitsForDateAsync(DateOnly date)
+        {
+            // Convert DateOnly to full ISO string range for the API
+            var from = date.ToDateTime(TimeOnly.MinValue).ToString("O");
+            var to = date.ToDateTime(TimeOnly.MaxValue).ToString("O");
+            
+            var url = $"/api/vesselvisitnotification/search?status=Approved&fromDate={Uri.EscapeDataString(from)}&toDate={Uri.EscapeDataString(to)}";
+
+            var response = await _httpClient.GetAsync(url);
+            
+            if (!response.IsSuccessStatusCode) 
+            {
+                // Log error or return empty list depending on strictness
+                return new List<VesselVisitNotificationDTO>();
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true 
+            };
+
+            return JsonSerializer.Deserialize<List<VesselVisitNotificationDTO>>(content, options) 
+                   ?? new List<VesselVisitNotificationDTO>();
         }
     }
 }

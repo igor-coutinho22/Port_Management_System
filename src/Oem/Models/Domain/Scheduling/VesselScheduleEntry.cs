@@ -1,4 +1,4 @@
-namespace WebApp.Models.Domain.Scheduling
+namespace Oem.Models.Domain.Scheduling
 {
     public class VesselScheduleEntry
     {

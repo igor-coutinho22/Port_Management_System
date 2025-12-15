@@ -7,6 +7,12 @@ using Oem.Models.Context;
 using Microsoft.OpenApi.Models;
 using Oem.Security;
 using Oem.Integration;
+using Oem.Models.Domain.Scheduling.Services;
+using Oem.Models.Application.Services.Scheduling;
+using Azure.Identity;
+using Microsoft.Graph;
+using Microsoft.AspNetCore.Authentication;
+using Oem.Models.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +43,8 @@ builder.Services.AddCors(opt =>
 
 // ---------- 3. Authentication (COPIED: Same Azure Config) ----------
 var ciam = builder.Configuration.GetSection("AzureAdCiam");
+var issuerDomain = ciam["IssuerDomain"];
+
 var host = ciam["AuthorityHost"];
 var tenantId = ciam["TenantId"];
 var authority = $"{host!.TrimEnd('/')}/{tenantId}/v2.0";
@@ -57,7 +65,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             "6bff1175-b880-4a1d-b320-ff8fcbbd1b99" 
         },
         ValidateLifetime = true,
-        RoleClaimType = "roles",
+        // RoleClaimType = "roles",
         NameClaimType = "name"
     };
 });
@@ -84,14 +92,23 @@ builder.Services.AddAuthorization(options =>
     policy.RequireRole(Roles.All));
 });
 
-// HTTP client for prolog service
+// 1. Register the HTTP Client to talk to WebApp
 builder.Services.AddHttpClient("DomainBackend", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["DomainBackend:BaseUrl"]!);
+    // Read from appsettings.json instead of hardcoding
+    var baseUrl = builder.Configuration["DomainBackend:BaseUrl"]; 
+    client.BaseAddress = new Uri(baseUrl ?? "https://localhost:5001"); 
+    
     client.DefaultRequestHeaders.Accept.Add(
         new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+})
+// 2. APPLY THE SSL FIX HERE (Crucial for Dev environment)
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
 });
 
+// 3. Keep this (Required for getting the current User's token)
 builder.Services.AddHttpContextAccessor();
 
 // ---------- 5. JSON Options (COPIED: Formatting) ----------
@@ -141,6 +158,30 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register the Integration Service
 builder.Services.AddScoped<IWebAppService, WebAppService>();
+builder.Services.AddScoped<IHeuristicScheduleService, HeuristicScheduleService>();
+
+var backendClientId = ciam["BackendApp:ClientId"];
+var backendClientSecret = ciam["BackendApp:ClientSecret"];
+var extAppNoDashes = ciam["ExtensionsAppIdNoDashes"];
+
+builder.Services.AddSingleton(sp =>
+{
+    var credential = new ClientSecretCredential(
+        tenantId!, backendClientId!, backendClientSecret!,
+        new TokenCredentialOptions { AuthorityHost = new Uri(host!) });
+
+    return new GraphServiceClient(credential, new[] { "https://graph.microsoft.com/.default" });
+});
+
+// claims transform to read Role attribute from Graph and inject role claims
+builder.Services.AddSingleton<IClaimsTransformation>(sp =>
+    new GraphRoleClaimsTransformation(
+        sp.GetRequiredService<GraphServiceClient>(),
+        issuerDomain!,
+        extAppNoDashes!,
+        sp.GetRequiredService<ILogger<GraphRoleClaimsTransformation>>()
+    )
+);
 
 // DO NOT copy VesselRepository/StaffService here.
 // Register your NEW Sprint C services here later:
