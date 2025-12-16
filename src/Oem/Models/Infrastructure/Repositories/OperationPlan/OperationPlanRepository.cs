@@ -53,5 +53,25 @@ namespace Oem.Models.Infrastructure.Repositories
             _context.OperationPlans.Remove(plan);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<OperationPlan>> SearchAsync(DateOnly? date, string? vesselIMO)
+        {
+            var query = _context.OperationPlans
+                .Include(p => p.Items)
+                .AsQueryable();
+
+            if (date.HasValue)
+            {
+                query = query.Where(p => p.ScheduleDate == date.Value);
+            }
+
+            if (!string.IsNullOrEmpty(vesselIMO))
+            {
+                // Plans that have at least one item with this VesselIMO
+                query = query.Where(p => p.Items.Any(i => i.VesselIMO.Contains(vesselIMO)));
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

@@ -43,6 +43,12 @@ namespace Oem.Models.Infrastructure.Persistence.EntityConfigurations
                 .WithOne() // No navigation property back to Plan in Item class needed implies .WithOne()
                 .HasForeignKey(item => item.OperationPlanId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // 6. Audit Log (One-to-Many)
+            builder.HasMany(op => op.AuditLog)
+                .WithOne()
+                .HasForeignKey(audit => audit.OperationPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

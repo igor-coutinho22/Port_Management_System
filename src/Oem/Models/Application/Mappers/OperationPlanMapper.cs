@@ -102,5 +102,26 @@ namespace Oem.Models.Mappers
 
             return plan;
         }
+
+        // 3. Update DTO -> Domain
+        public static void ApplyUpdate(OperationPlan plan, UpdateOperationPlanDTO dto)
+        {
+            foreach (var itemDto in dto.Items)
+            {
+                // The domain method handles validation and audit logging
+                plan.UpdateItem(
+                    itemDto.ItemId,
+                    itemDto.ServiceStartTime,
+                    itemDto.ServiceEndTime,
+                    itemDto.UnloadingStartTime,
+                    itemDto.UnloadingEndTime,
+                    itemDto.LoadingStartTime,
+                    itemDto.LoadingEndTime,
+                    itemDto.NumberOfCranes,
+                    dto.Author,
+                    dto.Reason
+                );
+            }
+        }
     }
 }
