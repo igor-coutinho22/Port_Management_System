@@ -14,12 +14,13 @@ namespace Oem.Models.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<OperationPlan?> GetByDateAsync(DateOnly date)
+        public async Task<IEnumerable<OperationPlan?>> GetByDateAsync(DateOnly date)
         {
             // Load the Plan AND its Items
             return await _context.OperationPlans
                 .Include(p => p.Items)
-                .FirstOrDefaultAsync(p => p.ScheduleDate == date && p.Status != OperationPlanStatus.Rejected);
+                .Where(p => p.ScheduleDate == date && p.Status != OperationPlanStatus.Rejected)
+                .ToListAsync();
         }
 
         public async Task<OperationPlan?> GetByIdAsync(Guid id)

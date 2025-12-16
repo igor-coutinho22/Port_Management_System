@@ -13,7 +13,7 @@ namespace Oem.Models.Application.Services
             _repository = repository;
         }
 
-        public async Task<OperationPlan?> GetPlanByDateAsync(DateOnly date)
+        public async Task<IEnumerable<OperationPlan?>> GetPlanByDateAsync(DateOnly date)
         {
             return await _repository.GetByDateAsync(date);
         }

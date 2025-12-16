@@ -65,20 +65,22 @@ namespace Oem.Controllers
         }
 
         [HttpGet("{date}")]
-        public async Task<ActionResult> GetPlanByDate(string date)
+        public async Task<ActionResult> GetPlansByDate(string date)
         {
             if (!DateOnly.TryParse(date, out var parsedDate))
             {
                 return BadRequest("Invalid date format. Use YYYY-MM-DD.");
             }
 
-            var plan = await _service.GetPlanByDateAsync(parsedDate);
-            if (plan == null)
+            var plans = await _service.GetPlanByDateAsync(parsedDate);
+
+            if (plans == null || !plans.Any())
             {
-                return NotFound($"No operation plan found for {date}");
+                return NotFound($"No operation plans found for {date}");
             }
 
-            return Ok(OperationPlanMapper.ToDto(plan));
+            // Map the list of domains to a list of DTOs
+            return Ok(plans.Select(OperationPlanMapper.ToDto));
         }
 
         [HttpGet("GetById/{id}")]

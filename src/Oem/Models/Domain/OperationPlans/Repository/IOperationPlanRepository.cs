@@ -2,7 +2,7 @@ namespace Oem.Models.Domain.OperationPlans
 {
     public interface IOperationPlanRepository
     {
-        Task<OperationPlan?> GetByDateAsync(DateOnly date);
+        Task<IEnumerable<OperationPlan?>> GetByDateAsync(DateOnly date);
         Task<OperationPlan?> GetByIdAsync(Guid id);
         Task<IEnumerable<OperationPlan>> GetAllAsync();
         Task AddAsync(OperationPlan plan);
