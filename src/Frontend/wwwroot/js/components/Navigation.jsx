@@ -42,7 +42,8 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
         { id: 'scheduling', labelKey: 'nav.scheduling', icon: '📅' },
         { id: 'admin-users', labelKey: 'nav.admin_users', icon: '👤' },
         { id: '3d-view', labelKey: 'nav.3d_view', icon: '🏗️' },
-        { id: 'vvn-representatives', labelKey: 'nav.vvn_representatives', icon: '🔔' }
+        { id: 'vvn-representatives', labelKey: 'nav.vvn_representatives', icon: '🔔' },
+        { id: 'operation-plans', labelKey: 'nav.operation_plans', icon: '📋' }
     ];
 
     // Filter navigation items based on user permissions
