@@ -33,16 +33,16 @@ class ApiService {
 
     // ---- Core request method (fetch) ----
     async request(endpoint, options = {}) {
-        
+
         // --- ROUTING LOGIC: Choose the correct Backend ---
         let targetBaseUrl = this.baseUrl; // Default is WebApp (5001)
 
         // If asking for Sprint C features, switch to OEM (6001)
-        if (endpoint.includes('/scheduling') || 
-            endpoint.includes('/operationPlan') || 
+        if (endpoint.includes('/scheduling') ||
+            endpoint.includes('/operationPlan') ||
             endpoint.includes('/incidents') ||
             endpoint.includes('/vessel-visit-executions')) {
-            
+
             targetBaseUrl = OEM_API;
         }
 
@@ -83,7 +83,7 @@ class ApiService {
                     const txt = await response.text();
                     if (txt && txt.trim()) errorMessage = txt;
                 }
-            } catch (parseErr) {}
+            } catch (parseErr) { }
             console.error(`API Error for ${url}:`, errorMessage);
             throw new Error(errorMessage);
         }
@@ -263,8 +263,8 @@ class ApiService {
     }
     // Send { code: qualificationCode } as QualificationDTO (name is optional, backend only needs code)
     async addQualificationToStaff(mecNumber, qualificationData) {
-    // Accepts mecNumber and a full qualificationData object
-    return this.post(`/staff/${mecNumber}/qualifications`, qualificationData);
+        // Accepts mecNumber and a full qualificationData object
+        return this.post(`/staff/${mecNumber}/qualifications`, qualificationData);
     }
     async removeQualificationFromStaff(mecNumber, qualificationCode) {
         return this.delete(`/staff/${mecNumber}/qualifications/${encodeURIComponent(qualificationCode)}`);
@@ -385,7 +385,7 @@ class ApiService {
         // DEFAULT: Point to MasterData (Port 5000)
         // This fixes the "Unknown User" error because login/roles live here.
         this.baseUrl = WEB_APP_API;
-        
+
         this.defaultHeaders = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -471,7 +471,7 @@ class ApiService {
     async getCurrentUser() {
         return this.get('/me');
     }
-    
+
     // Scheduling
     async generateDailySchedule(targetDate, heuristic) {
         const body = { targetDate, heuristic };
@@ -503,6 +503,28 @@ class ApiService {
 
     async deleteOperationPlan(id) {
         return this.delete(`/operationPlan/${id}`);
+    }
+
+    async updateOperationPlan(id, updateDto) {
+        return this.put(`/operationPlan/${id}`, updateDto);
+    }
+
+    async searchOperationPlans(date, vesselIMO) {
+        const params = new URLSearchParams();
+        if (date) params.append('date', date);
+        if (vesselIMO) params.append('vesselIMO', vesselIMO);
+        return this.get(`/operationPlan/search?${params.toString()}`);
+    }
+
+    async getMissingOperationPlans(date) {
+        return this.get(`/operationPlan/missing-plans/${date}`);
+    }
+
+    async regenerateOperationPlan(date, heuristicName) {
+        const params = new URLSearchParams();
+        if (date) params.append('date', date);
+        if (heuristicName) params.append('heuristicName', heuristicName);
+        return this.post(`/operationPlan/regenerate?${params.toString()}`);
     }
 }
 

@@ -123,5 +123,62 @@ namespace Oem.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<OperationPlanDTO>>> SearchPlans([FromQuery] string? date, [FromQuery] string? vesselIMO)
+        {
+            DateOnly? parsedDate = null;
+            if (!string.IsNullOrEmpty(date))
+            {
+                if (DateOnly.TryParse(date, out var d)) parsedDate = d;
+                else return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+            }
+
+            var plans = await _service.SearchPlansAsync(parsedDate, vesselIMO);
+            return Ok(plans.Select(OperationPlanMapper.ToDto));
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdatePlan(Guid id, [FromBody] UpdateOperationPlanDTO dto)
+        {
+            try
+            {
+                // Set author from context if not provided
+                if (string.IsNullOrEmpty(dto.Author)) dto.Author = User?.Identity?.Name ?? "System";
+
+                await _service.UpdatePlanAsync(id, dto);
+                return NoContent();
+            }
+            catch (ArgumentException ex) { return NotFound(ex.Message); }
+            catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
+        [HttpGet("missing-plans/{date}")]
+        public async Task<ActionResult<IEnumerable<VesselVisitNotificationDTO>>> GetMissingPlans(string date)
+        {
+            if (!DateOnly.TryParse(date, out var parsedDate))
+                return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+
+            var missing = await _service.GetMissingPlanVVNsAsync(parsedDate);
+            return Ok(missing);
+        }
+
+        [HttpPost("regenerate")]
+        public async Task<ActionResult> RegeneratePlan([FromQuery] string date, [FromQuery] string heuristicName)
+        {
+            if (!DateOnly.TryParse(date, out var parsedDate))
+                return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+
+            try
+            {
+                var author = User?.Identity?.Name ?? "System"; // TODO: Get actual user
+                var newPlan = await _service.RegeneratePlanAsync(parsedDate, heuristicName, author);
+                return CreatedAtAction(nameof(GetPlanById), new { id = newPlan.Id }, OperationPlanMapper.ToDto(newPlan));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

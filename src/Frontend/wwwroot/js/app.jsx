@@ -105,7 +105,8 @@ const AppWithGlobalNav = () => {
         "vessel-visit-notifications": "vessel-visit-notifications",
         qualifications: "qualifications",
         scheduling: "scheduling",
-        "vvn-hub-for-representatives": "vvn-hub-for-representatives"
+        "vvn-hub-for-representatives": "vvn-hub-for-representatives",
+        "operation-plans": "operation-plans" // Add new page
     };
 
 
@@ -154,6 +155,8 @@ const AppWithGlobalNav = () => {
                 ) : (
                     <ManagementPage />
                 );
+            case "operation-plans":
+                return <OperationPlansPage />;
             case "resources":
                 return typeof ResourcesHubPage === "undefined" ? (
                     <div className="error">ResourcesHubPage component not loaded</div>
