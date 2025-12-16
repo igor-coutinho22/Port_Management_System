@@ -42,6 +42,10 @@ const SchedulingHubPage = () => {
 
     // NEW: Control the "Draft Plan" Modal
     const [showPlanModal, setShowPlanModal] = React.useState(false);
+    const [expandedSection, setExpandedSection] = React.useState(null);
+    const [showQuickView, setShowQuickView] = React.useState(false);
+    const [operationsPlansList, setOperationsPlansList] = React.useState([]);
+    const [isLoadingPlans, setIsLoadingPlans] = React.useState(false);
 
     // ----- Single-crane handler (existing behavior) -----
     const handleSubmit = async (e) => {
@@ -141,6 +145,54 @@ const SchedulingHubPage = () => {
         }
         return null;
     }, [result, compareResult, multiRes, singleRes]);
+
+    const toggleSection = (sectionId) => {
+        setExpandedSection(expandedSection === sectionId ? null : sectionId);
+    };
+
+    const loadPlans = async () => {
+        setIsLoadingPlans(true);
+        try {
+            const data = await apiService.getOperationPlans();
+            // Sort by Date Descending
+            const sorted = (data || []).sort((a, b) => new Date(b.scheduleDate) - new Date(a.scheduleDate));
+            setOperationsPlansList(sorted);
+        } catch (error) {
+            console.error("Error loading plans:", error);
+        } finally {
+            setIsLoadingPlans(false);
+        }
+    };
+
+    React.useEffect(() => {
+        if (showQuickView) {
+            loadPlans();
+        }
+    }, [showQuickView]);
+
+    const sections = [
+        { 
+            id: 'getById',
+            title: 'Get Operation Plan By Id',
+            description: 'Get details of an existing operation plan by its unique identifier.',
+            color: '#2980b9',
+            component: 'GetOperationPlanByIdForm'
+        },
+        { 
+            id: 'getByDate',
+            title: 'Get Operation Plan By Date',
+            description: 'Get details of an existing operation plan for a specific date.',
+            color: '#2980b9',
+            component: 'GetOperationPlanByDateForm'
+        },
+        { 
+            id: 'delete',
+            title: 'Delete Operation Plan',
+            description: 'Delete an existing operation plan by its unique identifier.',
+            color: '#c0392b',
+            component: 'DeleteOperationPlanForm'
+        }
+    ];
 
 
     return (
@@ -437,7 +489,79 @@ const SchedulingHubPage = () => {
                 </div>
             )}
 
-            {/* NEW: Render the Modal */}
+            {/* --- NEW: OPERATION PLANS MANAGEMENT HUB --- */}
+            
+            <div className="hub-divider" style={{ margin: '40px 0', borderBottom: '1px solid #334155' }}></div>
+
+            <div className="hub-header" style={{ marginBottom: '20px' }}>
+                <h3 className="page-title" style={{ fontSize: '1.5rem', color: '#38bdf8' }}>Operation Plans Management</h3>
+                <p>View history, search, or remove saved plans.</p>
+            </div>
+
+            {/* Quick Data View Button */}
+            <div className="quick-view-container">
+                <button 
+                    className={`quick-view-btn ${showQuickView ? 'active' : ''}`}
+                    onClick={() => setShowQuickView(!showQuickView)}
+                >
+                    <span className="quick-view-icon">📊</span>
+                    Quick Data View
+                    <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
+                        {showQuickView ? '▲' : '▼'}
+                    </span>
+                </button>
+
+                {showQuickView && (
+                    <div className="quick-view-panel">
+                        {isLoadingPlans ? (
+                            <div className="loading">Loading Plans...</div>
+                        ) : (
+                            <OperationPlansQuickTable plans={operationsPlansList} onRefresh={loadPlans} />
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* Swagger-style Expandable Sections */}
+            <div className="operations-container">
+                {sections.map((section) => (
+                    <div key={section.id} className="operation-section">
+                        <div 
+                            className={`operation-header ${expandedSection === section.id ? 'expanded' : ''}`}
+                            onClick={() => toggleSection(section.id)}
+                            style={{ borderLeftColor: section.color }}
+                        >
+                            <div className="operation-info">
+                                <h3 className="operation-title">{section.title}</h3>
+                                <p className="operation-description">{section.description}</p>
+                            </div>
+                            <div className="operation-controls">
+                                <span 
+                                    className="http-method" 
+                                    style={{ backgroundColor: section.color }}
+                                >
+                                    {section.id === 'delete' ? 'DELETE' : 'GET'}
+                                </span>
+                                <span className={`expand-arrow ${expandedSection === section.id ? 'up' : 'down'}`}>
+                                    {expandedSection === section.id ? '▲' : '▼'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {expandedSection === section.id && (
+                            <div className="operation-content">
+                                <div className="operation-body">
+                                    {section.component === 'GetOperationPlanByIdForm' && <GetOperationPlanByIdForm />}
+                                    {section.component === 'GetOperationPlanByDateForm' && <GetOperationPlanByDateForm />}
+                                    {section.component === 'DeleteOperationPlanForm' && <DeleteOperationPlanForm onSuccess={loadPlans} />}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Render the Modal */}
             {showPlanModal && (
                 <OperationPlanPreviewModal
                     isOpen={showPlanModal}
@@ -446,6 +570,64 @@ const SchedulingHubPage = () => {
                     date={targetDate}
                     heuristic={heuristic}
                 />
+            )}
+        </div>
+    );
+};
+
+// Operation Plans Quick Table Component
+const OperationPlansQuickTable = ({ plans, onRefresh }) => {
+    // Assuming simple translation or fallback
+    const t = (key) => key; 
+
+    return (
+        <div className="quick-table-container">
+            <div className="quick-table-header">
+                <h4>Operation Plans Overview ({plans.length} Total)</h4>
+                <button className="refresh-btn" onClick={onRefresh}>🔄 Refresh</button>
+            </div>
+            {plans.length === 0 ? (
+                <div className="no-data">
+                    <h3>No Operation Plans Found</h3>
+                    <p>There are currently no saved operation plans in the system.</p>
+                </div>
+            ) : (
+                <div className="table-container">
+                    <table className="data-table quick-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Heuristic</th>
+                                <th>Author</th>
+                                <th>Runtime (s)</th>
+                                <th>Delay (min)</th>
+                                <th>Vessels</th>
+                                <th>Plan ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {plans.map((plan) => (
+                                <tr key={plan.id}>
+                                    <td style={{ fontWeight: 'bold', color: '#3498db' }}>{plan.scheduleDate}</td>
+                                    <td>
+                                        <span className={`status-badge ${plan.status?.toLowerCase() || 'draft'}`}>
+                                            {plan.status || 'Draft'}
+                                        </span>
+                                    </td>
+                                    <td>{plan.heuristicUsed}</td>
+                                    <td>{plan.author || 'System'}</td>
+                                    <td>{plan.runtimeSeconds?.toFixed(3) || '0.000'}</td>
+                                    <td style={{ color: plan.totalDelayMinutes > 0 ? '#e74c3c' : '#2ecc71' }}>
+                                        {Math.round(plan.totalDelayMinutes)}
+                                    </td>
+                                    <td>{plan.items?.length || 0}</td>
+                                    <td className="id-cell" title={plan.id}>{plan.id}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );
