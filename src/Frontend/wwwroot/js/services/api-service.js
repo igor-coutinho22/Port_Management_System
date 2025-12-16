@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
-const WEB_APP_API = "https://localhost:5001/api";  // Port 5001 (Vessels, Users)
-const OEM_API = "https://localhost:6001/api";          // Port 6001 (Scheduling, Plans)
+const WEB_APP_API = "https://localhost:5001/api";  // Port 5001 (Vessels, Users, ...)
+const OEM_API = "https://localhost:6001/api";      // Port 6001 (Scheduling, Plans)
 
 class ApiService {
     async _getApiAccessToken() {
@@ -39,7 +39,7 @@ class ApiService {
 
         // If asking for Sprint C features, switch to OEM (6001)
         if (endpoint.includes('/scheduling') || 
-            endpoint.includes('/operation-plans') || 
+            endpoint.includes('/operationPlan') || 
             endpoint.includes('/incidents') ||
             endpoint.includes('/vessel-visit-executions')) {
             
@@ -483,7 +483,27 @@ class ApiService {
         return this.post('/scheduling/daily-with-multi-crane', body);
     }
 
+    // Operation Plans
 
+    async createOperationPlan(planData) {
+        return this.post('/operationPlan', planData);
+    }
+
+    async getOperationPlans() {
+        return this.get('/operationPlan/GetAll');
+    }
+
+    async getOperationPlanByDate(date) {
+        return this.get(`/operationPlan/${date}`);
+    }
+
+    async getOperationPlanById(id) {
+        return this.get(`/operationPlan/GetById/${id}`);
+    }
+
+    async deleteOperationPlan(id) {
+        return this.delete(`/operationPlan/${id}`);
+    }
 }
 
 const apiService = new ApiService();

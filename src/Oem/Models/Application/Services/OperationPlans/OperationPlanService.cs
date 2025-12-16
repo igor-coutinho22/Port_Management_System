@@ -39,6 +39,11 @@ namespace Oem.Models.Application.Services
             await _repository.AddAsync(plan);
         }
 
+        public async Task<IEnumerable<OperationPlan>> GetAllPlansAsync()
+        {
+            return await _repository.GetAllAsync();
+        }
+
         public async Task DeletePlanAsync(Guid Id)
         {
             var plan = await _repository.GetByIdAsync(Id);

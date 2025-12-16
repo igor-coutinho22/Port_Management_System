@@ -1,5 +1,9 @@
 /* global React, apiService */
 
+// We assume the Modal will be loaded globally. 
+// If it's not loaded yet, we default to a null component to prevent crashes during dev.
+const OperationPlanPreviewModal = window.OperationPlanPreviewModal || (() => null);
+
 const HEURISTICS = [
     { value: "minimum_slack_time", label: "Minimum Slack Time" },
     { value: "early_departure_time", label: "Earliest Departure First" },
@@ -36,18 +40,19 @@ const SchedulingHubPage = () => {
     // NEW: result of /scheduling/daily-with-multi-crane
     const [compareResult, setCompareResult] = React.useState(null);
 
+    // NEW: Control the "Draft Plan" Modal
+    const [showPlanModal, setShowPlanModal] = React.useState(false);
+
     // ----- Single-crane handler (existing behavior) -----
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setResult(null);
-        setCompareResult(null); // clear comparison when running single
+        setCompareResult(null); 
         setLoading(true);
 
         try {
-            console.log("Calling scheduling API with:", { targetDate, heuristic });
             const data = await apiService.generateDailySchedule(targetDate, heuristic);
-            console.log("Scheduling result:", data);
             setResult(data);
         } catch (err) {
             console.error("Scheduling error:", err);
@@ -57,17 +62,15 @@ const SchedulingHubPage = () => {
         }
     };
 
-    // ----- NEW: Compare 1 vs 2 cranes -----
+    // ----- Compare 1 vs 2 cranes -----
     const handleCompare = async () => {
         setError(null);
-        setResult(null);       // clear plain result, we’ll show comparison instead
+        setResult(null);      
         setCompareResult(null);
         setLoading(true);
 
         try {
-            console.log("Calling multi-crane comparison API with:", { targetDate, heuristic });
             const data = await apiService.generateDailyScheduleWithMultiCrane(targetDate, heuristic);
-            console.log("Multi-crane comparison result:", data);
             setCompareResult(data);
         } catch (err) {
             console.error("Multi-crane scheduling error:", err);
@@ -77,7 +80,7 @@ const SchedulingHubPage = () => {
         }
     };
 
-    // ===== Helpers for SINGLE result (existing section) =====
+    // ===== Helpers for SINGLE result =====
     const resolvedEntries = React.useMemo(() => {
         if (!result) return [];
         return result.entries || result.Entries || [];
@@ -119,31 +122,26 @@ const SchedulingHubPage = () => {
         return multiRes.entries || multiRes.Entries || [];
     }, [multiRes]);
 
-    const craneHoursSingle =
-        (compareResult &&
-            (compareResult.craneHoursSingle ??
-                compareResult.CraneHoursSingle)) || null;
+    const craneHoursSingle = (compareResult && (compareResult.craneHoursSingle ?? compareResult.CraneHoursSingle)) || null;
+    const craneHoursMulti = (compareResult && (compareResult.craneHoursMulti ?? compareResult.CraneHoursMulti)) || null;
+    const delayImprovement = compareResult && (compareResult.delayImprovementMinutes ?? compareResult.DelayImprovementMinutes ?? null);
+    const multiUsed = !!(compareResult && (compareResult.multiCraneUsed ?? compareResult.MultiCraneUsed));
+    const compareHeuristicName = (singleRes && (singleRes.heuristicName ?? singleRes.HeuristicName)) || heuristic;
+    const compareDisplayedDate = (singleRes && (singleRes.targetDate ?? singleRes.TargetDate)) || targetDate;
 
-    const craneHoursMulti =
-        (compareResult &&
-            (compareResult.craneHoursMulti ??
-                compareResult.CraneHoursMulti)) || null;
+    // ===== NEW: Determine which data to send to the Draft Modal =====
+    const activeScheduleForDraft = React.useMemo(() => {
+        // If we have a direct single result, use it
+        if (result) return result;
+        
+        // If we have a comparison, we prefer the Multi-Crane result (since that's the "upgrade"),
+        // unless it's null/empty, then fall back to single.
+        if (compareResult) {
+            return multiRes || singleRes;
+        }
+        return null;
+    }, [result, compareResult, multiRes, singleRes]);
 
-    const delayImprovement =
-        compareResult &&
-        (compareResult.delayImprovementMinutes ??
-            compareResult.DelayImprovementMinutes ??
-            null);
-
-    const multiUsed =
-        !!(compareResult &&
-            (compareResult.multiCraneUsed ?? compareResult.MultiCraneUsed));
-
-    const compareHeuristicName =
-        (singleRes && (singleRes.heuristicName ?? singleRes.HeuristicName)) || heuristic;
-
-    const compareDisplayedDate =
-        (singleRes && (singleRes.targetDate ?? singleRes.TargetDate)) || targetDate;
 
     return (
         <div className="page-section">
@@ -158,22 +156,15 @@ const SchedulingHubPage = () => {
             {/* Form card */}
             <div className="operations-container">
                 <div className="operation-section">
-                    <div
-                        className="operation-header expanded"
-                        style={{ borderLeftColor: "#3498db" }}
-                    >
+                    <div className="operation-header expanded" style={{ borderLeftColor: "#3498db" }}>
                         <div className="operation-info">
                             <h3 className="operation-title">Run Scheduling Heuristic</h3>
                             <p className="operation-description">
-                                Select a day and heuristic, then compute the best sequence of
-                                vessels for the single dock. You can also compare single-crane
-                                and multi-crane strategies.
+                                Select a day and heuristic to compute the best sequence.
                             </p>
                         </div>
                         <div className="operation-controls">
-                            <span className="http-method" style={{ backgroundColor: "#3498db" }}>
-                                POST
-                            </span>
+                            <span className="http-method" style={{ backgroundColor: "#3498db" }}>POST</span>
                         </div>
                     </div>
 
@@ -182,9 +173,7 @@ const SchedulingHubPage = () => {
                             <form onSubmit={handleSubmit} className="form-container">
                                 <div className="form-grid" style={{ gap: 24 }}>
                                     <div className="form-group">
-                                        <label>
-                                            Target date <span className="required">*</span>
-                                        </label>
+                                        <label>Target date <span className="required">*</span></label>
                                         <input
                                             type="date"
                                             className="form-input"
@@ -195,52 +184,32 @@ const SchedulingHubPage = () => {
                                     </div>
 
                                     <div className="form-group">
-                                        <label>
-                                            Heuristic <span className="required">*</span>
-                                        </label>
+                                        <label>Heuristic <span className="required">*</span></label>
                                         <select
                                             className="form-input"
                                             value={heuristic}
                                             onChange={(e) => setHeuristic(e.target.value)}
                                         >
                                             {HEURISTICS.map((h) => (
-                                                <option key={h.value} value={h.value}>
-                                                    {h.label}
-                                                </option>
+                                                <option key={h.value} value={h.value}>{h.label}</option>
                                             ))}
                                         </select>
                                     </div>
                                 </div>
 
-                                <div
-                                    className="form-actions"
-                                    style={{ marginTop: 24, display: "flex", gap: 12, flexWrap: "wrap" }}
-                                >
-                                    <button
-                                        type="submit"
-                                        className="submit-btn"
-                                        disabled={loading}
-                                    >
+                                <div className="form-actions" style={{ marginTop: 24, display: "flex", gap: 12, flexWrap: "wrap" }}>
+                                    <button type="submit" className="submit-btn" disabled={loading}>
                                         {loading ? "Computing…" : "Generate single-crane schedule"}
                                     </button>
 
-                                    {/* NEW: Compare 1 vs 2 cranes */}
-                                    <button
-                                        type="button"
-                                        className="submit-btn secondary"
-                                        disabled={loading}
-                                        onClick={handleCompare}
-                                    >
+                                    <button type="button" className="submit-btn secondary" disabled={loading} onClick={handleCompare}>
                                         {loading ? "Computing…" : "Compare 1 vs 2 cranes"}
                                     </button>
                                 </div>
                             </form>
 
                             {error && (
-                                <div
-                                    className="error"
-                                    style={{ marginTop: 16, color: "crimson" }}
-                                >
+                                <div className="error" style={{ marginTop: 16, color: "crimson" }}>
                                     {error}
                                 </div>
                             )}
@@ -249,48 +218,29 @@ const SchedulingHubPage = () => {
                 </div>
             </div>
 
-            {/* Single-crane results section (existing) */}
+            {/* Single-crane results section */}
             {result && !loading && (
                 <div className="operations-container" style={{ marginTop: 24 }}>
                     <div className="operation-section">
-                        <div
-                            className="operation-header expanded"
-                            style={{ borderLeftColor: "#2ecc71" }}
-                        >
+                        <div className="operation-header expanded" style={{ borderLeftColor: "#2ecc71" }}>
                             <div className="operation-info">
                                 <h3 className="operation-title">Schedule Result (Single Crane)</h3>
                                 <p className="operation-description">
-                                    Day: <strong>{displayedDate}</strong> | Heuristic:{" "}
-                                    <strong>{heuristicName}</strong>
+                                    Day: <strong>{displayedDate}</strong> | Heuristic: <strong>{heuristicName}</strong>
                                 </p>
                             </div>
                         </div>
 
                         <div className="operation-content">
                             <div className="operation-body">
-                                <div
-                                    className="summary-cards"
-                                    style={{
-                                        display: "flex",
-                                        flexWrap: "wrap",
-                                        gap: 16,
-                                        marginBottom: 16,
-                                    }}
-                                >
+                                <div className="summary-cards" style={{ display: "flex", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
                                     <div className="summary-card">
                                         <div className="summary-label">Total delay</div>
-                                        <div className="summary-value">
-                                            {Math.round(totalDelay)} min
-                                        </div>
+                                        <div className="summary-value">{Math.round(totalDelay)} min</div>
                                     </div>
                                     <div className="summary-card">
                                         <div className="summary-label">Runtime</div>
-                                        <div className="summary-value">
-                                            {runtimeSeconds.toFixed
-                                                ? runtimeSeconds.toFixed(3)
-                                                : runtimeSeconds}{" "}
-                                            s
-                                        </div>
+                                        <div className="summary-value">{runtimeSeconds.toFixed ? runtimeSeconds.toFixed(3) : runtimeSeconds} s</div>
                                     </div>
                                     <div className="summary-card">
                                         <div className="summary-label">Scheduled vessels</div>
@@ -299,22 +249,10 @@ const SchedulingHubPage = () => {
                                 </div>
 
                                 {warnings.length > 0 && (
-                                    <div
-                                        className="warning-box"
-                                        style={{
-                                            marginBottom: 16,
-                                            padding: 12,
-                                            borderRadius: 4,
-                                            backgroundColor: "#fff8e1",
-                                            border: "1px solid #f1c40f",
-                                            color: "#8a6d1d",
-                                        }}
-                                    >
+                                    <div className="warning-box" style={{ marginBottom: 16, padding: 12, borderRadius: 4, backgroundColor: "#fff8e1", border: "1px solid #f1c40f", color: "#8a6d1d" }}>
                                         <strong>Warnings:</strong>
                                         <ul style={{ marginTop: 4 }}>
-                                            {warnings.map((w, idx) => (
-                                                <li key={idx}>{w}</li>
-                                            ))}
+                                            {warnings.map((w, idx) => <li key={idx}>{w}</li>)}
                                         </ul>
                                     </div>
                                 )}
@@ -342,15 +280,24 @@ const SchedulingHubPage = () => {
                                                         <td>{e.vesselVisitId || e.VesselVisitId}</td>
                                                         <td>{formatDateTime(e.startTime || e.StartTime)}</td>
                                                         <td>{formatDateTime(e.endTime || e.EndTime)}</td>
-                                                        <td>
-                                                            {e.delayMinutes ??
-                                                                e.DelayMinutes ??
-                                                                0}
-                                                        </td>
+                                                        <td>{e.delayMinutes ?? e.DelayMinutes ?? 0}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
+                                    </div>
+                                )}
+
+                                {/* NEW: Draft Button for Single Result */}
+                                {resolvedEntries.length > 0 && (
+                                    <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+                                        <button 
+                                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg flex items-center gap-2"
+                                            onClick={() => setShowPlanModal(true)}
+                                            style={{ backgroundColor: "#27ae60", color: "white", padding: "10px 20px", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}
+                                        >
+                                            <span>📝</span> Draft Operation Plan
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -359,20 +306,15 @@ const SchedulingHubPage = () => {
                 </div>
             )}
 
-            {/* NEW: Comparison section (single vs multi-crane) */}
-            {/* NEW: Comparison section (single vs multi-crane) */}
+            {/* Comparison section */}
             {compareResult && !loading && (
                 <div className="operations-container" style={{ marginTop: 24 }}>
                     <div className="operation-section">
-                        <div
-                            className="operation-header expanded"
-                            style={{ borderLeftColor: "#9b59b6" }}
-                        >
+                        <div className="operation-header expanded" style={{ borderLeftColor: "#9b59b6" }}>
                             <div className="operation-info">
                                 <h3 className="operation-title">Single vs Multi-Crane Comparison</h3>
                                 <p className="operation-description">
-                                    Day: <strong>{compareDisplayedDate}</strong> | Heuristic:{" "}
-                                    <strong>{compareHeuristicName}</strong>
+                                    Day: <strong>{compareDisplayedDate}</strong> | Heuristic: <strong>{compareHeuristicName}</strong>
                                 </p>
                             </div>
                         </div>
@@ -380,85 +322,36 @@ const SchedulingHubPage = () => {
                         <div className="operation-content">
                             <div className="operation-body">
                                 {/* Summary metrics */}
-                                <div
-                                    className="summary-cards"
-                                    style={{
-                                        display: "flex",
-                                        flexWrap: "wrap",
-                                        gap: 16,
-                                        marginBottom: 16,
-                                    }}
-                                >
+                                <div className="summary-cards" style={{ display: "flex", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
+                                    {/* ... (Existing Comparison Metrics) ... */}
                                     <div className="summary-card">
                                         <div className="summary-label">Single-crane delay</div>
                                         <div className="summary-value">
-                                            {singleRes
-                                                ? Math.round(
-                                                    singleRes.totalDelayMinutes ??
-                                                    singleRes.TotalDelayMinutes ??
-                                                    0
-                                                )
-                                                : "-"}{" "}
-                                            min
+                                            {singleRes ? Math.round(singleRes.totalDelayMinutes ?? singleRes.TotalDelayMinutes ?? 0) : "-"} min
                                         </div>
                                     </div>
-
                                     <div className="summary-card">
                                         <div className="summary-label">Multi-crane delay</div>
                                         <div className="summary-value">
-                                            {multiRes
-                                                ? Math.round(
-                                                    multiRes.totalDelayMinutes ??
-                                                    multiRes.TotalDelayMinutes ??
-                                                    0
-                                                )
-                                                : "n/a"}{" "}
-                                            min
+                                            {multiRes ? Math.round(multiRes.totalDelayMinutes ?? multiRes.TotalDelayMinutes ?? 0) : "n/a"} min
                                         </div>
                                     </div>
-
                                     <div className="summary-card">
-                                        <div className="summary-label">Crane-hours (single)</div>
+                                        <div className="summary-label">Delay improvement</div>
                                         <div className="summary-value">
-                                            {craneHoursSingle != null
-                                                ? craneHoursSingle.toFixed(2)
-                                                : "-"}{" "}
-                                            h
+                                            {delayImprovement != null ? delayImprovement.toFixed(1) : "-"} min
                                         </div>
                                     </div>
-
-                                    <div className="summary-card">
-                                        <div className="summary-label">Crane-hours (multi)</div>
-                                        <div className="summary-value">
-                                            {craneHoursMulti != null
-                                                ? craneHoursMulti.toFixed(2)
-                                                : "n/a"}{" "}
-                                            h
-                                        </div>
-                                    </div>
-
-                                    {delayImprovement != null && (
-                                        <div className="summary-card">
-                                            <div className="summary-label">Delay improvement</div>
-                                            <div className="summary-value">
-                                                {delayImprovement.toFixed(1)} min{" "}
-                                                {delayImprovement > 0 ? "↓" : ""}
-                                            </div>
-                                        </div>
-                                    )}
-
                                     <div className="summary-card">
                                         <div className="summary-label">Multi-crane used?</div>
-                                        <div className="summary-value">
-                                            {multiUsed ? "Yes" : "No"}
-                                        </div>
+                                        <div className="summary-value">{multiUsed ? "Yes" : "No"}</div>
                                     </div>
                                 </div>
 
-                                {/* SINGLE-CRANE TABLE (full width) */}
+                                {/* SINGLE-CRANE TABLE */}
                                 <h4 style={{ marginBottom: 8 }}>Single-crane schedule</h4>
                                 {singleEntries.length === 0 ? (
-                                    <div>No vessels found for this day.</div>
+                                    <div>No vessels found.</div>
                                 ) : (
                                     <div className="table-wrapper">
                                         <table className="data-table">
@@ -466,25 +359,19 @@ const SchedulingHubPage = () => {
                                                 <tr>
                                                     <th>#</th>
                                                     <th>Vessel IMO</th>
-                                                    <th>Visit ID</th>
                                                     <th>Start</th>
                                                     <th>End</th>
-                                                    <th>Delay (min)</th>
+                                                    <th>Delay</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {singleEntries.map((e, idx) => (
-                                                    <tr key={e.vesselVisitId || e.VesselVisitId || idx}>
+                                                    <tr key={idx}>
                                                         <td>{idx + 1}</td>
                                                         <td>{e.vesselIMO || e.VesselIMO}</td>
-                                                        <td>{e.vesselVisitId || e.VesselVisitId}</td>
                                                         <td>{formatDateTime(e.startTime || e.StartTime)}</td>
                                                         <td>{formatDateTime(e.endTime || e.EndTime)}</td>
-                                                        <td>
-                                                            {e.delayMinutes ??
-                                                                e.DelayMinutes ??
-                                                                0}
-                                                        </td>
+                                                        <td>{e.delayMinutes ?? e.DelayMinutes ?? 0}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -492,13 +379,10 @@ const SchedulingHubPage = () => {
                                     </div>
                                 )}
 
-                                {/* MULTI-CRANE TABLE (stacked below) */}
+                                {/* MULTI-CRANE TABLE */}
                                 <h4 style={{ marginTop: 24, marginBottom: 8 }}>Multi-crane schedule</h4>
                                 {multiEntries.length === 0 ? (
-                                    <div>
-                                        No multi-crane schedule (single-crane may already be optimal
-                                        for this day).
-                                    </div>
+                                    <div>No multi-crane schedule.</div>
                                 ) : (
                                     <div className="table-wrapper">
                                         <table className="data-table">
@@ -506,72 +390,62 @@ const SchedulingHubPage = () => {
                                                 <tr>
                                                     <th>#</th>
                                                     <th>Vessel IMO</th>
-                                                    <th>Visit ID</th>
                                                     <th>Start</th>
                                                     <th>End</th>
                                                     <th>Cranes</th>
-                                                    <th>Delay (min)</th>
+                                                    <th>Delay</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {multiEntries.map((e, idx) => {
-                                                    const cranes =
-                                                        e.numberOfCranes ??
-                                                        e.NumberOfCranes ??
-                                                        1;
-                                                    const delay =
-                                                        e.delayMinutes ??
-                                                        e.DelayMinutes ??
-                                                        0;
-                                                    return (
-                                                        <tr key={e.vesselVisitId || e.VesselVisitId || idx}>
-                                                            <td>{idx + 1}</td>
-                                                            <td>{e.vesselIMO || e.VesselIMO}</td>
-                                                            <td>{e.vesselVisitId || e.VesselVisitId}</td>
-                                                            <td>{formatDateTime(e.startTime || e.StartTime)}</td>
-                                                            <td>{formatDateTime(e.endTime || e.EndTime)}</td>
-                                                            <td
-                                                                style={
-                                                                    cranes > 1
-                                                                        ? {
-                                                                            fontWeight: "bold",
-                                                                            color: "#c0392b",
-                                                                        }
-                                                                        : {}
-                                                                }
-                                                            >
-                                                                {cranes}
-                                                            </td>
-                                                            <td>{delay}</td>
-                                                        </tr>
-                                                    );
-                                                })}
+                                                {multiEntries.map((e, idx) => (
+                                                    <tr key={idx}>
+                                                        <td>{idx + 1}</td>
+                                                        <td>{e.vesselIMO || e.VesselIMO}</td>
+                                                        <td>{formatDateTime(e.startTime || e.StartTime)}</td>
+                                                        <td>{formatDateTime(e.endTime || e.EndTime)}</td>
+                                                        <td style={ (e.numberOfCranes || e.NumberOfCranes) > 1 ? { fontWeight: "bold", color: "#c0392b" } : {} }>
+                                                            {e.numberOfCranes || e.NumberOfCranes || 1}
+                                                        </td>
+                                                        <td>{e.delayMinutes ?? e.DelayMinutes ?? 0}</td>
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     </div>
                                 )}
 
-                                <p
-                                    style={{
-                                        marginTop: 12,
-                                        fontSize: "0.9rem",
-                                        color: "#555",
-                                    }}
-                                >
-                                    Rows where <strong>Cranes &gt; 1</strong> show the time windows where
-                                    additional cranes were allocated to reduce total delay.
-                                </p>
+                                {/* NEW: Draft Button for Comparison Result */}
+                                {multiEntries.length > 0 && (
+                                    <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+                                        <button 
+                                            onClick={() => setShowPlanModal(true)}
+                                            style={{ backgroundColor: "#8e44ad", color: "white", padding: "10px 20px", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}
+                                        >
+                                            <span>📝</span> Draft Multi-Crane Plan
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-
             {loading && (
                 <div style={{ marginTop: 16 }} className="loading-indicator">
-                    Running Prolog heuristic…
+                    Running Prolog heuristic...
                 </div>
+            )}
+
+            {/* NEW: Render the Modal */}
+            {showPlanModal && (
+                <OperationPlanPreviewModal
+                    isOpen={showPlanModal}
+                    onClose={() => setShowPlanModal(false)}
+                    scheduleResult={activeScheduleForDraft}
+                    date={targetDate}
+                    heuristic={heuristic}
+                />
             )}
         </div>
     );

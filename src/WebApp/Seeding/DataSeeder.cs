@@ -308,7 +308,7 @@ namespace WebApp.Seeding
                     var unloadingDuration1 = 45;
                     var unloadingDuration2 = 30;
                     var unloadingDuration3 = 120;
-                    var unloadingDuration4 = 0;
+                    var unloadingDuration4 = 10;
 
 
                     // ===== Visit 1: Commercial, loading + unloading, early slot =====
@@ -353,7 +353,7 @@ namespace WebApp.Seeding
                     );
                     visit2.UpdateEstimatedDurations(
                         loadingMinutes: 90,
-                        unloadingMinutes: 0
+                        unloadingMinutes: 5
                     );
                     visit2.MarkAsSubmitted();
                     _ = visit2.Approve();
@@ -373,7 +373,7 @@ namespace WebApp.Seeding
                         desiredDepartureTime: targetDay.AddHours(18)  // 18:00
                     );
                     visit3.UpdateEstimatedDurations(
-                        loadingMinutes: 0,
+                        loadingMinutes: 5,
                         unloadingMinutes: 120
                     );
                     visit3.MarkAsSubmitted();

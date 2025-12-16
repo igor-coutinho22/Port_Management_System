@@ -16,8 +16,11 @@ namespace Oem.Models.Mappers
                 HeuristicUsed = domain.HeuristicUsed,
                 Status = domain.Status.ToString(),
                 TotalDelayMinutes = domain.TotalDelayMinutes,
+                RuntimeSeconds = domain.AlgorithmRuntimeSeconds,
+                Author = domain.Author,
                 Items = domain.Items.Select(i => new OperationPlanItemDTO
                 {
+                    Id = i.Id,
                     VesselVisitId = i.VesselVisitId,
                     VesselIMO = i.VesselIMO,
                     ServiceStartTime = i.ServiceStartTime,

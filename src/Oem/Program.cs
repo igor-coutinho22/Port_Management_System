@@ -13,6 +13,10 @@ using Azure.Identity;
 using Microsoft.Graph;
 using Microsoft.AspNetCore.Authentication;
 using Oem.Models.Security;
+using Oem.Models.Domain.OperationPlans.Service;
+using Oem.Models.Application.Services;
+using Oem.Models.Domain.OperationPlans;
+using Oem.Models.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -159,6 +163,8 @@ builder.Services.AddSwaggerGen(c =>
 // Register the Integration Service
 builder.Services.AddScoped<IWebAppService, WebAppService>();
 builder.Services.AddScoped<IHeuristicScheduleService, HeuristicScheduleService>();
+builder.Services.AddScoped<IOperationPlanService, OperationPlanService>();
+builder.Services.AddScoped<IOperationPlanRepository, OperationPlanRepository>();
 
 var backendClientId = ciam["BackendApp:ClientId"];
 var backendClientSecret = ciam["BackendApp:ClientSecret"];
@@ -183,11 +189,6 @@ builder.Services.AddSingleton<IClaimsTransformation>(sp =>
     )
 );
 
-// DO NOT copy VesselRepository/StaffService here.
-// Register your NEW Sprint C services here later:
-// builder.Services.AddScoped<IOperationPlanRepository, OperationPlanRepository>();
-// builder.Services.AddScoped<IIncidentService, IncidentService>();
-
 var app = builder.Build();
 
 // ---------- 8. Pipeline (COPIED) ----------
@@ -209,5 +210,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<OemContext>();
+    var conn = db.Database.GetDbConnection();
+    Console.WriteLine($"--> [STARTUP] Connected to Database: {conn.Database}");
+    Console.WriteLine($"--> [STARTUP] Connection String Host: {conn.DataSource}");
+}
 
 app.Run();

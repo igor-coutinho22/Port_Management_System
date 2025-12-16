@@ -9,6 +9,8 @@ namespace Oem.Models.DTOs.OperationPlans
         public string HeuristicUsed { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public double TotalDelayMinutes { get; set; }
+        public double RuntimeSeconds { get; set; }
+        public string Author { get; set; } = string.Empty;
         public List<OperationPlanItemDTO> Items { get; set; } = new();
     }
 

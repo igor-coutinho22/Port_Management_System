@@ -29,6 +29,13 @@ namespace Oem.Models.Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        public async Task<IEnumerable<OperationPlan>> GetAllAsync()
+        {
+            return await _context.OperationPlans
+                .Include(p => p.Items)
+                .ToListAsync();
+        }
+
         public async Task AddAsync(OperationPlan plan)
         {
             await _context.OperationPlans.AddAsync(plan);

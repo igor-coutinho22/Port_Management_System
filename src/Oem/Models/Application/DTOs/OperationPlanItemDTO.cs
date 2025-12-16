@@ -2,6 +2,7 @@ namespace Oem.Models.DTOs.OperationPlans
 {
     public class OperationPlanItemDTO
     {
+        public Guid Id { get; set; }
         public Guid VesselVisitId { get; set; }
         public string VesselIMO { get; set; } = string.Empty;
         

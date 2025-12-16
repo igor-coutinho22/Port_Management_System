@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Oem.Models.Application.DTOs;
 using Oem.Models.Application.Services;
 using Oem.Models.Domain.OperationPlans.Service;
 using Oem.Models.DTOs.OperationPlans;
@@ -22,20 +23,44 @@ namespace Oem.Controllers
         [HttpPost]
         public async Task<ActionResult> SavePlan([FromBody] CreateOperationPlanDTO request)
         {
+            // Use Console.WriteLine to guarantee visibility
+            Console.WriteLine($"--> [CONTROLLER] 1. Request Received for {request.ScheduleDate}");
+
             try
             {
+                // 1. Fetch Visits
                 var visits = await _webAppService.GetApprovedVisitsForDateAsync(request.ScheduleDate);
-                var visitMap = visits.ToDictionary(v => v.Id);
 
-                var plan = OperationPlanMapper.ToDomain(request, visitMap);
-                await _service.SavePlanAsync(plan);
+                // SAFETY CHECK: Ensure visits is not null
+                if (visits == null)
+                {
+                    visits = new List<VesselVisitNotificationDTO>();
+                }
 
-                var created = await _service.GetPlanByIdAsync(request.Id);
-                return CreatedAtRoute(nameof(GetPlanById), new { id = created!.Id }, OperationPlanMapper.ToDto(created));
+                // 2. Map Visits (Safe Dictionary)
+                var visitMap = visits
+                    .Where(v => v != null)
+                    .DistinctBy(v => v.Id)
+                    .ToDictionary(v => v.Id);
+
+                // 3. Map to Domain
+                request.Author = User?.Identity?.Name ?? "System";
+                var domainPlan = OperationPlanMapper.ToDomain(request, visitMap);
+
+                // 4. Save
+                await _service.SavePlanAsync(domainPlan);
+
+                var createdDto = OperationPlanMapper.ToDto(domainPlan);
+                return CreatedAtAction(nameof(GetPlanById), new { id = domainPlan.Id }, createdDto);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                // Use Error Log so it shows as Red/Critical
+                Console.WriteLine($"--> [CONTROLLER ERROR] {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+
+                // Return 500 so the frontend knows it failed
+                return StatusCode(500, new { message = "Backend Error: " + ex.Message });
             }
         }
 
@@ -68,17 +93,32 @@ namespace Oem.Controllers
             return Ok(OperationPlanMapper.ToDto(plan));
         }
 
-        [HttpDelete("{id:guid}")]
-        public async Task<ActionResult> DeletePlan(Guid Id)
+        [HttpGet("GetAll")]
+        public async Task<ActionResult> GetAllPlans()
+        {
+            var plans = await _service.GetAllPlansAsync();
+            return Ok(plans.Select(OperationPlanMapper.ToDto));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeletePlan([FromRoute] Guid id)
         {
             try
             {
-                await _service.DeletePlanAsync(Id);
-                return NoContent();
+                await _service.DeletePlanAsync(id);
+
+                return NoContent(); // 204 Success
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(ex.Message);
+                // This handles "ID not found" logic from the Service
+                Console.WriteLine($"--> [CONTROLLER ERROR] {ex.Message}");
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"--> [CONTROLLER CRASH] {ex.Message}");
+                return StatusCode(500, new { message = ex.Message });
             }
         }
     }
