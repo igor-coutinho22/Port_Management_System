@@ -7,11 +7,11 @@ namespace Oem.Models.Mappers
     public static class OperationPlanMapper
     {
         // 1. Domain -> DTO (Reading from DB) - No changes needed here
-        public static OperationPlanDTO ToDto(OperationPlan domain)
+        public static OperationPlanDTO ToDto(OperationPlan? domain)
         {
             return new OperationPlanDTO
             {
-                Id = domain.Id,
+                Id = domain!.Id,
                 ScheduleDate = domain.ScheduleDate,
                 HeuristicUsed = domain.HeuristicUsed,
                 Status = domain.Status.ToString(),

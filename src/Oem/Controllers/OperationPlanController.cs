@@ -64,22 +64,40 @@ namespace Oem.Controllers
             }
         }
 
-        [HttpGet("{date}")]
-        public async Task<ActionResult> GetPlansByDate(string date)
+        [HttpGet("Search")]
+        public async Task<ActionResult> SearchPlans([FromQuery] string? date, [FromQuery] string? vesselIMO)
         {
-            if (!DateOnly.TryParse(date, out var parsedDate))
+            if (string.IsNullOrEmpty(date) && string.IsNullOrEmpty(vesselIMO))
             {
-                return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+                return BadRequest("At least one search parameter (date or vesselIMO) must be provided.");
             }
 
-            var plans = await _service.GetPlanByDateAsync(parsedDate);
+            DateOnly? parsedDate = null;
+            if (!string.IsNullOrEmpty(date))
+            {
+                if (!DateOnly.TryParse(date, out var tempDate))
+                {
+                    return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+                }
+                parsedDate = tempDate;
+            }
+
+            if (!string.IsNullOrEmpty(vesselIMO))
+            {
+                bool isValidVessel = await _webAppService.IsVesselValidAsync(vesselIMO);
+                if (!isValidVessel)
+                {
+                    return BadRequest($"Vessel with IMO {vesselIMO} is not valid (or WebApp service is unreachable).");
+                }
+            }
+
+            var plans = await _service.SearchPlansAsync(parsedDate, vesselIMO);
 
             if (plans == null || !plans.Any())
             {
-                return NotFound($"No operation plans found for {date}");
+                return NotFound("No operation plans found matching the criteria.");
             }
 
-            // Map the list of domains to a list of DTOs
             return Ok(plans.Select(OperationPlanMapper.ToDto));
         }
 
@@ -124,7 +142,7 @@ namespace Oem.Controllers
             }
         }
 
-        [HttpGet("search")]
+        /* [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<OperationPlanDTO>>> SearchPlans([FromQuery] string? date, [FromQuery] string? vesselIMO)
         {
             DateOnly? parsedDate = null;
@@ -179,6 +197,6 @@ namespace Oem.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-        }
+        } */
     }
 }

@@ -14,15 +14,6 @@ namespace Oem.Models.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<OperationPlan?>> GetByDateAsync(DateOnly date)
-        {
-            // Load the Plan AND its Items
-            return await _context.OperationPlans
-                .Include(p => p.Items)
-                .Where(p => p.ScheduleDate == date && p.Status != OperationPlanStatus.Rejected)
-                .ToListAsync();
-        }
-
         public async Task<OperationPlan?> GetByIdAsync(Guid id)
         {
             return await _context.OperationPlans
@@ -43,11 +34,11 @@ namespace Oem.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(OperationPlan plan)
+        /* public async Task UpdateAsync(OperationPlan plan)
         {
             _context.OperationPlans.Update(plan);
             await _context.SaveChangesAsync();
-        }
+        } */
 
         public async Task DeleteAsync(OperationPlan plan)
         {
@@ -55,7 +46,7 @@ namespace Oem.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<OperationPlan>> SearchAsync(DateOnly? date, string? vesselIMO)
+        public async Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? date, string? vesselIMO)
         {
             var query = _context.OperationPlans
                 .Include(p => p.Items)

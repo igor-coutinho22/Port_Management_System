@@ -1,5 +1,8 @@
+using Oem.Models.Application.DTOs;
 using Oem.Models.Domain.OperationPlans;
 using Oem.Models.Domain.OperationPlans.Service;
+using Oem.Models.Domain.Scheduling.Services;
+using Oem.Models.DTOs.OperationPlans;
 
 namespace Oem.Models.Application.Services
 {
@@ -7,21 +10,21 @@ namespace Oem.Models.Application.Services
     {
         private readonly IOperationPlanRepository _repository;
         private readonly IWebAppService _webAppService;
-        private readonly Oem.Models.Domain.Scheduling.Services.IHeuristicScheduleService _heuristicService;
+        private readonly IHeuristicScheduleService _heuristicService;
         
         public OperationPlanService(
             IOperationPlanRepository repository,
             IWebAppService webAppService,
-            Oem.Models.Domain.Scheduling.Services.IHeuristicScheduleService heuristicService)
+            IHeuristicScheduleService heuristicService)
         {
             _repository = repository;
             _webAppService = webAppService;
             _heuristicService = heuristicService;
         }
 
-        public async Task<IEnumerable<OperationPlan?>> GetPlanByDateAsync(DateOnly date)
+        public async Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? date, string? vesselIMO)
         {
-            return await _repository.GetByDateAsync(date);
+            return await _repository.SearchPlansAsync(date, vesselIMO);
         }
 
         public async Task<OperationPlan?> GetPlanByIdAsync(Guid Id)
@@ -61,7 +64,7 @@ namespace Oem.Models.Application.Services
             await _repository.DeleteAsync(plan);
         }
 
-        public async Task<IEnumerable<OperationPlan>> SearchPlansAsync(DateOnly? date, string? vesselIMO)
+        /* public async Task<IEnumerable<OperationPlan>> SearchPlansAsync(DateOnly? date, string? vesselIMO)
         {
             return await _repository.SearchAsync(date, vesselIMO);
         }
@@ -95,15 +98,19 @@ namespace Oem.Models.Application.Services
             if (allVisits == null || !allVisits.Any()) return Enumerable.Empty<VesselVisitNotificationDTO>();
 
             // 2. Get existing plan
-            var plan = await _repository.GetByDateAsync(date);
+            var plans = await _repository.GetByDateAsync(date);
             
             // 3. If no plan, all are missing
-            if (plan == null) return allVisits;
+            if (plans == null) return allVisits;
 
             // 4. Return visits NOT in plan
             // Plan Items store VesselVisitId
-            var plannedVisitIds = plan.Items.Select(i => i.VesselVisitId).ToHashSet();
-            return allVisits.Where(v => !plannedVisitIds.Contains(v.Id));
+            foreach (var item in plans.Items)
+            {
+                allVisits = allVisits.Where(v => v.Id != item.VesselVisitId);
+            }
+
+            return allVisits;
         }
 
         public async Task<OperationPlan> RegeneratePlanAsync(DateOnly date, string heuristicName, string author)
@@ -120,10 +127,10 @@ namespace Oem.Models.Application.Services
                 date, 
                 heuristicName, 
                 result.TotalDelayMinutes, 
-                result.AlgorithmRuntimeSeconds, 
+                result.RuntimeSeconds, 
                 author);
 
-            foreach (var entry in result.Schedule)
+            foreach (var entry in result.Entries)
             {
                 // We need to calculate Loading/Unloading times.
                 // The generic heuristic result gives Start/End.
@@ -153,7 +160,7 @@ namespace Oem.Models.Application.Services
             }
 
             // 3. Check for existing plan
-            var existingPlan = await _repository.GetByDateAsync(date);
+            var existingPlan = await _repository.GetByIdAsync(date);
             if (existingPlan != null)
             {
                 // Delete explicitly
@@ -164,11 +171,6 @@ namespace Oem.Models.Application.Services
             await _repository.AddAsync(newPlan);
             
             return newPlan;
-        }
+        } */
     }
-
-    /* Na aba do scheduling, escolhe se o dia e o algoritmo como já está e corre se. Com o body e informações pela pagina ja temos tudo: autor pelo user logado,
-        target day e algoritmo pq o user ja os escolheu e depois o runtime, crane e delay vem no report ou objeto retornado. Os times tambem sao calculados a
-        partir do report ou objeto retornado. Ideia é após gerar os resultados como tem agora a gerar (oq ja esta implementado), aparecer um botao para abrir em
-        JSON ou em tabela o OperationPlan formado e depois dar a opção ao user para aceitar ou recusar */
 }
