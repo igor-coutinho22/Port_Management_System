@@ -6,7 +6,7 @@ namespace Oem.Models.Domain.OperationPlans.Service
 public interface IOperationPlanService
     {
         Task SavePlanAsync(OperationPlan plan);
-        Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? date, string? vesselIMO);
+        Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? startDate, DateOnly? endDate, string? vesselIMO);
         Task<OperationPlan?> GetPlanByIdAsync(Guid Id);
         Task<IEnumerable<OperationPlan>> GetAllPlansAsync();
         Task DeletePlanAsync(Guid Id);

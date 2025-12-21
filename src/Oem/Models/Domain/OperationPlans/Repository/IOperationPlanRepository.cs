@@ -7,6 +7,6 @@ namespace Oem.Models.Domain.OperationPlans
         Task AddAsync(OperationPlan plan);
         /* Task UpdateAsync(OperationPlan plan); */
         Task DeleteAsync(OperationPlan plan);
-        Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? date, string? vesselIMO);
+        Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? startDate, DateOnly? endDate, string? vesselIMO);
     }
 }

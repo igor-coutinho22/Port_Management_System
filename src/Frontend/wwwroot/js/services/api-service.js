@@ -493,8 +493,12 @@ class ApiService {
         return this.get('/operationPlan/GetAll');
     }
 
-    async getOperationPlanByDate(date) {
-        return this.get(`/operationPlan/${date}`);
+    async searchOperationPlans(startDate, endDate, vesselIMO) {
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        if (vesselIMO) params.append('vesselIMO', vesselIMO);
+        return this.get(`/operationPlan/Search?${params.toString()}`);
     }
 
     async getOperationPlanById(id) {
@@ -507,13 +511,6 @@ class ApiService {
 
     async updateOperationPlan(id, updateDto) {
         return this.put(`/operationPlan/${id}`, updateDto);
-    }
-
-    async searchOperationPlans(date, vesselIMO) {
-        const params = new URLSearchParams();
-        if (date) params.append('date', date);
-        if (vesselIMO) params.append('vesselIMO', vesselIMO);
-        return this.get(`/operationPlan/search?${params.toString()}`);
     }
 
     async getMissingOperationPlans(date) {

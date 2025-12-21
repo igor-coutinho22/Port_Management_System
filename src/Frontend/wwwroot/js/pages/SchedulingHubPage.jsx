@@ -179,11 +179,11 @@ const SchedulingHubPage = () => {
             component: 'GetOperationPlanByIdForm'
         },
         { 
-            id: 'getByDate',
-            title: 'Get Operation Plan By Date',
-            description: 'Get details of an existing operation plan for a specific date.',
+            id: 'search',
+            title: 'Search Operation Plans By Date(s) and/or Vessel IMO',
+            description: 'Get details of an existing operation plan for a specific date(s) and/or vessel IMO.',
             color: '#2980b9',
-            component: 'GetOperationPlanByDateForm'
+            component: 'SearchOperationPlanForm'
         },
         { 
             id: 'delete',
@@ -552,7 +552,7 @@ const SchedulingHubPage = () => {
                             <div className="operation-content">
                                 <div className="operation-body">
                                     {section.component === 'GetOperationPlanByIdForm' && <GetOperationPlanByIdForm />}
-                                    {section.component === 'GetOperationPlanByDateForm' && <GetOperationPlanByDateForm />}
+                                    {section.component === 'SearchOperationPlanForm' && <SearchOperationPlanForm />}
                                     {section.component === 'DeleteOperationPlanForm' && <DeleteOperationPlanForm onSuccess={loadPlans} />}
                                 </div>
                             </div>

@@ -65,21 +65,31 @@ namespace Oem.Controllers
         }
 
         [HttpGet("Search")]
-        public async Task<ActionResult> SearchPlans([FromQuery] string? date, [FromQuery] string? vesselIMO)
+        public async Task<ActionResult> SearchPlans([FromQuery] string? startDate, [FromQuery] string? endDate, [FromQuery] string? vesselIMO)
         {
-            if (string.IsNullOrEmpty(date) && string.IsNullOrEmpty(vesselIMO))
+            if (string.IsNullOrEmpty(startDate) && string.IsNullOrEmpty(endDate) && string.IsNullOrEmpty(vesselIMO))
             {
-                return BadRequest("At least one search parameter (date or vesselIMO) must be provided.");
+                return BadRequest("At least one search parameter (date(s) or vesselIMO) must be provided.");
             }
 
-            DateOnly? parsedDate = null;
-            if (!string.IsNullOrEmpty(date))
+            DateOnly? parsedStartDate = null;
+            DateOnly? parsedEndDate = null;
+            if (!string.IsNullOrEmpty(startDate))
             {
-                if (!DateOnly.TryParse(date, out var tempDate))
+                if (!DateOnly.TryParse(startDate, out var tempDate))
                 {
                     return BadRequest("Invalid date format. Use YYYY-MM-DD.");
                 }
-                parsedDate = tempDate;
+                parsedStartDate = tempDate;
+            }
+
+            if (!string.IsNullOrEmpty(endDate))
+            {
+                if (!DateOnly.TryParse(endDate, out var tempDate))
+                {
+                    return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+                }
+                parsedEndDate = tempDate;
             }
 
             if (!string.IsNullOrEmpty(vesselIMO))
@@ -87,11 +97,11 @@ namespace Oem.Controllers
                 bool isValidVessel = await _webAppService.IsVesselValidAsync(vesselIMO);
                 if (!isValidVessel)
                 {
-                    return BadRequest($"Vessel with IMO {vesselIMO} is not valid (or WebApp service is unreachable)." + "AAAAAAAAAAA " + isValidVessel + " AAAAAAAAAAAAAAAAA");
+                    return BadRequest($"Vessel with IMO {vesselIMO} is not valid (or WebApp service is unreachable).");
                 }
             }
 
-            var plans = await _service.SearchPlansAsync(parsedDate, vesselIMO);
+            var plans = await _service.SearchPlansAsync(parsedStartDate, parsedEndDate, vesselIMO);
 
             if (plans == null || !plans.Any())
             {

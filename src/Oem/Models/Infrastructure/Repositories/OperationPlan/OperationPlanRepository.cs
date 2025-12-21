@@ -46,15 +46,21 @@ namespace Oem.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? date, string? vesselIMO)
+        public async Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? startDate, DateOnly? endDate, string? vesselIMO)
         {
             var query = _context.OperationPlans
                 .Include(p => p.Items)
                 .AsQueryable();
 
-            if (date.HasValue)
+            if (startDate.HasValue && !endDate.HasValue)
             {
-                query = query.Where(p => p.ScheduleDate == date.Value);
+                query = query.Where(p => p.ScheduleDate == startDate.Value);
+            } else if (startDate.HasValue && endDate.HasValue)
+            {
+                query = query.Where(p => p.ScheduleDate >= startDate.Value && p.ScheduleDate <= endDate.Value);
+            } else if (!startDate.HasValue && endDate.HasValue)
+            {
+                query = query.Where(p => p.ScheduleDate == endDate.Value);
             }
 
             if (!string.IsNullOrEmpty(vesselIMO))

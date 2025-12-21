@@ -22,9 +22,9 @@ namespace Oem.Models.Application.Services
             _heuristicService = heuristicService;
         }
 
-        public async Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? date, string? vesselIMO)
+        public async Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? startDate, DateOnly? endDate, string? vesselIMO)
         {
-            return await _repository.SearchPlansAsync(date, vesselIMO);
+            return await _repository.SearchPlansAsync(startDate, endDate, vesselIMO);
         }
 
         public async Task<OperationPlan?> GetPlanByIdAsync(Guid Id)
