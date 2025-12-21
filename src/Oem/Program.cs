@@ -35,7 +35,7 @@ builder.Services.AddDbContext<OemContext>(options =>
 builder.Services.AddCors(opt =>
 {
     // 1. Try to read from appsettings.json
-    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>() 
+    var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>()
                   ?? new[] { "https://localhost:5179" }; // 2. Fallback if missing
 
     opt.AddDefaultPolicy(p => p
@@ -65,8 +65,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateAudience = true,
         ValidAudiences = new[]
         {
-            "api://port-management", // Keep this if both APIs share the same App Reg
-            "6bff1175-b880-4a1d-b320-ff8fcbbd1b99" 
+            "api://port-management",
+            "6bff1175-b880-4a1d-b320-ff8fcbbd1b99"
         },
         ValidateLifetime = true,
         // RoleClaimType = "roles",
@@ -100,9 +100,9 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddHttpClient("DomainBackend", client =>
 {
     // Read from appsettings.json instead of hardcoding
-    var baseUrl = builder.Configuration["DomainBackend:BaseUrl"]; 
-    client.BaseAddress = new Uri(baseUrl ?? "https://localhost:5001"); 
-    
+    var baseUrl = builder.Configuration["DomainBackend:BaseUrl"];
+    client.BaseAddress = new Uri(baseUrl ?? "https://localhost:5001");
+
     client.DefaultRequestHeaders.Accept.Add(
         new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 })

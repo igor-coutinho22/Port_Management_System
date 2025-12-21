@@ -87,7 +87,7 @@ namespace Oem.Controllers
                 bool isValidVessel = await _webAppService.IsVesselValidAsync(vesselIMO);
                 if (!isValidVessel)
                 {
-                    return BadRequest($"Vessel with IMO {vesselIMO} is not valid (or WebApp service is unreachable).");
+                    return BadRequest($"Vessel with IMO {vesselIMO} is not valid (or WebApp service is unreachable)." + "AAAAAAAAAAA " + isValidVessel + " AAAAAAAAAAAAAAAAA");
                 }
             }
 
