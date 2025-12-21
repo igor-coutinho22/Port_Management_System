@@ -22,15 +22,41 @@ class PortGeometryBuilder {
             water: new THREE.MeshStandardMaterial({ color: 0x006994 }),
             asphalt: new THREE.MeshStandardMaterial({ color: 0xCCCCCC }),
 
-            // ✅ MINIMAL CHANGE: Sun should NOT be lit like normal objects.
-            // MeshBasicMaterial displays the PNG exactly (with alpha), no lighting washout.
+            // Sun: unlit textured quad
             sun: new THREE.MeshBasicMaterial({
                 color: 0xFFFFFF,
                 transparent: true,
                 depthWrite: false,
                 side: THREE.DoubleSide
-            })
+            }),
+
+            // New: sidewalks
+            sidewalk: new THREE.MeshStandardMaterial({ color: 0x999999 })
         };
+
+        // Dedicated asphalt for roads (clone of ground asphalt) so polygonOffset doesn't affect the ground.
+        // IMPORTANT: Ground uses `materials.asphalt` as-is.
+        this.materials.roadAsphalt = this.materials.asphalt.clone();
+
+        // Roads should read as darker asphalt than the base ground slab.
+        // If a texture map is applied later, this color still works as a multiplier/tint.
+        this.materials.roadAsphalt.color.setHex(0x4B4B4B);
+
+        this.materials.roadAsphalt.polygonOffset = true;
+        // Pull roads slightly closer to camera in depth comparison to avoid z-fighting
+        this.materials.roadAsphalt.polygonOffsetFactor = -4;
+        this.materials.roadAsphalt.polygonOffsetUnits = -4;
+
+        // Road markings (lane lines / crosswalks)
+        // Keep them as simple flat overlays with strong polygonOffset so they never flicker.
+        this.materials.roadMarking = new THREE.MeshStandardMaterial({
+            color: 0xF2F2F2,
+            roughness: 0.6,
+            metalness: 0.0
+        });
+        this.materials.roadMarking.polygonOffset = true;
+        this.materials.roadMarking.polygonOffsetFactor = -8;
+        this.materials.roadMarking.polygonOffsetUnits = -8;
 
         this.textureLoader = new THREE.TextureLoader();
         this.gltfLoader = new THREE.GLTFLoader();
@@ -54,16 +80,11 @@ class PortGeometryBuilder {
             if (conf.colorMap && diffuse) {
                 this.textureLoader.load(conf.colorMap, (tex) => {
 
-                    // ✅ SPECIAL CASE: SUN PNG (alpha + no tiling + correct color)
+                    // SPECIAL CASE: SUN PNG (alpha + no tiling + correct color)
                     if (matName === "sun") {
-                        // r128: use encoding
                         tex.encoding = THREE.sRGBEncoding;
-
-                        // Clamp so edges don't smear / tile
                         tex.wrapS = THREE.ClampToEdgeWrapping;
                         tex.wrapT = THREE.ClampToEdgeWrapping;
-
-                        // Smooth scaling (reduces pixelation)
                         tex.minFilter = THREE.LinearMipmapLinearFilter;
                         tex.magFilter = THREE.LinearFilter;
                         tex.generateMipmaps = true;
@@ -73,7 +94,6 @@ class PortGeometryBuilder {
                         return;
                     }
 
-                    // Everything else unchanged from your code:
                     tex.wrapS = THREE.RepeatWrapping;
                     tex.wrapT = THREE.RepeatWrapping;
                     tex.colorSpace = THREE.SRGBColorSpace;
@@ -569,6 +589,62 @@ class PortGeometryBuilder {
         });
 
         return group;
+    }
+
+    // -------------------------------------------------------------------------
+    // NEW: ROADS, SIDEWALKS, INTERSECTIONS
+    // -------------------------------------------------------------------------
+    createRoadSegment(width, depth) {
+        const geo = new THREE.BoxGeometry(width, 0.2, depth);
+        this.adjustUVs(geo, width, 0.2, depth, 0.02);
+        const mesh = new THREE.Mesh(geo, this.materials.roadAsphalt);
+        mesh.receiveShadow = true;
+        mesh.castShadow = false;
+        return mesh;
+    }
+
+    createIntersection(size) {
+        const geo = new THREE.BoxGeometry(size, 0.22, size);
+        this.adjustUVs(geo, size, 0.22, size, 0.02);
+        const mesh = new THREE.Mesh(geo, this.materials.roadAsphalt);
+        mesh.receiveShadow = true;
+        mesh.castShadow = false;
+        return mesh;
+    }
+
+    createSidewalk(width, depth) {
+        const geo = new THREE.BoxGeometry(width, 0.18, depth);
+        this.adjustUVs(geo, width, 0.18, depth, 0.05);
+        // Sidewalks sit very close to the road/ground plane; use polygonOffset to avoid z-fighting.
+        const mat = this.materials.sidewalk;
+        mat.polygonOffset = true;
+        mat.polygonOffsetFactor = -5;
+        mat.polygonOffsetUnits = -5;
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.receiveShadow = true;
+        mesh.castShadow = false;
+        return mesh;
+    }
+
+    // -------------------------------------------------------------------------
+    // NEW: ROAD MARKINGS
+    // -------------------------------------------------------------------------
+    createLaneLine(width, depth) {
+        // Very thin overlay plate
+        const geo = new THREE.BoxGeometry(width, 0.03, depth);
+        const mesh = new THREE.Mesh(geo, this.materials.roadMarking);
+        mesh.receiveShadow = false;
+        mesh.castShadow = false;
+        return mesh;
+    }
+
+    createCrosswalkStripe(width, depth) {
+        // Single stripe (caller places several stripes)
+        const geo = new THREE.BoxGeometry(width, 0.03, depth);
+        const mesh = new THREE.Mesh(geo, this.materials.roadMarking);
+        mesh.receiveShadow = false;
+        mesh.castShadow = false;
+        return mesh;
     }
 
     // -------------------------------------------------------------------------

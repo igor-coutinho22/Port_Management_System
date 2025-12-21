@@ -92,9 +92,9 @@ class PortVisualization {
         this.dayDurationSeconds = 300; // 1 full day per 5 minutes
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // TOOLTIP
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     createTooltipElement() {
         const el = document.createElement("div");
         Object.assign(el.style, {
@@ -125,9 +125,9 @@ class PortVisualization {
         this.tooltip.style.opacity = 0;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // LIGHTING
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     addLights() {
         const ambient = new THREE.AmbientLight(0xffffff, 1);
         this.scene.add(ambient);
@@ -137,7 +137,6 @@ class PortVisualization {
         this.scene.add(hemi);
         this.hemiLight = hemi;
 
-        // Pivot that will rotate
         const sunPivot = new THREE.Object3D();
         this.scene.add(sunPivot);
         this.sunPivot = sunPivot;
@@ -171,21 +170,19 @@ class PortVisualization {
         this.sunMesh = sunMesh;
     }
 
-    // -----------------------------------------------------------------------------
-    // MINIMAP SETUP (Orthographic top-down camera)
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // MINIMAP
+    // -------------------------------------------------------------------------
     setupMinimap() {
-        const size = 110; // minimap resolution
+        const size = 110;
         this.minimapSize = size;
 
-        // Mini-map camera
         this.minimapCamera = new THREE.OrthographicCamera(
             -500, 500, 500, -500, 0.1, 5000
         );
         this.minimapCamera.position.set(0, 2000, 0);
         this.minimapCamera.lookAt(0, 0, 0);
 
-        // Canvas viewport for minimap rendering
         this.minimap = document.createElement("div");
         Object.assign(this.minimap.style, {
             position: "absolute",
@@ -196,13 +193,12 @@ class PortVisualization {
             border: "2px solid rgba(0,0,0,0.6)",
             borderRadius: "4px",
             overflow: "hidden",
-            pointerEvents: "none", // do not block normal interaction
+            pointerEvents: "none",
             zIndex: 900,
             backgroundColor: 'rgba(255, 255, 255, 0.1)'
         });
         this.container.appendChild(this.minimap);
 
-        // Camera direction arrow (HTML)
         this.minimapArrow = document.createElement("div");
         Object.assign(this.minimapArrow.style, {
             position: "absolute",
@@ -220,31 +216,25 @@ class PortVisualization {
         this.minimap.appendChild(this.minimapArrow);
     }
 
-    // -----------------------------------------------------------------------------
-    // UPDATE MINIMAP CAMERA
-    // -----------------------------------------------------------------------------
     updateMinimap() {
-        // Follow main camera X/Z but always top-down
         this.minimapCamera.position.x = this.camera.position.x;
         this.minimapCamera.position.z = this.camera.position.z;
 
-        // Always look downward at target
         this.minimapCamera.lookAt(
             this.controls.target.x,
             0,
             this.controls.target.z
         );
 
-        // Update arrow rotation (camera yaw)
         const dx = this.camera.position.x - this.controls.target.x;
         const dz = this.camera.position.z - this.controls.target.z;
-        const angle = Math.atan2(dx, dz); // camera facing direction
+        const angle = Math.atan2(dx, dz);
         this.minimapArrow.style.transform = `translate(-50%, -50%) rotate(${angle}rad)`;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // LOAD PORT DATA
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     async loadPortData() {
         THREE.Cache.enabled = false;
         console.log("PortVisualization: loadPortData called");
@@ -256,7 +246,6 @@ class PortVisualization {
             const data = await this.dataFetcher.loadAll();
             console.log("PortVisualization: Data fetched", data);
 
-            // Initialize textures
             if (data.textureConfig) {
                 this.geometryBuilder.loadTextures(data.textureConfig);
             }
@@ -275,6 +264,9 @@ class PortVisualization {
             this.buildVessels(layout.vessels);
             this.buildStaff(layout.staff);
 
+            // NEW: build roads and intersections after main objects
+            this.buildRoads(layout.roads, layout.intersections);
+
             console.log("PortVisualization: Scene built with objects", this.objects.length);
 
             this.frameCamera();
@@ -283,18 +275,16 @@ class PortVisualization {
         }
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // CAMERA FLY-TO
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     flyToObject(pos) {
         this.flyToActive = true;
         this.flyStartTime = performance.now();
 
-        // Start
         this.flyFromPos.copy(this.camera.position);
         this.flyFromTarget.copy(this.controls.target);
 
-        // End
         this.flyToTarget.set(pos.x, pos.y, pos.z);
         this.flyToPos.set(pos.x + 180, pos.y + 120, pos.z + 180);
     }
@@ -314,9 +304,9 @@ class PortVisualization {
         }
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // CLICK SELECTION
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     onPointerDown(e) {
         const cast = this.castRay(e);
         const obj = cast?.object || null;
@@ -331,7 +321,6 @@ class PortVisualization {
             this.selectedObject.material.emissive.setHex(0x000000);
         }
 
-        // Handle groups (like warehouses)
         let target = this.findParent(obj);
 
         this.selectedObject = obj;
@@ -353,9 +342,9 @@ class PortVisualization {
         return target;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // HOVER TOOLTIP
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     onPointerMove(e) {
         const obj = this.castRay(e)?.object || null;
 
@@ -368,7 +357,6 @@ class PortVisualization {
         if (obj !== this.hoveredObject) {
             this.hoveredObject = obj;
 
-            // Check userData on object or its parent group
             const d = obj.userData && Object.keys(obj.userData).length > 0 ? obj.userData : obj.parent.userData;
 
             if (!d) {
@@ -383,6 +371,8 @@ class PortVisualization {
             else if (d.type === "resource") text = `Resource: ${d.name}`;
             else if (d.type === "Vessel") text = `Vessel: ${d.name} (${d.vesselType})`;
             else if (d.type === "Staff") text = `Staff: ${d.name} (${d.status})`;
+            else if (d.type === "Road") text = `Road`;
+            else if (d.type === "Intersection") text = `Intersection`;
             else text = d.name || "Object";
 
             this.showTooltip(text, e.clientX, e.clientY);
@@ -391,9 +381,9 @@ class PortVisualization {
         }
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // RAYCAST
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     castRay(e) {
         const rect = this.renderer.domElement.getBoundingClientRect();
 
@@ -406,9 +396,9 @@ class PortVisualization {
         return hits.length ? hits[0] : null;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // CLEANUP
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     clearScene() {
         this.objects.forEach(o => {
             this.scene.remove(o);
@@ -421,9 +411,9 @@ class PortVisualization {
         this.objects = [];
     }
 
-    // -----------------------------------------------------------------------------
-    // WATER
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // WATER & GROUND
+    // -------------------------------------------------------------------------
     addWaterPlane() {
         const geo = new THREE.PlaneGeometry(10000, 4980);
         const mat = this.geometryBuilder.materials.water;
@@ -443,12 +433,14 @@ class PortVisualization {
         ground.position.z = 2550;
         ground.receiveShadow = true;
         ground.castShadow = false;
+        // Render ground before roads to reduce any remaining flicker.
+        ground.renderOrder = -10;
         this.scene.add(ground);
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // DOCKS
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     buildDocks(docks) {
         docks.forEach(d => {
             const mesh = this.geometryBuilder.createDock(d);
@@ -464,9 +456,9 @@ class PortVisualization {
         });
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // STORAGE AREAS
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     buildStorageAreas(areas) {
         areas.forEach(a => {
             const mesh =
@@ -486,9 +478,9 @@ class PortVisualization {
         });
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // CONTAINERS
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     buildContainers(containers) {
         containers.forEach(c => {
             const mesh = this.geometryBuilder.createContainer(c);
@@ -500,9 +492,9 @@ class PortVisualization {
         });
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // RESOURCES
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     buildResources(resources) {
         resources.forEach(r => {
             const mesh = this.geometryBuilder.createResource(r);
@@ -514,9 +506,9 @@ class PortVisualization {
         });
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // VESSELS
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     buildVessels(vessels) {
         vessels.forEach(v => {
             const mesh = this.geometryBuilder.createVessel(v);
@@ -532,9 +524,9 @@ class PortVisualization {
         });
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // STAFF
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     buildStaff(staffList) {
         staffList.forEach(s => {
             const mesh = this.geometryBuilder.createStaff(s);
@@ -546,9 +538,306 @@ class PortVisualization {
         });
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // NEW: ROADS & SIDEWALKS
+    // -------------------------------------------------------------------------
+    buildRoads(roads, intersections) {
+        if (!roads) return;
+
+        const eps = 1e-6;
+
+        const overlaps1D = (aMin, aMax, bMin, bMax) => (aMax >= bMin - eps) && (bMax >= aMin - eps);
+
+        // Given a road, return exclusion intervals along the road axis (in local units from road center)
+        // where sidewalks must NOT be drawn (the intersection square).
+        const getSidewalkExclusions = (r) => {
+            if (!intersections || !intersections.length) return [];
+
+            const halfW = r.width / 2;
+            const halfD = r.depth / 2;
+
+            const roadXMin = r.x - halfW;
+            const roadXMax = r.x + halfW;
+            const roadZMin = r.z - halfD;
+            const roadZMax = r.z + halfD;
+
+            const intervals = [];
+            for (const i of intersections) {
+                const ih = (i.size || 0) / 2;
+                const iXMin = i.x - ih;
+                const iXMax = i.x + ih;
+                const iZMin = i.z - ih;
+                const iZMax = i.z + ih;
+
+                // Only consider intersections that overlap the road rectangle in the perpendicular axis.
+                // For horizontal roads, we exclude along X when Z overlaps. For vertical, exclude along Z when X overlaps.
+                if (r.orientation === "horizontal") {
+                    if (!overlaps1D(roadZMin, roadZMax, iZMin, iZMax)) continue;
+                    if (!overlaps1D(roadXMin, roadXMax, iXMin, iXMax)) continue;
+                    // convert to local interval along X relative to road center
+                    intervals.push({ start: (iXMin - r.x), end: (iXMax - r.x) });
+                } else {
+                    if (!overlaps1D(roadXMin, roadXMax, iXMin, iXMax)) continue;
+                    if (!overlaps1D(roadZMin, roadZMax, iZMin, iZMax)) continue;
+                    // convert to local interval along Z relative to road center
+                    intervals.push({ start: (iZMin - r.z), end: (iZMax - r.z) });
+                }
+            }
+
+            if (!intervals.length) return [];
+
+            // Merge overlaps
+            intervals.sort((a, b) => a.start - b.start);
+            const merged = [];
+            for (const iv of intervals) {
+                if (!merged.length) { merged.push({ ...iv }); continue; }
+                const last = merged[merged.length - 1];
+                if (iv.start <= last.end + 2) {
+                    last.end = Math.max(last.end, iv.end);
+                } else {
+                    merged.push({ ...iv });
+                }
+            }
+            return merged;
+        };
+
+        // Build sidewalk segments along a 1D axis, excluding merged intervals.
+        // Returns [{ center, length }] in road-local coordinates.
+        const buildAllowedSegments = (totalLen, exclusions, margin = 1) => {
+            const half = totalLen / 2;
+            const allowed = [];
+
+            const clamp = (v) => Math.max(-half, Math.min(half, v));
+            const ex = (exclusions || []).map(iv => ({
+                start: clamp(iv.start - margin),
+                end: clamp(iv.end + margin)
+            })).filter(iv => iv.end > iv.start);
+
+            if (!ex.length) {
+                return [{ center: 0, length: totalLen }];
+            }
+
+            let cursor = -half;
+            for (const iv of ex) {
+                if (iv.start > cursor + 1e-3) {
+                    const segStart = cursor;
+                    const segEnd = iv.start;
+                    const len = segEnd - segStart;
+                    if (len > 2) allowed.push({ center: (segStart + segEnd) / 2, length: len });
+                }
+                cursor = Math.max(cursor, iv.end);
+            }
+            if (half > cursor + 1e-3) {
+                const len = half - cursor;
+                if (len > 2) allowed.push({ center: (cursor + half) / 2, length: len });
+            }
+            return allowed;
+        };
+
+        roads.forEach(r => {
+            const roadMesh = this.geometryBuilder.createRoadSegment(r.width, r.depth);
+            // Place roads slightly above the ground plane to avoid z-fighting
+            roadMesh.position.set(r.x, 1.75, r.z);
+            roadMesh.renderOrder = 10;
+            roadMesh.userData = { type: "Road", orientation: r.orientation };
+            this.scene.add(roadMesh);
+            this.objects.push(roadMesh);
+
+            // -----------------------------
+            // Road markings (dashed centerline, clipped near intersections)
+            // -----------------------------
+            const markY = 1.92;
+            const dashLen = 10;
+            const dashGap = 10;
+            const centerLineW = 1.6;
+            const clipMargin = 10;
+
+            const ex = getSidewalkExclusions(r);
+            // reuse exclusion intervals (intersection squares) to clip dashed line too
+            const buildAllowed = buildAllowedSegments(
+                r.orientation === "horizontal" ? r.width : r.depth,
+                ex,
+                clipMargin
+            );
+
+            const addDashed = (seg) => {
+                // seg: {center, length} along the road axis in local space
+                const start = seg.center - seg.length / 2;
+                const end = seg.center + seg.length / 2;
+                let cursor = start;
+                while (cursor < end - 1e-3) {
+                    const len = Math.min(dashLen, end - cursor);
+                    if (len > 1) {
+                        if (r.orientation === "horizontal") {
+                            const dash = this.geometryBuilder.createLaneLine(len, centerLineW);
+                            dash.position.set(r.x + (cursor + len / 2), markY, r.z);
+                            dash.renderOrder = 30;
+                            dash.userData = { type: "RoadMarking", kind: "center-dash" };
+                            this.scene.add(dash);
+                        } else {
+                            const dash = this.geometryBuilder.createLaneLine(centerLineW, len);
+                            dash.position.set(r.x, markY, r.z + (cursor + len / 2));
+                            dash.renderOrder = 30;
+                            dash.userData = { type: "RoadMarking", kind: "center-dash" };
+                            this.scene.add(dash);
+                        }
+                    }
+                    cursor += dashLen + dashGap;
+                }
+            };
+
+            buildAllowed.forEach(addDashed);
+
+            const sidewalkThickness = this.layoutEngine.sidewalkDepth;
+
+            // Sidewalks need a larger cut-out than the asphalt/intersection square.
+            // Otherwise the horizontal and vertical sidewalks will stop at slightly different
+            // places (since each road sees the intersection from a different axis).
+            // Expanding by half the sidewalk width makes the corner join consistently.
+            const sidewalkCornerCut = (i) => ((i.size || 0) / 2) + (sidewalkThickness / 2);
+
+            const exclusions = (ex || []).map(iv => ({ ...iv }));
+            const allowed = buildAllowedSegments(
+                r.orientation === "horizontal" ? r.width : r.depth,
+                exclusions,
+                sidewalkThickness / 2
+            );
+
+            if (r.orientation === "horizontal") {
+                const zTop = r.z + r.depth / 2 + sidewalkThickness / 2;
+                const zBot = r.z - r.depth / 2 - sidewalkThickness / 2;
+
+                allowed.forEach(seg => {
+                    const swTop = this.geometryBuilder.createSidewalk(seg.length+12, sidewalkThickness);
+                    swTop.position.set(r.x + seg.center, 1.755, zTop);
+                    swTop.renderOrder = 15;
+                    swTop.userData = { type: "Sidewalk" };
+                    this.scene.add(swTop);
+
+                    const swBot = this.geometryBuilder.createSidewalk(seg.length+12, sidewalkThickness);
+                    swBot.position.set(r.x + seg.center, 1.755, zBot);
+                    swBot.renderOrder = 15;
+                    swBot.userData = { type: "Sidewalk" };
+                    this.scene.add(swBot);
+                });
+            } else {
+                const xRight = r.x + r.width / 2 + sidewalkThickness / 2;
+                const xLeft = r.x - r.width / 2 - sidewalkThickness / 2;
+
+                allowed.forEach(seg => {
+                    const swR = this.geometryBuilder.createSidewalk(sidewalkThickness, seg.length+12);
+                    swR.position.set(xRight, 1.755, r.z + seg.center);
+                    swR.renderOrder = 15;
+                    swR.userData = { type: "Sidewalk" };
+                    this.scene.add(swR);
+
+                    const swL = this.geometryBuilder.createSidewalk(sidewalkThickness, seg.length+11.8);
+                    swL.position.set(xLeft, 1.755, r.z + seg.center);
+                    swL.renderOrder = 15;
+                    swL.userData = { type: "Sidewalk" };
+                    this.scene.add(swL);
+                });
+            }
+        });
+
+        if (!intersections) return;
+
+        intersections.forEach(i => {
+            const interMesh = this.geometryBuilder.createIntersection(i.size);
+            // Place intersections slightly above roads so they render on top and avoid z-fighting
+            interMesh.position.set(i.x, 1.9, i.z);
+            interMesh.renderOrder = 20;
+            interMesh.userData = { type: "Intersection" };
+            this.scene.add(interMesh);
+            this.objects.push(interMesh);
+
+            // -----------------------------
+            // Crosswalks (realistic: zebra stripes placed OUTSIDE the intersection)
+            // Each crosswalk is perpendicular to the approaching traffic.
+            // Also include a stop bar just before the crosswalk.
+            // -----------------------------
+            const markY = 1.93;
+            const ih = ((i.size || 0) + 20) / 2;
+
+            // Dimensions tuned for this scene scale.
+            // Crosswalk should fit within road width (between sidewalks) and sit close to the corner.
+            const roadW = this.layoutEngine.roadDepth;
+            const sidewalkW = this.layoutEngine.sidewalkDepth;
+
+            const zebraStripeW = 4.5; // stripe thickness (along travel direction)
+            const zebraGap = 4;     // space between stripes (along travel direction)
+            const zebraCount = 7;
+
+            // Crosswalk length along curb (across the road). Keep it inside the asphalt (avoid sidewalks).
+            const zebraStripeL = Math.max(10, Math.min(roadW - 10, i.size * 0.55));
+
+            // Place crosswalk just OUTSIDE the intersection and keep stop bar a bit before it.
+            // Push crosswalk farther from the intersection than the curb line.
+            const cornerMargin = 10.0;
+            const crosswalkOffset = ih + (sidewalkW / 2) + cornerMargin;
+
+            // Stop bar should be before the crosswalk (approach side).
+            const stopBarOffset = crosswalkOffset - (zebraStripeW + 20);
+            const stopBarW = 2;
+            const stopBarL = zebraStripeL + 20;
+
+            const addStopBar = (rotY, x, z) => {
+                const bar = this.geometryBuilder.createLaneLine(stopBarL, stopBarW);
+                bar.position.set(x, markY, z);
+                bar.rotation.y = rotY;
+                bar.renderOrder = 34;
+                bar.userData = { type: "RoadMarking", kind: "stopbar" };
+                this.scene.add(bar);
+            };
+
+            const addZebra = (rotY, cx, cz) => {
+                for (let k = 0; k < zebraCount; k++) {
+                    const offset = (k - (zebraCount - 1) / 2) * (zebraStripeW + zebraGap);
+                    const stripe = this.geometryBuilder.createCrosswalkStripe(zebraStripeL, zebraStripeW);
+                    stripe.position.set(cx, markY, cz);
+                    stripe.rotation.y = rotY;
+                    stripe.renderOrder = 35;
+                    stripe.userData = { type: "RoadMarking", kind: "crosswalk" };
+
+                    // Offset along the axis perpendicular to crosswalk direction
+                    if (Math.abs(rotY) < 1e-6) {
+                        // crosswalk runs along X => offset along Z
+                        stripe.position.z += offset;
+                    } else {
+                        // crosswalk runs along Z => offset along X
+                        stripe.position.x += offset;
+                    }
+
+                    this.scene.add(stripe);
+                }
+            };
+
+            // Crosswalk stripes should be PERPENDICULAR to the direction of travel.
+            // - Traffic along Z (north/south approaches) => crosswalk runs along X? No: stripes should run along Z,
+            //   so the crosswalk plate is rotated 90°.
+            // - Traffic along X (east/west approaches) => rotate 0°.
+
+            // North approach (traffic moving +Z toward intersection)
+            addStopBar(0, i.x, i.z + stopBarOffset);
+            addZebra(Math.PI / 2, i.x, i.z + crosswalkOffset);
+
+            // South approach (traffic moving -Z)
+            addStopBar(0, i.x, i.z - stopBarOffset);
+            addZebra(Math.PI / 2, i.x, i.z - crosswalkOffset);
+
+            // East approach (traffic moving +X)
+            addStopBar(Math.PI / 2, i.x + stopBarOffset, i.z);
+            addZebra(0, i.x + crosswalkOffset, i.z);
+
+            // West approach (traffic moving -X)
+            addStopBar(Math.PI / 2, i.x - stopBarOffset, i.z);
+            addZebra(0, i.x - crosswalkOffset, i.z);
+        });
+    }
+
+    // -------------------------------------------------------------------------
     // CAMERA TARGET RESET
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     frameCamera() {
         this.controls.target.set(0, 0, 0);
         this.controls.update();
@@ -563,9 +852,9 @@ class PortVisualization {
         this.renderer.setSize(width, height);
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // ANIMATION LOOP
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     animate() {
         if (!this.renderer) return;
 
@@ -589,12 +878,10 @@ class PortVisualization {
         this.updateWater(time);
         this.updateSun(deltaSec);
 
-        // Render main scene
         this.renderer.setViewport(0, 0, this.container.clientWidth, this.container.clientHeight);
         this.renderer.setScissorTest(false);
         this.renderer.render(this.scene, this.camera);
 
-        // Render minimap in top-right
         this.updateMinimap();
 
         const size = this.minimapSize;
@@ -639,7 +926,6 @@ class PortVisualization {
         const southTilt = 0.25;
         const h = Math.sin(angle);
 
-
         const radius = 5500;
         const y = h * radius;
         const z = -Math.cos(angle) * radius;
@@ -649,7 +935,6 @@ class PortVisualization {
         this.sunMesh.position.copy(this.sun.position);
         this.sunMesh.visible = true;
 
-        // Point light toward scene center
         this.sun.target.position.set(0, 0, 0);
         this.sun.target.updateMatrixWorld();
 
@@ -665,19 +950,16 @@ class PortVisualization {
             lightFactor = u * u * (3 - 2 * u);
         }
 
-        // KEEP SUN VISUALLY BIG – scale with distance
         const dist = this.camera.position.distanceTo(this.sunMesh.position);
         if (dist > 0) {
-            const baseSize = 100;      // PlaneGeometry size
-            const apparentSize = 0.2; // same value you had
+            const baseSize = 100;
+            const apparentSize = 0.2;
             const scale = (dist * apparentSize) / baseSize;
             this.sunMesh.scale.setScalar(scale);
         }
 
-        // ✅ BILLBOARD (MINIMAL: always face camera)
         this.sunMesh.lookAt(this.camera.position);
 
-        // SUN + AMBIENT INTENSITY
         this.sun.intensity = 0.2 + 0.8 * lightFactor;
 
         const minAmbient = 0.35;
@@ -685,7 +967,6 @@ class PortVisualization {
         this.ambientLight.intensity =
             minAmbient + (maxAmbient - minAmbient) * lightFactor;
 
-        // AMBIENT COLOR
         const daylightColor = this.dayAmbientColor || new THREE.Color(0xffffff);
         const moonColor = this.nightAmbientColor || new THREE.Color(0x4d6f9a);
 
@@ -693,20 +974,18 @@ class PortVisualization {
         ambientColor.lerpColors(moonColor, daylightColor, lightFactor);
         this.ambientLight.color.copy(ambientColor);
 
-        // Hemisphere light: stronger at night for soft sky glow
         if (this.hemiLight) {
             this.hemiLight.intensity = 0.4 * (1 - lightFactor);
         }
 
-        // SKY BACKGROUND FADE
         const skyColor = new THREE.Color();
         skyColor.lerpColors(this.nightSkyColor, this.daySkyColor, lightFactor);
         this.scene.background = skyColor;
     }
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // DISPOSE
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     dispose() {
         this.clearScene();
         this.renderer.dispose();
@@ -715,5 +994,4 @@ class PortVisualization {
     }
 }
 
-// Global export
 window.PortVisualization = PortVisualization;

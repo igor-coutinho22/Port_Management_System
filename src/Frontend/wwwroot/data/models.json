@@ -75,9 +75,9 @@
         "warehouse": {
             "url": "models/warehouse.glb",
             "transform": {
-                "scale": 2,
+                "scale": 1.5,
                 "rotateY": 3.14159,
-                "liftY": -10
+                "liftY": -7
             }
         },
         "maleWorker": {

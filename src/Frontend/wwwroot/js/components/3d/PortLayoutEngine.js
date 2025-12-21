@@ -1,34 +1,70 @@
 // -----------------------------------------------------------------------------
 // PortLayoutEngine.js
-// Converts REAL backend data → 3D spatial layout (positions & grouping)
+// Clean zoning + road gaps + non-overlapping placement
+// SEA (-Z) -> DOCKS -> ROAD -> YARDS -> ROAD -> WAREHOUSES ( +Z )
 // -----------------------------------------------------------------------------
 
 class PortLayoutEngine {
 
     constructor() {
-        // Scaling factor: 1 meter in data = N units in 3D
         this.scale = 1.0;
 
-        // Spacing between major port zones
-        this.dockSpacing = 50;
-        this.storageSpacing = 40;
-
-        // Base positions
         this.waterLineZ = 0;
-        this.dockZ = 20; // Docks start slightly inland from water line
-        this.storageZ = 150; // Storage areas behind docks
+
+        // Docks sit slightly inland from water line (positive Z)
+        this.dockFrontZ = 10;
+
+        // GLOBAL LAND SHIFT (positive Z moves everything inland / away from ocean)
+        // Safest way to move the whole port without breaking roads/intersections.
+        this.landOffsetZ = 15;
+
+        // Fine-tune offsets (positive Z pushes further inland)
+        // Use these when you want to nudge specific groups without moving roads/docks.
+        this.warehouseOffsetZ = 80;
+        // Offsets ONLY container yards (ContainerYard storage areas)
+        // Total yard Z shift = landOffsetZ (through dockZ/yardsZ) + containerOffsetZ
+        this.containerOffsetZ = 70;
+
+        // Optional: per-container nudge inside the yard (leave at 0 unless needed)
+        this.containerItemOffsetZ = 0;
+
+        // Road bands between zones
+        this.roadDepth = 60;       // asphalt lane + sidewalk space
+        this.sidewalkDepth = 12;   // for visual sidewalks
+        this.zoneGap = 40;         // extra buffer between zones
+
+        this.dockZ = this.dockFrontZ + this.landOffsetZ;
+
+        this.yardsZ = this.dockZ + this.containerOffsetZ + 100 + this.roadDepth + this.zoneGap;
+
+        this.warehousesZ = this.yardsZ + this.warehouseOffsetZ - this.containerOffsetZ + 200 + this.roadDepth + this.zoneGap;
+
+        // --- X spacing ---
+        this.dockSpacing = 80;     // space between docks for service roads
+        this.yardSpacing = 100;    // space between yards
+        this.warehouseSpacing = 140;
+
+        // --- Sea placement ---
+        this.seaMargin = 40;        // gap from dock edge into sea
+        this.shipQueueGap = 220;    // distance between ships queued at same dock (along Z into sea)
+
+        // --- “Road lanes” for staff/trucks ---
+        this.roadLaneCount = 3;
+        this.roadLaneSpacing = 12;  // spacing between lane centerlines
     }
 
-    // -----------------------------------------------------------------------------
-    // MAIN ENTRY — compute positions for all port objects
-    // -----------------------------------------------------------------------------
     computeLayout({ docks, storageAreas, resources, vessels, staff, containers }) {
-        const dockLayouts = this.layoutDocks(docks);
-        const storageLayouts = this.layoutStorageAreas(storageAreas, dockLayouts);
-        const resourceLayouts = this.layoutResources(resources, storageLayouts, dockLayouts);
+        const dockLayouts = this.layoutDocks(docks || []);
+        const storageLayouts = this.layoutStorageAreas(storageAreas || [], dockLayouts);
+
         const vesselLayouts = this.layoutVessels(vessels || [], dockLayouts);
-        const staffLayouts = this.layoutStaff(staff || [], dockLayouts);
+
+        const resourceLayouts = this.layoutResources(resources || [], storageLayouts, dockLayouts);
+        const staffLayouts = this.layoutStaff(staff || [], dockLayouts, storageLayouts);
+
         const containerLayouts = this.layoutContainers(containers || [], storageLayouts);
+
+        const { roads, intersections } = this.layoutRoads(dockLayouts, storageLayouts);
 
         return {
             docks: dockLayouts,
@@ -36,37 +72,39 @@ class PortLayoutEngine {
             resources: resourceLayouts,
             vessels: vesselLayouts,
             staff: staffLayouts,
-            containers: containerLayouts
+            containers: containerLayouts,
+            roads,
+            intersections
         };
     }
 
-    // -----------------------------------------------------------------------------
-    // DOCKS LAYOUT
-    // -----------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
+    // DOCKS: line them up along X with big gaps for access roads
+    // ---------------------------------------------------------------------------
     layoutDocks(docks) {
         const layouts = [];
+        if (!docks.length) return layouts;
 
-        // Calculate total width to center them
         let totalWidth = 0;
         docks.forEach(d => {
             totalWidth += (d.lengthMeters || 200) * this.scale + this.dockSpacing;
         });
-        totalWidth -= this.dockSpacing; // Remove last spacing
+        totalWidth -= this.dockSpacing;
 
         let currentX = -totalWidth / 2;
 
-        docks.forEach((dock, index) => {
+        docks.forEach(dock => {
             const length = (dock.lengthMeters || 200) * this.scale;
-            const width = 40 * this.scale; // Fixed width for visual representation
-            const height = 10; // Height above water
+            const depth = 60 * this.scale; // dock “thickness” inland
+            const height = 10;
 
             layouts.push({
                 id: dock.id,
                 name: dock.name,
                 type: "Dock",
-                width: length, // In 3D, we often align length along X
-                depth: width,  // and width/depth along Z
-                height: height,
+                width: length,
+                depth,
+                height,
                 x: currentX + length / 2,
                 y: height / 2,
                 z: this.dockZ
@@ -78,279 +116,295 @@ class PortLayoutEngine {
         return layouts;
     }
 
-    // -----------------------------------------------------------------------------
-    // STORAGE AREA LAYOUT (Warehouses + Yards)
-    // -----------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
+    // STORAGE AREAS: yards row (closer) and warehouses row (behind)
+    // ---------------------------------------------------------------------------
     layoutStorageAreas(storageAreas, dockLayouts) {
         const layouts = [];
+        if (!storageAreas.length) return layouts;
 
-        // Simple grid layout for storage areas
-        const itemsPerRow = 4;
-        let row = 0;
-        let col = 0;
+        const yards = storageAreas.filter(s => s.subtype === "ContainerYard");
+        const warehouses = storageAreas.filter(s => s.subtype === "Warehouse");
+        const other = storageAreas.filter(s => s.subtype !== "ContainerYard" && s.subtype !== "Warehouse");
 
-        const cellWidth = 200;
-        const cellDepth = 200;
+        const sizeFor = (sa) => {
+            let base = 120;
+            if (sa.maxCapacityTeu > 1000) base = 160;
+            if (sa.maxCapacityTeu > 5000) base = 220;
 
-        // Start position (centered relative to docks or origin)
-        const startX = -(itemsPerRow * cellWidth) / 2;
-        const startZ = this.storageZ;
-
-        storageAreas.forEach(sa => {
             const isWarehouse = sa.subtype === "Warehouse";
+            return {
+                width: base * this.scale,
+                depth: (isWarehouse ? base * 0.7 : base) * this.scale,
+                height: isWarehouse ? 45 : 6
+            };
+        };
 
-            // Scale dimensions based on capacity if available, or use defaults
-            // Heuristic: 1 TEU ~= 1 unit of volume? Or just fixed sizes for now.
-            // Let's use fixed sizes but scaled slightly by capacity tier
+        const sortedYards = [...yards].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        const sortedWhs = [...warehouses].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
-            let baseSize = 100;
-            if (sa.maxCapacityTeu > 1000) baseSize = 150;
-            if (sa.maxCapacityTeu > 5000) baseSize = 200;
+        const yardDims = sortedYards.map(sizeFor);
+        const whDims = sortedWhs.map(sizeFor);
 
-            const width = baseSize * this.scale;
-            const depth = (isWarehouse ? baseSize * 0.6 : baseSize) * this.scale;
-            const height = isWarehouse ? 40 : 5; // Warehouses are tall, yards are flat
+        const maxCount = Math.max(sortedYards.length, sortedWhs.length);
+        const maxCols = 4;
+        const cols = Math.max(1, Math.min(maxCols, maxCount));
 
-            const x = startX + col * cellWidth + cellWidth / 2;
-            const z = startZ + row * cellDepth + cellDepth / 2;
+        const maxYardW = yardDims.reduce((m, d) => Math.max(m, d.width), 0);
+        const maxWhW = whDims.reduce((m, d) => Math.max(m, d.width), 0);
+        const maxItemW = Math.max(maxYardW, maxWhW, 120);
 
-            layouts.push({
-                id: sa.id,
-                name: sa.name,
-                subtype: sa.subtype,
-                width,
-                depth,
-                height,
-                x,
-                y: height / 2,
-                z
-            });
+        const streetGap = 120; // shared road gap
+        const cellWidth = maxItemW + streetGap;
 
-            col++;
-            if (col >= itemsPerRow) {
-                col = 0;
-                row++;
+        const docksSpan = this.getSpanX(dockLayouts);
+        const centerX = (docksSpan.min + docksSpan.max) / 2;
+
+        const colCenters = [];
+        for (let c = 0; c < cols; c++) {
+            const x = centerX + (c - (cols - 1) / 2) * cellWidth;
+            colCenters.push(x);
+        }
+
+        const placeZone = (items, dims, startZ, rowStepZ) => {
+            for (let i = 0; i < items.length; i++) {
+                const sa = items[i];
+                const dim = dims[i];
+
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+
+                layouts.push({
+                    id: sa.id,
+                    name: sa.name,
+                    subtype: sa.subtype,
+                    width: dim.width,
+                    depth: dim.depth,
+                    height: dim.height,
+                    x: colCenters[col],
+                    y: dim.height / 2,
+                    z: startZ + row * rowStepZ
+                });
             }
-        });
+        };
+
+        const maxYardD = yardDims.reduce((m, d) => Math.max(m, d.depth), 0);
+        const maxWhD = whDims.reduce((m, d) => Math.max(m, d.depth), 0);
+
+        const yardRowStepZ = maxYardD + 80;
+        const whRowStepZ = maxWhD + 120;
+
+        placeZone(sortedYards, yardDims, this.yardsZ, yardRowStepZ);
+        placeZone(sortedWhs, whDims, this.warehousesZ, whRowStepZ);
+
+        if (other.length) {
+            const sortedOther = [...other].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            const otherDims = sortedOther.map(sizeFor);
+            const maxOtherD = otherDims.reduce((m, d) => Math.max(m, d.depth), 0);
+            const otherStep = maxOtherD + 100;
+
+            // Keep "other" behind warehouses, following the warehouse offset for consistency.
+            placeZone(sortedOther, otherDims, this.warehousesZ + whRowStepZ + 120, otherStep);
+        }
 
         return layouts;
     }
 
-    // -----------------------------------------------------------------------------
-    // RESOURCES LAYOUT (Cranes, Trucks, etc.)
-    // -----------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
+    // VESSELS
+    // ---------------------------------------------------------------------------
+    layoutVessels(vessels, dockLayouts) {
+        const layouts = [];
+        if (!vessels.length) return layouts;
+
+        const byDock = new Map();
+        vessels.forEach(v => {
+            const k = v.dockId || "NO_DOCK";
+            if (!byDock.has(k)) byDock.set(k, []);
+            byDock.get(k).push(v);
+        });
+
+        for (const [dockId, list] of byDock.entries()) {
+            const ordered = [...list].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+            if (dockId !== "NO_DOCK") {
+                const dock = dockLayouts.find(d => d.id === dockId);
+                if (!dock) continue;
+
+                ordered.forEach((v, idx) => {
+                    const length = (v.length || 150) * this.scale;
+                    const width = (v.width || 30) * this.scale;
+
+                    const baseZ = dock.z - dock.depth / 2 - width / 2 - this.seaMargin;
+                    const z = baseZ - idx * this.shipQueueGap;
+
+                    layouts.push({
+                        id: v.id,
+                        name: v.name,
+                        type: "Vessel",
+                        vesselType: v.type,
+                        dockId: dock.id,
+                        length,
+                        width,
+                        height: (v.height || 20) * this.scale,
+                        x: dock.x,
+                        y: 0,
+                        z,
+                        rotation: 0
+                    });
+                });
+
+            } else {
+                ordered.forEach((v, i) => {
+                    const length = (v.length || 150) * this.scale;
+                    const width = (v.width || 30) * this.scale;
+
+                    const col = i % 4;
+                    const row = Math.floor(i / 4);
+
+                    layouts.push({
+                        id: v.id,
+                        name: v.name,
+                        type: "Vessel",
+                        vesselType: v.type,
+                        dockId: null,
+                        length,
+                        width,
+                        height: (v.height || 20) * this.scale,
+                        x: (col - 1.5) * 500,
+                        y: 0,
+                        z: -500 - row * 250,
+                        rotation: 0
+                    });
+                });
+            }
+        }
+
+        return layouts;
+    }
+
+    // ---------------------------------------------------------------------------
+    // RESOURCES
+    // ---------------------------------------------------------------------------
     layoutResources(resources, storageLayouts, dockLayouts) {
         const layouts = [];
+        if (!resources.length) return layouts;
 
-        // Separate resources by type
-        const stsCranes = resources.filter(r => (r.resourceType || "").toString().toLowerCase().includes("sts") || (r.resourceType === 0));
-        const yardCranes = resources.filter(r => (r.resourceType || "").toString().toLowerCase().includes("yard") || (r.resourceType === 1));
-        const others = resources.filter(r => !stsCranes.includes(r) && !yardCranes.includes(r));
+        const isSTS = r => (r.resourceType === 0) || (String(r.resourceType).toLowerCase().includes("sts"));
+        const isYard = r => (r.resourceType === 1) || (String(r.resourceType).toLowerCase().includes("yard"));
+        const stsCranes = resources.filter(isSTS);
+        const yardCranes = resources.filter(isYard);
+        const others = resources.filter(r => !isSTS(r) && !isYard(r));
 
-        // 1. Place STS Cranes at Docks
-        stsCranes.forEach((res, i) => {
-            const dock = dockLayouts[i % dockLayouts.length];
-            if (dock) {
-                // Place along the dock edge
+        const perDock = Math.max(1, Math.ceil(stsCranes.length / Math.max(1, dockLayouts.length)));
+        let idx = 0;
+
+        dockLayouts.forEach(dock => {
+            const countHere = Math.min(perDock, stsCranes.length - idx);
+            if (countHere <= 0) return;
+
+            const step = dock.width / (countHere + 1);
+            for (let i = 0; i < countHere; i++) {
+                const res = stsCranes[idx++];
+                const x = dock.x - dock.width / 2 + step * (i + 1);
+                const z = dock.z - dock.depth / 2 + 8;
                 layouts.push({
                     id: res.id,
                     name: res.description,
                     type: res.resourceType,
-                    height: 50, // Taller
-                    radius: 5,
-                    x: dock.x + (Math.random() - 0.5) * (dock.width - 20),
-                    y: dock.height, // On top of dock
-                    z: dock.z - dock.depth / 2 + 15 // Near the water edge
+                    height: 55,
+                    radius: 6,
+                    x,
+                    y: dock.height,
+                    z
                 });
             }
         });
 
-        // 2. Place Yard Cranes at Container Yards
         const yards = storageLayouts.filter(s => s.subtype === "ContainerYard");
-        yardCranes.forEach((res, i) => {
-            const yard = yards.length > 0 ? yards[i % yards.length] : storageLayouts[i % storageLayouts.length];
-            if (yard) {
+        if (yards.length && yardCranes.length) {
+            yardCranes.forEach((res, i) => {
+                const yard = yards[i % yards.length];
+
+                const cols = 3;
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+
+                const margin = 20;
+                const usableW = Math.max(1, yard.width - margin * 2);
+                const usableD = Math.max(1, yard.depth - margin * 2);
+
+                const stepX = usableW / cols;
+                const stepZ = usableD / 3;
+
+                const x = yard.x - usableW / 2 + stepX * (col + 0.5);
+                const z = yard.z - usableD / 2 + stepZ * ((row % 3) + 0.5);
+
                 layouts.push({
                     id: res.id,
                     name: res.description,
                     type: res.resourceType,
-                    height: 40,
-                    radius: 5,
-                    x: yard.x + (Math.random() - 0.5) * (yard.width - 20),
-                    y: yard.height, // On ground/yard
-                    z: yard.z + (Math.random() - 0.5) * (yard.depth - 20)
+                    height: 45,
+                    radius: 6,
+                    x,
+                    y: yard.height,
+                    z
                 });
-            }
-        });
+            });
+        }
 
-        // 3. Scatter others (Trucks, etc.) near storage
+        const roadZ = (this.dockZ + this.yardsZ) / 2;
+        const span = this.getSpanX(dockLayouts);
+
         others.forEach((res, i) => {
-            // Target "Container Yard North" specifically
-            const targetArea = storageLayouts.find(s => s.name === "Container Yard North") || storageLayouts[0];
+            const lane = i % this.roadLaneCount;
+            const laneOffset = (lane - (this.roadLaneCount - 1) / 2) * this.roadLaneSpacing;
 
-            let x = 0, z = 0;
-
-            if (targetArea) {
-                // Place strictly INSIDE the yard boundaries
-                // Margin of 10 units from edge
-                const margin = 10;
-                const safeWidth = Math.max(0, targetArea.width - margin * 2);
-                const safeDepth = Math.max(0, targetArea.depth - margin * 2);
-
-                x = targetArea.x + (Math.random() - 0.5) * safeWidth;
-                z = targetArea.z + (Math.random() - 0.5) * safeDepth;
-            } else {
-                // Fallback
-                x = 0;
-                z = 100;
-            }
+            const x = span.min + 80 + (i * 35) % Math.max(200, (span.max - span.min - 160));
+            const z = roadZ + laneOffset;
 
             layouts.push({
                 id: res.id,
                 name: res.description,
                 type: res.resourceType,
-                height: 15,
+                height: 12,
                 radius: 4,
-                x: x,
-                y: 5, // On ground
-                z: z
+                x,
+                y: 3,
+                z
             });
         });
 
         return layouts;
     }
 
-    // -----------------------------------------------------------------------------
-    // VESSELS LAYOUT
-    // -----------------------------------------------------------------------------
-    layoutVessels(vessels, dockLayouts) {
+    // ---------------------------------------------------------------------------
+    // STAFF
+    // ---------------------------------------------------------------------------
+    layoutStaff(staffList, dockLayouts, storageLayouts) {
         const layouts = [];
+        if (!staffList.length) return layouts;
 
-        vessels.forEach((v, i) => {
-            const length = (v.length || 100) * this.scale;
-            const width = (v.width || 30) * this.scale;
+        const span = this.getSpanX(dockLayouts);
+        const roadZ1 = (this.dockZ + this.yardsZ) / 2;
+        const roadZ2 = (this.yardsZ + this.warehousesZ) / 2;
 
-            // Find assigned dock by ID
-            const dock = dockLayouts.find(d => d.id === v.dockId);
-
-            let x, z, angle;
-
-            if (dock) {
-                // Place alongside the dock
-                // Check if another vessel is already at this dock
-                const vesselsAtDock = layouts.filter(l => l.dockId === dock.id).length;
-                // Use a safe length offset (e.g. 300) because vessels are moored lengthwise (stern-to-bow)
-                // and can be up to ~250m long.
-                const offset = vesselsAtDock * 300;
-
-                x = dock.x + offset;
-                z = dock.z - dock.depth / 2 - width / 2 - 5; // 5 units gap
-                angle = 0;
-            } else {
-                // Anchor out at sea if no dock assigned (fallback)
-                // Increase spacing to avoid collisions
-                x = (i - vessels.length / 2) * 400; // Increased from 150 to 400
-                z = -300 - (i % 3) * 100; // Stagger depth too
-                angle = 0;
-            }
-
-            layouts.push({
-                id: v.id,
-                name: v.name,
-                type: "Vessel",
-                vesselType: v.type,
-                dockId: v.dockId, // Store dockId for collision check above
-                length: length,
-                width: width,
-                height: (v.height || 20) * this.scale,
-                x: x,
-                y: 0, // On water
-                z: z,
-                rotation: angle
-            });
-        });
-
-        return layouts;
-    }
-
-    // -----------------------------------------------------------------------------
-    // STAFF LAYOUT
-    // -----------------------------------------------------------------------------
-    layoutStaff(staffList, dockLayouts) {
-        const layouts = [];
-
-        // Place staff on the docks
         staffList.forEach((s, i) => {
-            // Assign to a random dock
-            const dock = dockLayouts.length > 0 ? dockLayouts[i % dockLayouts.length] : null;
+            const roadZ = (i % 2 === 0) ? roadZ1 : roadZ2;
 
-            let x = 0, z = 50; // Default safe zone if no docks
+            const lane = (i % 4);
+            const laneOffset = (lane - 1.5) * 6;
 
-            if (dock) {
-                // Place somewhere on the dock surface
-                // Dock is centered at dock.x, dock.z with dimensions dock.width, dock.depth
-                x = dock.x + (Math.random() - 0.5) * (dock.width - 10);
-                z = dock.z + (Math.random() - 0.5) * (dock.depth - 10);
-            } else {
-                // Fallback: Place on a "pier" or safe ground area
-                x = (i % 5) * 10;
-                z = 50 + (Math.floor(i / 5) * 10);
-            }
+            const x = span.min + 60 + (i * 18) % Math.max(180, (span.max - span.min - 120));
+            const z = roadZ + laneOffset;
 
             layouts.push({
                 id: s.id,
                 name: s.name,
                 type: "Staff",
                 status: s.status,
-                x: x,
-                y: 15, // Standing on ground
-                z: z
-            });
-        });
-
-        return layouts;
-    }
-
-    // -----------------------------------------------------------------------------
-    // CONTAINERS LAYOUT (inside Container Yards)
-    // -----------------------------------------------------------------------------
-    layoutContainers(containers, storageLayouts) {
-        const layouts = [];
-
-        // 1. Group yards by ID for quick lookup
-        const yardById = new Map();
-        storageLayouts.forEach(sa => yardById.set(sa.id, sa));
-
-        // Choose cell size – reuse 5 x 10 from your decorative containers
-        const cellWidth = 7;   // include gap
-        const cellDepth = 12;
-
-        containers.forEach(c => {
-            const yard = yardById.get(c.yardId);
-            if (!yard) return; // container with invalid yard -> skip
-
-            // Yard is centered at yard.x, yard.z, dimensions yard.width, yard.depth
-            // We'll use row/bay to place it in a grid.
-
-            const originX = yard.x - yard.width / 2 + cellWidth / 2;
-            const originZ = yard.z - yard.depth / 2 + cellDepth / 2;
-
-            const x = originX + c.bay * cellWidth;
-            const z = originZ + c.row * cellDepth;
-
-            const containerHeight = 5; // same as your geo
-
-            const y = yard.y + yard.height / 2 + containerHeight / 2 + c.tier * containerHeight;
-
-            layouts.push({
-                id: c.id,
-                isoCode: c.isoCode,
-                sizeFt: c.sizeFt,
-                status: c.status,
-                owner: c.owner,
-                yardId: c.yardId,
                 x,
-                y,
+                y: 6,
                 z
             });
         });
@@ -358,7 +412,295 @@ class PortLayoutEngine {
         return layouts;
     }
 
+    // ---------------------------------------------------------------------------
+    // CONTAINERS
+    // ---------------------------------------------------------------------------
+    layoutContainers(containers, storageLayouts) {
+        const layouts = [];
+        if (!containers.length) return layouts;
+
+        const yards = storageLayouts.filter(s => s.subtype === "ContainerYard");
+        if (!yards.length) return layouts;
+
+        const byYard = new Map();
+        containers.forEach(c => {
+            const id = c.yardId || yards[0].id;
+            if (!byYard.has(id)) byYard.set(id, []);
+            byYard.get(id).push(c);
+        });
+
+        const containerW = 5;
+        const containerD = 10;
+        const containerH = 5;
+        const gap = 2;
+
+        for (const [yardId, list] of byYard.entries()) {
+            const yard = yards.find(y => y.id === yardId) || yards[0];
+            const margin = 15;
+
+            const usableW = Math.max(1, yard.width - margin * 2);
+            const usableD = Math.max(1, yard.depth - margin * 2);
+
+            const cellW = containerW + gap;
+            const cellD = containerD + gap;
+
+            const cols = Math.max(1, Math.floor(usableW / cellW));
+            const rows = Math.max(1, Math.floor(usableD / cellD));
+
+            list.forEach((c, i) => {
+                const col = i % cols;
+                const row = Math.floor(i / cols) % rows;
+                const tier = Math.floor(i / (cols * rows));
+
+                const x = yard.x - usableW / 2 + col * cellW + cellW / 2;
+                // Yard already includes landOffsetZ and containerOffsetZ.
+                // This offset is strictly a local nudge for containers inside the yard.
+                const z = yard.z - usableD / 2 + row * cellD + cellD / 2 + this.containerItemOffsetZ;
+                const y = yard.y + yard.height / 2 + containerH / 2 + tier * containerH;
+
+                layouts.push({
+                    id: c.id,
+                    teu: c.teu,
+                    yardId: yard.id,
+                    x, y, z
+                });
+            });
+        }
+
+        return layouts;
+    }
+
+    // ---------------------------------------------------------------------------
+    // NEW: ROADS & INTERSECTIONS LAYOUT
+    // ---------------------------------------------------------------------------
+    layoutRoads(dockLayouts, storageLayouts) {
+        const roads = [];
+        const intersections = [];
+
+        if (!dockLayouts.length && !storageLayouts.length) {
+            return { roads, intersections };
+        }
+
+        const bounds = this.getBounds(dockLayouts, storageLayouts);
+        const marginX = 60;
+        // Use a margin that respects configured zone gaps to avoid roads sitting too close
+        const marginZ = Math.max(60, this.zoneGap);
+
+        const minX = bounds.minX - marginX;
+        const maxX = bounds.maxX + marginX;
+
+        // Clamp the "north" bound so we never generate roads in the water/docks band.
+        // Use dock back edge (dockMaxZ) as the start of land, then push it inland a bit.
+        const docksSpanZ = this.getSpanZ(dockLayouts || []);
+        const dockMaxZ = docksSpanZ.max;
+
+        const unclampedMinZ = bounds.minZ - marginZ;
+        const minLandZ = (dockLayouts.length ? (dockMaxZ + Math.max(10, this.zoneGap / 2)) : unclampedMinZ);
+        const minZ = Math.max(unclampedMinZ, minLandZ);
+
+        const maxZ = bounds.maxZ + marginZ;
+
+        // Horizontal main roads between zones (dock<->yard, yard<->warehouse)
+        const roadZ1 = (this.dockZ + this.yardsZ) / 2;
+        const roadZ2 = (this.yardsZ + this.warehousesZ) / 2;
+
+        // NEW: back road behind warehouses (acts like another row / service road)
+        // Keep it tied to warehouse anchor + margins so it scales with layout.
+        const roadZ3 = Math.max(
+            this.warehousesZ + this.roadDepth + this.zoneGap + 40,
+            maxZ - this.roadDepth
+        );
+
+        const totalWidth = maxX - minX;
+
+        roads.push({
+            id: "road_dock_yard",
+            orientation: "horizontal",
+            x: (minX + maxX) / 2,
+            z: roadZ1,
+            width: totalWidth,
+            depth: this.roadDepth
+        });
+
+        roads.push({
+            id: "road_yard_wh",
+            orientation: "horizontal",
+            x: (minX + maxX) / 2,
+            z: roadZ2,
+            width: totalWidth,
+            depth: this.roadDepth
+        });
+
+        roads.push({
+            id: "road_wh_back",
+            orientation: "horizontal",
+            x: (minX + maxX) / 2,
+            z: roadZ3,
+            width: totalWidth,
+            depth: this.roadDepth
+        });
+
+        // Vertical roads: align with the storage grid/gaps so they match the building spacing.
+        // Prefer using storage layouts; fall back to dock gap-based centers.
+        const verticalXs = this.computeStorageGridRoadXs(storageLayouts, dockLayouts);
+        // Vertical roads should span the main zone area but avoid extending into the sea/dock band.
+        // Now that we have a back road after warehouses, extend verticals down to it.
+        const vTop = roadZ1 - this.roadDepth; // above the dock<->yard road
+        const vBottom = roadZ3 + this.roadDepth; // below the warehouse-back road
+        const vDepth = Math.max((vBottom - vTop) * 1.1, 200);
+
+        verticalXs.forEach((x, idx) => {
+            roads.push({
+                id: `vroad_${idx}`,
+                orientation: "vertical",
+                x,
+                z: (vTop + vBottom) / 2,
+                width: this.roadDepth,
+                depth: vDepth
+            });
+        });
+
+        // NOTE: Perimeter roads intentionally disabled.
+        // They tend to wrap the docks (which are in/near water) and create unwanted visuals on the sea side.
+
+        // Intersections: every vertical road crossing a horizontal road
+        const horizRoads = roads.filter(r => r.orientation === "horizontal");
+        const vertRoads = roads.filter(r => r.orientation === "vertical");
+
+        horizRoads.forEach(hr => {
+            vertRoads.forEach(vr => {
+                intersections.push({
+                    x: vr.x,
+                    z: hr.z,
+                    size: Math.min(this.roadDepth * 1, 80)
+                });
+            });
+        });
+
+        return { roads, intersections };
+    }
+
+    computeStorageGridRoadXs(storageLayouts, dockLayouts) {
+        // If we have storage areas, try to align roads to the same logical columns.
+        const storage = storageLayouts || [];
+        const hasStorage = storage.length > 0;
+
+        if (!hasStorage) {
+            // Fallback: dock gaps
+            return this.computeVerticalRoadXs(dockLayouts || []);
+        }
+
+        // Column centers are based on x positions present in layouts.
+        // We cluster by rounding to a coarse grid to get distinct columns.
+        const centers = storage
+            .map(s => s.x)
+            .filter(x => Number.isFinite(x))
+            .map(x => Math.round(x / 10) * 10);
+
+        const unique = Array.from(new Set(centers)).sort((a, b) => a - b);
+
+        if (unique.length <= 1) {
+            return this.computeVerticalRoadXs(dockLayouts || []);
+        }
+
+        // Roads go between columns -> midpoint between consecutive centers.
+        const xs = [];
+        for (let i = 0; i < unique.length - 1; i++) {
+            const a = unique[i];
+            const b = unique[i + 1];
+            const gap = b - a;
+            if (gap > Math.max(60, this.roadDepth)) {
+                xs.push((a + b) / 2);
+            }
+        }
+
+        // Also add a couple of roads at the sides of the grid (optional), but only if there's room.
+        // This helps connect the outermost lanes without creating a full perimeter.
+        const span = this.getSpanX(storage);
+        const leftSide = span.min - Math.max(40, this.roadDepth);
+        const rightSide = span.max + Math.max(40, this.roadDepth);
+        if (Number.isFinite(leftSide)) xs.unshift(leftSide);
+        if (Number.isFinite(rightSide)) xs.push(rightSide);
+
+        return xs;
+    }
+
+    computeVerticalRoadXs(dockLayouts) {
+        if (!dockLayouts || !dockLayouts.length) return [];
+
+        // Build sorted intervals [left,right] for each dock
+        const intervals = dockLayouts.map(d => {
+            return { left: d.x - (d.width || 0) / 2, right: d.x + (d.width || 0) / 2 };
+        }).sort((a, b) => a.left - b.left);
+
+        // Merge overlapping intervals (defensive) and compute gaps between consecutive intervals
+        const merged = [];
+        for (const iv of intervals) {
+            if (!merged.length) { merged.push({ ...iv }); continue; }
+            const last = merged[merged.length - 1];
+            if (iv.left <= last.right + 1e-6) {
+                // overlap/adjacent -> extend right
+                last.right = Math.max(last.right, iv.right);
+            } else {
+                merged.push({ ...iv });
+            }
+        }
+
+        const xs = [];
+        for (let i = 0; i < merged.length - 1; i++) {
+            const cur = merged[i];
+            const next = merged[i + 1];
+            const gap = next.left - cur.right;
+            // Only add a vertical road if there is a meaningful gap
+            if (gap > Math.max(20, this.roadLaneSpacing * 2)) {
+                xs.push((cur.right + next.left) / 2);
+            }
+        }
+
+        return xs;
+    }
+
+    // ---------------------------------------------------------------------------
+    // HELPERS
+    // ---------------------------------------------------------------------------
+    getSpanX(items) {
+        if (!items || !items.length) return { min: -500, max: 500 };
+        let min = Infinity, max = -Infinity;
+        items.forEach(it => {
+            const left = it.x - (it.width || 0) / 2;
+            const right = it.x + (it.width || 0) / 2;
+            min = Math.min(min, left);
+            max = Math.max(max, right);
+        });
+        return { min, max };
+    }
+
+    getSpanZ(items) {
+        if (!items || !items.length) return { min: -500, max: 500 };
+        let min = Infinity, max = -Infinity;
+        items.forEach(it => {
+            const front = it.z - (it.depth || 0) / 2;
+            const back = it.z + (it.depth || 0) / 2;
+            min = Math.min(min, front);
+            max = Math.max(max, back);
+        });
+        return { min, max };
+    }
+
+    getBounds(docks, storage) {
+        const all = [...(docks || []), ...(storage || [])];
+        if (!all.length) return { minX: -500, maxX: 500, minZ: -500, maxZ: 500 };
+
+        const spanX = this.getSpanX(all);
+        const spanZ = this.getSpanZ(all);
+
+        return {
+            minX: spanX.min,
+            maxX: spanX.max,
+            minZ: spanZ.min,
+            maxZ: spanZ.max
+        };
+    }
 }
 
-// GLOBAL EXPORT
 window.PortLayoutEngine = PortLayoutEngine;
