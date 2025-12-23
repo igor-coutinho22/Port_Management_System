@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Oem.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,6 +30,28 @@ namespace Oem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OperationPlanAudit",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    OperationPlanId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Author = table.Column<string>(type: "text", nullable: false),
+                    ChangedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Reason = table.Column<string>(type: "text", nullable: false),
+                    ChangesDescription = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OperationPlanAudit", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OperationPlanAudit_OperationPlans_OperationPlanId",
+                        column: x => x.OperationPlanId,
+                        principalTable: "OperationPlans",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OperationPlanItems",
                 columns: table => new
                 {
@@ -43,7 +65,8 @@ namespace Oem.Migrations
                     UnloadingEndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LoadingStartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LoadingEndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    NumberOfCranes = table.Column<int>(type: "integer", nullable: false)
+                    NumberOfCranes = table.Column<int>(type: "integer", nullable: false),
+                    NumberOfStaff = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -57,6 +80,11 @@ namespace Oem.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_OperationPlanAudit_OperationPlanId",
+                table: "OperationPlanAudit",
+                column: "OperationPlanId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OperationPlanItems_OperationPlanId",
                 table: "OperationPlanItems",
                 column: "OperationPlanId");
@@ -65,6 +93,9 @@ namespace Oem.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "OperationPlanAudit");
+
             migrationBuilder.DropTable(
                 name: "OperationPlanItems");
 

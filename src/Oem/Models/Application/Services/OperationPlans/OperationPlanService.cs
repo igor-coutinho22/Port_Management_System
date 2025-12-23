@@ -1,8 +1,12 @@
+using Microsoft.EntityFrameworkCore;
 using Oem.Models.Application.DTOs;
+using Oem.Models.Context;
 using Oem.Models.Domain.OperationPlans;
+using Oem.Models.Domain.OperationPlans.Enums;
 using Oem.Models.Domain.OperationPlans.Service;
 using Oem.Models.Domain.Scheduling.Services;
 using Oem.Models.DTOs.OperationPlans;
+using Oem.Models.Mappers;
 
 namespace Oem.Models.Application.Services
 {
@@ -11,7 +15,7 @@ namespace Oem.Models.Application.Services
         private readonly IOperationPlanRepository _repository;
         private readonly IWebAppService _webAppService;
         private readonly IHeuristicScheduleService _heuristicService;
-        
+
         public OperationPlanService(
             IOperationPlanRepository repository,
             IWebAppService webAppService,
@@ -64,34 +68,28 @@ namespace Oem.Models.Application.Services
             await _repository.DeleteAsync(plan);
         }
 
-        /* public async Task<IEnumerable<OperationPlan>> SearchPlansAsync(DateOnly? date, string? vesselIMO)
+        public async Task<OperationPlan> UpdatePlanAsync(Guid id, UpdateOperationPlanDTO dto)
         {
-            return await _repository.SearchAsync(date, vesselIMO);
-        }
-
-        public async Task UpdatePlanAsync(Guid id, UpdateOperationPlanDTO dto)
-        {
+            // 1. Fetch (Tracking enabled)
             var plan = await _repository.GetByIdAsync(id);
+
             if (plan == null)
-            {
-                throw new ArgumentException($"Operation Plan with ID: {id} not found.");
-            }
+                throw new KeyNotFoundException($"No plan found with ID {id}");
 
-            if (plan.Status != Oem.Models.Domain.OperationPlans.Enums.OperationPlanStatus.Draft) 
-            {
-               // Depending on requirements, maybe allow updates even if not Draft? 
-               // US says "manual update... when needed". Usually implies before execution.
-               // Let's allow it for now, or maybe log a warning.
-            }
+            if (plan.Status == OperationPlanStatus.Executed)
+                throw new InvalidOperationException("Cannot update a plan that has already been executed.");
 
-            
-            // Use Mapper to apply updates
-            Oem.Models.Mappers.OperationPlanMapper.ApplyUpdate(plan, dto);
+            // 2. Apply Domain Logic (This adds the new AuditLog to the list)
+            OperationPlanMapper.ApplyUpdate(plan, dto);
 
-            await _repository.UpdateAsync(plan);
+            // 3. Persist
+            // Pass the plan to the repo so it can fix the AuditLog states before saving
+            await _repository.UpdateAsync();
+
+            return plan;
         }
 
-        public async Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date)
+        /* public async Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date)
         {
             // 1. Get all approved visits for the date
             var allVisits = await _webAppService.GetApprovedVisitsForDateAsync(date);

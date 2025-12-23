@@ -61,6 +61,37 @@ namespace Oem.Migrations
                     b.ToTable("OperationPlans", (string)null);
                 });
 
+            modelBuilder.Entity("Oem.Models.Domain.OperationPlans.OperationPlanAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChangesDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("OperationPlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OperationPlanId");
+
+                    b.ToTable("OperationPlanAudit");
+                });
+
             modelBuilder.Entity("Oem.Models.Domain.OperationPlans.OperationPlanItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -74,6 +105,9 @@ namespace Oem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("NumberOfCranes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NumberOfStaff")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("OperationPlanId")
@@ -106,6 +140,17 @@ namespace Oem.Migrations
                     b.ToTable("OperationPlanItems", (string)null);
                 });
 
+            modelBuilder.Entity("Oem.Models.Domain.OperationPlans.OperationPlanAudit", b =>
+                {
+                    b.HasOne("Oem.Models.Domain.OperationPlans.OperationPlan", "OperationPlan")
+                        .WithMany("AuditLog")
+                        .HasForeignKey("OperationPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OperationPlan");
+                });
+
             modelBuilder.Entity("Oem.Models.Domain.OperationPlans.OperationPlanItem", b =>
                 {
                     b.HasOne("Oem.Models.Domain.OperationPlans.OperationPlan", "OperationPlan")
@@ -119,6 +164,8 @@ namespace Oem.Migrations
 
             modelBuilder.Entity("Oem.Models.Domain.OperationPlans.OperationPlan", b =>
                 {
+                    b.Navigation("AuditLog");
+
                     b.Navigation("Items");
                 });
 #pragma warning restore 612, 618

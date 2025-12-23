@@ -29,15 +29,16 @@ namespace Oem.Models.Mappers
                     UnloadingEndTime = i.UnloadingEndTime,
                     LoadingStartTime = i.LoadingStartTime,
                     LoadingEndTime = i.LoadingEndTime,
-                    NumberOfCranes = i.NumberOfCranes
+                    NumberOfCranes = i.NumberOfCranes,
+                    NumberOfStaff = i.NumberOfStaff
                 }).ToList()
             };
         }
 
         // 2. DTO -> Domain (Creating new Plan) - FIXED for new Constructor
         public static OperationPlan ToDomain(
-            CreateOperationPlanDTO dto, 
-            Dictionary<Guid, VesselVisitNotificationDTO> visitInfoMap) 
+            CreateOperationPlanDTO dto,
+            Dictionary<Guid, VesselVisitNotificationDTO> visitInfoMap)
         {
             // 1. Create the Parent Plan
             var plan = new OperationPlan(
@@ -54,11 +55,11 @@ namespace Oem.Models.Mappers
                 if (!visitInfoMap.TryGetValue(entry.VesselVisitId, out var visitData))
                 {
                     // If missing, you might skip or throw. Skipping is safer for now.
-                    continue; 
+                    continue;
                 }
 
                 // --- STEP A: Calculate Time Windows FIRST ---
-                
+
                 DateTime serviceStart = entry.StartTime;
                 DateTime serviceEnd = entry.EndTime;
 
@@ -66,7 +67,7 @@ namespace Oem.Models.Mappers
                 // This scales the loading/unloading windows to fit the Prolog result perfectly.
                 double theoreticalMinutes = visitData.EstimatedUnloadingDurationMinutes + visitData.EstimatedLoadingDurationMinutes;
                 double allocatedMinutes = (serviceEnd - serviceStart).TotalMinutes;
-                
+
                 // Avoid divide by zero
                 double ratio = theoreticalMinutes > 0 ? allocatedMinutes / theoreticalMinutes : 1;
 
@@ -77,7 +78,11 @@ namespace Oem.Models.Mappers
                 // Calculate Loading Window (Immediately follows Unloading)
                 DateTime loadStart = unloadEnd;
                 DateTime loadEnd = loadStart.AddMinutes(visitData.EstimatedLoadingDurationMinutes * ratio);
-                
+
+                int calculatedStaff = entry.StaffMecNumbers?.Any() == true
+                          ? entry.StaffMecNumbers.Count
+                          : (entry.NumberOfCranes * 4);
+
                 // (Optional) Hard-clamp the final end time to match ServiceEnd exactly to avoid millisecond drift
                 // loadEnd = serviceEnd; 
 
@@ -93,7 +98,8 @@ namespace Oem.Models.Mappers
                     unloadEnd,
                     loadStart,
                     loadEnd,
-                    entry.NumberOfCranes
+                    entry.NumberOfCranes,
+                    calculatedStaff
                 );
 
                 // --- STEP C: Add to Parent ---
@@ -103,25 +109,21 @@ namespace Oem.Models.Mappers
             return plan;
         }
 
-        // 3. Update DTO -> Domain
         public static void ApplyUpdate(OperationPlan plan, UpdateOperationPlanDTO dto)
         {
-            foreach (var itemDto in dto.Items)
-            {
-                // The domain method handles validation and audit logging
-                plan.UpdateItem(
-                    itemDto.ItemId,
-                    itemDto.ServiceStartTime,
-                    itemDto.ServiceEndTime,
-                    itemDto.UnloadingStartTime,
-                    itemDto.UnloadingEndTime,
-                    itemDto.LoadingStartTime,
-                    itemDto.LoadingEndTime,
-                    itemDto.NumberOfCranes,
-                    dto.Author,
-                    dto.Reason
-                );
-            }
+            // 1. Convert Single DTO -> Single Domain Object
+            var updateInfo = new PlanItemUpdateInfo(
+                dto.Item.ItemId,
+                dto.Item.ServiceStartTime,
+                dto.Item.ServiceEndTime,
+                dto.Item.NumberOfCranes,
+                dto.Item.NumberOfStaff,
+                dto.Item.MinUnloadMinutes,
+                dto.Item.MinLoadMinutes
+            );
+
+            // 2. Call Domain Method (Singular)
+            plan.UpdateItem(updateInfo, dto.Author, dto.Reason);
         }
     }
 }

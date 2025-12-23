@@ -17,12 +17,6 @@ namespace Oem.Models.Context
             modelBuilder.ApplyConfiguration(new OperationPlanConfiguration());
             modelBuilder.ApplyConfiguration(new OperationPlanItemConfiguration());
 
-            modelBuilder.Entity<OperationPlan>()
-                .HasMany(p => p.Items)
-                .WithOne(i => i.OperationPlan)
-                .HasForeignKey(i => i.OperationPlanId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             base.OnModelCreating(modelBuilder);
         }
     }

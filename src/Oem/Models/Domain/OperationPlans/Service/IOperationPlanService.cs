@@ -10,9 +10,8 @@ public interface IOperationPlanService
         Task<OperationPlan?> GetPlanByIdAsync(Guid Id);
         Task<IEnumerable<OperationPlan>> GetAllPlansAsync();
         Task DeletePlanAsync(Guid Id);
-        /* Task<IEnumerable<OperationPlan>> SearchPlansAsync(DateOnly? date, string? vesselIMO);
-        Task UpdatePlanAsync(Guid id, UpdateOperationPlanDTO dto);
-        Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date);
+        Task<OperationPlan> UpdatePlanAsync(Guid id, UpdateOperationPlanDTO dto);
+        /*Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date);
         Task<OperationPlan> RegeneratePlanAsync(DateOnly date, string heuristicName, string author); */
     }
 }

@@ -152,36 +152,41 @@ namespace Oem.Controllers
             }
         }
 
-        /* [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<OperationPlanDTO>>> SearchPlans([FromQuery] string? date, [FromQuery] string? vesselIMO)
-        {
-            DateOnly? parsedDate = null;
-            if (!string.IsNullOrEmpty(date))
-            {
-                if (DateOnly.TryParse(date, out var d)) parsedDate = d;
-                else return BadRequest("Invalid date format. Use YYYY-MM-DD.");
-            }
-
-            var plans = await _service.SearchPlansAsync(parsedDate, vesselIMO);
-            return Ok(plans.Select(OperationPlanMapper.ToDto));
-        }
-
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdatePlan(Guid id, [FromBody] UpdateOperationPlanDTO dto)
         {
+            if (dto == null) 
+                return BadRequest("Request body cannot be empty.");
+
             try
             {
+                var existingPlan = await _service.GetPlanByIdAsync(id);
+                if (existingPlan == null)
+                    return NotFound($"No operation plan found for ID {id}");
+
                 // Set author from context if not provided
                 if (string.IsNullOrEmpty(dto.Author)) dto.Author = User?.Identity?.Name ?? "System";
 
-                await _service.UpdatePlanAsync(id, dto);
-                return NoContent();
+                var updatedPlan = await _service.UpdatePlanAsync(id, dto);
+
+                var updatedDto = OperationPlanMapper.ToDto(updatedPlan);
+                return Ok(updatedDto);
             }
-            catch (ArgumentException ex) { return NotFound(ex.Message); }
-            catch (Exception ex) { return StatusCode(500, ex.Message); }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        [HttpGet("missing-plans/{date}")]
+        /*[HttpGet("missing-plans/{date}")]
         public async Task<ActionResult<IEnumerable<VesselVisitNotificationDTO>>> GetMissingPlans(string date)
         {
             if (!DateOnly.TryParse(date, out var parsedDate))

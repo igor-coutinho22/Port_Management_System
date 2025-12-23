@@ -40,13 +40,13 @@ namespace Oem.Models.Infrastructure.Persistence.EntityConfigurations
             // 5. Relationship (One-to-Many)
             // A Plan has many Items. If the Plan is deleted, the Items are deleted (Cascade).
             builder.HasMany(op => op.Items)
-                .WithOne() // No navigation property back to Plan in Item class needed implies .WithOne()
+                .WithOne(item => item.OperationPlan) // No navigation property back to Plan in Item class needed implies .WithOne()
                 .HasForeignKey(item => item.OperationPlanId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // 6. Audit Log (One-to-Many)
             builder.HasMany(op => op.AuditLog)
-                .WithOne()
+                .WithOne(audit => audit.OperationPlan)
                 .HasForeignKey(audit => audit.OperationPlanId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

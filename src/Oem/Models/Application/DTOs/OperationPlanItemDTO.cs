@@ -17,5 +17,7 @@ namespace Oem.Models.DTOs.OperationPlans
         public DateTime LoadingEndTime { get; set; }
         
         public int NumberOfCranes { get; set; }
+        public int NumberOfStaff { get; set; }
+    
     }
 }

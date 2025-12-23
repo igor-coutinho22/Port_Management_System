@@ -4,6 +4,9 @@ namespace Oem.Models.Domain.OperationPlans
 {
     public class OperationPlan
     {
+        private static readonly int MAX_PORT_CRANES = 20;
+        private static readonly int MAX_PORT_STAFF = 100;
+
         public Guid Id { get; set; }
         public DateOnly ScheduleDate { get; set; }
         public string HeuristicUsed { get; set; } = string.Empty;
@@ -38,7 +41,8 @@ namespace Oem.Models.Domain.OperationPlans
 
         public void AddItem(OperationPlanItem item)
         {
-            if (Items.Contains(item)) {
+            if (Items.Contains(item))
+            {
                 return;
             }
 
@@ -47,51 +51,72 @@ namespace Oem.Models.Domain.OperationPlans
 
         public void RemoveItem(OperationPlanItem item)
         {
-            if (Items.Contains(item)) {
+            if (Items.Contains(item))
+            {
                 Items.Remove(item);
             }
         }
 
         public void AddAuditLog(string author, string reason, string changes)
         {
-           AuditLog.Add(new OperationPlanAudit(this.Id, author, reason, changes));
+            AuditLog.Add(new OperationPlanAudit(this.Id, author, reason, changes));
         }
 
-        public void UpdateItem(Guid itemId, DateTime serviceStart, DateTime serviceEnd, 
-                               DateTime unloadingStart, DateTime unloadingEnd, 
-                               DateTime loadingStart, DateTime loadingEnd, 
-                               int numberOfCranes, string author, string reason)
+        public void UpdateItem(PlanItemUpdateInfo update, string author, string reason)
         {
-            var item = Items.FirstOrDefault(i => i.Id == itemId);
-            if (item == null) throw new ArgumentException("Item not found in plan.");
+            // 1. Find the specific item
+            var item = Items.FirstOrDefault(i => i.Id == update.ItemId);
 
-            // Basic validation is inside the Item constructor, but we want to update it.
-            // Since Item properties are public setters, we can update them directly
-            // BUT we must validate consistency again.
+            if (item == null)
+            {
+                throw new KeyNotFoundException($"Item with ID {update.ItemId} not found in this plan.");
+            }
 
-            // Ideally OperationPlanItem should have an Update() method to encapsulate validation.
-            // For now, let's update properties and validate manually or delegate to item.
-            
-            // We'll trust DTO validation or Service layer for complex checks, 
-            // but consistency logic (Start < End) should be enforced.
+            // 2. Resource Overlap Validation (Collision Check)
 
-            if (serviceStart >= serviceEnd) throw new ArgumentException("Service Start must be before End");
+            // Find all OTHER items active during the NEW time range
+            var overlappingItems = Items
+                .Where(i => i.Id != update.ItemId) // Exclude self
+                .Where(i => i.ServiceStartTime < update.ServiceEndTime &&
+                            i.ServiceEndTime > update.ServiceStartTime) // Time Overlap
+                .ToList();
 
-            string changes = $"Updated Item {itemId}: " +
-                             $"ServiceTime ({item.ServiceStartTime} -> {serviceStart}), " +
-                             $"Cranes ({item.NumberOfCranes} -> {numberOfCranes})";
+            // Sum resources used by neighbors
+            int cranesInUse = overlappingItems.Sum(i => i.NumberOfCranes);
+            int staffInUse = overlappingItems.Sum(i => i.NumberOfStaff);
 
-            item.ServiceStartTime = serviceStart;
-            item.ServiceEndTime = serviceEnd;
-            item.UnloadingStartTime = unloadingStart;
-            item.UnloadingEndTime = unloadingEnd;
-            item.LoadingStartTime = loadingStart;
-            item.LoadingEndTime = loadingEnd;
-            item.NumberOfCranes = numberOfCranes;
+            // Validate Limits
+            if (cranesInUse + update.NumberOfCranes > MAX_PORT_CRANES)
+            {
+                throw new InvalidOperationException(
+                    $"Resource Conflict: Updating item {item.VesselIMO} requires {update.NumberOfCranes} cranes, " +
+                    $"but {cranesInUse} are already active. Total exceeds limit of {MAX_PORT_CRANES}.");
+            }
 
-            AddAuditLog(author, reason, changes);
+            if (staffInUse + update.NumberOfStaff > MAX_PORT_STAFF)
+            {
+                throw new InvalidOperationException(
+                    $"Resource Conflict: Updating item {item.VesselIMO} requires {update.NumberOfStaff} staff, " +
+                    $"but {staffInUse} are already active. Total exceeds limit of {MAX_PORT_STAFF}.");
+            }
+
+            // 3. Proceed to Update (The Item handles physics/math)
+            string change = item.UpdateDetails(
+                update.ServiceStartTime,
+                update.ServiceEndTime,
+                update.NumberOfCranes,
+                update.NumberOfStaff,
+                update.MinUnloadMinutes,
+                update.MinLoadMinutes
+            );
+
+            // 4. Log if changed
+            if (!string.IsNullOrEmpty(change))
+            {
+                AddAuditLog(author, reason, $"Item {item.VesselIMO}: {change}");
+            }
         }
-
+        
         public void RejectPlan()
         {
             if (Status != OperationPlanStatus.Draft)
@@ -102,7 +127,7 @@ namespace Oem.Models.Domain.OperationPlans
             Status = OperationPlanStatus.Rejected;
         }
 
-        public void ApprovePlan()   
+        public void ApprovePlan()
         {
             if (Status != OperationPlanStatus.Draft)
             {

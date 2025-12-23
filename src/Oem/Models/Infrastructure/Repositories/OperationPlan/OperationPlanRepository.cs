@@ -34,11 +34,19 @@ namespace Oem.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        /* public async Task UpdateAsync(OperationPlan plan)
+        public async Task UpdateAsync()
         {
-            _context.OperationPlans.Update(plan);
+            var newAudits = _context.ChangeTracker.Entries<OperationPlanAudit>()
+                .Where(e => e.State == EntityState.Modified || e.State == EntityState.Detached)
+                .ToList();
+
+            foreach (var entry in newAudits)
+            {
+                entry.State = EntityState.Added;
+            }
+            
             await _context.SaveChangesAsync();
-        } */
+        }
 
         public async Task DeleteAsync(OperationPlan plan)
         {
@@ -55,10 +63,12 @@ namespace Oem.Models.Infrastructure.Repositories
             if (startDate.HasValue && !endDate.HasValue)
             {
                 query = query.Where(p => p.ScheduleDate == startDate.Value);
-            } else if (startDate.HasValue && endDate.HasValue)
+            }
+            else if (startDate.HasValue && endDate.HasValue)
             {
                 query = query.Where(p => p.ScheduleDate >= startDate.Value && p.ScheduleDate <= endDate.Value);
-            } else if (!startDate.HasValue && endDate.HasValue)
+            }
+            else if (!startDate.HasValue && endDate.HasValue)
             {
                 query = query.Where(p => p.ScheduleDate == endDate.Value);
             }
