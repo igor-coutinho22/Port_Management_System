@@ -401,10 +401,10 @@ class ApiService {
         return this.get(`/notificationsForRepresentatives?organizationId=${organizationId}`);
     }
 
-
     async getVesselVisitNotificationById(id) {
         return this.get(`/vesselvisitnotification/${id}`);
     }
+    
     async searchVesselVisitNotifications({ vesselIMO, status, fromDate, toDate, representative }) {
         const params = [];
         if (vesselIMO) params.push(`vesselIMO=${encodeURIComponent(vesselIMO)}`);

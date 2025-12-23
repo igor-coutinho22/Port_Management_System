@@ -89,3 +89,58 @@
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Update Operation Plan Form Specific Styles */
+
+/* The Blue Context Box (Vessel Visit Info) */
+.context-info-box {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e3f2fd; /* Light Blue */
+    border-radius: 6px;
+    font-size: 0.9em;
+    border-left: 4px solid #2196F3; /* Darker Blue Accent */
+}
+
+.context-title {
+    display: block;
+    margin-bottom: 8px;
+    color: #1565c0;
+    font-weight: bold;
+}
+
+.context-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.context-label {
+    color: #546e7a;
+    font-size: 0.85em;
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* The Yellow Warning Box (Conflicts) */
+.conflict-warning-box {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #fff3cd; /* Light Yellow */
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+    color: #856404; /* Dark Brown/Gold text */
+}
+
+.conflict-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+}
+
+.conflict-list {
+    margin-top: 8px;
+    padding-left: 20px;
+    margin-bottom: 0;
+}

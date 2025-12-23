@@ -2235,6 +2235,40 @@ window.translations = {
     "staff.forms.search.results.found_plural": "staff found",
     "staff.forms.search.table.qualifications_none": "None",
     "staff.forms.search.view_details": "View",
+
+    "operation_plans.forms.update.title": "Update Operation Plan",
+    "operation_plans.forms.update.description":
+      "Search for a plan by ID to make adjustments to resources, timing, or staff.",
+    "operation_plans.forms.update.search_placeholder":
+      "e.g., 898b397a-bd0d-...",
+    "operation_plans.forms.update.search_btn": "Search Plan",
+    "operation_plans.forms.update.editing_header": "Editing Plan",
+    "operation_plans.forms.update.search_different": "Search different plan",
+
+    // Sections
+    "operation_plans.forms.update.section.schedule": "Schedule & Timing",
+    "operation_plans.forms.update.section.resources": "Resources Allocation",
+    "operation_plans.forms.update.section.audit": "Audit Log (Required)",
+
+    // Fields
+    "operation_plans.forms.update.field.start": "Service Start Time",
+    "operation_plans.forms.update.field.end": "Service End Time",
+    "operation_plans.forms.update.field.staff": "Number of Staff",
+    "operation_plans.forms.update.field.cranes": "Number of Cranes",
+    "operation_plans.forms.update.field.author": "Author (Your Name)",
+    "operation_plans.forms.update.field.reason": "Reason for Change",
+    "operation_plans.forms.update.field.reason_placeholder":
+      "e.g., Machinery breakdown, Weather delay...",
+
+    // Messages
+    "operation_plans.forms.update.success":
+      "Operation Plan updated successfully.",
+    "operation_plans.forms.update.updating": "Updating Plan...",
+    "operation_plans.forms.update.warning_title":
+      "⚠️ Resource Conflicts Detected",
+    "operation_plans.forms.update.error.dates":
+      "End time must be after Start time.",
+    "operation_plans.forms.update.error.not_found": "Operation Plan not found.",
   },
 
   pt: {
@@ -3372,8 +3406,10 @@ window.translations = {
     "vesselVisitNotificationsHubPage.table.organization": "Organização",
     "vesselVisitNotificationsHubPage.table.arrivalTime": "Tempo de Chegada",
     "vesselVisitNotificationsHubPage.table.departureTime": "Tempo de Partida",
-    "vesselVisitNotificationsHubPage.table.loadingTime": "Tempo de Carregamento",
-    "vesselVisitNotificationsHubPage.table.unloadingTime": "Tempo de Descarregamento",
+    "vesselVisitNotificationsHubPage.table.loadingTime":
+      "Tempo de Carregamento",
+    "vesselVisitNotificationsHubPage.table.unloadingTime":
+      "Tempo de Descarregamento",
     "vesselVisitNotificationsHubPage.table.unloadingManifest":
       "Manifesto de Descarga",
     "vesselVisitNotificationsHubPage.table.notAvailable": "N/D",
@@ -4500,6 +4536,41 @@ window.translations = {
     "staff.forms.search.results.found_plural": "Funcionários encontrados",
     "staff.forms.search.table.qualifications_none": "Nenhum",
     "staff.forms.search.view_details": "Ver",
+
+    "operation_plans.forms.update.title": "Atualizar Plano de Operação",
+    "operation_plans.forms.update.description":
+      "Pesquise um plano por ID para fazer ajustes de recursos, horários ou pessoal.",
+    "operation_plans.forms.update.search_placeholder": "ex: 898b397a-bd0d-...",
+    "operation_plans.forms.update.search_btn": "Pesquisar Plano",
+    "operation_plans.forms.update.editing_header": "A Editar Plano",
+    "operation_plans.forms.update.search_different": "Pesquisar outro plano",
+
+    // Sections
+    "operation_plans.forms.update.section.schedule": "Horário e Agendamento",
+    "operation_plans.forms.update.section.resources": "Alocação de Recursos",
+    "operation_plans.forms.update.section.audit":
+      "Registo de Auditoria (Obrigatório)",
+
+    // Fields
+    "operation_plans.forms.update.field.start": "Hora de Início do Serviço",
+    "operation_plans.forms.update.field.end": "Hora de Fim do Serviço",
+    "operation_plans.forms.update.field.staff": "Número de Pessoal",
+    "operation_plans.forms.update.field.cranes": "Número de Gruas",
+    "operation_plans.forms.update.field.author": "Autor (O seu nome)",
+    "operation_plans.forms.update.field.reason": "Motivo da Alteração",
+    "operation_plans.forms.update.field.reason_placeholder":
+      "ex: Avaria na maquinaria, Atraso meteorológico...",
+
+    // Messages
+    "operation_plans.forms.update.success":
+      "Plano de Operação atualizado com sucesso.",
+    "operation_plans.forms.update.updating": "A atualizar Plano...",
+    "operation_plans.forms.update.warning_title":
+      "⚠️ Conflitos de Recursos Detetados",
+    "operation_plans.forms.update.error.dates":
+      "A hora de fim deve ser posterior à hora de início.",
+    "operation_plans.forms.update.error.not_found":
+      "Plano de Operação não encontrado.",
   },
 };
 

@@ -185,6 +185,13 @@ const SchedulingHubPage = () => {
             color: '#2980b9',
             component: 'SearchOperationPlanForm'
         },
+        {
+            id: 'update',
+            title: 'Update Operation Plan',
+            description: 'Update an existing operation plan by its unique identifier.',
+            color: '#f39c12',
+            component: 'UpdateOperationPlanForm'
+        },
         { 
             id: 'delete',
             title: 'Delete Operation Plan',
@@ -553,6 +560,7 @@ const SchedulingHubPage = () => {
                                 <div className="operation-body">
                                     {section.component === 'GetOperationPlanByIdForm' && <GetOperationPlanByIdForm />}
                                     {section.component === 'SearchOperationPlanForm' && <SearchOperationPlanForm />}
+                                    {section.component === 'UpdateOperationPlanForm' && <UpdateOperationPlanForm onSuccess={loadPlans} />}
                                     {section.component === 'DeleteOperationPlanForm' && <DeleteOperationPlanForm onSuccess={loadPlans} />}
                                 </div>
                             </div>
