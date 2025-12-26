@@ -203,7 +203,7 @@ const SchedulingHubPage = () => {
             id: 'missing',
             title: 'Missing Plans',
             description: 'Identify Vessel Visits without Operation Plans and regenerate them.',
-            color: '#e74c3c',
+            color: '#2980b9',
             component: 'MissingPlansSection'
         },
         {

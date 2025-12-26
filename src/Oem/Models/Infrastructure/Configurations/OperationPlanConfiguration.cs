@@ -20,7 +20,7 @@ namespace Oem.Models.Infrastructure.Persistence.EntityConfigurations
 
             builder.Property(op => op.HeuristicUsed)
                 .IsRequired()
-                .HasMaxLength(50); // ex: "fcfs", "priority_v1"
+                .HasMaxLength(50);
 
             builder.Property(op => op.TotalDelayMinutes)
                 .IsRequired();

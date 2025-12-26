@@ -135,6 +135,9 @@ namespace Oem.Models.Application.Services
 
             foreach (var entry in result.Entries)
             {
+                var startTime = DateTime.SpecifyKind(entry.StartTime, DateTimeKind.Utc);
+                var endTime = DateTime.SpecifyKind(entry.EndTime, DateTimeKind.Utc);
+
                 // Simple logic: Service Time is the allocation
                 // Split Load/Unload evenly for now as per heuristics result limitation
                 // Or use 0 duration if not specified
@@ -143,12 +146,12 @@ namespace Oem.Models.Application.Services
                     newPlan.Id,
                     entry.VesselVisitId,
                     entry.VesselIMO,
-                    entry.StartTime,
-                    entry.EndTime,
-                    entry.StartTime, // Unload Start
-                    entry.StartTime.AddMinutes((entry.EndTime - entry.StartTime).TotalMinutes / 2), // Unload End
-                    entry.StartTime.AddMinutes((entry.EndTime - entry.StartTime).TotalMinutes / 2), // Load Start
-                    entry.EndTime,   // Load End
+                    startTime,
+                    endTime,
+                    startTime, // Unload Start
+                    startTime.AddMinutes((endTime - startTime).TotalMinutes / 2), // Unload End
+                    startTime.AddMinutes((endTime - startTime).TotalMinutes / 2), // Load Start
+                    endTime,   // Load End
                     entry.NumberOfCranes,
                     0 // Default Staff? Or should Heuristic provide it? Currently 0 or derived.
                 ));
@@ -160,7 +163,7 @@ namespace Oem.Models.Application.Services
             {
                 foreach (var existing in existingPlans)
                 {
-                    if (existing != null)
+                    if (existing != null && existing.HeuristicUsed == heuristicName)
                          await _repository.DeleteAsync(existing);
                 }
             }
