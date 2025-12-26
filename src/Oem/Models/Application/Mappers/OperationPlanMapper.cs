@@ -79,12 +79,11 @@ namespace Oem.Models.Mappers
                 DateTime loadStart = unloadEnd;
                 DateTime loadEnd = loadStart.AddMinutes(visitData.EstimatedLoadingDurationMinutes * ratio);
 
+                int effectiveCranes = entry.NumberOfCranes > 0 ? entry.NumberOfCranes : 1;
+
                 int calculatedStaff = entry.StaffMecNumbers?.Any() == true
                           ? entry.StaffMecNumbers.Count
-                          : (entry.NumberOfCranes * 4);
-
-                // (Optional) Hard-clamp the final end time to match ServiceEnd exactly to avoid millisecond drift
-                // loadEnd = serviceEnd; 
+                          : (effectiveCranes * 2);
 
                 // --- STEP B: Instantiate using the Constructor ---
 

@@ -141,6 +141,13 @@ namespace Oem.Models.Application.Services
                 // Simple logic: Service Time is the allocation
                 // Split Load/Unload evenly for now as per heuristics result limitation
                 // Or use 0 duration if not specified
+
+                int effectiveCranes = entry.NumberOfCranes > 0 ? entry.NumberOfCranes : 1;
+
+                int calculatedStaff = entry.StaffMecNumbers?.Any() == true
+                          ? entry.StaffMecNumbers.Count
+                          : (effectiveCranes * 2);
+
                 
                 newPlan.AddItem(new OperationPlanItem(
                     newPlan.Id,
@@ -153,7 +160,7 @@ namespace Oem.Models.Application.Services
                     startTime.AddMinutes((endTime - startTime).TotalMinutes / 2), // Load Start
                     endTime,   // Load End
                     entry.NumberOfCranes,
-                    0 // Default Staff? Or should Heuristic provide it? Currently 0 or derived.
+                    calculatedStaff
                 ));
             }
 

@@ -519,6 +519,7 @@ namespace Oem.Models.Application.Services.Scheduling
                     StartTime = midnight.AddMinutes(startMinutes),
                     EndTime = midnight.AddMinutes(endMinutes),
                     AssignedCraneId = null,
+                    NumberOfCranes = 1,
                     StaffMecNumbers = new List<string>(),
                     DelayMinutes = 0
                 });
