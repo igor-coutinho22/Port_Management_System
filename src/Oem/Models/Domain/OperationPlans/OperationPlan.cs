@@ -116,16 +116,6 @@ namespace Oem.Models.Domain.OperationPlans
                 AddAuditLog(author, reason, $"Item {item.VesselIMO}: {change}");
             }
         }
-        
-        public void RejectPlan()
-        {
-            if (Status != OperationPlanStatus.Draft)
-            {
-                throw new InvalidOperationException("Only draft plans can be rejected.");
-            }
-
-            Status = OperationPlanStatus.Rejected;
-        }
 
         public void ApprovePlan()
         {

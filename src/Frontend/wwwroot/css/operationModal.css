@@ -52,6 +52,34 @@
 .badge.single { background: #334155; color: #cbd5e1; }
 .badge.multi { background: #7f1d1d; color: #fca5a5; }
 
+/* --- Status Badges (Solid Pill Style) --- */
+
+.status-badge {
+    padding: 6px 16px;       /* More horizontal padding for the pill look */
+    border-radius: 50px;     /* Fully rounded corners */
+    font-weight: 800;        /* Extra Bold */
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #ffffff;          /* Text is always white */
+    display: inline-block;
+    min-width: 100px;        /* Consistent width */
+    text-align: center;
+    border: none;            /* No borders */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Slight shadow for 3D effect */
+    line-height: 1.4;
+}
+
+/* 1. Draft - Solid Grey/Slate */
+.status-badge.status-draft {
+    background-color: #95a5a6; /* Muted Slate Grey */
+}
+
+/* 2. Approved - Solid Green */
+.status-badge.status-approved {
+    background-color: #27ae60; /* Vibrant Green */
+}
+
 /* Loading State */
 .loading-box { padding: 40px; text-align: center; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .spinner { width: 24px; height: 24px; border: 3px solid #334155; border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }

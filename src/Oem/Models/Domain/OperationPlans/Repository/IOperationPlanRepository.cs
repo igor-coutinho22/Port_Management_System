@@ -5,7 +5,8 @@ namespace Oem.Models.Domain.OperationPlans
         Task<OperationPlan?> GetByIdAsync(Guid id);
         Task<IEnumerable<OperationPlan>> GetAllAsync();
         Task AddAsync(OperationPlan plan);
-        Task UpdateAsync(); 
+        Task SaveChangesAsync(); 
+        Task UpdateAsync(OperationPlan plan);
         Task DeleteAsync(OperationPlan plan);
         Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? startDate, DateOnly? endDate, string? vesselIMO);
     }

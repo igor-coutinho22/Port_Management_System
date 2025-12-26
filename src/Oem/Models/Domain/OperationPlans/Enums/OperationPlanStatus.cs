@@ -4,7 +4,6 @@ namespace Oem.Models.Domain.OperationPlans.Enums
     {
         Draft,
         Approved,
-        Rejected,
         Executed
     }
 }

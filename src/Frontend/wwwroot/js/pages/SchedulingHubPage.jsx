@@ -200,6 +200,20 @@ const SchedulingHubPage = () => {
             component: 'DeleteOperationPlanForm'
         },
         {
+            id: 'approve',
+            title: 'Approve Operation Plan',
+            description: 'Finalize a draft plan and mark it ready for execution.',
+            color: '#27ae60',
+            component: 'ApproveOperationPlanForm'
+        },
+        {
+            id: 'reject',
+            title: 'Reject Operation Plan',
+            description: 'Reject a draft plan and mark it as invalid.',
+            color: '#e74c3c',
+            component: 'RejectOperationPlanForm'
+        },
+        {
             id: 'missing',
             title: 'Missing Plans',
             description: 'Identify Vessel Visits without Operation Plans and regenerate them.',
@@ -576,6 +590,8 @@ const SchedulingHubPage = () => {
                                     {section.component === 'SearchOperationPlanForm' && <SearchOperationPlanForm />}
                                     {section.component === 'UpdateOperationPlanForm' && <UpdateOperationPlanForm onSuccess={loadPlans} />}
                                     {section.component === 'DeleteOperationPlanForm' && <DeleteOperationPlanForm onSuccess={loadPlans} />}
+                                    {section.component === 'ApproveOperationPlanForm' && <ApproveOperationPlanForm onSuccess={loadPlans} />}
+                                    {section.component === 'RejectOperationPlanForm' && <RejectOperationPlanForm onSuccess={loadPlans} />}
                                     {section.component === 'MissingPlansSection' && <MissingPlansSection />}
                                     {section.component === 'ResourceUtilizationSection' && <ResourceUtilizationSection />}
                                 </div>
@@ -635,7 +651,7 @@ const OperationPlansQuickTable = ({ plans, onRefresh }) => {
                                 <tr key={plan.id}>
                                     <td style={{ fontWeight: 'bold', color: '#3498db' }}>{plan.scheduleDate}</td>
                                     <td>
-                                        <span className={`status-badge ${plan.status?.toLowerCase() || 'draft'}`}>
+                                        <span className={`status-badge status-${plan.status?.toLowerCase() || 'draft'}`}>
                                             {plan.status || 'Draft'}
                                         </span>
                                     </td>

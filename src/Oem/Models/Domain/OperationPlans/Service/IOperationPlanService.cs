@@ -14,5 +14,8 @@ public interface IOperationPlanService
         Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date);
         Task<OperationPlan> RegeneratePlanAsync(DateOnly date, string heuristicName, string author);
         Task<IEnumerable<ResourceUtilizationDTO>> GetResourceUtilizationAsync(DateOnly startDate, DateOnly endDate, string resourceType);
+        Task ApprovePlanAsync(Guid id);
+        Task RejectPlanAsync(Guid id);
+    
     }
 }

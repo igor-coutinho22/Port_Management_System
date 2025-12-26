@@ -223,5 +223,49 @@ namespace Oem.Controllers
             var stats = await _service.GetResourceUtilizationAsync(parsedStart, parsedEnd, resourceType);
             return Ok(stats);
         }
+
+        [HttpPut("approve")]
+        public async Task<ActionResult> ApprovePlan(Guid id)
+        {
+            try
+            {
+                await _service.ApprovePlanAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("reject")]
+        public async Task<ActionResult> RejectPlan(Guid id)
+        {
+            try
+            {
+                await _service.RejectPlanAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

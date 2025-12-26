@@ -84,7 +84,7 @@ namespace Oem.Models.Application.Services
 
             // 3. Persist
             // Pass the plan to the repo so it can fix the AuditLog states before saving
-            await _repository.UpdateAsync();
+            await _repository.SaveChangesAsync();
 
             return plan;
         }
@@ -108,7 +108,7 @@ namespace Oem.Models.Application.Services
             var plannedVisitIds = new HashSet<Guid>();
             foreach (var plan in plans)
             {
-                if (plan?.Items != null)
+                if (plan?.Items != null && plan?.Status == OperationPlanStatus.Approved)
                 {
                     foreach (var item in plan.Items)
                     {
@@ -270,6 +270,39 @@ namespace Oem.Models.Application.Services
             }
 
             return result;
+        }
+
+        public async Task ApprovePlanAsync(Guid id)
+        {
+            var plan = await _repository.GetByIdAsync(id);
+            if (plan == null)
+            {
+                throw new KeyNotFoundException($"No plan found with ID {id}");
+            }
+
+            if (plan.Status != OperationPlanStatus.Draft)
+            {
+                throw new InvalidOperationException("Only draft plans can be approved.");
+            }
+
+            plan.ApprovePlan();
+            await _repository.SaveChangesAsync();
+        }
+
+        public async Task RejectPlanAsync(Guid id)
+        {
+            var plan = await _repository.GetByIdAsync(id);
+            if (plan == null)
+            {
+                throw new KeyNotFoundException($"No plan found with ID {id}");
+            }
+
+            if (plan.Status != OperationPlanStatus.Draft)
+            {
+                throw new InvalidOperationException("Only draft plans can be rejected.");
+            }
+
+            await _repository.DeleteAsync(plan);
         }
     }
 }

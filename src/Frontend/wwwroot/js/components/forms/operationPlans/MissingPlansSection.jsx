@@ -43,7 +43,7 @@ const MissingPlansSection = () => {
             let drafts = [];
             try {
                 const plansData = await apiService.searchOperationPlans(targetDate, targetDate, "");
-                drafts = (plansData || []).filter(p => p.status === 'Draft');
+                drafts = (plansData || []).filter(p => p.status === 'Approved');
             } catch (err) {
                 if (!err.message.includes("404") && !err.message.includes("No operation plans found")) {
                     console.error("Search error:", err);

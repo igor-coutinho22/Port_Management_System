@@ -34,7 +34,7 @@ namespace Oem.Models.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync()
+        public async Task SaveChangesAsync()
         {
             var newAudits = _context.ChangeTracker.Entries<OperationPlanAudit>()
                 .Where(e => e.State == EntityState.Modified || e.State == EntityState.Detached)
@@ -45,6 +45,12 @@ namespace Oem.Models.Infrastructure.Repositories
                 entry.State = EntityState.Added;
             }
             
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(OperationPlan plan)
+        {
+            _context.OperationPlans.Update(plan);
             await _context.SaveChangesAsync();
         }
 

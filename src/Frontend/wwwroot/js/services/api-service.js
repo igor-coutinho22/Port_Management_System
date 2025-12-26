@@ -513,6 +513,14 @@ class ApiService {
         return this.put(`/operationPlan/${id}`, updateDto);
     }
 
+    async approveOperationPlan(id) {
+        return this.put(`/operationPlan/approve?id=${id}`);
+    }
+
+    async rejectOperationPlan(id) {
+        return this.put(`/operationPlan/reject?id=${id}`);
+    }
+
     async getMissingOperationPlans(date) {
         return this.get(`/operationPlan/missing-plans/${date}`);
     }
