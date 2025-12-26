@@ -52,7 +52,7 @@ const SchedulingHubPage = () => {
         e.preventDefault();
         setError(null);
         setResult(null);
-        setCompareResult(null); 
+        setCompareResult(null);
         setLoading(true);
 
         try {
@@ -69,7 +69,7 @@ const SchedulingHubPage = () => {
     // ----- Compare 1 vs 2 cranes -----
     const handleCompare = async () => {
         setError(null);
-        setResult(null);      
+        setResult(null);
         setCompareResult(null);
         setLoading(true);
 
@@ -137,7 +137,7 @@ const SchedulingHubPage = () => {
     const activeScheduleForDraft = React.useMemo(() => {
         // If we have a direct single result, use it
         if (result) return result;
-        
+
         // If we have a comparison, we prefer the Multi-Crane result (since that's the "upgrade"),
         // unless it's null/empty, then fall back to single.
         if (compareResult) {
@@ -171,14 +171,14 @@ const SchedulingHubPage = () => {
     }, [showQuickView]);
 
     const sections = [
-        { 
+        {
             id: 'getById',
             title: 'Get Operation Plan By Id',
             description: 'Get details of an existing operation plan by its unique identifier.',
             color: '#2980b9',
             component: 'GetOperationPlanByIdForm'
         },
-        { 
+        {
             id: 'search',
             title: 'Search Operation Plans By Date(s) and/or Vessel IMO',
             description: 'Get details of an existing operation plan for a specific date(s) and/or vessel IMO.',
@@ -192,12 +192,26 @@ const SchedulingHubPage = () => {
             color: '#f39c12',
             component: 'UpdateOperationPlanForm'
         },
-        { 
+        {
             id: 'delete',
             title: 'Delete Operation Plan',
             description: 'Delete an existing operation plan by its unique identifier.',
             color: '#c0392b',
             component: 'DeleteOperationPlanForm'
+        },
+        {
+            id: 'missing',
+            title: 'Missing Plans',
+            description: 'Identify Vessel Visits without Operation Plans and regenerate them.',
+            color: '#e74c3c',
+            component: 'MissingPlansSection'
+        },
+        {
+            id: 'resources',
+            title: 'Resource Utilization',
+            description: 'Analyze resource usage (Cranes, Staff, Docks) over a period.',
+            color: '#8e44ad',
+            component: 'ResourceUtilizationSection'
         }
     ];
 
@@ -350,7 +364,7 @@ const SchedulingHubPage = () => {
                                 {/* NEW: Draft Button for Single Result */}
                                 {resolvedEntries.length > 0 && (
                                     <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
-                                        <button 
+                                        <button
                                             className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg flex items-center gap-2"
                                             onClick={() => setShowPlanModal(true)}
                                             style={{ backgroundColor: "#27ae60", color: "white", padding: "10px 20px", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}
@@ -462,7 +476,7 @@ const SchedulingHubPage = () => {
                                                         <td>{e.vesselIMO || e.VesselIMO}</td>
                                                         <td>{formatDateTime(e.startTime || e.StartTime)}</td>
                                                         <td>{formatDateTime(e.endTime || e.EndTime)}</td>
-                                                        <td style={ (e.numberOfCranes || e.NumberOfCranes) > 1 ? { fontWeight: "bold", color: "#c0392b" } : {} }>
+                                                        <td style={(e.numberOfCranes || e.NumberOfCranes) > 1 ? { fontWeight: "bold", color: "#c0392b" } : {}}>
                                                             {e.numberOfCranes || e.NumberOfCranes || 1}
                                                         </td>
                                                         <td>{e.delayMinutes ?? e.DelayMinutes ?? 0}</td>
@@ -476,7 +490,7 @@ const SchedulingHubPage = () => {
                                 {/* NEW: Draft Button for Comparison Result */}
                                 {multiEntries.length > 0 && (
                                     <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
-                                        <button 
+                                        <button
                                             onClick={() => setShowPlanModal(true)}
                                             style={{ backgroundColor: "#8e44ad", color: "white", padding: "10px 20px", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}
                                         >
@@ -497,7 +511,7 @@ const SchedulingHubPage = () => {
             )}
 
             {/* --- NEW: OPERATION PLANS MANAGEMENT HUB --- */}
-            
+
             <div className="hub-divider" style={{ margin: '40px 0', borderBottom: '1px solid #334155' }}></div>
 
             <div className="hub-header" style={{ marginBottom: '20px' }}>
@@ -507,7 +521,7 @@ const SchedulingHubPage = () => {
 
             {/* Quick Data View Button */}
             <div className="quick-view-container">
-                <button 
+                <button
                     className={`quick-view-btn ${showQuickView ? 'active' : ''}`}
                     onClick={() => setShowQuickView(!showQuickView)}
                 >
@@ -533,7 +547,7 @@ const SchedulingHubPage = () => {
             <div className="operations-container">
                 {sections.map((section) => (
                     <div key={section.id} className="operation-section">
-                        <div 
+                        <div
                             className={`operation-header ${expandedSection === section.id ? 'expanded' : ''}`}
                             onClick={() => toggleSection(section.id)}
                             style={{ borderLeftColor: section.color }}
@@ -543,11 +557,11 @@ const SchedulingHubPage = () => {
                                 <p className="operation-description">{section.description}</p>
                             </div>
                             <div className="operation-controls">
-                                <span 
-                                    className="http-method" 
+                                <span
+                                    className="http-method"
                                     style={{ backgroundColor: section.color }}
                                 >
-                                    {section.id === 'delete' ? 'DELETE' : 'GET'}
+                                    {section.id.includes('delete') ? 'DELETE' : 'GET'}
                                 </span>
                                 <span className={`expand-arrow ${expandedSection === section.id ? 'up' : 'down'}`}>
                                     {expandedSection === section.id ? '▲' : '▼'}
@@ -562,6 +576,8 @@ const SchedulingHubPage = () => {
                                     {section.component === 'SearchOperationPlanForm' && <SearchOperationPlanForm />}
                                     {section.component === 'UpdateOperationPlanForm' && <UpdateOperationPlanForm onSuccess={loadPlans} />}
                                     {section.component === 'DeleteOperationPlanForm' && <DeleteOperationPlanForm onSuccess={loadPlans} />}
+                                    {section.component === 'MissingPlansSection' && <MissingPlansSection />}
+                                    {section.component === 'ResourceUtilizationSection' && <ResourceUtilizationSection />}
                                 </div>
                             </div>
                         )}
@@ -586,7 +602,7 @@ const SchedulingHubPage = () => {
 // Operation Plans Quick Table Component
 const OperationPlansQuickTable = ({ plans, onRefresh }) => {
     // Assuming simple translation or fallback
-    const t = (key) => key; 
+    const t = (key) => key;
 
     return (
         <div className="quick-table-container">

@@ -230,6 +230,8 @@ const AppWithGlobalNav = () => {
                 return <AdminUsersPage />;
             case "activation-success":
                 return <ActivationSuccessPage />;
+            case "vessel-visit-execution":
+                return <VesselVisitExecutionPage />;
             default:
                 console.warn(`Unknown page: ${basePage}, defaulting to home`);
                 return <HomePage />;

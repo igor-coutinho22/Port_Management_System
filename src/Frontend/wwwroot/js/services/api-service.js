@@ -404,7 +404,7 @@ class ApiService {
     async getVesselVisitNotificationById(id) {
         return this.get(`/vesselvisitnotification/${id}`);
     }
-    
+
     async searchVesselVisitNotifications({ vesselIMO, status, fromDate, toDate, representative }) {
         const params = [];
         if (vesselIMO) params.push(`vesselIMO=${encodeURIComponent(vesselIMO)}`);
@@ -522,6 +522,19 @@ class ApiService {
         if (date) params.append('date', date);
         if (heuristicName) params.append('heuristicName', heuristicName);
         return this.post(`/operationPlan/regenerate?${params.toString()}`);
+    }
+
+    async getResourceUtilization(startDate, endDate, resourceType) {
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        if (resourceType) params.append('resourceType', resourceType);
+        return this.get(`/operationPlan/resource-utilization?${params.toString()}`);
+    }
+
+    // Vessel Visit Executions
+    async createVesselVisitExecution(data) {
+        return this.post('/vesselVisitExecution/Create', data);
     }
 }
 
