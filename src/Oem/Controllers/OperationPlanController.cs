@@ -186,7 +186,7 @@ namespace Oem.Controllers
             }
         }
 
-        /*[HttpGet("missing-plans/{date}")]
+        [HttpGet("missing-plans/{date}")]
         public async Task<ActionResult<IEnumerable<VesselVisitNotificationDTO>>> GetMissingPlans(string date)
         {
             if (!DateOnly.TryParse(date, out var parsedDate))
@@ -204,7 +204,7 @@ namespace Oem.Controllers
 
             try
             {
-                var author = User?.Identity?.Name ?? "System"; // TODO: Get actual user
+                var author = User?.Identity?.Name ?? "System";
                 var newPlan = await _service.RegeneratePlanAsync(parsedDate, heuristicName, author);
                 return CreatedAtAction(nameof(GetPlanById), new { id = newPlan.Id }, OperationPlanMapper.ToDto(newPlan));
             }
@@ -212,6 +212,16 @@ namespace Oem.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-        } */
+        }
+
+        [HttpGet("resource-utilization")]
+        public async Task<ActionResult<IEnumerable<ResourceUtilizationDTO>>> GetResourceUtilization([FromQuery] string startDate, [FromQuery] string endDate, [FromQuery] string resourceType)
+        {
+            if (!DateOnly.TryParse(startDate, out var parsedStart) || !DateOnly.TryParse(endDate, out var parsedEnd))
+                return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+
+            var stats = await _service.GetResourceUtilizationAsync(parsedStart, parsedEnd, resourceType);
+            return Ok(stats);
+        }
     }
 }

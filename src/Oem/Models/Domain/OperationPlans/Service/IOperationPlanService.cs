@@ -11,7 +11,8 @@ public interface IOperationPlanService
         Task<IEnumerable<OperationPlan>> GetAllPlansAsync();
         Task DeletePlanAsync(Guid Id);
         Task<OperationPlan> UpdatePlanAsync(Guid id, UpdateOperationPlanDTO dto);
-        /*Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date);
-        Task<OperationPlan> RegeneratePlanAsync(DateOnly date, string heuristicName, string author); */
+        Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date);
+        Task<OperationPlan> RegeneratePlanAsync(DateOnly date, string heuristicName, string author);
+        Task<IEnumerable<ResourceUtilizationDTO>> GetResourceUtilizationAsync(DateOnly startDate, DateOnly endDate, string resourceType);
     }
 }

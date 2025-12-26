@@ -89,26 +89,35 @@ namespace Oem.Models.Application.Services
             return plan;
         }
 
-        /* public async Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date)
+        public async Task<IEnumerable<VesselVisitNotificationDTO>> GetMissingPlanVVNsAsync(DateOnly date)
         {
             // 1. Get all approved visits for the date
             var allVisits = await _webAppService.GetApprovedVisitsForDateAsync(date);
             if (allVisits == null || !allVisits.Any()) return Enumerable.Empty<VesselVisitNotificationDTO>();
 
-            // 2. Get existing plan
-            var plans = await _repository.GetByDateAsync(date);
+            // 2. Get existing plan (Using Search because GetByDate isn't available)
+            // Plans for exactly this date
+            var plans = await _repository.SearchPlansAsync(date, null, null);
             
             // 3. If no plan, all are missing
-            if (plans == null) return allVisits;
+            if (plans == null || !plans.Any()) return allVisits;
 
             // 4. Return visits NOT in plan
             // Plan Items store VesselVisitId
-            foreach (var item in plans.Items)
+            // We need to check against ALL plans for that day (though typically only 1)
+            var plannedVisitIds = new HashSet<Guid>();
+            foreach (var plan in plans)
             {
-                allVisits = allVisits.Where(v => v.Id != item.VesselVisitId);
+                if (plan?.Items != null)
+                {
+                    foreach (var item in plan.Items)
+                    {
+                        plannedVisitIds.Add(item.VesselVisitId);
+                    }
+                }
             }
 
-            return allVisits;
+            return allVisits.Where(v => !plannedVisitIds.Contains(v.Id));
         }
 
         public async Task<OperationPlan> RegeneratePlanAsync(DateOnly date, string heuristicName, string author)
@@ -117,10 +126,6 @@ namespace Oem.Models.Application.Services
             var result = await _heuristicService.GenerateDailyScheduleAsync(date, heuristicName);
             
             // 2. Convert to OperationPlan (Domain)
-            // We need a mapper here. Since `OperationPlanMapper` is in Controller/Models, 
-            // and this is Service, we might have circular dep if we use DTO mapper.
-            // But we can map manually or assume I can instantiate OperationPlan.
-            
             var newPlan = new OperationPlan(
                 date, 
                 heuristicName, 
@@ -130,18 +135,9 @@ namespace Oem.Models.Application.Services
 
             foreach (var entry in result.Entries)
             {
-                // We need to calculate Loading/Unloading times.
-                // The generic heuristic result gives Start/End.
-                // For now, let's assume they split the time or use full window.
-                // Or better, let's see what VesselScheduleEntry has.
-                // It has StartTime, EndTime.
-                
-                // Detailed logic:
-                // ServiceTime = [Start, End]
-                // Loading/Unloading? Simplification: Unloading = First Half, Loading = Second Half?
-                // Or if we don't have that info, maybe use same window for now.
-                // Ideally the heuristic should provide "Operations".
-                // But for now, we'll map ServiceTime to both.
+                // Simple logic: Service Time is the allocation
+                // Split Load/Unload evenly for now as per heuristics result limitation
+                // Or use 0 duration if not specified
                 
                 newPlan.AddItem(new OperationPlanItem(
                     newPlan.Id,
@@ -149,26 +145,121 @@ namespace Oem.Models.Application.Services
                     entry.VesselIMO,
                     entry.StartTime,
                     entry.EndTime,
-                    entry.StartTime, // Simplify
-                    entry.EndTime,   // Simplify
-                    entry.StartTime, // Simplify
-                    entry.EndTime,   // Simplify
-                    entry.NumberOfCranes
+                    entry.StartTime, // Unload Start
+                    entry.StartTime.AddMinutes((entry.EndTime - entry.StartTime).TotalMinutes / 2), // Unload End
+                    entry.StartTime.AddMinutes((entry.EndTime - entry.StartTime).TotalMinutes / 2), // Load Start
+                    entry.EndTime,   // Load End
+                    entry.NumberOfCranes,
+                    0 // Default Staff? Or should Heuristic provide it? Currently 0 or derived.
                 ));
             }
 
-            // 3. Check for existing plan
-            var existingPlan = await _repository.GetByIdAsync(date);
-            if (existingPlan != null)
+            // 3. Check for existing plan and Delete
+            var existingPlans = await _repository.SearchPlansAsync(date, null, null);
+            if (existingPlans != null)
             {
-                // Delete explicitly
-                await _repository.DeleteAsync(existingPlan);
+                foreach (var existing in existingPlans)
+                {
+                    if (existing != null)
+                         await _repository.DeleteAsync(existing);
+                }
             }
 
             // 4. Save new plan
             await _repository.AddAsync(newPlan);
             
             return newPlan;
-        } */
+        }
+
+        public async Task<IEnumerable<ResourceUtilizationDTO>> GetResourceUtilizationAsync(DateOnly startDate, DateOnly endDate, string resourceType)
+        {
+            // 1. Fetch Plans
+            var plans = await _repository.SearchPlansAsync(startDate, endDate, null);
+            
+            if (plans == null || !plans.Any())
+                return Enumerable.Empty<ResourceUtilizationDTO>();
+
+            // 2. Flatten Items
+            var allItems = plans
+                .Where(p => p != null)
+                .SelectMany(p => p!.Items)
+                .ToList();
+
+            var result = new List<ResourceUtilizationDTO>();
+
+            // 3. Aggregate based on Type
+            if (string.Equals(resourceType, "crane", StringComparison.OrdinalIgnoreCase))
+            {
+                // For cranes, we might want to group by "Crane" if we had IDs, but we have "NumberOfCranes".
+                // So checking "Total Crane Time" means Time * Count?
+                // Or just the sum of durations where cranes are used?
+                // Requirement: "total allocation time of a specific resource". 
+                // Since we don't have Crane #1, Crane #2, we can only report "Total Crane-Hours" or similar.
+                // Or maybe the user means "How much time was *at least one* crane used?".
+                // Let's assume "Total Allocated Minute-Cranes" (Sum of Duration * N_Cranes) is the most useful metric for "Resource Utilization" 
+                // in an aggregate sense, OR just "Total Time Cranes Were Busy" (Sum of Duration).
+                // Let's provide an aggregate "Global Crane Usage".
+                
+                double totalMinutes = allItems.Sum(i => (i.ServiceEndTime - i.ServiceStartTime).TotalMinutes * i.NumberOfCranes);
+                int totalOps = allItems.Count(i => i.NumberOfCranes > 0);
+                
+                result.Add(new ResourceUtilizationDTO 
+                { 
+                    ResourceName = "All Cranes (Aggregate)", 
+                    TotalAllocatedMinutes = totalMinutes,
+                    TotalOperations = totalOps
+                });
+            }
+            else if (string.Equals(resourceType, "staff", StringComparison.OrdinalIgnoreCase))
+            {
+                double totalMinutes = allItems.Sum(i => (i.ServiceEndTime - i.ServiceStartTime).TotalMinutes * i.NumberOfStaff);
+                int totalOps = allItems.Count(i => i.NumberOfStaff > 0);
+
+                result.Add(new ResourceUtilizationDTO
+                {
+                    ResourceName = "All Staff (Aggregate)",
+                    TotalAllocatedMinutes = totalMinutes,
+                    TotalOperations = totalOps
+                });
+            }
+            else if (string.Equals(resourceType, "dock", StringComparison.OrdinalIgnoreCase))
+            {
+                // Just sum duration, assuming 1 item = 1 dock slot occupied
+                double totalMinutes = allItems.Sum(i => (i.ServiceEndTime - i.ServiceStartTime).TotalMinutes);
+                int totalOps = allItems.Count;
+
+                result.Add(new ResourceUtilizationDTO
+                {
+                    ResourceName = "Docks (Aggregate)",
+                    TotalAllocatedMinutes = totalMinutes,
+                    TotalOperations = totalOps
+                });
+            }
+            else 
+            {
+                // Return all logic? Or empty?
+                // Let's return a Summary of all known types
+                 result.Add(new ResourceUtilizationDTO 
+                { 
+                    ResourceName = "Cranes (Total Time * Count)", 
+                    TotalAllocatedMinutes = allItems.Sum(i => (i.ServiceEndTime - i.ServiceStartTime).TotalMinutes * i.NumberOfCranes),
+                    TotalOperations = allItems.Count(i => i.NumberOfCranes > 0)
+                });
+                 result.Add(new ResourceUtilizationDTO 
+                { 
+                    ResourceName = "Staff (Total Time * Count)", 
+                    TotalAllocatedMinutes = allItems.Sum(i => (i.ServiceEndTime - i.ServiceStartTime).TotalMinutes * i.NumberOfStaff),
+                    TotalOperations = allItems.Count(i => i.NumberOfStaff > 0)
+                });
+                  result.Add(new ResourceUtilizationDTO 
+                { 
+                    ResourceName = "Docks (Total Duration)", 
+                    TotalAllocatedMinutes = allItems.Sum(i => (i.ServiceEndTime - i.ServiceStartTime).TotalMinutes),
+                    TotalOperations = allItems.Count
+                });
+            }
+
+            return result;
+        }
     }
 }

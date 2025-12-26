@@ -11,11 +11,13 @@ namespace Oem.Models.Context
 
         //DbSets
         public DbSet<OperationPlan> OperationPlans { get; set; } = default!;
+        public DbSet<VesselVisitExecution> VesselVisitExecutions { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new OperationPlanConfiguration());
             modelBuilder.ApplyConfiguration(new OperationPlanItemConfiguration());
+            modelBuilder.ApplyConfiguration(new VesselVisitExecutionConfiguration());
 
             base.OnModelCreating(modelBuilder);
         }
