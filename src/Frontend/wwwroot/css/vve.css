@@ -1,0 +1,392 @@
+/* --- Detailed Result Table (Adaptive) --- */
+
+/* 1. Default Styles (LIGHT MODE) - Dark Text on Light Background */
+.result-container {
+    margin-top: 24px;
+    background-color: #f8fafc;       /* Light Grey Bg */
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #cbd5e1;       /* Light Grey Border */
+}
+
+.result-header {
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    color: #2980b9;                  /* Darker Blue */
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.detailed-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.detailed-table th {
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 1px solid #cbd5e1;
+    color: #475569;                  /* Dark Slate for labels */
+    width: 30%;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.detailed-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #cbd5e1;
+    color: #1e293b;                  /* Very Dark Slate for values */
+    vertical-align: middle;
+}
+
+.monospace-cell {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.05em;
+    color: #2563eb;                  /* Dark Blue for IDs */
+}
+
+.success-text {
+    color: #16a34a;                  /* Dark Green */
+    font-weight: bold;
+}
+
+.detailed-table tr:last-child th,
+.detailed-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* 2. DARK MODE OVERRIDES - Switches colors when 'dark' class is present */
+/* Works if your app adds class="dark" to body, html, or #root */
+.dark .result-container,
+[data-theme="dark"] .result-container {
+    background-color: rgba(255, 255, 255, 0.02); /* Original Dark Bg */
+    border: 1px solid #334155;
+}
+
+.dark .result-header,
+[data-theme="dark"] .result-header {
+    color: #3498db;                  /* Brighter Blue */
+}
+
+.dark .detailed-table th,
+[data-theme="dark"] .detailed-table th {
+    border-bottom: 1px solid #475569;
+    color: #94a3b8;                  /* Light Muted Text */
+}
+
+.dark .detailed-table td,
+[data-theme="dark"] .detailed-table td {
+    border-bottom: 1px solid #334155;
+    color: #e2e8f0;                  /* Bright White/Grey Text */
+}
+
+.dark .monospace-cell,
+[data-theme="dark"] .monospace-cell {
+    color: #a5b4fc;                  /* Light Indigo for IDs */
+}
+
+.dark .success-text,
+[data-theme="dark"] .success-text {
+    color: #2ecc71;                  /* Bright Neon Green */
+}
+
+/* --- Delete Form Specific Styles (Adaptive) --- */
+
+/* 1. CONTAINER & HEADER */
+.delete-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    
+    /* Default (Light Mode) */
+    background-color: #e2e8f0;       /* Light Grey */
+    border-left: 5px solid #e74c3c;  /* Red Accent */
+    color: #c0392b;                  /* Dark Red Text */
+}
+
+/* Dark Mode Override */
+.dark .delete-form-header,
+[data-theme="dark"] .delete-form-header {
+    background-color: rgba(192, 57, 43, 0.2); /* Dark Red Tint */
+    border-left: 5px solid #e74c3c;
+    color: #ffcccc;                           /* Light Red Text */
+}
+
+/* Link Button (Search Different ID) */
+.link-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    
+    /* Default (Light Mode) */
+    color: #2563eb; /* Blue */
+}
+
+.link-btn:hover {
+    text-decoration: underline;
+    color: #1d4ed8;
+}
+
+/* Dark Mode Override */
+.dark .link-btn,
+[data-theme="dark"] .link-btn {
+    color: #60a5fa; /* Light Blue */
+}
+
+.dark .link-btn:hover,
+[data-theme="dark"] .link-btn:hover {
+    color: #93c5fd;
+}
+
+/* 2. DETAILS CARD (The object being deleted) */
+.delete-details-card {
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    
+    /* Default (Light Mode) */
+    background-color: #f8fafc;       /* White/Light Grey */
+    border: 1px solid #cbd5e1;       /* Light Border */
+}
+
+/* Dark Mode Override */
+.dark .delete-details-card,
+[data-theme="dark"] .delete-details-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid #475569;
+}
+
+.delete-details-card-title {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    
+    /* Default (Light Mode) */
+    color: #d97706; /* Dark Amber/Orange */
+}
+
+/* Dark Mode Override */
+.dark .delete-details-card-title,
+[data-theme="dark"] .delete-details-card-title {
+    color: #f1c40f; /* Bright Yellow/Gold */
+}
+
+.delete-details-grid {
+    display: grid;
+    gap: 16px;
+    /* Columns handled in JSX usually, but defaults to block */
+}
+
+/* Individual Data Fields */
+.delete-details-field {
+    padding: 10px 12px;
+    border-radius: 4px;
+    
+    /* Default (Light Mode) */
+    background-color: #ffffff;       /* Pure White */
+    border: 1px solid #e2e8f0;       /* Very Light Border */
+    color: #1e293b;                  /* Dark Text */
+}
+
+/* Dark Mode Override */
+.dark .delete-details-field,
+[data-theme="dark"] .delete-details-field {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid #334155;
+    color: #f1f5f9;                  /* White Text */
+}
+
+.delete-details-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+
+    /* Default (Light Mode) */
+    color: #64748b; /* Slate Grey */
+}
+
+/* Dark Mode Override */
+.dark .delete-details-label,
+[data-theme="dark"] .delete-details-label {
+    color: #94a3b8; /* Light Slate */
+}
+
+/* 3. WARNING CARD (The confirmation area) */
+.delete-warning-card {
+    border-radius: 8px;
+    padding: 20px;
+    
+    /* Default (Light Mode) */
+    background-color: #fef2f2;       /* Very Light Red Bg */
+    border: 1px solid #fecaca;       /* Light Red Border */
+}
+
+/* Dark Mode Override */
+.dark .delete-warning-card,
+[data-theme="dark"] .delete-warning-card {
+    background-color: rgba(192, 57, 43, 0.15); /* Dark Red Tint */
+    border: 1px solid #c0392b;
+}
+
+.delete-warning-title {
+    display: block;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    
+    /* Default (Light Mode) */
+    color: #b91c1c; /* Deep Red */
+}
+
+/* Dark Mode Override */
+.dark .delete-warning-title,
+[data-theme="dark"] .delete-warning-title {
+    color: #ff6b6b; /* Bright Red */
+}
+
+.delete-warning-desc {
+    display: block;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    
+    /* Default (Light Mode) */
+    color: #450a0a; /* Very Dark Red/Black */
+}
+
+/* Dark Mode Override */
+.dark .delete-warning-desc,
+[data-theme="dark"] .delete-warning-desc {
+    color: #e2e8f0; /* White/Grey */
+}
+
+/* 4. CONFIRMATION INPUT */
+.delete-confirm-input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 1rem;
+    margin-top: 8px;
+    
+    /* Default (Light Mode) */
+    border: 2px solid #ef4444;       /* Red Border */
+    background-color: #ffffff;       /* White Bg */
+    color: #000000;                  /* Black Text */
+}
+
+.delete-confirm-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+}
+
+/* Dark Mode Override */
+.dark .delete-confirm-input,
+[data-theme="dark"] .delete-confirm-input {
+    border: 1px solid #c0392b;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #ffffff;
+}
+
+.delete-confirm-help {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.85rem;
+    
+    /* Default (Light Mode) */
+    color: #64748b;
+}
+
+/* Dark Mode Override */
+.dark .delete-confirm-help,
+[data-theme="dark"] .delete-confirm-help {
+    color: #cbd5e1;
+}
+
+/* Input Label inside Warning Card */
+.delete-warning-card label {
+    /* Default (Light Mode) */
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.dark .delete-warning-card label,
+[data-theme="dark"] .delete-warning-card label {
+    color: #ffffff;
+}
+
+/* 5. BUTTONS */
+.delete-btn {
+    background-color: #dc2626; /* Strong Red */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.delete-btn:hover:not(:disabled) {
+    background-color: #b91c1c; /* Darker Red on Hover */
+}
+
+.delete-btn:disabled {
+    background-color: #fca5a5; /* Pale Red */
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Dark Mode Button Override (if needed, usually red works on both) */
+.dark .delete-btn:disabled,
+[data-theme="dark"] .delete-btn:disabled {
+    background-color: #582f2f;
+    opacity: 0.6;
+}
+
+.delete-cancel-btn {
+    background-color: transparent;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    /* Default (Light Mode) */
+    border: 1px solid #94a3b8;
+    color: #475569;
+}
+
+.delete-cancel-btn:hover:not(:disabled) {
+    background-color: #f1f5f9;
+}
+
+/* Dark Mode Cancel Button Override */
+.dark .delete-cancel-btn,
+[data-theme="dark"] .delete-cancel-btn {
+    border: 1px solid #64748b;
+    color: #e2e8f0;
+}
+
+.dark .delete-cancel-btn:hover:not(:disabled),
+[data-theme="dark"] .delete-cancel-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.1);
+}

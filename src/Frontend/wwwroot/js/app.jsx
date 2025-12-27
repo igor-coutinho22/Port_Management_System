@@ -86,6 +86,7 @@ const AppWithGlobalNav = () => {
             "staff",
             "vessel-visit-notifications",
             "qualifications",
+            "vessel-visit-executions",
         ].includes(currentPage);
 
     const PAGE_TO_MENU_ID = {
@@ -105,7 +106,8 @@ const AppWithGlobalNav = () => {
         "vessel-visit-notifications": "vessel-visit-notifications",
         qualifications: "qualifications",
         scheduling: "scheduling",
-        "vvn-hub-for-representatives": "vvn-hub-for-representatives"
+        "vvn-hub-for-representatives": "vvn-hub-for-representatives",
+        "vessel-visit-executions": "vessel-visit-executions",
     };
 
 
@@ -214,6 +216,12 @@ const AppWithGlobalNav = () => {
                 ) : (
                     <QualificationsHubPage />
                 );
+            case "vessel-visit-executions":
+                return typeof VesselVisitExecutionHubPage === "undefined" ? (
+                    <div className="error">VesselVisitExecutionHubPage component not loaded</div>
+                ) : (
+                    <VesselVisitExecutionHubPage />
+                );
             case "3d-view":
                 return <ThreeDView key="3d-view" />;
             case "scheduling":
@@ -230,8 +238,6 @@ const AppWithGlobalNav = () => {
                 return <AdminUsersPage />;
             case "activation-success":
                 return <ActivationSuccessPage />;
-            case "vessel-visit-execution":
-                return <VesselVisitExecutionPage />;
             default:
                 console.warn(`Unknown page: ${basePage}, defaulting to home`);
                 return <HomePage />;

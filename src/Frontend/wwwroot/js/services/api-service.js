@@ -41,7 +41,7 @@ class ApiService {
         if (endpoint.includes('/scheduling') ||
             endpoint.includes('/operationPlan') ||
             endpoint.includes('/incidents') ||
-            endpoint.includes('/vessel-visit-executions')) {
+            endpoint.includes('/vesselVisitExecution')) {
 
             targetBaseUrl = OEM_API;
         }
@@ -541,8 +541,20 @@ class ApiService {
     }
 
     // Vessel Visit Executions
-    async createVesselVisitExecution(data) {
-        return this.post('/vesselVisitExecution/Create', data);
+    async createVesselVisitExecution(executionData) {
+        return this.post('/vesselVisitExecution/Create', executionData);
+    }
+
+    async getVesselVisitExecutionById(id) {
+        return this.get(`/vesselVisitExecution/${id}`);
+    }
+
+    async getVesselVisitExecutions() {
+        return this.get('/vesselVisitExecution/GetAll');
+    }
+
+    async deleteVesselVisitExecution(id) {
+        return this.delete(`/vesselVisitExecution/${id}`);
     }
 }
 

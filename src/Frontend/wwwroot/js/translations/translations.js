@@ -124,6 +124,8 @@ window.translations = {
     "entities.notifications_desc": "Vessel schedules",
     "entities.qualifications": "Qualifications",
     "entities.qualifications_desc": "Certifications",
+    "entities.executions": "Executions",
+    "entities.executions_desc": "Port operations",
 
     // Breadcrumb
     "breadcrumb.you_are_here": "You are here:",
@@ -698,6 +700,7 @@ window.translations = {
     "management_page.notifications": "Upcoming vessel visits and schedules",
     "management_page.qualifications":
       "Professional certifications and qualifications",
+    "management_page.executions": "Port operation executions and logs",
 
     // AdminUsersPage
     "adminUsersPage.title": "Admin — User Management",
@@ -2393,6 +2396,8 @@ window.translations = {
     "entities.notifications_desc": "Horários de embarcações",
     "entities.qualifications": "Qualificações",
     "entities.qualifications_desc": "Certificações",
+    "entities.executions": "Execuções",
+    "entities.executions_desc": "Operações portuárias",
 
     // Pages
     "page.home.title": "Bem-vindo ao Sistema de Gestão Portuária",
@@ -3193,6 +3198,8 @@ window.translations = {
       "Próximas visitas de embarcações e horários",
     "management_page.qualifications":
       "Certificações e qualificações profissionais",
+    "management_page.executions":
+      "Registos de execuções de agendamento e operações",
 
     // AdminUsersPage
     "adminUsersPage.title": "Admin — Gestão de Utilizadores",

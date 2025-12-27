@@ -67,6 +67,11 @@ const ManagementPage = () => {
             description: t("management_page.qualifications"),
             icon: "🎓",
         },
+        {
+            id: "vessel-visit-executions",
+            title: t("entities.executions"),
+            description: t("management_page.executions"),
+        },
     ];
 
     const handleEntityClick = (entity) => {
