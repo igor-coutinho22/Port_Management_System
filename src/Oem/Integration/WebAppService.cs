@@ -80,6 +80,53 @@ namespace Oem.Integration
             }
         }
 
+        public async Task<VesselVisitNotificationDTO?> GetVesselVisitByIdAsync(Guid id)
+        {
+            try
+            {
+                // 1. Construct URL
+                var url = $"api/vesselvisitnotification/{id}"; // Ensure this route matches your VVN controller
+
+                // 2. Create & Send Request
+                var request = CreateAuthorizedRequest(HttpMethod.Get, url);
+                var response = await _httpClient.SendAsync(request);
+
+                // 3. Handle Failure (e.g. 404 Not Found)
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        _logger.LogWarning("Vessel Visit {Id} not found in WebApp module.", id);
+                        return null;
+                    }
+
+                    _logger.LogWarning(
+                        "WebApp returned {StatusCode} for GetVesselVisitByIdAsync({Id})",
+                        response.StatusCode, id
+                    );
+                    return null;
+                }
+
+                // 4. Read & Deserialize
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrWhiteSpace(content)) return null;
+
+                return JsonSerializer.Deserialize<VesselVisitNotificationDTO>(
+                    content,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching vessel visit for ID {Id}", id);
+                return null;
+            }
+        }
+
         public async Task<List<VesselVisitNotificationDTO>> GetApprovedVisitsForDateAsync(DateOnly date)
         {
             try

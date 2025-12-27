@@ -12,13 +12,23 @@ namespace Oem.Models.Infrastructure.Persistence.EntityConfigurations
 
             builder.HasKey(e => e.Id);
 
-            builder.Property(e => e.VesselIdentifier)
+            builder.Property(e => e.VesselVisitId)
+                .IsRequired();
+
+            builder.Property(e => e.VesselIMO)
                 .IsRequired();
 
             builder.Property(e => e.Status)
                 .IsRequired();
             
             builder.Property(e => e.CreatedBy)
+                .IsRequired();
+            
+            builder.Property(e => e.CreatedAt)
+                .IsRequired()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            
+            builder.Property(e => e.ActualArrivalTime)
                 .IsRequired();
         }
     }

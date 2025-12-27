@@ -4,19 +4,19 @@ namespace Oem.Models.Domain.VesselVisitExecutions
     {
         public Guid Id { get; private set; }
         public Guid VesselVisitId { get; private set; }
-        public string VesselIdentifier { get; private set; } = string.Empty;
+        public string VesselIMO { get; private set; } = string.Empty;
         public DateTime ActualArrivalTime { get; private set; }
         public string CreatedBy { get; private set; } = string.Empty;
         public DateTime CreatedAt { get; private set; }
-        public string Status { get; private set; } = "In Progress";
+        public string Status { get; private set; } = string.Empty;
 
         protected VesselVisitExecution() { }
 
-        public VesselVisitExecution(Guid vesselVisitId, string vesselIdentifier, DateTime actualArrivalTime, string createdBy)
+        public VesselVisitExecution(Guid vesselVisitId, string vesselIMO, DateTime actualArrivalTime, string createdBy)
         {
             Id = Guid.NewGuid();
             VesselVisitId = vesselVisitId;
-            VesselIdentifier = vesselIdentifier;
+            VesselIMO = vesselIMO;
             ActualArrivalTime = actualArrivalTime;
             CreatedBy = createdBy;
             CreatedAt = DateTime.UtcNow;

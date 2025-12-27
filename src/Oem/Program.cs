@@ -17,6 +17,7 @@ using Oem.Models.Domain.OperationPlans.Service;
 using Oem.Models.Application.Services;
 using Oem.Models.Domain.OperationPlans;
 using Oem.Models.Infrastructure.Repositories;
+using Oem.Models.Domain.VesselVisitExecutions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -165,6 +166,8 @@ builder.Services.AddScoped<IWebAppService, WebAppService>();
 builder.Services.AddScoped<IHeuristicScheduleService, HeuristicScheduleService>();
 builder.Services.AddScoped<IOperationPlanService, OperationPlanService>();
 builder.Services.AddScoped<IOperationPlanRepository, OperationPlanRepository>();
+builder.Services.AddScoped<IVesselVisitExecutionService, VesselVisitExecutionService>();
+builder.Services.AddScoped<IVesselVisitExecutionRepository, VesselVisitExecutionRepository>();
 
 var backendClientId = ciam["BackendApp:ClientId"];
 var backendClientSecret = ciam["BackendApp:ClientSecret"];

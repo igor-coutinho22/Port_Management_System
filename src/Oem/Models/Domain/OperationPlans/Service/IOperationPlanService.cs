@@ -3,7 +3,7 @@ using Oem.Models.DTOs.OperationPlans;
 
 namespace Oem.Models.Domain.OperationPlans.Service
 {
-public interface IOperationPlanService
+    public interface IOperationPlanService
     {
         Task SavePlanAsync(OperationPlan plan);
         Task<IEnumerable<OperationPlan?>> SearchPlansAsync(DateOnly? startDate, DateOnly? endDate, string? vesselIMO);
@@ -16,6 +16,6 @@ public interface IOperationPlanService
         Task<IEnumerable<ResourceUtilizationDTO>> GetResourceUtilizationAsync(DateOnly startDate, DateOnly endDate, string resourceType);
         Task ApprovePlanAsync(Guid id);
         Task RejectPlanAsync(Guid id);
-    
+
     }
 }

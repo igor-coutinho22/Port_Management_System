@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Oem.Models.Application.DTOs;
 using Oem.Models.Application.Services;
@@ -8,6 +9,7 @@ using Oem.Models.Mappers;
 namespace Oem.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize("RequireOperator")]
     [ApiController]
     public class OperationPlanController : ControllerBase
     {
