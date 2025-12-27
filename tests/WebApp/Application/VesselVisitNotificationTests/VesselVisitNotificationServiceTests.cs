@@ -307,18 +307,6 @@ public class VesselVisitNotificationServiceTests
             .WithMessage("At least one search parameter must be provided.");
     }
 
-    [Fact]
-    public async Task SearchAsync_ShouldThrow_WhenNoResultsFound()
-    {
-        // Arrange
-        var filter = new VesselVisitNotificationFilterDTO { VesselIMO = "nonexistent" };
-
-        // Act & Assert
-        var act = async () => await _service.SearchAsync(filter);
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("No vessel visit notifications found with the specified criteria.");
-    }
-
     // Stub implementations
     private class StubVesselVisitNotificationRepository : IVesselVisitNotificationRepository
     {

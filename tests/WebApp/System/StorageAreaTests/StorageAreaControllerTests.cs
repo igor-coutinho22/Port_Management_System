@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Collections.Generic;
 using WebApp.Models.Domain.StorageArea;
+using WebApp.Models.Application.DTOs;
 
 [Collection("WebApp Factory Collection")]
 public class StorageAreaControllerTests : IAsyncLifetime
@@ -33,7 +34,7 @@ public class StorageAreaControllerTests : IAsyncLifetime
                 Name = $"Test Warehouse {_testRunId}",
                 MaxCapacityTeu = 500,
                 CurrentOccupancyTeu = 100,
-                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+                DockConnections = new List<DockStorageAreaConnectionDTO>()
             },
             SpecializedCargoType = "Perishable"
         };
@@ -58,7 +59,7 @@ public class StorageAreaControllerTests : IAsyncLifetime
                 Name = $"Cold Storage {_testRunId}",
                 MaxCapacityTeu = 300,
                 CurrentOccupancyTeu = 50,
-                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+                DockConnections = new List<DockStorageAreaConnectionDTO>()
             },
             SpecializedCargoType = "Frozen"
         };
@@ -85,7 +86,7 @@ public class StorageAreaControllerTests : IAsyncLifetime
                 Name = warehouseName,
                 MaxCapacityTeu = 200,
                 CurrentOccupancyTeu = 0,
-                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+                DockConnections = new List<DockStorageAreaConnectionDTO>()
             },
             SpecializedCargoType = "General"
         };
@@ -120,7 +121,7 @@ public class StorageAreaControllerTests : IAsyncLifetime
                 Name = yardName,
                 MaxCapacityTeu = 1000,
                 CurrentOccupancyTeu = 200,
-                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+                DockConnections = new List<DockStorageAreaConnectionDTO>()
             },
             DockIds = new List<Guid> { firstDockId }
         };
@@ -154,7 +155,7 @@ public class StorageAreaControllerTests : IAsyncLifetime
                 Name = yardName,
                 MaxCapacityTeu = 800,
                 CurrentOccupancyTeu = 100,
-                DockConnections = new List<WebApp.Models.Domain.StorageArea.DockStorageAreaConnection>()
+                DockConnections = new List<DockStorageAreaConnectionDTO>()
             },
             DockIds = new List<Guid> { firstDockId }
         };
@@ -190,7 +191,7 @@ public class StorageAreaControllerTests : IAsyncLifetime
                     Name = $"Test Warehouse {_testRunId}",
                     MaxCapacityTeu = 100,
                     CurrentOccupancyTeu = 0,
-                    DockConnections = new List<DockStorageAreaConnection>()
+                    DockConnections = new List<DockStorageAreaConnectionDTO>()
                 };
             }
             var response = await _client.PostAsJsonAsync("/api/storageareas/warehouse", (object)dto);
@@ -217,7 +218,7 @@ public class StorageAreaControllerTests : IAsyncLifetime
                     Name = $"Test Yard {_testRunId}",
                     MaxCapacityTeu = 100,
                     CurrentOccupancyTeu = 0,
-                    DockConnections = new List<DockStorageAreaConnection>()
+                    DockConnections = new List<DockStorageAreaConnectionDTO>()
                 };
             }
             var response = await _client.PostAsJsonAsync("/api/storageareas/containerYard", (object)dto);

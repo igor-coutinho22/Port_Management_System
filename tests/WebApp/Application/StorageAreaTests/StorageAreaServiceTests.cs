@@ -27,7 +27,6 @@ public class StorageAreaServiceTests
         (
             name: "Yard A",
             maxCapacityTeu: 200,
-            currentOccupancyTeu: 50,
             docksServed: new List<Dock>()
         );
 
@@ -45,7 +44,6 @@ public class StorageAreaServiceTests
         (
             name: "Warehouse Alpha",
             maxCapacityTeu: 300,
-            currentOccupancyTeu: 120,
             specializedCargoType: "Hazardous"
         );
 
@@ -59,12 +57,11 @@ public class StorageAreaServiceTests
     [Fact]
     public async Task UpdateContainerYardAsync_ShouldUpdate_WhenExists()
     {
-        var yard = new ContainerYard (name: "Old Yard", maxCapacityTeu: 100, currentOccupancyTeu: 20, docksServed: new List<Dock>());
+        var yard = new ContainerYard (name: "Old Yard", maxCapacityTeu: 100, docksServed: new List<Dock>());
         await _repo.AddStorageAreaAsync(yard);
 
         yard.Name = "Updated Yard";
         yard.ChangeMaxCapacity(150);
-        yard.UpdateCurrentOccupancy(30);
 
         await _service.UpdateContainerYardAsync(yard);
 
@@ -76,7 +73,7 @@ public class StorageAreaServiceTests
     [Fact]
     public async Task UpdateContainerYardAsync_ShouldThrow_WhenNotFound()
     {
-        var yard = new ContainerYard (name: "Missing Yard", maxCapacityTeu: 100, currentOccupancyTeu: 0, docksServed: new List<Dock>());
+        var yard = new ContainerYard (name: "Missing Yard", maxCapacityTeu: 100, docksServed: new List<Dock>());
         var act = async () => await _service.UpdateContainerYardAsync(yard);
 
         await act.Should().ThrowAsync<ArgumentException>()
@@ -86,7 +83,7 @@ public class StorageAreaServiceTests
     [Fact]
     public async Task UpdateWarehouseAsync_ShouldUpdate_WhenExists()
     {
-        var warehouse = new Warehouse (name: "Old Warehouse", maxCapacityTeu: 200, currentOccupancyTeu: 100, specializedCargoType: "General");
+        var warehouse = new Warehouse (name: "Old Warehouse", maxCapacityTeu: 200, specializedCargoType: "General");
         await _repo.AddStorageAreaAsync(warehouse);
 
         warehouse.Name = "Updated Warehouse";
@@ -103,7 +100,7 @@ public class StorageAreaServiceTests
     [Fact]
     public async Task UpdateWarehouseAsync_ShouldThrow_WhenNotFound()
     {
-        var warehouse = new Warehouse (name: "Nonexistent Warehouse", maxCapacityTeu: 300, currentOccupancyTeu: 0, specializedCargoType: "General");
+        var warehouse = new Warehouse (name: "Nonexistent Warehouse", maxCapacityTeu: 300, specializedCargoType: "General");
         var act = async () => await _service.UpdateWarehouseAsync(warehouse);
 
         await act.Should().ThrowAsync<ArgumentException>()
@@ -113,8 +110,8 @@ public class StorageAreaServiceTests
     [Fact]
     public async Task GetAllStorageAreasAsync_ShouldReturnAll()
     {
-        await _repo.AddStorageAreaAsync(new ContainerYard (name: "Yard 1", maxCapacityTeu: 100, currentOccupancyTeu: 50, docksServed: new List<Dock>()));
-        await _repo.AddStorageAreaAsync(new Warehouse (name: "Warehouse 1", maxCapacityTeu: 200, currentOccupancyTeu: 100, specializedCargoType: "General"));
+        await _repo.AddStorageAreaAsync(new ContainerYard (name: "Yard 1", maxCapacityTeu: 100, docksServed: new List<Dock>()));
+        await _repo.AddStorageAreaAsync(new Warehouse (name: "Warehouse 1", maxCapacityTeu: 200, specializedCargoType: "General"));
 
         var result = await _service.GetAllStorageAreasAsync();
 
@@ -124,7 +121,7 @@ public class StorageAreaServiceTests
     [Fact]
     public async Task DeleteStorageAreaAsync_ShouldRemove_WhenExists()
     {
-        var area = new Warehouse (name: "Deletable", maxCapacityTeu: 300, currentOccupancyTeu: 100, specializedCargoType: "General");
+        var area = new Warehouse (name: "Deletable", maxCapacityTeu: 300, specializedCargoType: "General");
         await _repo.AddStorageAreaAsync(area);
 
         await _service.DeleteStorageAreaAsync(area.Id);

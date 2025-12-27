@@ -29,7 +29,6 @@ public class StorageAreaRepositoryTests
         (
             name: "Yard 01",
             maxCapacityTeu: 300,
-            currentOccupancyTeu: 100,
             docksServed: new List<Dock>()
         );
 
@@ -52,7 +51,6 @@ public class StorageAreaRepositoryTests
         (
             name: "Warehouse 01",
             maxCapacityTeu: 1000,
-            currentOccupancyTeu: 400,
             specializedCargoType: "Perishable"
         );
 
@@ -73,8 +71,8 @@ public class StorageAreaRepositoryTests
 
         var areas = new List<StorageArea>
         {
-            new ContainerYard (name: "Yard A", maxCapacityTeu: 100, currentOccupancyTeu: 50, docksServed: new List<Dock>()),
-            new Warehouse (name: "Warehouse A", maxCapacityTeu: 200, currentOccupancyTeu: 100, specializedCargoType: "General")
+            new ContainerYard (name: "Yard A", maxCapacityTeu: 100, docksServed: new List<Dock>()),
+            new Warehouse (name: "Warehouse A", maxCapacityTeu: 200, specializedCargoType: "General")
         };
 
         await context.StorageAreas.AddRangeAsync(areas);
@@ -93,7 +91,7 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var warehouse = new Warehouse (name: "Warehouse B", maxCapacityTeu: 500, currentOccupancyTeu: 200, specializedCargoType: "General");
+        var warehouse = new Warehouse (name: "Warehouse B", maxCapacityTeu: 500, specializedCargoType: "General");
         await context.StorageAreas.AddAsync(warehouse);
         await context.SaveChangesAsync();
 
@@ -109,7 +107,7 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var yard = new ContainerYard (name: "FindMe", maxCapacityTeu: 150, currentOccupancyTeu: 75, docksServed: new List<Dock>());
+        var yard = new ContainerYard (name: "FindMe", maxCapacityTeu: 150, docksServed: new List<Dock>());
         await context.StorageAreas.AddAsync(yard);
         await context.SaveChangesAsync();
 
@@ -125,7 +123,7 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var yard = new ContainerYard (name: "Old Yard", maxCapacityTeu: 200, currentOccupancyTeu: 100, docksServed: new List<Dock>());
+        var yard = new ContainerYard (name: "Old Yard", maxCapacityTeu: 200, docksServed: new List<Dock>());
         await context.StorageAreas.AddAsync(yard);
         await context.SaveChangesAsync();
 
@@ -144,7 +142,7 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var warehouse = new Warehouse (name: "Old Warehouse", maxCapacityTeu: 500, currentOccupancyTeu: 200, specializedCargoType: "General");
+        var warehouse = new Warehouse (name: "Old Warehouse", maxCapacityTeu: 500, specializedCargoType: "General");
         await context.StorageAreas.AddAsync(warehouse);
         await context.SaveChangesAsync();
 
@@ -164,7 +162,7 @@ public class StorageAreaRepositoryTests
         using var context = new PortManagementContext(_options);
         var repo = new StorageAreaRepository(context);
 
-        var yard = new ContainerYard (name: "ToDelete", maxCapacityTeu: 200, currentOccupancyTeu: 100, docksServed: new List<Dock>());
+        var yard = new ContainerYard (name: "ToDelete", maxCapacityTeu: 200, docksServed: new List<Dock>());
         await context.StorageAreas.AddAsync(yard);
         await context.SaveChangesAsync();
 
