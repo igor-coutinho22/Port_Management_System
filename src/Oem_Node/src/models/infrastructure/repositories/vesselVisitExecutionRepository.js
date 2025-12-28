@@ -2,31 +2,27 @@ const VesselVisitExecution = require('../../domain/vesselVisitExecutions/vesselV
 
 class VesselVisitExecutionRepository {
 
-    // Matches: public async Task AddAsync(VesselVisitExecution vesselVisitExecution)
-    async addAsync(vesselVisitExecution) {
-        // In Mongoose, the 'vesselVisitExecution' passed here is a Model instance created 
-        // in the Service/Mapper. Calling .save() persists it to MongoDB.
-        await vesselVisitExecution.save();
+    async addAsync(domainEntity) {
+        await domainEntity.save();
     }
 
-    // Matches: public async Task<VesselVisitExecution?> GetByIdAsync(Guid id)
     async getByIdAsync(id) {
-        // Finds the document by its _id field
         return await VesselVisitExecution.findById(id);
     }
 
-    // Matches: public async Task<IEnumerable<VesselVisitExecution>> GetAllAsync()
-    async getAllAsync() {
-        // Returns all documents in the collection
-        return await VesselVisitExecution.find();
+    // Helper to find by the functional ID (VVN ID), not just DB ID
+    async getByVesselVisitIdAsync(vesselVisitId) {
+        return await VesselVisitExecution.findOne({ vesselVisitId: vesselVisitId });
     }
 
-    // Matches: public async Task DeleteAsync(VesselVisitExecution vesselVisitExecution)
-    async deleteAsync(vesselVisitExecution) {
-        // In Mongoose, document instances have a helper method .deleteOne() 
-        // which removes that specific document from the DB.
-        if (vesselVisitExecution) {
-            await vesselVisitExecution.deleteOne();
+    async getAllAsync() {
+        // Sort by CreatedAt descending so newest appear top
+        return await VesselVisitExecution.find().sort({ createdAt: -1 });
+    }
+
+    async deleteAsync(domainEntity) {
+        if (domainEntity) {
+            await domainEntity.deleteOne();
         }
     }
 }

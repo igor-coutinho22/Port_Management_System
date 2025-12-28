@@ -2,54 +2,43 @@ const repository = require('../../infrastructure/repositories/vesselVisitExecuti
 
 class VesselVisitExecutionService {
 
-    // Matches: public async Task CreateVesselVisitExecutionAsync(VesselVisitExecution vesselVisitExecution)
-    async createVesselVisitExecution(vesselVisitExecution) {
-        if (!vesselVisitExecution) {
-            throw new Error('ArgumentNullException: vesselVisitExecution cannot be null.');
+    // Matches Controller: service.createVesselVisitExecution(domainEntity)
+    async createVesselVisitExecution(domainEntity) {
+        if (!domainEntity) {
+            throw new Error('ArgumentNullException: Domain entity cannot be null.');
         }
 
-        // Check if ID already exists
-        // Note: Mongoose uses _id, but our mapper/logic treats it as 'id' or '_id'. 
-        // We access _id directly from the domain entity.
-        const existingEntity = await repository.getByIdAsync(vesselVisitExecution._id);
-        
-        if (existingEntity) {
-            throw new Error('InvalidOperationException: A Vessel Visit Execution with the same ID already exists.');
+        // Check if execution already exists for this Visit ID
+        const existing = await repository.getByVesselVisitIdAsync(domainEntity.vesselVisitId);
+        if (existing) {
+            throw new Error(`InvalidOperationException: Execution already started for Visit ID ${domainEntity.vesselVisitId}`);
         }
 
-        await repository.addAsync(vesselVisitExecution);
-        return vesselVisitExecution;
+        await repository.addAsync(domainEntity);
+        return domainEntity;
     }
 
-    // Matches: public async Task<VesselVisitExecution?> GetVesselVisitExecutionByIdAsync(Guid id)
+    // Matches Controller: service.getVesselVisitExecutionById(id)
     async getVesselVisitExecutionById(id) {
-        if (!id) {
-            throw new Error('ArgumentException: Invalid ID.');
-        }
-
+        if (!id) throw new Error('ArgumentException: Invalid ID.');
         return await repository.getByIdAsync(id);
     }
 
-    // Matches: public async Task<IEnumerable<VesselVisitExecution>> GetAllVesselVisitExecutionsAsync()
-    async getAllVesselVisitExecutions() {
+    // Matches Controller: service.getAllVesselVisitExecutionsAsync()
+    async getAllVesselVisitExecutionsAsync() {
         return await repository.getAllAsync();
     }
 
-    // Matches: public async Task DeleteVesselVisitExecutionAsync(Guid id)
     async deleteVesselVisitExecution(id) {
-        if (!id) {
-            throw new Error('ArgumentException: Invalid ID.');
-        }
-
-        const vvnToDelete = await repository.getByIdAsync(id);
+        if (!id) throw new Error('ArgumentException: Invalid ID.');
         
-        if (!vvnToDelete) {
+        const entity = await repository.getByIdAsync(id);
+        if (!entity) {
             throw new Error('InvalidOperationException: Vessel Visit Execution not found.');
         }
 
-        await repository.deleteAsync(vvnToDelete);
+        await repository.deleteAsync(entity);
     }
 }
 
-// Export as a Singleton (new instance) so we can use it immediately in the Controller
 module.exports = new VesselVisitExecutionService();

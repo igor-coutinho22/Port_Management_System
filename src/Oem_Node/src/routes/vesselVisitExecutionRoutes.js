@@ -3,11 +3,11 @@ const router = express.Router();
 const controller = require('../controllers/vesselVisitExecutionController');
 const requireAuth = require('../middleware/authMiddleware');
 
-// Matches [Authorize("RequireOperator")]
-// Note: In C#, RequireOperator allowed (Operator OR Admin). Our middleware logic handles that check.
-router.get('/GetAll', requireAuth('RequireOperator'), controller.getAll);
-router.post('/Create', requireAuth('RequireOperator'), controller.create);
-router.get('/:id', requireAuth('RequireOperator'), controller.getById);
-router.delete('/:id', requireAuth('RequireOperator'), controller.delete);
+const auth = requireAuth('RequireOperator');
+
+router.get('/GetAll', auth, controller.getAll);
+router.post('/Create', auth, controller.create);
+router.get('/:id', auth, controller.getById);
+router.delete('/:id', auth, controller.delete);
 
 module.exports = router;
