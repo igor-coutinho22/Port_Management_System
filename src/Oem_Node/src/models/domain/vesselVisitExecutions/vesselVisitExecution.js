@@ -10,7 +10,6 @@ const auditLogSchema = new mongoose.Schema({
 }, { _id: false });
 
 const vesselVisitExecutionSchema = new mongoose.Schema({
-    // We override the default Mongo _id to use a GUID (String), matching C# Guid.NewGuid()
     _id: {
         type: String,
         default: uuidv4
@@ -52,8 +51,7 @@ const vesselVisitExecutionSchema = new mongoose.Schema({
         default: null
     }
 }, {
-    // This creates 'createdAt' and 'updatedAt' automatically. 
-    // Mongoose manages CreatedAt, matching your C# "CreatedAt = DateTime.UtcNow"
+    // This creates 'createdAt' and 'updatedAt' automatically.
     timestamps: true, 
 
     // This ensures that when you convert to JSON, the '_id' field is also mapped to 'id'
@@ -73,9 +71,6 @@ const vesselVisitExecutionSchema = new mongoose.Schema({
 vesselVisitExecutionSchema.methods.complete = function() {
     this.status = 'Completed';
     this.completedTime = new Date();
-    // Mongoose doesn't auto-save on method calls usually, but we can't save here easily without async.
-    // In Node, we usually manipulate the object in the service and then .save().
-    // However, this method acts as the domain logic container.
 };
 
 module.exports = mongoose.model('VesselVisitExecution', vesselVisitExecutionSchema);

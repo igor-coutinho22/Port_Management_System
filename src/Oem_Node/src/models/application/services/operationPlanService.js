@@ -50,7 +50,6 @@ class OperationPlanService {
         OperationPlanMapper.applyUpdate(plan, dto);
 
         // Persist changes
-        // In Mongoose, .save() on the document will update the Items array and AuditLog
         await repository.saveChangesAsync(plan);
         
         return plan;
@@ -84,7 +83,7 @@ class OperationPlanService {
         const result = await heuristicService.generateDailySchedule(date, heuristicName, token);
 
         // Fetch Visits to get loading/unloading details needed for Mapper
-        // We need this because HeuristicService returns minimal info, but OperationPlan requires full details.
+        // Need this because HeuristicService returns minimal info, but OperationPlan requires full details.
         const visits = await webAppService.getApprovedVisitsForDate(date, token);
         const visitMap = {};
         if(visits) {
@@ -92,7 +91,7 @@ class OperationPlanService {
         }
 
         // 2. Convert to Domain via Mapper
-        // We simulate a CreateDTO structure for the Mapper
+        // Simulate a CreateDTO structure for the Mapper
         const createDtoStub = {
             scheduleDate: new Date(date),
             heuristicUsed: heuristicName,

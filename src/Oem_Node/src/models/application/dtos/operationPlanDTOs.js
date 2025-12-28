@@ -71,7 +71,6 @@ class UpdateOperationPlanItemDTO {
         // Defensive: Check for 'itemId' OR 'ItemId'
         this.itemId = data.itemId || data.ItemId;
         
-        // Ensure we capture 0 values (don't use || 0 if the value might be missing vs actually 0)
         this.serviceStartTime = data.serviceStartTime || data.ServiceStartTime;
         this.serviceEndTime = data.serviceEndTime || data.ServiceEndTime;
         

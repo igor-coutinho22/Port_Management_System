@@ -1,6 +1,5 @@
 const axios = require('axios');
-const https = require('https'); // Import explicitly
-
+const https = require('https');
 class WebAppService {
     constructor() {
         // Create an agent that ignores SSL errors (Self-Signed Certs)
@@ -24,7 +23,6 @@ class WebAppService {
         };
     }
 
-    // Matches: Task<bool> IsVesselValidAsync(string vesselImo)
     async isVesselValid(vesselImo, token) {
         try {
             const response = await this.client.get(
@@ -38,7 +36,6 @@ class WebAppService {
         }
     }
 
-    // Matches: Task<bool> IsDockValidAsync(Guid dockId)
     async isDockValid(dockId, token) {
         try {
             const response = await this.client.get(
@@ -52,7 +49,6 @@ class WebAppService {
         }
     }
 
-    // Matches: Task<VesselVisitNotificationDTO?> GetVesselVisitByIdAsync(Guid id)
     async getVesselVisitById(id, token) {
         try {
             const response = await this.client.get(
@@ -70,7 +66,6 @@ class WebAppService {
         }
     }
 
-    // Matches: Task<List<VesselVisitNotificationDTO>> GetApprovedVisitsForDateAsync(DateOnly date)
     async getApprovedVisitsForDate(date, token) {
         try {
             // FIX: Manual ISO string construction to ensure correct day is sent
@@ -78,7 +73,6 @@ class WebAppService {
             if (date instanceof Date) {
                 dateStr = date.toISOString().split('T')[0];
             } else {
-                // Handle string input "2025-12-27"
                 dateStr = date.toString().split('T')[0];
             }
 
@@ -100,7 +94,6 @@ class WebAppService {
         } catch (error) {
             console.error(`Error fetching approved visits: ${error.message}`);
             if(error.response) {
-                // Log detailed error from C# if available
                 console.error(`WebApp Response: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
             }
             return [];

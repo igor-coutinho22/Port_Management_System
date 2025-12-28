@@ -11,7 +11,7 @@ class SchedulingResultMapper {
             heuristicName: domain.heuristicName,
             totalDelayMinutes: domain.totalDelayMinutes,
             runtimeSeconds: domain.runtimeSeconds,
-            warnings: domain.warnings ? [...domain.warnings] : [], // Clone array
+            warnings: domain.warnings ? [...domain.warnings] : [],
             entries: (domain.entries || []).map(e => new VesselScheduleEntryDTO({
                 vesselVisitId: e.vesselVisitId,
                 vesselIMO: e.vesselIMO,

@@ -8,8 +8,6 @@ class OperationPlanMapper {
     static toDTO(domain) {
         if (!domain) return null;
 
-        // In Mongoose, we usually call .toObject() or just access properties.
-        // Assuming 'domain' is a Mongoose document.
         const dto = new OperationPlanDTO({
             id: domain.id,
             scheduleDate: domain.scheduleDate,
@@ -40,14 +38,13 @@ class OperationPlanMapper {
     // visitInfoMap is expected to be a JS Object: { "guid-string": VesselVisitNotificationDTO }
     static toDomain(dto, visitInfoMap) {
         // 1. Create the Parent Plan
-        // In Mongoose, we instantiate the model with the initial data
         const plan = new OperationPlan({
             scheduleDate: dto.scheduleDate,
             heuristicUsed: dto.heuristicUsed,
             totalDelayMinutes: dto.totalDelayMinutes,
             algorithmRuntimeSeconds: dto.runtimeSeconds,
             author: dto.author,
-            items: [] // We will push items into this array
+            items: []
         });
 
         // 2. Process Entries

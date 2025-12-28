@@ -2,50 +2,41 @@ const OperationPlan = require('../../domain/operationPlans/operationPlan');
 
 class OperationPlanRepository {
 
-    // Matches: GetByIdAsync(Guid id)
     async getByIdAsync(id) {
         // Mongoose automatically retrieves embedded 'items' and 'auditLog'
         return await OperationPlan.findById(id);
     }
 
-    // Matches: GetAllAsync()
     async getAllAsync() {
         return await OperationPlan.find();
     }
 
-    // Matches: AddAsync(OperationPlan plan)
     async addAsync(plan) {
         await plan.save();
     }
 
-    // Matches: SaveChangesAsync()
-    // NOTE: In Node, we don't have a global Context tracker. 
-    // The Service must pass the 'plan' instance here to save changes (like new Audit logs).
     async saveChangesAsync(plan) {
         if (plan) {
             await plan.save();
         }
     }
 
-    // Matches: UpdateAsync(OperationPlan plan)
     async updateAsync(plan) {
         if (plan) {
             await plan.save();
         }
     }
 
-    // Matches: DeleteAsync(OperationPlan plan)
     async deleteAsync(plan) {
         if (plan) {
             await plan.deleteOne();
         }
     }
 
-    // Matches: SearchPlansAsync(...)
     async searchPlansAsync(startDate, endDate, vesselIMO) {
         const query = {};
 
-        // --- Date Logic (Mirroring C# if/else structure) ---
+        // --- Date Logic  ---
         
         // Helper to get start/end of a specific day
         const getDayRange = (dateStr) => {
@@ -77,9 +68,6 @@ class OperationPlanRepository {
 
         // --- VesselIMO Logic ---
         if (vesselIMO) {
-            // Matches: p.Items.Any(i => i.VesselIMO.Contains(vesselIMO))
-            // Mongoose allows querying arrays of objects directly.
-            // We use $regex for "Contains" (case-insensitive option 'i' is safer in JS)
             query['items.vesselIMO'] = { $regex: vesselIMO, $options: 'i' };
         }
 

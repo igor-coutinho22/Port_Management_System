@@ -9,7 +9,6 @@ router.get('/GetAll', auth, controller.getAll);
 router.post('/Create', auth, controller.create);
 router.get('/:id', auth, controller.getById);
 
-// --- NEW Route for US 4.1.8 ---
 router.put('/:id', auth, controller.update);
 
 router.delete('/:id', auth, controller.delete);
