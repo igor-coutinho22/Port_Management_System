@@ -1,0 +1,47 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('./config/db');
+const https = require('https'); // <--- 1. Import HTTPS
+const fs = require('fs');       // <--- 2. Import File System
+const path = require('path');   // <--- 3. Import Path
+
+// Import Routes
+const vesselVisitExecutionRoutes = require('./routes/vesselVisitExecutionRoutes');
+const schedulingRoutes = require('./routes/schedulingRoutes');
+const operationPlanRoutes = require('./routes/operationPlanRoutes');
+
+// Initialize App
+const app = express();
+const PORT = process.env.PORT || 6001;
+
+// Middleware
+app.use(cors()); 
+app.use(express.json()); 
+
+// Connect to Database
+connectDB();
+
+// Basic Route
+app.get('/', (req, res) => {
+    res.send('OEM Node API is running securely on HTTPS...');
+});
+
+// Routes
+app.use('/api/vesselvisitexecution', vesselVisitExecutionRoutes);
+app.use('/api/scheduling', schedulingRoutes);
+app.use('/api/operationplan', operationPlanRoutes);
+
+// --- START SERVER (HTTPS) ---
+
+// 4. Load the Certificate Files
+// Adjust the path string if you didn't move them to src/config/
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'config', 'localhost-key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'config', 'localhost.pem'))
+};
+
+// 5. Create HTTPS Server instead of app.listen
+https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log(`🚀 Secure Server running on https://localhost:${PORT}`);
+});
