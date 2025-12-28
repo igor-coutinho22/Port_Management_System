@@ -7,6 +7,12 @@ class VesselVisitExecutionDTO {
         this.status = data.status || '';
         this.createdBy = data.createdBy || '';
         this.createdAt = data.createdAt;
+
+        // --- New Fields for US 4.1.8 ---
+        this.berthTime = data.berthTime;
+        this.dockId = data.dockId;
+        this.discrepancy = data.discrepancy;
+        this.auditLog = data.auditLog;
     }
 }
 

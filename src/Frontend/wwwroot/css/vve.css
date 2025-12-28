@@ -390,3 +390,23 @@
 [data-theme="dark"] .delete-cancel-btn:hover:not(:disabled) {
     background-color: rgba(255, 255, 255, 0.1);
 }
+
+/* UpdateVesselVisitExecutionForm Specific Styles */
+
+.discrepancy-warning-box {
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    border-radius: 6px;
+    background-color: #fff3cd; /* Light Yellow */
+    border-left: 4px solid #ffc107; /* Strong Yellow border */
+    color: #856404; /* Dark Yellow Text */
+    font-size: 0.95rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Ensure context grid is responsive */
+.context-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}

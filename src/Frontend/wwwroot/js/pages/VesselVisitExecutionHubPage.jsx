@@ -40,21 +40,28 @@ const VesselVisitExecutionHubPage = () => {
             id: 'create',
             title: 'Start Vessel Visit Execution',
             description: 'Record the actual arrival of a vessel and start the execution phase.',
-            color: '#27ae60', // Green
+            color: '#27ae60', // Green (POST)
             component: 'CreateVesselVisitExecutionForm'
+        },
+        {
+            id: 'update',
+            title: 'Update Execution Details',
+            description: 'Update actual berth time and assigned dock.',
+            color: '#f39c12', // Orange (PUT)
+            component: 'UpdateVesselVisitExecutionForm'
         },
         {
             id: 'getById',
             title: 'Get Execution By ID',
             description: 'Retrieve details of a specific execution record.',
-            color: '#2980b9', // Blue
+            color: '#2980b9', // Blue (GET)
             component: 'GetVesselVisitExecutionByIdForm'
         },
         {
             id: 'delete',
             title: 'Delete Execution',
             description: 'Remove an execution record from the system.',
-            color: '#c0392b', // Red
+            color: '#c0392b', // Red (DELETE)
             component: 'DeleteVesselVisitExecutionForm'
         }
     ];
@@ -65,7 +72,7 @@ const VesselVisitExecutionHubPage = () => {
                 <h2 className="page-title">
                     Vessel Visit Executions Management
                 </h2>
-                <p>Manage the execution phase of vessel visits, tracking actual arrival times and operation status.</p>
+                <p>Manage the execution phase of vessel visits, tracking actual arrival times, docking, and operation status.</p>
             </div>
 
             {/* Quick Data View Button */}
@@ -111,6 +118,7 @@ const VesselVisitExecutionHubPage = () => {
                                     style={{ backgroundColor: section.color }}
                                 >
                                     {section.id === 'create' ? 'POST' : 
+                                     section.id === 'update' ? 'PUT' :
                                      section.id === 'delete' ? 'DELETE' : 'GET'}
                                 </span>
                                 <span className={`expand-arrow ${expandedSection === section.id ? 'up' : 'down'}`}>
@@ -128,6 +136,14 @@ const VesselVisitExecutionHubPage = () => {
                                             ? <CreateVesselVisitExecutionForm onSuccess={loadExecutions} />
                                             : <div>Component CreateVesselVisitExecutionForm not found</div>
                                     )}
+                                    
+                                    {/* NEW UPDATE FORM */}
+                                    {section.component === 'UpdateVesselVisitExecutionForm' && (
+                                        typeof UpdateVesselVisitExecutionForm !== 'undefined' 
+                                            ? <UpdateVesselVisitExecutionForm onSuccess={loadExecutions} />
+                                            : <div>Component UpdateVesselVisitExecutionForm not found</div>
+                                    )}
+
                                     {section.component === 'GetVesselVisitExecutionByIdForm' && (
                                         typeof GetVesselVisitExecutionByIdForm !== 'undefined' 
                                             ? <GetVesselVisitExecutionByIdForm />
@@ -152,7 +168,7 @@ const VesselVisitExecutionHubPage = () => {
 const VesselVisitExecutionsQuickTable = ({ executions, onRefresh }) => {
     
     const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
+        if (!dateString) return '-';
         try {
             return new Date(dateString).toLocaleString();
         } catch (e) {
@@ -183,11 +199,11 @@ const VesselVisitExecutionsQuickTable = ({ executions, onRefresh }) => {
                                 <th>ID</th>
                                 <th>Vessel Visit ID</th>
                                 <th>Vessel IMO</th>
-                                <th>Actual Arrival</th>
-                                <th>Completed</th>
+                                <th>Arrival</th>
+                                <th>Berth Time</th> {/* New Column */}
+                                <th>Dock ID</th>    {/* New Column */}
                                 <th>Status</th>
-                                <th>Created By</th>
-                                <th>Created At</th>
+                                <th>Warnings</th>   {/* New Column for Discrepancies */}
                             </tr>
                         </thead>
                         <tbody>
@@ -197,14 +213,27 @@ const VesselVisitExecutionsQuickTable = ({ executions, onRefresh }) => {
                                     <td className="id-cell" title={e.vesselVisitId}>{e.vesselVisitId || 'N/A'}</td>
                                     <td>{e.vesselIMO || 'N/A'}</td>
                                     <td>{formatDate(e.actualArrivalTime)}</td>
-                                    <td>{e.completedTime ? formatDate(e.completedTime) : '-'}</td>
+                                    
+                                    {/* New Data Fields */}
+                                    <td>{formatDate(e.berthTime)}</td>
+                                    <td className="id-cell" title={e.dockId}>{e.dockId || '-'}</td>
+                                    
                                     <td>
                                         <span className={`status-badge status-${(e.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
                                             {e.status || 'N/A'}
                                         </span>
                                     </td>
-                                    <td>{e.createdBy || 'System'}</td>
-                                    <td>{formatDate(e.createdAt)}</td>
+
+                                    {/* Discrepancy / Warnings */}
+                                    <td>
+                                        {e.discrepancy ? (
+                                            <span title={e.discrepancy} style={{ cursor: 'help', fontSize: '1.2em' }}>
+                                                ⚠️
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: '#27ae60' }}>✔</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

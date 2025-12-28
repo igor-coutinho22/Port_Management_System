@@ -2,7 +2,9 @@ const CreateVesselVisitExecutionForm = ({ onSuccess }) => {
     const [formData, setFormData] = React.useState({
         vesselVisitId: '',
         vesselIMO: '',
-        actualArrivalTime: ''
+        actualArrivalTime: '',
+        berthTime: '', 
+        dockId: ''    
     });
 
     const [loading, setLoading] = React.useState(false);
@@ -18,7 +20,6 @@ const CreateVesselVisitExecutionForm = ({ onSuccess }) => {
             ...prev,
             [name]: value
         }));
-        // Clear errors when user types
         if (message.type === 'error') setMessage({ type: '', text: '' });
     };
 
@@ -43,40 +44,53 @@ const CreateVesselVisitExecutionForm = ({ onSuccess }) => {
             setMessage({ type: 'error', text: 'Actual Arrival Time is required.' });
             return;
         }
+        // Optional validation for Dock ID if user enters one
+        if (formData.dockId && !isValidGuid(formData.dockId)) {
+            setMessage({ type: 'error', text: 'Invalid Dock ID format (GUID required).' });
+            return;
+        }
 
         setLoading(true);
 
         try {
             // 2. Prepare Payload
-            // We format the date to ISO string for the backend DateTime binder
             const payload = {
                 vesselVisitId: formData.vesselVisitId.trim(),
                 vesselIMO: formData.vesselIMO.trim(),
-                actualArrivalTime: new Date(formData.actualArrivalTime).toISOString()
-                // CreatedBy is handled by the backend controller (User.Identity.Name)
+                actualArrivalTime: new Date(formData.actualArrivalTime).toISOString(),
+                // Optional fields
+                berthTime: formData.berthTime ? new Date(formData.berthTime).toISOString() : null,
+                dockId: formData.dockId ? formData.dockId.trim() : null
             };
 
             // 3. API Call
-            await apiService.createVesselVisitExecution(payload);
+            const response = await apiService.createVesselVisitExecution(payload);
 
             // 4. Success Handling
-            setMessage({ type: 'success', text: 'Vessel Visit Execution created successfully!' });
+            if (response && response.latestDiscrepancy) {
+                setMessage({ 
+                    type: 'warning', 
+                    text: `Created with warning: ${response.latestDiscrepancy}` 
+                });
+            } else {
+                setMessage({ type: 'success', text: 'Vessel Visit Execution created successfully!' });
+            }
             
             // Clear form
             setFormData({
                 vesselVisitId: '',
                 vesselIMO: '',
-                actualArrivalTime: ''
+                actualArrivalTime: '',
+                berthTime: '',
+                dockId: ''
             });
 
-            // Refresh parent list if callback provided
             if (onSuccess) {
                 setTimeout(onSuccess, 1500);
             }
 
         } catch (error) {
             console.error('Create Execution error:', error);
-            // Display friendly error message from backend (e.g., "IMO does not match")
             setMessage({ type: 'error', text: error.message || 'Failed to start execution.' });
         } finally {
             setLoading(false);
@@ -129,9 +143,6 @@ const CreateVesselVisitExecutionForm = ({ onSuccess }) => {
                             className="form-input"
                             required
                         />
-                        <small style={{ color: '#888', fontSize: '0.8em' }}>
-                            Must match the IMO in the notification.
-                        </small>
                     </div>
 
                     {/* Actual Arrival Time */}
@@ -145,6 +156,37 @@ const CreateVesselVisitExecutionForm = ({ onSuccess }) => {
                             onChange={handleChange}
                             className="form-input"
                             required
+                        />
+                    </div>
+                </div>
+
+                <div className="form-divider-label">Optional Initial Setup</div>
+
+                <div className="form-grid">
+                    {/* Berth Time (Optional) */}
+                    <div className="form-group">
+                        <label htmlFor="berthTime">Actual Berth Time</label>
+                        <input
+                            type="datetime-local"
+                            id="berthTime"
+                            name="berthTime"
+                            value={formData.berthTime}
+                            onChange={handleChange}
+                            className="form-input"
+                        />
+                    </div>
+
+                    {/* Dock ID (Optional - Manual Input) */}
+                    <div className="form-group">
+                        <label htmlFor="dockId">Assigned Dock ID</label>
+                        <input
+                            type="text"
+                            id="dockId"
+                            name="dockId"
+                            value={formData.dockId}
+                            onChange={handleChange}
+                            placeholder="e.g., 20c24385-28b9..."
+                            className="form-input"
                         />
                     </div>
                 </div>

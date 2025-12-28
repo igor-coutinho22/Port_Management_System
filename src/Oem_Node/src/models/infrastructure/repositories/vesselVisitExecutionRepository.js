@@ -6,6 +6,13 @@ class VesselVisitExecutionRepository {
         await domainEntity.save();
     }
 
+    // --- New Update Method ---
+    async updateAsync(domainEntity) {
+        // In Mongoose, saving a loaded document updates it. 
+        // This is explicitly named for architectural consistency.
+        await domainEntity.save();
+    }
+
     async getByIdAsync(id) {
         return await VesselVisitExecution.findById(id);
     }

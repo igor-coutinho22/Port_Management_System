@@ -16,10 +16,6 @@ const GetVesselVisitExecutionByIdForm = () => {
             setMessage({ type: 'error', text: 'Please enter an ID.' });
             return;
         }
-        if (!isValidGuid(searchId.trim())) {
-            setMessage({ type: 'error', text: 'Invalid ID format (GUID required).' });
-            return;
-        }
 
         setLoading(true);
 
@@ -47,7 +43,7 @@ const GetVesselVisitExecutionByIdForm = () => {
     };
 
     const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
+        if (!dateString) return '-';
         return new Date(dateString).toLocaleString();
     };
 
@@ -101,7 +97,7 @@ const GetVesselVisitExecutionByIdForm = () => {
 
             {/* RESULT DISPLAY */}
             {execution && (
-                <div className="result-container">
+                <div className="result-container fade-in">
                     <h5 className="result-header">
                         Execution Details
                     </h5>
@@ -128,12 +124,37 @@ const GetVesselVisitExecutionByIdForm = () => {
                                     </span>
                                 </td>
                             </tr>
+                            
+                            {/* --- NEW FIELDS START --- */}
                             <tr>
                                 <th>Actual Arrival</th>
                                 <td className="success-text">
                                     {formatDate(execution.actualArrivalTime)}
                                 </td>
                             </tr>
+                            <tr>
+                                <th>Actual Berth Time</th>
+                                <td>
+                                    {formatDate(execution.berthTime)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Assigned Dock ID</th>
+                                <td className="monospace-cell">
+                                    {execution.dockId || <span style={{color: '#999'}}>Not Assigned</span>}
+                                </td>
+                            </tr>
+                            {/* Warnings / Discrepancies Row */}
+                            {execution.discrepancy && (
+                                <tr style={{ backgroundColor: '#fff3cd' }}>
+                                    <th style={{ color: '#856404' }}>⚠️ Discrepancy</th>
+                                    <td style={{ color: '#856404', fontWeight: 'bold' }}>
+                                        {execution.discrepancy}
+                                    </td>
+                                </tr>
+                            )}
+                            {/* --- NEW FIELDS END --- */}
+
                             <tr>
                                 <th>Completed Time</th>
                                 <td>
@@ -150,6 +171,13 @@ const GetVesselVisitExecutionByIdForm = () => {
                             </tr>
                         </tbody>
                     </table>
+
+                    {/* Optional: Show Audit Log count or detail if needed */}
+                    {execution.auditLog && execution.auditLog.length > 0 && (
+                        <div style={{ marginTop: '15px', fontSize: '0.85em', color: '#666' }}>
+                            <em>* This record has {execution.auditLog.length} audit log entries.</em>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

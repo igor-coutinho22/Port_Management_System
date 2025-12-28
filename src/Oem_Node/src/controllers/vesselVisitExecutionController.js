@@ -2,6 +2,7 @@ const service = require("../models/application/services/vesselVisitExecutionServ
 const webAppService = require("../models/infrastructure/integration/webAppService");
 const Mapper = require("../models/application/mappers/vesselVisitExecutionMapper");
 const CreateDTO = require("../models/application/dtos/CreateVesselVisitExecutionDTO");
+const UpdateDTO = require("../models/application/dtos/UpdateVesselVisitExecutionDTO");
 
 // @desc    Create a new Vessel Visit Execution
 // @route   POST /api/vesselvisitexecution/Create
@@ -27,7 +28,7 @@ exports.create = async (req, res) => {
         .send(`Vessel Visit with ID '${dto.vesselVisitId}' does not exist.`);
     }
 
-    // 3. Validate Vessel IMO
+    // 3. Validate Vessel IMO and Dock ID
     const isIMOValid = await webAppService.isVesselValid(dto.vesselIMO, token);
     if (!isIMOValid) return res.status(400).send("Vessel IMO is not valid.");
 
@@ -35,13 +36,18 @@ exports.create = async (req, res) => {
     if (vvnDto.vesselIMO !== dto.vesselIMO) {
       return res.status(400).send("Vessel IMO does not match notification.");
     }
+    if (vvnDto.dockId && dto.dockId && vvnDto.dockId !== dto.dockId) {
+      return res
+        .status(400)
+        .send("Dock ID does not match notification dock assignment.");
+    }
 
     // 5. Convert DTO -> Domain
     dto.createdBy = req.user ? req.user.name : "System";
     const domainEntity = Mapper.toDomain(dto);
 
     // 6. Save via Service
-    await service.createVesselVisitExecution(domainEntity);
+    await service.createVesselVisitExecution(domainEntity, token);
 
     // 7. Return Result DTO
     return res.status(201).json(Mapper.toDTO(domainEntity));
@@ -81,6 +87,37 @@ exports.getById = async (req, res) => {
   } catch (err) {
     return res.status(500).send(err.message);
   }
+};
+
+// @desc    Update VVE with Berth Time and Dock
+// @route   PUT /api/vesselvisitexecution/:id
+exports.update = async (req, res) => {
+    try {
+        const id = req.params.id;
+        if (!req.body) return res.status(400).send('Invalid request body.');
+
+        const token = req.headers.authorization;
+        
+        // Use DTO to sanitize input
+        const dto = new UpdateDTO(req.body);
+        
+        // Set Author from Token or body
+        dto.author = req.user ? req.user.name : (req.body.author || 'System');
+
+        const updatedEntity = await service.updateBerthAndDock(id, dto, token);
+
+        return res.status(200).json(Mapper.toDTO(updatedEntity));
+
+    } catch (err) {
+        console.error("Update Error:", err.message);
+        if (err.message.includes('not found') || err.message.includes('KeyNotFound')) {
+            return res.status(404).send(err.message);
+        }
+        if (err.message.includes('Argument')) {
+            return res.status(400).send(err.message);
+        }
+        return res.status(500).send(`Internal server error: ${err.message}`);
+    }
 };
 
 // @desc    Delete execution

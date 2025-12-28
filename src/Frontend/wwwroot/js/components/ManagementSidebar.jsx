@@ -13,7 +13,8 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
         { id: 'representatives', titleKey: 'entities.representatives', descKey: 'entities.representatives_desc' },
         { id: 'staff', titleKey: 'entities.staff', descKey: 'entities.staff_desc' },
         { id: 'vessel-visit-notifications', titleKey: 'entities.notifications', descKey: 'entities.notifications_desc' },
-        { id: 'qualifications', titleKey: 'entities.qualifications', descKey: 'entities.qualifications_desc' }
+        { id: 'qualifications', titleKey: 'entities.qualifications', descKey: 'entities.qualifications_desc' },
+        { id: 'vessel-visit-executions', titleKey: 'entities.executions', descKey: 'entities.executions_desc' }
     ];
 
     // Filter entities based on user permissions

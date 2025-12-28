@@ -5,6 +5,8 @@ class CreateVesselVisitExecutionDTO {
         this.vesselIMO = data.vesselIMO || data.VesselIMO || '';
         this.actualArrivalTime = data.actualArrivalTime || data.ActualArrivalTime;
         this.createdBy = data.createdBy || data.CreatedBy || 'System';
+        this.berthTime = data.berthTime || data.BerthTime || null;
+        this.dockId = data.dockId || data.DockId || null;
     }
 }
 

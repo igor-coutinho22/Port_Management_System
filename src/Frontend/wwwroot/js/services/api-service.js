@@ -553,6 +553,10 @@ class ApiService {
         return this.get('/vesselVisitExecution/GetAll');
     }
 
+    async updateVesselVisitExecution(id, updateData) {
+        return this.put(`/vesselVisitExecution/${id}`, updateData);
+    }
+
     async deleteVesselVisitExecution(id) {
         return this.delete(`/vesselVisitExecution/${id}`);
     }

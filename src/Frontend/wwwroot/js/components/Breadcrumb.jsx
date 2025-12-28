@@ -62,6 +62,11 @@ const Breadcrumb = ({ currentPage, onNavigate }) => {
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
                 { label: t('entities.qualifications', 'Qualifications'), page: 'qualifications'}
             ],
+            'vessel-visit-executions': [
+                { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
+                { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
+                { label: t('entities.executions', 'Vessel Visit Executions'), page: 'vessel-visit-executions'}
+            ],
             '3d-view': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.3d_view', '3D Port View'), page: '3d-view', icon: '🏗️' }
