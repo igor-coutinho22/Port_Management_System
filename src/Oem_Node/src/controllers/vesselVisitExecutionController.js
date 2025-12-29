@@ -89,7 +89,7 @@ exports.getById = async (req, res) => {
   }
 };
 
-// @desc    Update VVE with Berth Time and Dock
+// @desc    Update VVE with Berth Time, Dock and Executed Operations
 // @route   PUT /api/vesselvisitexecution/:id
 exports.update = async (req, res) => {
     try {
@@ -98,25 +98,32 @@ exports.update = async (req, res) => {
 
         const token = req.headers.authorization;
         
-        // Use DTO to sanitize input
+        // Use the Unified DTO
         const dto = new UpdateDTO(req.body);
-        
-        // Set Author from Token or body
         dto.author = req.user ? req.user.name : (req.body.author || 'System');
 
-        const updatedEntity = await service.updateBerthAndDock(id, dto, token);
+        // Call Unified Service Method
+        const updatedEntity = await service.updateVesselVisitExecution(id, dto, token);
 
         return res.status(200).json(Mapper.toDTO(updatedEntity));
 
     } catch (err) {
         console.error("Update Error:", err.message);
-        if (err.message.includes('not found') || err.message.includes('KeyNotFound')) {
-            return res.status(404).send(err.message);
-        }
-        if (err.message.includes('Argument')) {
-            return res.status(400).send(err.message);
-        }
-        return res.status(500).send(`Internal server error: ${err.message}`);
+        if (err.message.includes('not found')) return res.status(404).send(err.message);
+        if (err.message.includes('Argument')) return res.status(400).send(err.message);
+        return res.status(500).send(err.message);
+    }
+};
+
+// @desc    Get planned operations (Helper for UI)
+// @route   GET /api/vesselvisitexecution/:id/planned-operations
+exports.getPlannedOperations = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const list = await service.getPlannedOperations(id);
+        res.status(200).json(list);
+    } catch (err) {
+        res.status(500).send(err.message);
     }
 };
 

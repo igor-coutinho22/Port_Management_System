@@ -28,7 +28,7 @@ class VesselVisitExecutionMapper {
             }
         }
 
-        return new VesselVisitExecutionDTO({
+        const dto = new VesselVisitExecutionDTO({
             id: domain.id, 
             vesselVisitId: domain.vesselVisitId,
             vesselIMO: domain.vesselIMO,
@@ -39,10 +39,12 @@ class VesselVisitExecutionMapper {
             berthTime: domain.berthTime,
             dockId: domain.dockId,
             auditLog: domain.auditLog,
-            
-            // Populate DTO field for frontend warning
             discrepancy: warning 
         });
+
+        dto.executedOperations = domain.executedOperations || [];
+
+        return dto;
     }
 
     static toDomain(createDto) {

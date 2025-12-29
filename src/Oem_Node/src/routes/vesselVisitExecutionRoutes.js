@@ -10,6 +10,7 @@ router.post('/Create', auth, controller.create);
 router.get('/:id', auth, controller.getById);
 
 router.put('/:id', auth, controller.update);
+router.get('/:id/planned-operations', auth, controller.getPlannedOperations);
 
 router.delete('/:id', auth, controller.delete);
 

@@ -410,3 +410,160 @@
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
 }
+
+/* Operations Execution Styles */
+
+.ops-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.op-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+    transition: all 0.2s;
+}
+
+.op-card.editing {
+    background: #fff;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.op-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.edit-op-btn {
+    background: none;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+.edit-op-btn:hover {
+    background: #e9ecef;
+}
+
+/* Compact Grid for Op Form */
+.form-grid.compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.form-grid.compact .form-input {
+    padding: 6px;
+    font-size: 0.9rem;
+}
+
+.op-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.submit-btn.small {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+}
+
+.clear-btn.small {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+}
+
+/* Status Badges */
+.status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+.status-pending { background: #e9ecef; color: #495057; }
+.status-started { background: #fff3cd; color: #856404; }
+.status-completed { background: #d4edda; color: #155724; }
+.status-delayed { background: #f8d7da; color: #721c24; }
+
+/* FORCE Text Color for Edit Form Labels */
+/* This ensures labels are readable even if Global Dark Mode sets text to white */
+.op-card.editing label {
+    color: #495057 !important; /* Dark Gray text */
+    font-weight: 600;
+}
+
+/* Ensure the card text itself is dark */
+.op-card {
+    color: #212529; 
+}
+
+/* =========================================
+   READ-ONLY OPERATIONS LIST (GetByID Form)
+   ========================================= */
+
+.ops-read-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.op-read-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    
+    /* FORCE DARK TEXT for readability in Dark Mode */
+    color: #212529 !important; 
+}
+
+.op-read-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 8px;
+}
+
+/* Ensure strong tags are also dark */
+.op-read-header strong {
+    color: #212529;
+}
+
+.op-read-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
+.op-read-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.op-read-item span {
+    font-size: 0.75rem;
+    color: #6c757d; /* Medium Gray for labels */
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Force value text to be dark */
+.op-read-item strong {
+    color: #212529; 
+    font-size: 0.95rem;
+}
+
+.op-read-footer {
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: #adb5bd; /* Light Gray for timestamp */
+    text-align: right;
+}

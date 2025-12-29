@@ -4,9 +4,6 @@ const GetVesselVisitExecutionByIdForm = () => {
     const [loading, setLoading] = React.useState(false);
     const [message, setMessage] = React.useState({ type: '', text: '' });
 
-    const isValidGuid = (id) => 
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
-
     const handleSearch = async (e) => {
         e.preventDefault();
         setMessage({ type: '', text: '' });
@@ -47,11 +44,16 @@ const GetVesselVisitExecutionByIdForm = () => {
         return new Date(dateString).toLocaleString();
     };
 
+    const getStatusClass = (status) => {
+        if (!status) return 'status-pending';
+        return `status-${status.toLowerCase()}`;
+    };
+
     return (
         <div className="form-container">
             <div className="form-header">
                 <h4>Get Execution By ID</h4>
-                <p>Retrieve full details of a specific Vessel Visit Execution.</p>
+                <p>Retrieve details including header status and operation progress.</p>
             </div>
 
             {message.text && (
@@ -76,21 +78,11 @@ const GetVesselVisitExecutionByIdForm = () => {
                 </div>
 
                 <div className="form-actions">
-                    <button 
-                        type="submit" 
-                        className="submit-btn" 
-                        disabled={loading}
-                    >
+                    <button type="submit" className="submit-btn" disabled={loading}>
                         {loading ? 'Searching...' : '🔍 Search'}
                     </button>
                     {(execution || searchId) && (
-                        <button 
-                            type="button" 
-                            className="clear-btn" 
-                            onClick={handleClear}
-                        >
-                            Clear
-                        </button>
+                        <button type="button" className="clear-btn" onClick={handleClear}>Clear</button>
                     )}
                 </div>
             </form>
@@ -98,84 +90,83 @@ const GetVesselVisitExecutionByIdForm = () => {
             {/* RESULT DISPLAY */}
             {execution && (
                 <div className="result-container fade-in">
-                    <h5 className="result-header">
-                        Execution Details
-                    </h5>
                     
+                    {/* SECTION 1: HEADER DETAILS */}
+                    <h5 className="result-header">1. Execution Details (Header)</h5>
                     <table className="detailed-table">
                         <tbody>
-                            <tr>
-                                <th>ID</th>
-                                <td className="monospace-cell">{execution.id}</td>
-                            </tr>
-                            <tr>
-                                <th>Vessel Visit ID</th>
-                                <td className="monospace-cell">{execution.vesselVisitId}</td>
-                            </tr>
-                            <tr>
-                                <th>Vessel IMO</th>
-                                <td>{execution.vesselIMO}</td>
-                            </tr>
+                            <tr><th>ID</th><td className="monospace-cell">{execution.id}</td></tr>
+                            <tr><th>Vessel Visit ID</th><td className="monospace-cell">{execution.vesselVisitId}</td></tr>
+                            <tr><th>Vessel IMO</th><td>{execution.vesselIMO}</td></tr>
                             <tr>
                                 <th>Status</th>
-                                <td>
-                                    <span className={`status-badge status-${(execution.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}>
-                                        {execution.status}
-                                    </span>
-                                </td>
+                                <td><span className={`status-badge status-${(execution.status || 'unknown').toLowerCase()}`}>{execution.status}</span></td>
                             </tr>
-                            
-                            {/* --- NEW FIELDS START --- */}
-                            <tr>
-                                <th>Actual Arrival</th>
-                                <td className="success-text">
-                                    {formatDate(execution.actualArrivalTime)}
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Actual Berth Time</th>
-                                <td>
-                                    {formatDate(execution.berthTime)}
-                                </td>
-                            </tr>
+                            {/* New Fields */}
+                            <tr><th>Actual Arrival</th><td className="success-text">{formatDate(execution.actualArrivalTime)}</td></tr>
+                            <tr><th>Actual Berth Time</th><td>{formatDate(execution.berthTime)}</td></tr>
                             <tr>
                                 <th>Assigned Dock ID</th>
-                                <td className="monospace-cell">
-                                    {execution.dockId || <span style={{color: '#999'}}>Not Assigned</span>}
-                                </td>
+                                <td className="monospace-cell">{execution.dockId || <span style={{color: '#999'}}>Not Assigned</span>}</td>
                             </tr>
-                            {/* Warnings / Discrepancies Row */}
+                            {/* Warnings / Discrepancies */}
                             {execution.discrepancy && (
                                 <tr style={{ backgroundColor: '#fff3cd' }}>
                                     <th style={{ color: '#856404' }}>⚠️ Discrepancy</th>
-                                    <td style={{ color: '#856404', fontWeight: 'bold' }}>
-                                        {execution.discrepancy}
-                                    </td>
+                                    <td style={{ color: '#856404', fontWeight: 'bold' }}>{execution.discrepancy}</td>
                                 </tr>
                             )}
-                            {/* --- NEW FIELDS END --- */}
-
-                            <tr>
-                                <th>Completed Time</th>
-                                <td>
-                                    {execution.completedTime ? formatDate(execution.completedTime) : '-'}
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Created By</th>
-                                <td>{execution.createdBy}</td>
-                            </tr>
-                            <tr>
-                                <th>Record Created</th>
-                                <td>{formatDate(execution.createdAt)}</td>
-                            </tr>
+                            <tr><th>Completed Time</th><td>{execution.completedTime ? formatDate(execution.completedTime) : '-'}</td></tr>
+                            <tr><th>Created By</th><td>{execution.createdBy}</td></tr>
                         </tbody>
                     </table>
 
-                    {/* Optional: Show Audit Log count or detail if needed */}
-                    {execution.auditLog && execution.auditLog.length > 0 && (
-                        <div style={{ marginTop: '15px', fontSize: '0.85em', color: '#666' }}>
-                            <em>* This record has {execution.auditLog.length} audit log entries.</em>
+                    {/* SECTION 2: EXECUTED OPERATIONS */}
+                    <h5 className="result-header" style={{marginTop: '30px', borderTop: '1px solid #eee', paddingTop: '15px'}}>
+                        2. Executed Operations (Details)
+                    </h5>
+
+                    {!execution.executedOperations || execution.executedOperations.length === 0 ? (
+                        <div className="no-data" style={{textAlign: 'left', padding: '10px 0'}}>
+                            No operations have been recorded yet.
+                        </div>
+                    ) : (
+                        <div className="ops-read-list">
+                            {execution.executedOperations.map((op, idx) => (
+                                <div key={idx} className="op-read-card">
+                                    <div className="op-read-header">
+                                        <strong>{op.type || 'Operation'}</strong>
+                                        <span className={`status-badge ${getStatusClass(op.status)}`}>{op.status}</span>
+                                    </div>
+                                    <div className="op-read-grid">
+                                        <div className="op-read-item">
+                                            <span>Actual Start:</span>
+                                            <strong>{formatDate(op.actualStartTime)}</strong>
+                                        </div>
+                                        <div className="op-read-item">
+                                            <span>Actual End:</span>
+                                            <strong>{formatDate(op.actualEndTime)}</strong>
+                                        </div>
+                                        <div className="op-read-item">
+                                            <span>Staff Used:</span>
+                                            <strong>{op.resourcesUsed?.staff || 0}</strong>
+                                        </div>
+                                        <div className="op-read-item">
+                                            <span>Cranes Used:</span>
+                                            <strong>{op.resourcesUsed?.cranes || 0}</strong>
+                                        </div>
+                                    </div>
+                                    <div className="op-read-footer">
+                                        <small>Last Updated: {formatDate(op.updatedAt)}</small>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {execution.auditLog && (
+                        <div style={{ marginTop: '15px', fontSize: '0.8em', color: '#888', textAlign: 'right' }}>
+                            {execution.auditLog.length} Audit Entries
                         </div>
                     )}
                 </div>

@@ -9,6 +9,27 @@ const auditLogSchema = new mongoose.Schema({
     details: { type: String }
 }, { _id: false });
 
+const executedOperationSchema = new mongoose.Schema({
+    operationId: { type: String, required: true }, // Links to Plan Item GUID
+    type: { type: String, required: true }, // 'Loading', 'Unloading'
+    
+    actualStartTime: { type: Date, default: null },
+    actualEndTime: { type: Date, default: null },
+    
+    resourcesUsed: { 
+        staff: { type: Number, default: 0 },
+        cranes: { type: Number, default: 0 }
+    },
+    
+    status: { 
+        type: String, 
+        enum: ['Pending', 'Started', 'Completed', 'Delayed'],
+        default: 'Pending'
+    },
+    
+    updatedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const vesselVisitExecutionSchema = new mongoose.Schema({
     _id: {
         type: String,
@@ -35,6 +56,7 @@ const vesselVisitExecutionSchema = new mongoose.Schema({
         type: String, // Stores the Dock GUID
         default: null 
     },
+    executedOperations: [executedOperationSchema],
     auditLog: [auditLogSchema],
     // -------------------------------
 
