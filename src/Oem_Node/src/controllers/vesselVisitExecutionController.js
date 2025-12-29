@@ -127,6 +127,29 @@ exports.getPlannedOperations = async (req, res) => {
     }
 };
 
+// @desc    Search VVEs with filters
+// @route   GET /api/vesselvisitexecution/Search
+exports.search = async (req, res) => {
+    try {
+        // Extract query params: ?start=...&end=...&vessel=...&status=...
+        const filters = {
+            start: req.query.start,
+            end: req.query.end,
+            vessel: req.query.vessel,
+            status: req.query.status
+        };
+
+        const results = await service.searchVesselVisitExecutions(filters);
+        
+        // Map to DTOs (which calculates the metrics)
+        const dtos = results.map(r => Mapper.toDTO(r));
+        
+        res.status(200).json(dtos);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
 // @desc    Delete execution
 // @route   DELETE /api/vesselvisitexecution/:id
 exports.delete = async (req, res) => {

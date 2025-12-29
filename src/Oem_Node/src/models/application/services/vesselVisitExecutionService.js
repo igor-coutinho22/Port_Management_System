@@ -225,6 +225,44 @@ class VesselVisitExecutionService {
         return await repository.getAllAsync();
     }
 
+    async searchVesselVisitExecutions(filters) {
+        // filters = { start, end, vessel (IMO or ID), status }
+        
+        const query = {};
+
+        // 1. Date Range (on Actual Arrival Time)
+        if (filters.start || filters.end) {
+            query.actualArrivalTime = {};
+            if (filters.start) {
+                const startDate = new Date(filters.start);
+                startDate.setUTCHours(0, 0, 0, 0);
+                query.actualArrivalTime.$gte = startDate;
+            }
+            
+            if (filters.end) {
+                const endDate = new Date(filters.end);
+                endDate.setUTCHours(23, 59, 59, 999);
+                query.actualArrivalTime.$lte = endDate;
+            }
+        }
+
+        // 2. Vessel (Smart Match: IMO or Visit ID)
+        if (filters.vessel) {
+            const term = filters.vessel.trim();
+            query.$or = [
+                { vesselIMO: term },
+                { vesselVisitId: term }
+            ];
+        }
+
+        // 3. Status
+        if (filters.status && filters.status !== 'All') {
+            query.status = filters.status;
+        }
+
+        return await repository.findAsync(query);
+    }
+
     // --- DELETE ---
     async deleteVesselVisitExecution(id) {
         if (!id) throw new Error('ArgumentException: Invalid ID.');

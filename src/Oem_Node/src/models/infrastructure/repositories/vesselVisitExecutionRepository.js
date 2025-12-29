@@ -26,6 +26,10 @@ class VesselVisitExecutionRepository {
         return await VesselVisitExecution.find().sort({ createdAt: -1 });
     }
 
+    async findAsync(query) { 
+        return await VesselVisitExecution.find(query); 
+    }
+
     async deleteAsync(domainEntity) {
         if (domainEntity) {
             await domainEntity.deleteOne();

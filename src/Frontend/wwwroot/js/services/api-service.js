@@ -561,6 +561,11 @@ class ApiService {
         return this.get(`/vesselVisitExecution/${id}/planned-operations`);
     }
 
+    async searchVesselVisitExecutions(params) {
+        const query = new URLSearchParams(params).toString();
+        return this.get(`/vesselVisitExecution/Search?${query}`);
+    }
+
     async deleteVesselVisitExecution(id) {
         return this.delete(`/vesselVisitExecution/${id}`);
     }

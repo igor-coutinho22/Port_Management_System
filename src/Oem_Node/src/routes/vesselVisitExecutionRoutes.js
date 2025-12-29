@@ -7,6 +7,7 @@ const auth = requireAuth('RequireOperator');
 
 router.get('/GetAll', auth, controller.getAll);
 router.post('/Create', auth, controller.create);
+router.get('/Search', auth, controller.search);
 router.get('/:id', auth, controller.getById);
 
 router.put('/:id', auth, controller.update);

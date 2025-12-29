@@ -567,3 +567,33 @@
     color: #adb5bd; /* Light Gray for timestamp */
     text-align: right;
 }
+
+/* =========================================
+   SEARCH HISTORY FORM (Fix for Dark Mode)
+   ========================================= */
+
+/* Target the specific form used in Search History */
+.search-form {
+    /* Ensure the text inside the form is always dark, regardless of theme */
+    color: #212529 !important; 
+}
+
+/* Force Labels to be dark gray */
+.search-form label {
+    color: #495057 !important;
+    font-weight: 600;
+}
+
+/* Force Input fields to have white background and dark text */
+.search-form .form-input {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border: 1px solid #ced4da !important;
+}
+
+/* Fix the dropdown arrow color if it's an SVG or native select */
+.search-form select.form-input {
+    color: #212529 !important;
+    /* Optional: Ensure the dropdown options are readable */
+    background-color: #ffffff !important; 
+}
