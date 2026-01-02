@@ -77,6 +77,11 @@ const ManagementPage = () => {
             title: t("entities.incident_types"),
             description: t("management_page.incident_types"),
         },
+        {
+            id: "incidents",
+            title: t("entities.incidents"),
+            description: t("management_page.incidents"),
+        },
     ];
 
     const handleEntityClick = (entity) => {
