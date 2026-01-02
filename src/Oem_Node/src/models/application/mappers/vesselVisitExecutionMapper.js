@@ -31,9 +31,8 @@ class VesselVisitExecutionMapper {
       ? new Date(domain.actualArrivalTime)
       : null;
     const berth = domain.berthTime ? new Date(domain.berthTime) : null;
-    const complete = domain.completedTime
-      ? new Date(domain.completedTime)
-      : null;
+    const unberth = domain.actualUnberthTime ? new Date(domain.actualUnberthTime) : null;
+    const departure = domain.actualPortDepartureTime ? new Date(domain.actualPortDepartureTime) : null;
 
     const metrics = {
       waitingTimeMinutes: null,
@@ -46,17 +45,14 @@ class VesselVisitExecutionMapper {
       metrics.waitingTimeMinutes = Math.floor((berth - arrival) / 60000);
     }
 
-    // 2. Occupancy (Berth -> Complete)
-    if (berth && complete) {
-      metrics.berthOccupancyMinutes = Math.floor((complete - berth) / 60000);
+    // 2. Occupancy (Berth -> Unberth)
+    if (berth && unberth) {
+      metrics.berthOccupancyMinutes = Math.floor((unberth - berth) / 60000);
     }
 
-    // 3. Turnaround (Arrival -> Complete)
-    if (arrival && complete) {
-      metrics.totalTurnaroundMinutes = Math.floor((complete - arrival) / 60000);
-    } else if (arrival && !complete) {
-      // Optional: If still in progress, calc duration until NOW?
-      // metrics.totalTurnaroundMinutes = Math.floor((new Date() - arrival) / 60000);
+    // 3. Turnaround (Arrival -> Departure)
+    if (arrival && departure) {
+      metrics.totalTurnaroundMinutes = Math.floor((departure - arrival) / 60000);
     }
 
     const dto = new VesselVisitExecutionDTO({
@@ -68,6 +64,8 @@ class VesselVisitExecutionMapper {
       createdBy: domain.createdBy,
       createdAt: domain.createdAt,
       completedTime: domain.completedTime,
+      actualUnberthTime: domain.actualUnberthTime,
+      actualPortDepartureTime: domain.actualPortDepartureTime,
       berthTime: domain.berthTime,
       dockId: domain.dockId,
       auditLog: domain.auditLog,

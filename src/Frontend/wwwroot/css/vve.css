@@ -597,3 +597,13 @@
     /* Optional: Ensure the dropdown options are readable */
     background-color: #ffffff !important; 
 }
+
+/* FORCE Dark Text for the Context Info Box in Complete Form */
+.context-info-box {
+    color: #212529 !important; /* Force dark gray/black text */
+}
+
+/* Ensure strong tags inside it are also dark */
+.context-info-box strong {
+    color: #000000 !important;
+}

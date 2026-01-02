@@ -192,7 +192,7 @@ class VesselVisitExecutionService {
         execution.actualPortDepartureTime = new Date(completionData.portDepartureTime);
 
         execution.status = 'Completed';
-        execution.completedAt = new Date();
+        execution.completedTime = new Date();
 
         // 3. Log
         execution.auditLog.push({

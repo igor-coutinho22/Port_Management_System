@@ -52,6 +52,13 @@ const VesselVisitExecutionHubPage = () => {
       component: "UpdateVesselVisitExecutionForm",
     },
     {
+      id: "complete",
+      title: "Complete Visit",
+      description: "Record departure times and close the visit lifecycle.",
+      color: "#28a745", // Green
+      component: "CompleteVesselVisitExecutionForm",
+    },
+    {
       id: "getById",
       title: "Get Execution By ID",
       description: "Retrieve details of a specific execution record.",
@@ -176,7 +183,16 @@ const VesselVisitExecutionHubPage = () => {
                         Component UpdateVesselVisitExecutionForm not found
                       </div>
                     ))}
-
+                  {section.component === "CompleteVesselVisitExecutionForm" &&
+                    (typeof CompleteVesselVisitExecutionForm !== "undefined" ? (
+                      <CompleteVesselVisitExecutionForm
+                        onSuccess={loadExecutions}
+                      />
+                    ) : (
+                      <div>
+                        Component CompleteVesselVisitExecutionForm not found
+                      </div>
+                    ))}
                   {section.component === "GetVesselVisitExecutionByIdForm" &&
                     (typeof GetVesselVisitExecutionByIdForm !== "undefined" ? (
                       <GetVesselVisitExecutionByIdForm />

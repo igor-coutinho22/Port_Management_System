@@ -9,6 +9,9 @@ class VesselVisitExecutionDTO {
         this.createdAt = data.createdAt;
         this.completedTime = data.completedTime;
 
+        this.actualUnberthTime = data.actualUnberthTime;
+        this.actualPortDepartureTime = data.actualPortDepartureTime;
+
         this.berthTime = data.berthTime;
         this.dockId = data.dockId;
         this.discrepancy = data.discrepancy;

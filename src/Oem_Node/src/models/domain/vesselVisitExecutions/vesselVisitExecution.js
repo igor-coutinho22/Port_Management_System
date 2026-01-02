@@ -71,7 +71,9 @@ const vesselVisitExecutionSchema = new mongoose.Schema({
     completedTime: {
         type: Date,
         default: null
-    }
+    },
+    actualUnberthTime: { type: Date, default: null },
+    actualPortDepartureTime: { type: Date, default: null }
 }, {
     // This creates 'createdAt' and 'updatedAt' automatically.
     timestamps: true, 

@@ -557,6 +557,10 @@ class ApiService {
         return this.put(`/vesselVisitExecution/${id}`, updateData);
     }
 
+    async completeVesselVisitExecution(id, payload) {
+        return this.post(`/vesselVisitExecution/${id}/Complete`, payload);
+    }
+
     async getPlannedOperations(id) {
         return this.get(`/vesselVisitExecution/${id}/planned-operations`);
     }

@@ -53,7 +53,7 @@ const GetVesselVisitExecutionByIdForm = () => {
         <div className="form-container">
             <div className="form-header">
                 <h4>Get Execution By ID</h4>
-                <p>Retrieve details including header status and operation progress.</p>
+                <p>Retrieve details including header status, departure times, and operation progress.</p>
             </div>
 
             {message.text && (
@@ -102,21 +102,40 @@ const GetVesselVisitExecutionByIdForm = () => {
                                 <th>Status</th>
                                 <td><span className={`status-badge status-${(execution.status || 'unknown').toLowerCase()}`}>{execution.status}</span></td>
                             </tr>
-                            {/* New Fields */}
+                            
+                            {/* Arrival Details */}
                             <tr><th>Actual Arrival</th><td className="success-text">{formatDate(execution.actualArrivalTime)}</td></tr>
                             <tr><th>Actual Berth Time</th><td>{formatDate(execution.berthTime)}</td></tr>
                             <tr>
                                 <th>Assigned Dock ID</th>
                                 <td className="monospace-cell">{execution.dockId || <span style={{color: '#999'}}>Not Assigned</span>}</td>
                             </tr>
-                            {/* Warnings / Discrepancies */}
+
+                            {/* Discrepancies */}
                             {execution.discrepancy && (
                                 <tr style={{ backgroundColor: '#fff3cd' }}>
                                     <th style={{ color: '#856404' }}>⚠️ Discrepancy</th>
                                     <td style={{ color: '#856404', fontWeight: 'bold' }}>{execution.discrepancy}</td>
                                 </tr>
                             )}
+
                             <tr><th>Completed Time</th><td>{execution.completedTime ? formatDate(execution.completedTime) : '-'}</td></tr>
+
+                            {/* --- NEW SECTION: DEPARTURE DETAILS (Only if Completed) --- */}
+                            {execution.status === 'Completed' && (
+                                <>
+                                    <tr style={{borderTop: '2px solid #e9ecef'}}>
+                                        <th style={{color: '#28a745'}}>Actual Unberth</th>
+                                        <td style={{fontWeight: 'bold', color: '#28a745'}}>{formatDate(execution.actualUnberthTime)}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style={{color: '#28a745'}}>Actual Port Departure</th>
+                                        <td style={{fontWeight: 'bold', color: '#28a745'}}>{formatDate(execution.actualPortDepartureTime)}</td>
+                                    </tr>
+                                </>
+                            )}
+                            {/* ---------------------------------------------------------- */}
+
                             <tr><th>Created By</th><td>{execution.createdBy}</td></tr>
                         </tbody>
                     </table>
