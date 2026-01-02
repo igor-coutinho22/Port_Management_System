@@ -14,5 +14,6 @@ router.put('/:id', auth, controller.update);
 router.get('/:id/planned-operations', auth, controller.getPlannedOperations);
 
 router.delete('/:id', auth, controller.delete);
+router.post('/:id/Complete', auth, controller.complete);
 
 module.exports = router;
