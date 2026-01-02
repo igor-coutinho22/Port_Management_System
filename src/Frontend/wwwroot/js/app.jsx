@@ -87,6 +87,7 @@ const AppWithGlobalNav = () => {
             "vessel-visit-notifications",
             "qualifications",
             "vessel-visit-executions",
+            "incident-types",
         ].includes(currentPage);
 
     const PAGE_TO_MENU_ID = {
@@ -108,6 +109,7 @@ const AppWithGlobalNav = () => {
         scheduling: "scheduling",
         "vvn-hub-for-representatives": "vvn-hub-for-representatives",
         "vessel-visit-executions": "vessel-visit-executions",
+        "incident-types": "incident-types",
     };
 
 
@@ -221,6 +223,12 @@ const AppWithGlobalNav = () => {
                     <div className="error">VesselVisitExecutionHubPage component not loaded</div>
                 ) : (
                     <VesselVisitExecutionHubPage />
+                );
+            case "incident-types":
+                return typeof IncidentTypesHubPage === "undefined" ? (
+                    <div className="error">IncidentTypesHubPage component not loaded</div>
+                ) : (
+                    <IncidentTypesHubPage />
                 );
             case "3d-view":
                 return <ThreeDView key="3d-view" />;

@@ -126,6 +126,8 @@ window.translations = {
     "entities.qualifications_desc": "Certifications",
     "entities.executions": "Executions",
     "entities.executions_desc": "Port operations",
+    "entities.incident_types": "Incident Types",
+    "entities.incident_types_desc": "Vessel incidents",
 
     // Breadcrumb
     "breadcrumb.you_are_here": "You are here:",
@@ -701,6 +703,7 @@ window.translations = {
     "management_page.qualifications":
       "Professional certifications and qualifications",
     "management_page.executions": "Port operation executions and logs",
+    "management_page.incident_types": "Vessel incident categories and types",
 
     // AdminUsersPage
     "adminUsersPage.title": "Admin — User Management",
@@ -2398,6 +2401,8 @@ window.translations = {
     "entities.qualifications_desc": "Certificações",
     "entities.executions": "Execuções",
     "entities.executions_desc": "Operações portuárias",
+    "entities.incident_types": "Tipos de Incidentes",
+    "entities.incident_types_desc": "Tipos de incidentes",
 
     // Pages
     "page.home.title": "Bem-vindo ao Sistema de Gestão Portuária",
@@ -3200,6 +3205,7 @@ window.translations = {
       "Certificações e qualificações profissionais",
     "management_page.executions":
       "Registos de execuções de agendamento e operações",
+    "management_page.incident_types": "Tipos de Incidentes Portuários",
 
     // AdminUsersPage
     "adminUsersPage.title": "Admin — Gestão de Utilizadores",
