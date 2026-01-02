@@ -14,8 +14,6 @@ namespace Oem.Models.Context
         //DbSets
         public DbSet<OperationPlan> OperationPlans { get; set; } = default!;
         public DbSet<VesselVisitExecution> VesselVisitExecutions { get; set; } = default!;
-        public DbSet<IncidentType> IncidentTypes { get; set; } = default!;
-        public DbSet<Incident> Incidents { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
