@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Oem.Models.Domain.OperationPlans;
 using Oem.Models.Domain.VesselVisitExecutions;
+using Oem.Models.Domain.Incidents;
 using Oem.Models.Infrastructure.Persistence.EntityConfigurations;
 
 namespace Oem.Models.Context
@@ -13,6 +14,8 @@ namespace Oem.Models.Context
         //DbSets
         public DbSet<OperationPlan> OperationPlans { get; set; } = default!;
         public DbSet<VesselVisitExecution> VesselVisitExecutions { get; set; } = default!;
+        public DbSet<IncidentType> IncidentTypes { get; set; } = default!;
+        public DbSet<Incident> Incidents { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

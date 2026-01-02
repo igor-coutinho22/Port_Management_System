@@ -168,6 +168,7 @@ builder.Services.AddScoped<IOperationPlanService, OperationPlanService>();
 builder.Services.AddScoped<IOperationPlanRepository, OperationPlanRepository>();
 builder.Services.AddScoped<IVesselVisitExecutionService, VesselVisitExecutionService>();
 builder.Services.AddScoped<IVesselVisitExecutionRepository, VesselVisitExecutionRepository>();
+builder.Services.AddScoped<IIncidentService, IncidentService>();
 
 var backendClientId = ciam["BackendApp:ClientId"];
 var backendClientSecret = ciam["BackendApp:ClientSecret"];
