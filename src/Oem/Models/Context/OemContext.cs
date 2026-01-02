@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Oem.Models.Domain.OperationPlans;
 using Oem.Models.Domain.VesselVisitExecutions;
-using Oem.Models.Domain.Incidents;
+using System.Text.Json;
+
 using Oem.Models.Infrastructure.Persistence.EntityConfigurations;
 
 namespace Oem.Models.Context
