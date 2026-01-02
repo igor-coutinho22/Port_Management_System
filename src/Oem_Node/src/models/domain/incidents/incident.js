@@ -37,9 +37,23 @@ const incidentSchema = new mongoose.Schema({
     affectedVesselVisitIds: [{
         type: String,
         ref: 'VesselVisitExecution'
-    }]
+    }],
+    responsibleUser: {
+        type: String, // Storing the username or email of the creator
+        required: true
+    }
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+// Virtual for automated duration computation
+incidentSchema.virtual('duration').get(function () {
+    if (this.endTime && this.startTime) {
+        return Math.round((this.endTime - this.startTime) / 60000); // Duration in minutes
+    }
+    return null;
 });
 
 module.exports = mongoose.model('Incident', incidentSchema);

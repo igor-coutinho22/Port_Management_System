@@ -23,6 +23,7 @@ class IncidentService {
     async createIncident(data) {
         // Validate dates
         if (!data.startTime) throw new Error("StartTime is required.");
+        if (!data.responsibleUser) throw new Error("ResponsibleUser is required.");
 
         return await repository.createIncidentAsync(data);
     }

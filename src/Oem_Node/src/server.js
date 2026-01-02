@@ -11,6 +11,7 @@ const vesselVisitExecutionRoutes = require('./routes/vesselVisitExecutionRoutes'
 const incidentRoutes = require('./routes/incidentRoutes');
 const schedulingRoutes = require('./routes/schedulingRoutes');
 const operationPlanRoutes = require('./routes/operationPlanRoutes');
+const complementaryTaskRoutes = require('./routes/complementaryTaskRoutes');
 
 // Initialize App
 const app = express();
@@ -32,7 +33,9 @@ app.get('/', (req, res) => {
 app.use('/api/vesselvisitexecution', vesselVisitExecutionRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/scheduling', schedulingRoutes);
+
 app.use('/api/operationplan', operationPlanRoutes);
+app.use('/api/complementarytasks', complementaryTaskRoutes);
 
 // --- START SERVER (HTTPS) ---
 
