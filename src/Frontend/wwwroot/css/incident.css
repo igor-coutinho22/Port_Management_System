@@ -1,0 +1,321 @@
+/* Monospace font for Codes/IDs to make them easier to read */
+.monospace-input {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+    color: #2c3e50; /* Darker text for readability */
+}
+
+/* Helper text under inputs */
+.hint-text {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.85em;
+    color: #6c757d;
+}
+
+/* Ensure full width for textareas in grid */
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Dark Mode Adjustments for the new inputs */
+@media (prefers-color-scheme: dark) {
+    .monospace-input {
+        color: #e0e0e0;
+        background-color: #2b2b2b;
+    }
+    .hint-text {
+        color: #adb5bd;
+    }
+}
+
+/* --- Delete Form & Warning UI (Generic) --- */
+
+.delete-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.link-btn:hover {
+    color: #0056b3;
+}
+
+/* Details Card (The Info Box) */
+.delete-details-card {
+    background-color: #fff3cd; /* Light yellow warning background */
+    border: 1px solid #ffeeba;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #856404;
+}
+
+.delete-details-card-title {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ffeeba;
+    padding-bottom: 5px;
+}
+
+.delete-details-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.delete-details-field {
+    font-size: 0.95em;
+}
+
+.delete-details-label {
+    font-weight: bold;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+/* Warning Card (The Red Danger Zone) */
+.delete-warning-card {
+    background-color: #dc3545; /* Red background */
+    color: white;
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.delete-warning-title {
+    display: block;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.delete-warning-desc {
+    display: block;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+/* Inputs inside the Red Card */
+.delete-confirm-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 4px;
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 1.1em;
+    font-family: monospace;
+}
+
+.delete-confirm-input::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+.delete-confirm-input:focus {
+    background-color: white;
+    color: #333;
+    outline: none;
+    border-color: white;
+}
+
+.delete-confirm-help {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.85em;
+}
+
+/* Buttons inside the Red Card */
+.delete-btn {
+    background-color: white;
+    color: #dc3545;
+    border: none;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.delete-btn:hover:not(:disabled) {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.delete-btn:disabled {
+    background-color: rgba(255,255,255,0.5);
+    cursor: not-allowed;
+}
+
+.delete-cancel-btn {
+    background: none;
+    border: 1px solid white;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-cancel-btn:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+/* =========================================
+   INCIDENT TYPES VISUAL FIXES
+   ========================================= */
+
+/* 1. FIX: Make the "Code" column readable in Dark Mode */
+.quick-table td:first-child {
+    font-weight: bold;
+    color: #2c3e50; /* Default (Light Mode) */
+}
+
+@media (prefers-color-scheme: dark) {
+    /* In Dark Mode, make the Code a bright, readable color (Cyan/Blue) */
+    .quick-table td:first-child {
+        color: #61dafb !important; 
+        font-family: 'Consolas', monospace; /* Make it look like a "Code" */
+    }
+}
+
+/* =========================================
+   SEVERITY BADGES (PILL STYLE) - FORCED
+   ========================================= */
+
+/* Base Style */
+.status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 50px;       /* Pill shape */
+    font-size: 0.75em;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: white !important;   /* Force White Text */
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    min-width: 80px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    
+    /* Default fallback if no specific class matches */
+    background-color: #6c757d; 
+}
+
+/* We chain the classes (.status-badge.status-X) to increase priority 
+   and add !important to override any table-row defaults.
+*/
+
+/* 1. MINOR -> Teal/Blue */
+.status-badge.status-minor {
+    background-color: #17a2b8 !important;
+    border: 1px solid #17a2b8 !important;
+}
+
+/* 2. MAJOR -> Orange */
+.status-badge.status-major {
+    background-color: #fd7e14 !important; 
+    border: 1px solid #fd7e14 !important;
+}
+
+/* 3. CRITICAL -> Red */
+.status-badge.status-critical {
+    background-color: #dc3545 !important;
+    border: 1px solid #dc3545 !important;
+}
+
+/* Hover Effects */
+.status-badge:hover {
+    filter: brightness(110%);
+    transform: translateY(-1px);
+}
+
+/* =========================================
+   FIX: REMOVE CODE BACKGROUND BOXES
+   ========================================= */
+
+.monospace-input, 
+.monospace-cell {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    font-weight: 900;
+    
+    /* FORCE REMOVAL OF BOX STYLING */
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    
+    /* Ensure text color adapts to light/dark mode */
+    color: inherit; 
+}
+
+/* Specific color tweaks for Dark Mode readability if needed */
+@media (prefers-color-scheme: dark) {
+    .monospace-input, .monospace-cell {
+        color: #4facfe; /* Optional: Makes the code bright blue in dark mode */
+    }
+}
+
+/* =========================================
+   FIX: VISIBILITY & CONTRAST
+   ========================================= */
+
+/* 1. Fix the Delete Button Text (Force White) */
+.delete-btn {
+    background-color: white; /* Fallback */
+    color: #dc3545;
+    /* ... existing styles ... */
+}
+
+/* When inside the Red Warning Card, the button should pop */
+.delete-warning-card .delete-btn {
+    background-color: white !important;
+    color: #dc3545 !important; /* Red Text on White Button */
+    font-weight: bold;
+}
+
+/* 2. Fix Error Message Contrast in Dark Mode */
+.message.error {
+    background-color: rgba(220, 53, 69, 0.1); /* Faint red background */
+    color: #dc3545; /* Standard Red */
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .message.error {
+        background-color: rgba(220, 53, 69, 0.2);
+        /* FIX: Make text bright pink/light-red for dark backgrounds */
+        color: #ff6b6b !important; 
+        border: 1px solid #ff6b6b;
+    }
+    
+    /* Also fix the "Delete Permanently" button if it was hard to read */
+    .delete-btn:disabled {
+        background-color: #555 !important;
+        color: #888 !important;
+    }
+}

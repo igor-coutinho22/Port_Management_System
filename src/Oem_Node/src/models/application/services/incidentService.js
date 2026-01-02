@@ -1,53 +1,117 @@
 const repository = require('../../infrastructure/repositories/incidentRepository');
+const Mapper = require('../mappers/IncidentMapper');
+const VesselVisitExecution = require('../../domain/vesselVisitExecutions/vesselVisitExecution');
 
 class IncidentService {
-    // --- Types ---
+
+    // =========================================================
+    // SECTION 1: INCIDENT TYPES (US 4.1.12)
+    // =========================================================
+
+    async getAllTypes() {
+        const types = await repository.getAllTypesAsync();
+        return types.map(t => Mapper.toTypeDTO(t));
+    }
+
+    async getTypeById(id) {
+        const type = await repository.getTypeByIdAsync(id);
+        return Mapper.toTypeDTO(type);
+    }
+
     async createType(data) {
         if (!data.code || !data.name) throw new Error("Code and Name are required.");
-        return await repository.createTypeAsync(data);
+
+        // --- STRICT CODE VALIDATION ---
+        const normalizedCode = data.code.toUpperCase().trim();
+        // Regex: 3-20 chars, Uppercase, Numbers, Hyphens, Underscores
+        const codeRegex = /^[A-Z0-9_-]{3,20}$/;
+
+        if (!codeRegex.test(normalizedCode)) {
+            throw new Error("Invalid Code Format. Code must be 3-20 characters, uppercase alphanumeric, with hyphens or underscores only (e.g., 'ENV-01').");
+        }
+
+        data.code = normalizedCode;
+        // ------------------------------
+
+        const created = await repository.createTypeAsync(data);
+        return Mapper.toTypeDTO(created);
     }
-    async getAllTypes() {
-        return await repository.getAllTypesAsync();
-    }
-    async getTypeById(id) {
-        return await repository.getTypeByIdAsync(id);
-    }
+
     async updateType(id, data) {
-        return await repository.updateTypeAsync(id, data);
+        // --- IMMUTABLE CODE CHECK ---
+        if (data.code) {
+            throw new Error("Invalid Operation: Incident Type Code cannot be changed once created.");
+        }
+
+        const updated = await repository.updateTypeAsync(id, data);
+        if (!updated) return null;
+        return Mapper.toTypeDTO(updated);
     }
+
     async deleteType(id) {
         return await repository.deleteTypeAsync(id);
     }
 
-    // --- Incidents (Core) ---
-    async createIncident(data) {
-        // Validate dates
+    async getTypeById(id) {
+        const type = await repository.getTypeByIdAsync(id);
+        return Mapper.toTypeDTO(type);
+    }
+
+
+    // =========================================================
+    // SECTION 2: INCIDENTS (US 4.1.13)
+    // =========================================================
+
+    async createIncident(data, user) {
         if (!data.startTime) throw new Error("StartTime is required.");
-        if (!data.responsibleUser) throw new Error("ResponsibleUser is required.");
+        if (!data.incidentTypeId) throw new Error("Incident Type is required.");
 
-        return await repository.createIncidentAsync(data);
+        // 1. Prepare Data
+        const incidentData = {
+            ...data,
+            createdBy: user && user.name ? user.name : 'System',
+            status: 'Active'
+        };
+
+        // 2. Save
+        const created = await repository.createIncidentAsync(incidentData);
+
+        // 3. Return DTO (Fetch again to populate the Type Name for display)
+        const populated = await repository.getIncidentByIdAsync(created._id);
+        return Mapper.toIncidentDTO(populated);
     }
 
-    async getIncidentById(id) {
-        return await repository.getIncidentByIdAsync(id);
-    }
-
-    async updateIncident(id, data) {
-        // Business Rule: If status 'Resolved', ensure endTime is set
+    async updateIncident(id, data, user) {
+        // Business Rule: If Resolved, ensure EndTime exists
         if (data.status === 'Resolved' && !data.endTime) {
             data.endTime = new Date();
         }
-        return await repository.updateIncidentAsync(id, data);
+
+        // Business Rule: If Re-opening, clear EndTime
+        if (data.status === 'Active') {
+            data.endTime = null;
+        }
+
+        const updated = await repository.updateIncidentAsync(id, data);
+        if (!updated) return null;
+        return Mapper.toIncidentDTO(updated);
+    }
+
+    async getIncidentById(id) {
+        const result = await repository.getIncidentByIdAsync(id);
+        if (!result) return null;
+        return Mapper.toIncidentDTO(result);
     }
 
     async deleteIncident(id) {
         return await repository.deleteIncidentAsync(id);
     }
 
-    // --- Search Logic ---
-    async searchIncidents(filters) {
-        // filters: { start, end, status, severity, vesselName (optional) }
+    // =========================================================
+    // SECTION 3: ADVANCED SEARCH LOGIC
+    // =========================================================
 
+    async searchIncidents(filters) {
         const query = {};
 
         // 1. Date Range
@@ -58,33 +122,36 @@ class IncidentService {
         }
 
         // 2. Status & Severity
-        if (filters.status) query.status = filters.status;
-        if (filters.severity) query.severity = filters.severity;
+        if (filters.status && filters.status !== 'All') {
+            query.status = filters.status;
+        }
+        if (filters.severity && filters.severity !== 'All') {
+            query.severity = filters.severity;
+        }
 
-        // 3. Vessel Name Filter
-        // Since we are in Node with Mongoose population, we can't easily filter the PARENT (Incident) by a property of the CHILD (VVE.vesselName) in a standard find().
-        // We have two options:
-        // A) Find VVEs first matching criteria, then find Incidents linking to those IDs.
-        // B) Use Aggregation Lookup.
-        // A is simpler and consistent with previous logic.
-
+        // 3. Vessel Search (The Complex Part)
         if (filters.vessel) {
-            const VVE = require('../../domain/vesselVisitExecutions/vesselVisitExecution');
-            const matchingVVEs = await VVE.find({
+            const term = filters.vessel.trim();
+
+            // Find VVEs matching the term
+            const matchingVVEs = await VesselVisitExecution.find({
                 $or: [
-                    { vesselIMO: filters.vessel },
-                    { vesselName: new RegExp(filters.vessel, 'i') }, // Assuming VVE has vesselName stored or we check IMO
-                    { vesselVisitId: filters.vessel } // Functional ID check
+                    { vesselIMO: term },
+                    { vesselVisitId: term }
                 ]
             }).select('_id');
 
-            const vveIds = matchingVVEs.map(v => v._id);
+            const vveIds = matchingVVEs.map(v => v._id.toString());
 
-            // Filter Incidents that have ANY of these IDs in affectedVesselVisitIds
+            // Add to query: Incident must affect one of these VVEs
             query.affectedVesselVisitIds = { $in: vveIds };
         }
 
-        return await repository.findIncidentsAsync(query);
+        // 4. Call Repository
+        const rawResults = await repository.findIncidentsAsync(query);
+
+        // 5. Map to DTOs
+        return rawResults.map(r => Mapper.toIncidentDTO(r));
     }
 }
 

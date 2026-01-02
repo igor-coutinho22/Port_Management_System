@@ -573,6 +573,50 @@ class ApiService {
     async deleteVesselVisitExecution(id) {
         return this.delete(`/vesselVisitExecution/${id}`);
     }
+
+    // --- INCIDENT TYPES ---
+
+    async getAllIncidentTypes() {
+        return this.get('/incidents/types/all');
+    }
+
+    async getIncidentTypeById(id) {
+        return this.get(`/incidents/types/${id}`);
+    }
+
+    async createIncidentType(data) {
+        return this.post('/incidents/types', data);
+    }
+
+    async updateIncidentType(id, data) {
+        return this.put(`/incidents/types/${id}`, data);
+    }
+
+    async deleteIncidentType(id) {
+        return this.delete(`/incidents/types/${id}`);
+    }
+
+    // --- INCIDENTS ---
+
+    async searchIncidents(filters) {
+        // filters = { start, end, status, severity, vessel }
+        const params = new URLSearchParams(filters).toString();
+        return this.get(`/incidents/Search?${params}`);
+    }
+
+    async getIncidentById(id) {
+        return this.get(`/incidents/${id}`);
+    }
+
+    async createIncident(data) {
+        // data = { incidentTypeId, startTime, description, severity, scope, affectedVesselVisitIds }
+        return this.post('/incidents', data);
+    }
+
+    async updateIncident(id, data) {
+        // data = { status: 'Resolved', endTime: ..., etc }
+        return this.put(`/incidents/${id}`, data);
+    }
 }
 
 const apiService = new ApiService();

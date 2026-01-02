@@ -38,10 +38,7 @@ const incidentSchema = new mongoose.Schema({
         type: String,
         ref: 'VesselVisitExecution'
     }],
-    responsibleUser: {
-        type: String, // Storing the username or email of the creator
-        required: true
-    }
+    createdBy: { type: String, required: true }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
