@@ -313,33 +313,49 @@ class PortVisualization {
         if (!obj || obj instanceof THREE.Sprite) return;
 
         this.handleSelection(obj);
-        this.flyToObject(cast.point);
+
+        if (this.selectedObject) {
+            const box = new THREE.Box3().setFromObject(this.selectedObject);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            
+            this.flyToObject(center); 
+        }
     }
 
     handleSelection(obj) {
-        if (this.selectedObject && this.selectedObject.material?.emissive) {
-            this.selectedObject.material.emissive.setHex(0x000000);
+        const targetEntity = this.findParent(obj);
+        if (!targetEntity) return;
+
+        if (this.selectedObject) {
+            this.selectedObject.traverse(child => {
+                if (child.isMesh && child.material?.emissive) {
+                    child.material.emissive.setHex(0x000000);
+                }
+            });
         }
 
-        let target = this.findParent(obj);
+        this.selectedObject = targetEntity;
 
-        this.selectedObject = obj;
+        targetEntity.traverse(child => {
+            if (child.isMesh && child.material?.emissive) {
+                child.material.emissive.setHex(0x333333);
+            }
+        });
 
-        if (obj.material?.emissive) {
-            obj.material.emissive.setHex(0x333333);
-        }
-
-        if (this.onSelect && (obj.userData || target.userData)) {
-            this.onSelect(obj.userData || target.userData);
+        if (this.onSelect) {
+            this.onSelect(targetEntity.userData);
         }
     }
 
     findParent(obj) {
-        let target = obj;
-        if (obj.parent instanceof THREE.Group) {
-            target = obj.parent;
+        if (!obj || obj.type === 'Scene') return null;
+
+        if (obj.userData && obj.userData.isSelectableRoot) {
+            return obj;
         }
-        return target;
+
+        return this.findParent(obj.parent);
     }
 
     // -------------------------------------------------------------------------
@@ -415,7 +431,7 @@ class PortVisualization {
     // WATER & GROUND
     // -------------------------------------------------------------------------
     addWaterPlane() {
-        const geo = new THREE.PlaneGeometry(10000, 4980);
+        const geo = new THREE.PlaneGeometry(3000, 4980);
         const mat = this.geometryBuilder.materials.water;
         const water = new THREE.Mesh(geo, mat);
         water.rotation.x = -Math.PI / 2;
@@ -426,7 +442,7 @@ class PortVisualization {
     }
 
     addGroundPlane() {
-        const geo = new THREE.BoxGeometry(10000, 2, 5020);
+        const geo = new THREE.BoxGeometry(3000, 2, 5020);
         const mat = this.geometryBuilder.materials.asphalt;
         const ground = new THREE.Mesh(geo, mat);
         ground.position.y = 0.5;
@@ -445,7 +461,7 @@ class PortVisualization {
         docks.forEach(d => {
             const mesh = this.geometryBuilder.createDock(d);
             mesh.position.set(d.x, d.y, d.z);
-            mesh.userData = { type: "Dock", ...d };
+            mesh.userData = { type: "Dock", ...d, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -467,7 +483,7 @@ class PortVisualization {
                     : this.geometryBuilder.createContainerYard(a);
 
             mesh.position.set(a.x, a.y, a.z);
-            mesh.userData = { ...a };
+            mesh.userData = { ...a, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -485,7 +501,7 @@ class PortVisualization {
         containers.forEach(c => {
             const mesh = this.geometryBuilder.createContainer(c);
             mesh.position.set(c.x, c.y, c.z);
-            mesh.userData = { type: "Container", ...c };
+            mesh.userData = { type: "Container", ...c, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -499,7 +515,7 @@ class PortVisualization {
         resources.forEach(r => {
             const mesh = this.geometryBuilder.createResource(r);
             mesh.position.set(r.x, r.y, r.z);
-            mesh.userData = { type: "resource", ...r };
+            mesh.userData = { type: "resource", ...r, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -513,7 +529,7 @@ class PortVisualization {
         vessels.forEach(v => {
             const mesh = this.geometryBuilder.createVessel(v);
             mesh.position.set(v.x, v.y, v.z);
-            mesh.userData = { type: "Vessel", ...v };
+            mesh.userData = { type: "Vessel", ...v, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -531,7 +547,7 @@ class PortVisualization {
         staffList.forEach(s => {
             const mesh = this.geometryBuilder.createStaff(s);
             mesh.position.set(s.x, s.y, s.z);
-            mesh.userData = { type: "Staff", ...s };
+            mesh.userData = { type: "Staff", ...s, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -639,7 +655,7 @@ class PortVisualization {
             // Place roads slightly above the ground plane to avoid z-fighting
             roadMesh.position.set(r.x, 1.75, r.z);
             roadMesh.renderOrder = 10;
-            roadMesh.userData = { type: "Road", orientation: r.orientation };
+            roadMesh.userData = { type: "Road", orientation: r.orientation, isSelectableRoot: true };
             this.scene.add(roadMesh);
             this.objects.push(roadMesh);
 
@@ -764,12 +780,12 @@ class PortVisualization {
             const roadW = this.layoutEngine.roadDepth;
             const sidewalkW = this.layoutEngine.sidewalkDepth;
 
-            const zebraStripeW = 4.5; // stripe thickness (along travel direction)
+            const zebraStripeW = 2.5; // stripe thickness (along travel direction)
             const zebraGap = 4;     // space between stripes (along travel direction)
-            const zebraCount = 7;
+            const zebraCount = 6;
 
             // Crosswalk length along curb (across the road). Keep it inside the asphalt (avoid sidewalks).
-            const zebraStripeL = Math.max(10, Math.min(roadW - 10, i.size * 0.55));
+            const zebraStripeL = Math.max(6, Math.min(roadW - 12, i.size * 0.55));
 
             // Place crosswalk just OUTSIDE the intersection and keep stop bar a bit before it.
             // Push crosswalk farther from the intersection than the curb line.

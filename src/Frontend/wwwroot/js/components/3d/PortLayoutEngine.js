@@ -29,8 +29,8 @@ class PortLayoutEngine {
         this.containerItemOffsetZ = 0;
 
         // Road bands between zones
-        this.roadDepth = 60;       // asphalt lane + sidewalk space
-        this.sidewalkDepth = 12;   // for visual sidewalks
+        this.roadDepth = 40;       // asphalt lane + sidewalk space
+        this.sidewalkDepth = 8;   // for visual sidewalks
         this.zoneGap = 40;         // extra buffer between zones
 
         this.dockZ = this.dockFrontZ + this.landOffsetZ;
