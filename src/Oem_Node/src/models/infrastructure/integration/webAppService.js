@@ -3,7 +3,7 @@ const https = require('https');
 class WebAppService {
     constructor() {
         // Create an agent that ignores SSL errors (Self-Signed Certs)
-        const agent = new https.Agent({  
+        const agent = new https.Agent({
             rejectUnauthorized: false
         });
 
@@ -12,7 +12,7 @@ class WebAppService {
             timeout: 10000,
             httpsAgent: agent // Apply the agent here
         });
-        
+
         console.log("--> [WebAppService] Initialized with SSL Bypass enabled.");
     }
 
@@ -26,7 +26,7 @@ class WebAppService {
     async isVesselValid(vesselImo, token) {
         try {
             const response = await this.client.get(
-                `/api/vessels/getByIMO/${vesselImo}`, 
+                `/api/vessels/getByIMO/${vesselImo}`,
                 this._getConfig(token)
             );
             return response.status === 200;
@@ -39,7 +39,7 @@ class WebAppService {
     async isDockValid(dockId, token) {
         try {
             const response = await this.client.get(
-                `/api/docks/${dockId}`, 
+                `/api/docks/${dockId}`,
                 this._getConfig(token)
             );
             return response.status === 200;
@@ -52,7 +52,7 @@ class WebAppService {
     async getVesselVisitById(id, token) {
         try {
             const response = await this.client.get(
-                `/api/vesselvisitnotification/${id}`, 
+                `/api/vesselvisitnotification/${id}`,
                 this._getConfig(token)
             );
             return response.data;
@@ -93,9 +93,20 @@ class WebAppService {
             return response.data || [];
         } catch (error) {
             console.error(`Error fetching approved visits: ${error.message}`);
-            if(error.response) {
+            if (error.response) {
                 console.error(`WebApp Response: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
             }
+            return [];
+        }
+    }
+    async getIncidents(queryString, token) {
+        try {
+            // Passthrough query string directly
+            const url = `/api/incidents/Search?${queryString}`;
+            const response = await this.client.get(url, this._getConfig(token));
+            return response.data || [];
+        } catch (error) {
+            console.error(`Error fetching incidents: ${error.message}`);
             return [];
         }
     }

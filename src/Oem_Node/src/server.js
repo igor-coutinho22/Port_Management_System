@@ -8,6 +8,7 @@ const path = require('path');
 
 // Import Routes
 const vesselVisitExecutionRoutes = require('./routes/vesselVisitExecutionRoutes');
+const incidentRoutes = require('./routes/incidentRoutes');
 const schedulingRoutes = require('./routes/schedulingRoutes');
 const operationPlanRoutes = require('./routes/operationPlanRoutes');
 
@@ -16,8 +17,8 @@ const app = express();
 const PORT = process.env.PORT || 6001;
 
 // Middleware
-app.use(cors()); 
-app.use(express.json()); 
+app.use(cors());
+app.use(express.json());
 
 // Connect to Database
 connectDB();
@@ -29,6 +30,7 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/vesselvisitexecution', vesselVisitExecutionRoutes);
+app.use('/api/incidents', incidentRoutes);
 app.use('/api/scheduling', schedulingRoutes);
 app.use('/api/operationplan', operationPlanRoutes);
 
