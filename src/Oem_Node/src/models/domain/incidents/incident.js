@@ -37,7 +37,8 @@ const incidentSchema = new mongoose.Schema({
     affectedVesselVisitIds: [{
         type: String,
         ref: 'VesselVisitExecution'
-    }]
+    }],
+    createdBy: { type: String, required: true }
 }, {
     timestamps: true
 });
