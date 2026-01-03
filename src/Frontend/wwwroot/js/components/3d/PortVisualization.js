@@ -107,8 +107,14 @@ class PortVisualization {
         this.dayDurationSeconds = 300; // 1 full day per 5 minutes
 
         this._keydownHandler = (e) => {
+            const key = e.key.toLowerCase();
             if (e.key.toLowerCase() === 'i' && typeof this.onToggleOverlay === 'function') {
                 this.onToggleOverlay();
+            }
+
+            if (key === 'r') {
+                console.log("Reset disparado por tecla");
+                this.frameCamera();
             }
         };
         window.addEventListener('keydown', this._keydownHandler);
@@ -971,8 +977,19 @@ class PortVisualization {
     // CAMERA TARGET RESET
     // -------------------------------------------------------------------------
     frameCamera() {
-        this.controls.target.set(0, 0, 0);
-        this.controls.update();
+        console.log("PortVisualization: Executando reset suave da câmara");
+    
+        // Ativar o estado de animação 
+        this.flyToActive = true;
+        this.flyStartTime = performance.now();
+
+        // Definir a Origem
+        this.flyFromPos.copy(this.camera.position);
+        this.flyFromTarget.copy(this.controls.target);
+
+        // Definir o Destino
+        this.flyToPos.set(0, 300, 1100); 
+        this.flyToTarget.set(0, 0, 600); // Olhar para o meio do porto
     }
 
     onWindowResize() {

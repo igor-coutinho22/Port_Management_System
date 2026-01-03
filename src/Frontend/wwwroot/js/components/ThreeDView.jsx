@@ -8,7 +8,7 @@ const ThreeDView = () => {
     const [showOverlay, setShowOverlay] = React.useState(false);
     const [selectedData, setSelectedData] = React.useState(null);
     
-    // --- ESTADOS DE PESQUISA (US 5 & 6) ---
+    // --- ESTADOS DE PESQUISA ---
     const [searchId, setSearchId] = React.useState('');
     const [suggestions, setSuggestions] = React.useState([]);
     const [searchStatus, setSearchStatus] = React.useState(null); 
@@ -232,11 +232,11 @@ const ThreeDView = () => {
                 )}
             </div>
 
-            {/* CONTROLOS E AJUDA (US 5 & 6) */}
+            {/* CONTROLOS E AJUDA */}
             <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center' }}>
                 <button 
                     className="btn" 
-                    onClick={() => visualizationRef.current?.controls?.reset()}
+                    onClick={() => visualizationRef.current?.frameCamera()}
                     style={{ padding: '8px 15px', borderRadius: '20px', background: 'linear-gradient(to right, #6366f1, #a855f7)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                     Reset Câmara
