@@ -345,19 +345,32 @@ class PortGeometryBuilder {
     // -------------------------------------------------------------------------
     // DOCK GEOMETRY
     // -------------------------------------------------------------------------
-    createDock(dock) {
-        const { width, height, depth } = dock;
+    createDock(data) {
+        const group = new THREE.Group();
+        group.userData.isSelectableRoot = true;
 
-        const inst = this.makeConfiguredInstance("dock", width, height, depth);
-        if (inst) return inst;
+        // 1. Cais Principal (corpo original)
+        const mainGeo = new THREE.BoxGeometry(data.width, data.height, data.depth);
+        const mainMesh = new THREE.Mesh(mainGeo, this.materials.dock);
+        mainMesh.castShadow = true;
+        mainMesh.receiveShadow = true;
+        group.add(mainMesh);
 
-        // Fallback procedural dock
-        const geometry = new THREE.BoxGeometry(width, height, depth);
-        this.adjustUVs(geometry, width, height, depth);
-        const mesh = new THREE.Mesh(geometry, this.materials.dock);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        return mesh;
+        // 2. O "Braço" (Finger Pier) na extremidade DIREITA
+        const armWidth = 15; // Largura do braço
+        const armDepth = 400; // Comprimento do braço (ajusta conforme os barcos)
+        const armGeo = new THREE.BoxGeometry(armWidth, data.height, armDepth);
+        const armMesh = new THREE.Mesh(armGeo, this.materials.dock);
+    
+        // Posicionamento: 
+        // X: metade da largura da doca principal - metade da largura do braço (canto direito)
+        // Z: deslocado para "dentro" do mar
+        armMesh.position.set(
+            (data.width / 2) - (armWidth / 2), 0, -(data.depth / 2) - (armDepth / 2)
+            );
+        group.add(armMesh);
+
+        return group;
     }
 
     // -------------------------------------------------------------------------
@@ -461,6 +474,7 @@ class PortGeometryBuilder {
     // -------------------------------------------------------------------------
     // WAREHOUSE GEOMETRY
     // -------------------------------------------------------------------------
+   
     createWarehouse(area) {
         const { width, height, depth } = area;
 
@@ -483,6 +497,34 @@ class PortGeometryBuilder {
         flatRoof.receiveShadow = true;
         flatRoof.position.y = height / 2 + 1;
         group.add(flatRoof);
+
+        return group;
+    }
+
+    // -------------------------------------------------------------------------
+    // STREET LIGHT GEOMETRY
+    // -------------------------------------------------------------------------
+    
+    createStreetLight() {
+        const group = new THREE.Group();
+        // Poste
+        const poleGeo = new THREE.CylinderGeometry(0.5, 0.8, 50);
+        const pole = new THREE.Mesh(poleGeo, new THREE.MeshStandardMaterial({color: 0x333333}));
+        group.add(pole);
+
+        // Lâmpada (Luz física)
+        const light = new THREE.PointLight(0xffaa00, 0, 100); // Intensidade inicial 0
+        light.position.set(0, 25, 0);
+        light.userData.isNightLight = true; // Etiqueta para o Visualization encontrar
+        group.add(light);
+
+        // Mesh brilhante (para o efeito visual)
+        const bulbGeo = new THREE.SphereGeometry(5);
+        const bulbMat = new THREE.MeshStandardMaterial({emissive: 0x000000}); // Apagado
+        bulbMat.userData.isNightBulb = true;
+        const bulb = new THREE.Mesh(bulbGeo, bulbMat);
+        bulb.position.copy(light.position);
+        group.add(bulb);
 
         return group;
     }

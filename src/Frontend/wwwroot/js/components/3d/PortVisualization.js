@@ -828,6 +828,21 @@ class PortVisualization {
                 }
             };
 
+            const offsets = [
+                { x: -i.size - 5, z: -i.size - 5 },
+                { x: i.size + 5, z: -i.size - 5 },
+                { x: -i.size - 5, z: i.size + 5 },
+                { x: i.size + 5, z: i.size + 5 }
+            ];
+
+            offsets.forEach(offset => {
+                const lightPost = this.geometryBuilder.createStreetLight();
+                lightPost.position.set(i.x + offset.x, 2, i.z + offset.z);
+                this.scene.add(lightPost);
+                // Não esquecer de adicionar ao array de objetos se quiseres que sejam clicáveis
+                this.objects.push(lightPost); 
+            });
+
             // Crosswalk stripes should be PERPENDICULAR to the direction of travel.
             // - Traffic along Z (north/south approaches) => crosswalk runs along X? No: stripes should run along Z,
             //   so the crosswalk plate is rotated 90°.
