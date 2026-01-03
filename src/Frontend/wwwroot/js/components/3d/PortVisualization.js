@@ -318,6 +318,8 @@ class PortVisualization {
     // CLICK SELECTION
     // -------------------------------------------------------------------------
     onPointerDown(e) {
+        if (e.button !== 0) return;
+        
         const cast = this.castRay(e);
         const obj = cast?.object || null;
         if (!obj || obj instanceof THREE.Sprite) return;
