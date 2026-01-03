@@ -88,7 +88,8 @@ const AppWithGlobalNav = () => {
             "qualifications",
             "vessel-visit-executions",
             "incident-types",
-            "incidents"
+            "incidents",
+            "task-categories",
         ].includes(currentPage);
 
     const PAGE_TO_MENU_ID = {
@@ -112,6 +113,7 @@ const AppWithGlobalNav = () => {
         "vessel-visit-executions": "vessel-visit-executions",
         "incident-types": "incident-types",
         incidents: "incidents",
+        "task-categories": "task-categories",
     };
 
 
@@ -237,6 +239,12 @@ const AppWithGlobalNav = () => {
                     <div className="error">IncidentsHubPage component not loaded</div>
                 ) : (
                     <IncidentsHubPage />
+                );
+            case "task-categories":
+                return typeof TaskCategoriesHubPage === "undefined" ? (
+                    <div className="error">TaskCategoriesHubPage component not loaded</div>
+                ) : (
+                    <TaskCategoriesHubPage />
                 );
             case "3d-view":
                 return <ThreeDView key="3d-view" />;

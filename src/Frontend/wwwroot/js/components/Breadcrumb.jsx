@@ -67,6 +67,21 @@ const Breadcrumb = ({ currentPage, onNavigate }) => {
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
                 { label: t('entities.executions', 'Vessel Visit Executions'), page: 'vessel-visit-executions'}
             ],
+            'incident-types': [
+                { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
+                { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
+                { label: t('entities.incident_types', 'Incident Types'), page: 'incident-types'}
+            ],
+            'incidents': [
+                { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
+                { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
+                { label: t('entities.incidents', 'Incidents'), page: 'incidents'}
+            ],
+            'task-categories': [
+                { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
+                { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
+                { label: t('entities.task_categories', 'Task Categories'), page: 'task-categories'}
+            ],
             '3d-view': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.3d_view', '3D Port View'), page: '3d-view', icon: '🏗️' }

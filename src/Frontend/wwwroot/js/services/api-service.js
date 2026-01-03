@@ -41,7 +41,8 @@ class ApiService {
         if (endpoint.includes('/scheduling') ||
             endpoint.includes('/operationPlan') ||
             endpoint.includes('/incidents') ||
-            endpoint.includes('/vesselVisitExecution')) {
+            endpoint.includes('/vesselVisitExecution') ||
+            endpoint.includes('/complementarytasks')) {
 
             targetBaseUrl = OEM_API;
         }
@@ -620,6 +621,28 @@ class ApiService {
 
     async deleteIncident(id) {
         return this.delete(`/incidents/${id}`);
+    }
+
+    // --- COMPLEMENTARY TASK CATEGORIES ---
+
+    async getAllCategories() {
+        return this.get('/complementarytasks/categories/all');
+    }
+
+    async getCategoryById(id) {
+        return this.get(`/complementarytasks/categories/${id}`);
+    }
+
+    async createCategory(data) {
+        return this.post('/complementarytasks/categories', data);
+    }
+
+    async updateCategory(id, data) {
+        return this.put(`/complementarytasks/categories/${id}`, data);
+    }
+
+    async deleteCategory(id) {
+        return this.delete(`/complementarytasks/categories/${id}`);
     }
 }
 
