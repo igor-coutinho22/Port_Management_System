@@ -30,6 +30,7 @@ describe('Management Module Tests', () => {
             acquireTokenSilent: () => Promise.resolve({ accessToken: 'mock_token' }),
             acquireTokenRedirect: () => Promise.resolve()
         };
+        win.__msalReady = Promise.resolve(); // Required for AuthGate
     };
 
     it('should load management dashboard', () => {
@@ -37,6 +38,7 @@ describe('Management Module Tests', () => {
         cy.wait('@getMe');
         cy.get('body').should('contain', 'Management');
         cy.get('#app').should('exist');
+        cy.screenshot('management-dashboard');
     });
 
     it('should navigate to Vessels hub', () => {

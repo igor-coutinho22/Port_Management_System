@@ -26,6 +26,7 @@ describe('Incidents Module Tests', () => {
             acquireTokenSilent: () => Promise.resolve({ accessToken: 'mock_token' }),
             acquireTokenRedirect: () => Promise.resolve()
         };
+        win.__msalReady = Promise.resolve();
     };
 
     it('should load incidents list', () => {
@@ -34,6 +35,7 @@ describe('Incidents Module Tests', () => {
         cy.get('body').should('contain', 'Incidents');
         // Should have a list or table, or empty state message
         cy.get('body').should('exist');
+        cy.screenshot('incidents-list');
     });
 
     it('should load incident types list', () => {
