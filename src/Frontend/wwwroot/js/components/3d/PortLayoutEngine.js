@@ -99,6 +99,7 @@ class PortLayoutEngine {
             const height = 10;
 
             layouts.push({
+                ...dock,
                 id: dock.id,
                 name: dock.name,
                 type: "Dock",
@@ -175,6 +176,7 @@ class PortLayoutEngine {
                 const row = Math.floor(i / cols);
 
                 layouts.push({
+                    ...sa,
                     id: sa.id,
                     name: sa.name,
                     subtype: sa.subtype,
@@ -239,6 +241,7 @@ class PortLayoutEngine {
                     const z = baseZ - idx * this.shipQueueGap;
 
                     layouts.push({
+                        ...v,
                         id: v.id,
                         name: v.name,
                         type: "Vessel",
@@ -309,6 +312,7 @@ class PortLayoutEngine {
                 const x = dock.x - dock.width / 2 + step * (i + 1);
                 const z = dock.z - dock.depth / 2 + 8;
                 layouts.push({
+                    ...res,
                     id: res.id,
                     name: res.description,
                     type: res.resourceType,
@@ -399,6 +403,7 @@ class PortLayoutEngine {
             const z = roadZ + laneOffset;
 
             layouts.push({
+                ...s,
                 id: s.id,
                 name: s.name,
                 type: "Staff",
@@ -459,6 +464,7 @@ class PortLayoutEngine {
                 const y = yard.y + yard.height / 2 + containerH / 2 + tier * containerH;
 
                 layouts.push({
+                    ...c,
                     id: c.id,
                     teu: c.teu,
                     yardId: yard.id,

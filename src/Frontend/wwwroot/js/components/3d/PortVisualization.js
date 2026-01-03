@@ -54,6 +54,9 @@ class PortVisualization {
         this.selectedObject = null;
         this.hoveredObject = null;
 
+        this.onSelect = null; 
+        this.onToggleOverlay = null;
+
         // External callback (React-integrated)
         this.onSelect = null;
 
@@ -90,6 +93,13 @@ class PortVisualization {
 
         this.timeOfDay = 0.45; // 0..1
         this.dayDurationSeconds = 300; // 1 full day per 5 minutes
+
+        this._keydownHandler = (e) => {
+            if (e.key.toLowerCase() === 'i' && typeof this.onToggleOverlay === 'function') {
+                this.onToggleOverlay();
+            }
+        };
+        window.addEventListener('keydown', this._keydownHandler);
     }
 
     // -------------------------------------------------------------------------
@@ -329,9 +339,7 @@ class PortVisualization {
 
         if (this.selectedObject) {
             this.selectedObject.traverse(child => {
-                if (child.isMesh && child.material?.emissive) {
-                    child.material.emissive.setHex(0x000000);
-                }
+                if (child.isMesh && child.material?.emissive) child.material.emissive.setHex(0x000000);
             });
         }
 
@@ -1018,9 +1026,13 @@ class PortVisualization {
     // DISPOSE
     // -------------------------------------------------------------------------
     dispose() {
+        window.removeEventListener('keydown', this._keydownHandler);
         this.clearScene();
-        this.renderer.dispose();
         this.hideTooltip();
+        if (this.renderer) {
+            this.renderer.dispose();
+            this.renderer.domElement.remove();
+        }
         this.renderer = null;
     }
 }
