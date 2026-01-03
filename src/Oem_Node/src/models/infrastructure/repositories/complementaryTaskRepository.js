@@ -3,14 +3,15 @@ const ComplementaryTaskCategory = require('../../domain/complementaryTasks/compl
 
 class ComplementaryTaskRepository {
 
-    // --- Categories ---
+    // --- CATEGORIES (US 4.1.14) ---
+
     async createCategoryAsync(data) {
         const category = new ComplementaryTaskCategory(data);
         return await category.save();
     }
 
     async getAllCategoriesAsync() {
-        return await ComplementaryTaskCategory.find();
+        return await ComplementaryTaskCategory.find().sort({ name: 1 });
     }
 
     async getCategoryByIdAsync(id) {
@@ -18,6 +19,7 @@ class ComplementaryTaskRepository {
     }
 
     async updateCategoryAsync(id, data) {
+        // { new: true } returns the modified document rather than the original
         return await ComplementaryTaskCategory.findByIdAndUpdate(id, data, { new: true });
     }
 
@@ -25,26 +27,23 @@ class ComplementaryTaskRepository {
         return await ComplementaryTaskCategory.findByIdAndDelete(id);
     }
 
-    // --- Tasks ---
+    // --- TASKS (US 4.1.15) ---
+
     async createTaskAsync(data) {
         const task = new ComplementaryTask(data);
         return await task.save();
     }
 
     async getTaskByIdAsync(id) {
-        // Since we are referencing VVE by String ID (UUID) and Category by ObjectId
-        // We populate the Category directly. VVE population might need virtuals or manual lookup if Mongoose 'ref' works with non-ObjectId refs (it can if types match, but usually assumes ObjectId).
-        // VVE ID in VVE model is UUID string, here it is String. Mongoose population requires _id to match.
-        // If VVE uses UUID string as _id, population works. If VVE uses ObjectId as _id but has a separate uuid field, we might not populate here easily without `localField` settings.
-        // Assuming VVEs have String _ids based on checking other files (Incident references it too).
-
+        // We ALWAYS populate the category to display the Code/Name in the UI
         return await ComplementaryTask.findById(id)
             .populate('complementaryTaskCategoryId');
     }
 
     async findTasksAsync(query) {
         return await ComplementaryTask.find(query)
-            .populate('complementaryTaskCategoryId');
+            .populate('complementaryTaskCategoryId')
+            .sort({ startTime: -1 }); // Default sort: Newest first
     }
 
     async updateTaskAsync(id, data) {

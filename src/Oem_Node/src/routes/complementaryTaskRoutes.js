@@ -11,6 +11,7 @@ router.get('/Search', auth, controller.search);
 // Categories
 // /api/complementarytasks/categories
 router.get('/categories/all', auth, controller.getAllCategories);
+router.get('/categories/:id', auth, controller.getCategoryById);
 router.post('/categories', auth, controller.createCategory);
 router.put('/categories/:id', auth, controller.updateCategory);
 router.delete('/categories/:id', auth, controller.deleteCategory);
