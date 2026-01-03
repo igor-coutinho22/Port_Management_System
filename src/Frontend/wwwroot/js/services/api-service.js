@@ -617,6 +617,10 @@ class ApiService {
         // data = { status: 'Resolved', endTime: ..., etc }
         return this.put(`/incidents/${id}`, data);
     }
+
+    async deleteIncident(id) {
+        return this.delete(`/incidents/${id}`);
+    }
 }
 
 const apiService = new ApiService();

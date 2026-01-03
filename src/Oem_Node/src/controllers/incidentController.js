@@ -61,11 +61,27 @@ exports.createIncident = async (req, res) => {
 exports.updateIncident = async (req, res) => {
     try {
         const user = req.user || { name: 'Unknown' };
+
+        // 1. GET the current version from the database first
+        const existingIncident = await service.getIncidentById(req.params.id);
+
+        // 2. Check if it exists
+        if (!existingIncident) {
+            return res.status(404).send("Incident not found.");
+        }
+
+        // 3. Check the CURRENT status in the database
+        if (existingIncident.status === 'Resolved') {
+            return res.status(400).send("Operation denied: This incident is already Resolved and cannot be modified.");
+        }
+
+        // 4. If active, proceed with the update
         const result = await service.updateIncident(req.params.id, req.body, user);
         
-        if (!result) return res.status(404).send("Incident not found.");
         res.status(200).json(result);
-    } catch (err) { res.status(500).send(err.message); }
+    } catch (err) { 
+        res.status(500).send(err.message); 
+    }
 };
 
 exports.deleteIncident = async (req, res) => {

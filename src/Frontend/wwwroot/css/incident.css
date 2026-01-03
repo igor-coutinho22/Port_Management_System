@@ -319,3 +319,30 @@
         color: #888 !important;
     }
 }
+
+/* =========================================
+   BUTTON STYLES
+   ========================================= */
+
+/* A specific button for "Negative/Urgent" primary actions (Create Incident, Delete) */
+.btn-danger-primary {
+    background-color: #dc3545; /* Red Background */
+    color: white !important;   /* Force White Text */
+    border: none;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-danger-primary:hover:not(:disabled) {
+    background-color: #c82333; /* Darker Red on Hover */
+    transform: translateY(-1px);
+}
+
+.btn-danger-primary:disabled {
+    background-color: #e2e6ea;
+    color: #6c757d !important;
+    cursor: not-allowed;
+}
