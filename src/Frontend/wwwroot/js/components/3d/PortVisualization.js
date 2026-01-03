@@ -72,7 +72,7 @@ class PortVisualization {
 
         this.selectionSpotlight = new THREE.SpotLight(0xffffff, 0); // Intensidade inicial 0
         this.selectionSpotlight.penumbra = 1; // CA: Penumbra suave para transição clara
-        this.selectionSpotlight.angle = Math.PI / 75; // Foco concentrado
+        this.selectionSpotlight.angle = Math.PI / 50; // Foco concentrado
         this.selectionSpotlight.distance = 2500;
         this.selectionSpotlight.castShadow = true;
 
@@ -87,6 +87,9 @@ class PortVisualization {
         this.flyFromTarget = new THREE.Vector3();
         this.flyToPos = new THREE.Vector3();
         this.flyToTarget = new THREE.Vector3();
+
+        this.flyFromSpotlightTarget = new THREE.Vector3();
+        this.flyToSpotlightTarget = new THREE.Vector3();
 
         // -------------------------------
         // MINIMAP SETUP
@@ -114,6 +117,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // TOOLTIP
     // -------------------------------------------------------------------------
+    
     createTooltipElement() {
         const el = document.createElement("div");
         Object.assign(el.style, {
@@ -147,6 +151,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // LIGHTING
     // -------------------------------------------------------------------------
+    
     addLights() {
         const ambient = new THREE.AmbientLight(0xffffff, 1);
         this.scene.add(ambient);
@@ -192,6 +197,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // MINIMAP
     // -------------------------------------------------------------------------
+   
     setupMinimap() {
         const size = 110;
         this.minimapSize = size;
@@ -254,6 +260,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // LOAD PORT DATA
     // -------------------------------------------------------------------------
+   
     async loadPortData() {
         THREE.Cache.enabled = false;
         console.log("PortVisualization: loadPortData called");
@@ -297,6 +304,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // CAMERA FLY-TO
     // -------------------------------------------------------------------------
+    
     flyToObject(pos) {
         this.flyToActive = true;
         this.flyStartTime = performance.now();
@@ -304,8 +312,16 @@ class PortVisualization {
         this.flyFromPos.copy(this.camera.position);
         this.flyFromTarget.copy(this.controls.target);
 
+        // US 4.2.6: Captura a posição inicial do alvo do foco
+        if (this.selectionSpotlight) {
+            this.flyFromSpotlightTarget.copy(this.selectionSpotlight.target.position);
+        }
+
         this.flyToTarget.set(pos.x, pos.y, pos.z);
         this.flyToPos.set(pos.x + 180, pos.y + 120, pos.z + 180);
+
+        // US 4.2.6: O destino do foco é o centro do objeto (pos)
+        this.flyToSpotlightTarget.set(pos.x, pos.y, pos.z);
     }
 
     updateFlyTo() {
@@ -313,16 +329,28 @@ class PortVisualization {
 
         const now = performance.now();
         const t = Math.min(1, (now - this.flyStartTime) / this.flyDuration);
+        // Função de easing para suavizar o início e o fim do movimento
         const eased = t * t * (3 - 2 * t);
 
+        // Interpolação da câmara e do alvo dos controlos
         this.camera.position.lerpVectors(this.flyFromPos, this.flyToPos, eased);
         this.controls.target.lerpVectors(this.flyFromTarget, this.flyToTarget, eased);
+
+        // US 4.2.6: Interpolação suave do alvo do Spotlight
+        if (this.selectionSpotlight) {
+            this.selectionSpotlight.target.position.lerpVectors(
+                this.flyFromSpotlightTarget, 
+                this.flyToSpotlightTarget, 
+                eased
+            );
+            this.selectionSpotlight.target.updateMatrixWorld();
+        }
 
         if (t >= 1) {
             this.flyToActive = false;
         }
     }
-
+    
     // -------------------------------------------------------------------------
     // CLICK SELECTION
     // -------------------------------------------------------------------------
@@ -364,18 +392,10 @@ class PortVisualization {
             }
         });
 
-        // US 4.2.5: Focar Spotlight no centro ---
-        const box = new THREE.Box3().setFromObject(targetEntity);
-        const center = new THREE.Vector3();
-        box.getCenter(center);
-
         if (this.selectionSpotlight) {
-            // Define o centro do objeto como o alvo da luz
-            this.selectionSpotlight.target.position.copy(center);
-            this.selectionSpotlight.target.updateMatrixWorld();
-        
-            // Ativa a intensidade da luz
-            this.selectionSpotlight.intensity = 15; 
+            // Apenas ativamos a luz aqui. O movimento da posição 
+            // será feito suavemente pelo updateFlyTo().
+            this.selectionSpotlight.intensity = 3.0; 
         }
 
         if (this.onSelect) {
