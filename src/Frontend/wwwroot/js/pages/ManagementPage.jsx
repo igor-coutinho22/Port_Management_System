@@ -87,6 +87,11 @@ const ManagementPage = () => {
             title: t("entities.task_categories"),
             description: t("management_page.task_categories"),
         },
+        {
+            id: "complementary-tasks",
+            title: t("entities.complementary_tasks"),
+            description: t("management_page.complementary_tasks"),
+        },
     ];
 
     const handleEntityClick = (entity) => {

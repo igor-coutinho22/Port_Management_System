@@ -82,6 +82,11 @@ const Breadcrumb = ({ currentPage, onNavigate }) => {
                 { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
                 { label: t('entities.task_categories', 'Task Categories'), page: 'task-categories'}
             ],
+            'complementary-tasks': [
+                { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
+                { label: t('nav.management', 'Management'), page: 'management', icon: '⚙️' },
+                { label: t('entities.complementary_tasks', 'Complementary Tasks'), page: 'complementary-tasks'}
+            ],
             '3d-view': [
                 { label: t('nav.home', 'Home'), page: 'home', icon: '⚓' },
                 { label: t('nav.3d_view', '3D Port View'), page: '3d-view', icon: '🏗️' }

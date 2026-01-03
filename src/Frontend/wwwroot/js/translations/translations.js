@@ -132,6 +132,8 @@ window.translations = {
     "entities.incidents_desc": "Vessel incidents",
     "entities.task_categories": "Task Categories",
     "entities.task_categories_desc": "Vessel tasks",
+    "entities.complementary_tasks": "Complementary Tasks",
+    "entities.complementary_tasks_desc": "Non-cargo operations",
 
 
 
@@ -712,6 +714,7 @@ window.translations = {
     "management_page.incident_types": "Vessel incident categories and types",
     "management_page.incidents": "Vessel incident reports and management",
     "management_page.task_categories": "Vessel task categories and types",
+    "management_page.complementary_tasks": "Vessel task assignments and tracking",
 
     // AdminUsersPage
     "adminUsersPage.title": "Admin — User Management",
@@ -3220,6 +3223,7 @@ window.translations = {
     "management_page.incident_types": "Tipos de Incidentes Portuários",
     "management_page.incidents": "Registo e gestão de incidentes portuários",
     "management_page.task_categories": "Categorias de Tarefas Portuárias",
+    "management_page.complementary_tasks": "Gestão de Tarefas Portuárias",
 
     // AdminUsersPage
     "adminUsersPage.title": "Admin — Gestão de Utilizadores",

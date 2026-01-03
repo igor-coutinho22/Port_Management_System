@@ -90,6 +90,7 @@ const AppWithGlobalNav = () => {
             "incident-types",
             "incidents",
             "task-categories",
+            "complementary-tasks"
         ].includes(currentPage);
 
     const PAGE_TO_MENU_ID = {
@@ -114,6 +115,7 @@ const AppWithGlobalNav = () => {
         "incident-types": "incident-types",
         incidents: "incidents",
         "task-categories": "task-categories",
+        "complementary-tasks": "complementary-tasks",
     };
 
 
@@ -245,6 +247,12 @@ const AppWithGlobalNav = () => {
                     <div className="error">TaskCategoriesHubPage component not loaded</div>
                 ) : (
                     <TaskCategoriesHubPage />
+                );
+            case "complementary-tasks":
+                return typeof ComplementaryTasksHubPage === "undefined" ? (
+                    <div className="error">ComplementaryTasksHubPage component not loaded</div>
+                ) : (
+                    <ComplementaryTasksHubPage />
                 );
             case "3d-view":
                 return <ThreeDView key="3d-view" />;

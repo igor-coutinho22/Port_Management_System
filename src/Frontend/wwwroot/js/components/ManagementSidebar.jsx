@@ -17,7 +17,8 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
         { id: 'vessel-visit-executions', titleKey: 'entities.executions', descKey: 'entities.executions_desc' },
         { id: 'incident-types', titleKey: 'entities.incident_types', descKey: 'entities.incident_types_desc' },
         { id: 'incidents', titleKey: 'entities.incidents', descKey: 'entities.incidents_desc' },
-        { id: 'task-categories', titleKey: 'entities.task_categories', descKey: 'entities.task_categories_desc' }
+        { id: 'task-categories', titleKey: 'entities.task_categories', descKey: 'entities.task_categories_desc' },
+        { id: 'complementary-tasks', titleKey: 'entities.complementary_tasks', descKey: 'entities.complementary_tasks_desc' }
     ];
 
     // Filter entities based on user permissions

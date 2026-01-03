@@ -644,6 +644,32 @@ class ApiService {
     async deleteCategory(id) {
         return this.delete(`/complementarytasks/categories/${id}`);
     }
+
+    // --- COMPLEMENTARY TASKS ---
+
+    async searchComplementaryTasks(filters) {
+        // filters = { start, end, status, vesselVisitId, vessel }
+        const params = new URLSearchParams(filters).toString();
+        return this.get(`/complementarytasks/Search?${params}`);
+    }
+
+    async getTaskById(id) {
+        return this.get(`/complementarytasks/${id}`);
+    }
+
+    async createTask(data) {
+        // data = { complementaryTaskCategoryId, vesselVisitExecutionId, responsibleTeam, startTime }
+        return this.post('/complementarytasks', data);
+    }
+
+    async updateTask(id, data) {
+        // data = { status: 'Completed', endTime: ... }
+        return this.put(`/complementarytasks/${id}`, data);
+    }
+
+    async deleteTask(id) {
+        return this.delete(`/complementarytasks/${id}`);
+    }
 }
 
 const apiService = new ApiService();

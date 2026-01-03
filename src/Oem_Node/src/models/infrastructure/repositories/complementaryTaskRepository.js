@@ -37,12 +37,14 @@ class ComplementaryTaskRepository {
     async getTaskByIdAsync(id) {
         // We ALWAYS populate the category to display the Code/Name in the UI
         return await ComplementaryTask.findById(id)
-            .populate('complementaryTaskCategoryId');
+            .populate('complementaryTaskCategoryId')
+            .populate('vesselVisitExecutionId');
     }
 
     async findTasksAsync(query) {
         return await ComplementaryTask.find(query)
             .populate('complementaryTaskCategoryId')
+            .populate('vesselVisitExecutionId')
             .sort({ startTime: -1 }); // Default sort: Newest first
     }
 
