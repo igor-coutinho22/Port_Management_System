@@ -78,6 +78,56 @@ class UserController {
             res.status(500).json({ error: err.message });
         }
     }
+
+    // GET /api/users/me/export
+    async exportUserData(req, res) {
+        try {
+            const tokenUser = req.user;
+            
+            // 1. Fetch Core Profile from MongoDB
+            // Ensure you are importing the User model at the top of this file
+            const dbUser = await User.findOne({ userId: tokenUser.id });
+            
+            if (!dbUser) {
+                return res.status(404).json({ message: "User profile not found." });
+            }
+
+            // 2. Construct the Data Package
+            // This structure complies with GDPR Article 15 (Right of Access)
+            const exportData = {
+                metadata: {
+                    exportedAt: new Date(),
+                    system: "Port Management System (Sines)",
+                    requestType: "GDPR Right to Access - Article 15"
+                },
+                identity: {
+                    id: dbUser.userId,
+                    name: dbUser.name,
+                    email: dbUser.email,
+                    roles: dbUser.roles
+                },
+                compliance: {
+                    acceptedPrivacyPolicyVersion: dbUser.acceptedPrivacyPolicyVersion,
+                    lastLoginAt: dbUser.lastLoginAt,
+                    status: "Active"
+                },
+                // If you had logs, you would fetch and add them here:
+                // activityLogs: await Log.find({ userId: tokenUser.id })
+            };
+
+            // 3. Send as Downloadable JSON
+            res.setHeader('Content-Type', 'application/json');
+            // This header forces the browser to treat it as a file download
+            res.setHeader('Content-Disposition', `attachment; filename=my-data-${tokenUser.id}.json`);
+            
+            // Send pretty-printed JSON (indentation 4)
+            res.send(JSON.stringify(exportData, null, 4));
+
+        } catch (err) {
+            console.error("Export Data Error:", err);
+            res.status(500).json({ error: err.message });
+        }
+    }
 }
 
 module.exports = new UserController();

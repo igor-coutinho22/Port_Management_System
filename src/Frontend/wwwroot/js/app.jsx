@@ -101,7 +101,8 @@ const AppWithGlobalNav = () => {
             "incidents",
             "task-categories",
             "complementary-tasks",
-            "privacy-management"
+            "privacy-management",
+            "profile"
         ].includes(currentPage);
 
     const PAGE_TO_MENU_ID = {
@@ -127,7 +128,8 @@ const AppWithGlobalNav = () => {
         incidents: "incidents",
         "task-categories": "task-categories",
         "complementary-tasks": "complementary-tasks",
-        "privacy-management": "privacy-management"
+        "privacy-management": "privacy-management",
+        profile: "profile",
     };
 
     React.useEffect(() => {
@@ -204,6 +206,8 @@ const AppWithGlobalNav = () => {
                 ) : (
                     <PrivacyPolicyManagementPage />
                 );
+            case "profile":
+                return <UserProfilePage />;
             case "3d-view":
                 return <ThreeDView key="3d-view" />;
             case "scheduling":

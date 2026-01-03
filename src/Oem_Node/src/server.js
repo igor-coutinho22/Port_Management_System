@@ -40,7 +40,7 @@ app.use('/api/operationplan', operationPlanRoutes);
 app.use('/api/complementarytasks', complementaryTaskRoutes);
 
 app.use('/api/privacy', privacyRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/user-profiles', userRoutes);
 
 // --- START SERVER (HTTPS) ---
 

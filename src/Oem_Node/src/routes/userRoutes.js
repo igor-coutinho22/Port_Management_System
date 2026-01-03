@@ -11,5 +11,6 @@ router.get('/me', userController.getMe);
 
 // 2. Accept the Policy
 router.post('/accept-privacy', userController.acceptPrivacyPolicy);
+router.get('/me/export', userController.exportUserData);
 
 module.exports = router;
