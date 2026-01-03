@@ -70,6 +70,15 @@ class PortVisualization {
         // Lighting
         this.addLights();
 
+        this.selectionSpotlight = new THREE.SpotLight(0xffffff, 0); // Intensidade inicial 0
+        this.selectionSpotlight.penumbra = 1; // CA: Penumbra suave para transição clara
+        this.selectionSpotlight.angle = Math.PI / 75; // Foco concentrado
+        this.selectionSpotlight.distance = 2500;
+        this.selectionSpotlight.castShadow = true;
+
+        this.scene.add(this.selectionSpotlight);
+        this.scene.add(this.selectionSpotlight.target);
+
         // Fly-To animation state
         this.flyToActive = false;
         this.flyStartTime = 0;
@@ -319,7 +328,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     onPointerDown(e) {
         if (e.button !== 0) return;
-        
+
         const cast = this.castRay(e);
         const obj = cast?.object || null;
         if (!obj || obj instanceof THREE.Sprite) return;
@@ -339,6 +348,7 @@ class PortVisualization {
         const targetEntity = this.findParent(obj);
         if (!targetEntity) return;
 
+        // Lógica original de emissive (limpeza)
         if (this.selectedObject) {
             this.selectedObject.traverse(child => {
                 if (child.isMesh && child.material?.emissive) child.material.emissive.setHex(0x000000);
@@ -347,11 +357,26 @@ class PortVisualization {
 
         this.selectedObject = targetEntity;
 
+        // Lógica original de emissive (destaque)
         targetEntity.traverse(child => {
             if (child.isMesh && child.material?.emissive) {
                 child.material.emissive.setHex(0x333333);
             }
         });
+
+        // US 4.2.5: Focar Spotlight no centro ---
+        const box = new THREE.Box3().setFromObject(targetEntity);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+
+        if (this.selectionSpotlight) {
+            // Define o centro do objeto como o alvo da luz
+            this.selectionSpotlight.target.position.copy(center);
+            this.selectionSpotlight.target.updateMatrixWorld();
+        
+            // Ativa a intensidade da luz
+            this.selectionSpotlight.intensity = 15; 
+        }
 
         if (this.onSelect) {
             this.onSelect(targetEntity.userData);
@@ -468,7 +493,7 @@ class PortVisualization {
     // SEARCH & FOCUS
     // -------------------------------------------------------------------------
     
-    // US 5 & 6: Procurar objeto por ID e focar a câmara
+    // Procurar objeto por ID e focar a câmara
     searchAndFocus(searchTerm) {
         if (!searchTerm) return;
         
@@ -485,7 +510,7 @@ class PortVisualization {
         });
 
         if (target) {
-            // US 6: Usar a animação de voo para o centro do objeto
+            // Usar a animação de voo para o centro do objeto
             const box = new THREE.Box3().setFromObject(target);
             const center = new THREE.Vector3();
             box.getCenter(center);
@@ -955,6 +980,11 @@ class PortVisualization {
         this.updateFlyTo();
         this.controls.update();
 
+        // 4.2.5: Spotlight segue a câmara ---
+        if (this.selectionSpotlight) {
+            this.selectionSpotlight.position.copy(this.camera.position);
+        }
+
         const minY = 5;
         if (this.camera.position.y < minY) {
             this.camera.position.y = minY;
@@ -965,12 +995,14 @@ class PortVisualization {
         this.updateWater(time);
         this.updateSun(deltaSec);
 
+        // Renderização principal
         this.renderer.setViewport(0, 0, this.container.clientWidth, this.container.clientHeight);
         this.renderer.setScissorTest(false);
         this.renderer.render(this.scene, this.camera);
 
         this.updateMinimap();
 
+        // Renderização do Minimapa (Scissor test)
         const size = this.minimapSize;
         this.renderer.setViewport(
             this.container.clientWidth - size - 12,
