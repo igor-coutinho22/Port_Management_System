@@ -444,7 +444,7 @@ class PortVisualization {
         const water = new THREE.Mesh(geo, mat);
         water.rotation.x = -Math.PI / 2;
         water.position.y = -0.5;
-        water.position.z = -2450;
+        water.position.z = -2435;
         water.receiveShadow = true;
         this.scene.add(water);
     }
@@ -454,12 +454,58 @@ class PortVisualization {
         const mat = this.geometryBuilder.materials.asphalt;
         const ground = new THREE.Mesh(geo, mat);
         ground.position.y = 0.5;
-        ground.position.z = 2550;
+        ground.position.z = 2565;
         ground.receiveShadow = true;
         ground.castShadow = false;
         // Render ground before roads to reduce any remaining flicker.
         ground.renderOrder = -10;
         this.scene.add(ground);
+    }
+
+    // -------------------------------------------------------------------------
+    // SEARCH & FOCUS
+    // -------------------------------------------------------------------------
+    
+    // US 5 & 6: Procurar objeto por ID e focar a câmara
+    searchAndFocus(searchTerm) {
+        if (!searchTerm) return;
+        
+        const term = searchTerm.toLowerCase();
+        
+        // Procura nos objetos registados
+        const target = this.objects.find(obj => {
+            const data = obj.userData;
+            return (
+                (data.id && data.id.toString().toLowerCase() === term) ||
+                (data.name && data.name.toLowerCase().includes(term)) ||
+                (data.vesselName && data.vesselName.toLowerCase().includes(term))
+            );
+        });
+
+        if (target) {
+            // US 6: Usar a animação de voo para o centro do objeto
+            const box = new THREE.Box3().setFromObject(target);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            
+            this.flyToObject(center);
+            
+            // Opcional: Selecionar automaticamente para abrir o painel da US 3
+            this.handleSelection(target); 
+            return true;
+        }
+        
+        console.warn("Objeto não encontrado:", searchTerm);
+        return false;
+    }
+
+    // US 5: Devolve lista de todos os nomes/IDs para sugestões
+    // Adiciona este método à classe PortVisualization no teu ficheiro .js
+    getSearchableEntities() {
+        return this.objects
+            .filter(obj => obj.userData && obj.userData.isSelectableRoot)
+            .map(obj => obj.userData.name || obj.userData.vesselName || obj.userData.id?.toString())
+            .filter(name => name !== undefined);
     }
 
     // -------------------------------------------------------------------------

@@ -345,33 +345,21 @@ class PortGeometryBuilder {
     // -------------------------------------------------------------------------
     // DOCK GEOMETRY
     // -------------------------------------------------------------------------
-    createDock(data) {
-        const group = new THREE.Group();
-        group.userData.isSelectableRoot = true;
+    createDock(dock) {
+    const { width, height, depth } = dock;
 
-        // 1. Cais Principal (corpo original)
-        const mainGeo = new THREE.BoxGeometry(data.width, data.height, data.depth);
-        const mainMesh = new THREE.Mesh(mainGeo, this.materials.dock);
-        mainMesh.castShadow = true;
-        mainMesh.receiveShadow = true;
-        group.add(mainMesh);
-
-        // 2. O "Braço" (Finger Pier) na extremidade DIREITA
-        const armWidth = 15; // Largura do braço
-        const armDepth = 400; // Comprimento do braço (ajusta conforme os barcos)
-        const armGeo = new THREE.BoxGeometry(armWidth, data.height, armDepth);
-        const armMesh = new THREE.Mesh(armGeo, this.materials.dock);
+    // Fallback procedural dock - Apenas um bloco simples
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    this.adjustUVs(geometry, width, height, depth);
     
-        // Posicionamento: 
-        // X: metade da largura da doca principal - metade da largura do braço (canto direito)
-        // Z: deslocado para "dentro" do mar
-        armMesh.position.set(
-            (data.width / 2) - (armWidth / 2), 0, -(data.depth / 2) - (armDepth / 2)
-            );
-        group.add(armMesh);
+    const mesh = new THREE.Mesh(geometry, this.materials.dock);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
-        return group;
-    }
+    mesh.userData.isSelectableRoot = true;
+
+    return mesh;
+}
 
     // -------------------------------------------------------------------------
     // CONTAINER YARD GEOMETRY
