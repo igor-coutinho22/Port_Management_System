@@ -1,7 +1,6 @@
-/* global React, apiService */
+/* global React, apiService, useUser */
 
 // We assume the Modal will be loaded globally. 
-// If it's not loaded yet, we default to a null component to prevent crashes during dev.
 const OperationPlanPreviewModal = window.OperationPlanPreviewModal || (() => null);
 
 const HEURISTICS = [
@@ -27,6 +26,17 @@ function formatDateTime(value) {
 }
 
 const SchedulingHubPage = () => {
+    // --- 1. GET USER PERMISSIONS ---
+    // We try to use the global hook. If not available, default to safe object.
+    const { hasPermission } = typeof useUser === 'function' 
+        ? useUser() 
+        : { hasPermission: () => false };
+
+    // "operational-tasks.schedule" is the key permission for Operators.
+    // Admins have "*" so this returns true for them too.
+    // Representatives do NOT have this, so it returns false.
+    const canManagePlans = hasPermission("operational-tasks.schedule");
+
     const [targetDate, setTargetDate] = React.useState(
         formatDateInputValue(new Date())
     );
@@ -126,8 +136,6 @@ const SchedulingHubPage = () => {
         return multiRes.entries || multiRes.Entries || [];
     }, [multiRes]);
 
-    const craneHoursSingle = (compareResult && (compareResult.craneHoursSingle ?? compareResult.CraneHoursSingle)) || null;
-    const craneHoursMulti = (compareResult && (compareResult.craneHoursMulti ?? compareResult.CraneHoursMulti)) || null;
     const delayImprovement = compareResult && (compareResult.delayImprovementMinutes ?? compareResult.DelayImprovementMinutes ?? null);
     const multiUsed = !!(compareResult && (compareResult.multiCraneUsed ?? compareResult.MultiCraneUsed));
     const compareHeuristicName = (singleRes && (singleRes.heuristicName ?? singleRes.HeuristicName)) || heuristic;
@@ -375,7 +383,7 @@ const SchedulingHubPage = () => {
                                     </div>
                                 )}
 
-                                {/* NEW: Draft Button for Single Result */}
+                                {/* NEW: Draft Button for Single Result - Protected for Consistency, or leave open if 'Draft' is not 'Manage' */}
                                 {resolvedEntries.length > 0 && (
                                     <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
                                         <button
@@ -410,7 +418,6 @@ const SchedulingHubPage = () => {
                             <div className="operation-body">
                                 {/* Summary metrics */}
                                 <div className="summary-cards" style={{ display: "flex", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
-                                    {/* ... (Existing Comparison Metrics) ... */}
                                     <div className="summary-card">
                                         <div className="summary-label">Single-crane delay</div>
                                         <div className="summary-value">
@@ -524,82 +531,91 @@ const SchedulingHubPage = () => {
                 </div>
             )}
 
-            {/* --- NEW: OPERATION PLANS MANAGEMENT HUB --- */}
+            {/* --- 2. PROTECTED MANAGEMENT SECTION --- */}
+            {canManagePlans ? (
+                <>
+                    <div className="hub-divider" style={{ margin: '40px 0', borderBottom: '1px solid #334155' }}></div>
 
-            <div className="hub-divider" style={{ margin: '40px 0', borderBottom: '1px solid #334155' }}></div>
-
-            <div className="hub-header" style={{ marginBottom: '20px' }}>
-                <h3 className="page-title" style={{ fontSize: '1.5rem', color: '#38bdf8' }}>Operation Plans Management</h3>
-                <p>View history, search, or remove saved plans.</p>
-            </div>
-
-            {/* Quick Data View Button */}
-            <div className="quick-view-container">
-                <button
-                    className={`quick-view-btn ${showQuickView ? 'active' : ''}`}
-                    onClick={() => setShowQuickView(!showQuickView)}
-                >
-                    <span className="quick-view-icon">📊</span>
-                    Quick Data View
-                    <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
-                        {showQuickView ? '▲' : '▼'}
-                    </span>
-                </button>
-
-                {showQuickView && (
-                    <div className="quick-view-panel">
-                        {isLoadingPlans ? (
-                            <div className="loading">Loading Plans...</div>
-                        ) : (
-                            <OperationPlansQuickTable plans={operationsPlansList} onRefresh={loadPlans} />
-                        )}
+                    <div className="hub-header" style={{ marginBottom: '20px' }}>
+                        <h3 className="page-title" style={{ fontSize: '1.5rem', color: '#38bdf8' }}>Operation Plans Management</h3>
+                        <p>View history, search, or remove saved plans.</p>
                     </div>
-                )}
-            </div>
 
-            {/* Swagger-style Expandable Sections */}
-            <div className="operations-container">
-                {sections.map((section) => (
-                    <div key={section.id} className="operation-section">
-                        <div
-                            className={`operation-header ${expandedSection === section.id ? 'expanded' : ''}`}
-                            onClick={() => toggleSection(section.id)}
-                            style={{ borderLeftColor: section.color }}
+                    {/* Quick Data View Button */}
+                    <div className="quick-view-container">
+                        <button
+                            className={`quick-view-btn ${showQuickView ? 'active' : ''}`}
+                            onClick={() => setShowQuickView(!showQuickView)}
                         >
-                            <div className="operation-info">
-                                <h3 className="operation-title">{section.title}</h3>
-                                <p className="operation-description">{section.description}</p>
-                            </div>
-                            <div className="operation-controls">
-                                <span
-                                    className="http-method"
-                                    style={{ backgroundColor: section.color }}
-                                >
-                                    {section.id.includes('delete') ? 'DELETE' : 'GET'}
-                                </span>
-                                <span className={`expand-arrow ${expandedSection === section.id ? 'up' : 'down'}`}>
-                                    {expandedSection === section.id ? '▲' : '▼'}
-                                </span>
-                            </div>
-                        </div>
+                            <span className="quick-view-icon">📊</span>
+                            Quick Data View
+                            <span className={`quick-view-arrow ${showQuickView ? 'up' : 'down'}`}>
+                                {showQuickView ? '▲' : '▼'}
+                            </span>
+                        </button>
 
-                        {expandedSection === section.id && (
-                            <div className="operation-content">
-                                <div className="operation-body">
-                                    {section.component === 'GetOperationPlanByIdForm' && <GetOperationPlanByIdForm />}
-                                    {section.component === 'SearchOperationPlanForm' && <SearchOperationPlanForm />}
-                                    {section.component === 'UpdateOperationPlanForm' && <UpdateOperationPlanForm onSuccess={loadPlans} />}
-                                    {section.component === 'DeleteOperationPlanForm' && <DeleteOperationPlanForm onSuccess={loadPlans} />}
-                                    {section.component === 'ApproveOperationPlanForm' && <ApproveOperationPlanForm onSuccess={loadPlans} />}
-                                    {section.component === 'RejectOperationPlanForm' && <RejectOperationPlanForm onSuccess={loadPlans} />}
-                                    {section.component === 'MissingPlansSection' && <MissingPlansSection />}
-                                    {section.component === 'ResourceUtilizationSection' && <ResourceUtilizationSection />}
-                                </div>
+                        {showQuickView && (
+                            <div className="quick-view-panel">
+                                {isLoadingPlans ? (
+                                    <div className="loading">Loading Plans...</div>
+                                ) : (
+                                    <OperationPlansQuickTable plans={operationsPlansList} onRefresh={loadPlans} />
+                                )}
                             </div>
                         )}
                     </div>
-                ))}
-            </div>
+
+                    {/* Swagger-style Expandable Sections */}
+                    <div className="operations-container">
+                        {sections.map((section) => (
+                            <div key={section.id} className="operation-section">
+                                <div
+                                    className={`operation-header ${expandedSection === section.id ? 'expanded' : ''}`}
+                                    onClick={() => toggleSection(section.id)}
+                                    style={{ borderLeftColor: section.color }}
+                                >
+                                    <div className="operation-info">
+                                        <h3 className="operation-title">{section.title}</h3>
+                                        <p className="operation-description">{section.description}</p>
+                                    </div>
+                                    <div className="operation-controls">
+                                        <span
+                                            className="http-method"
+                                            style={{ backgroundColor: section.color }}
+                                        >
+                                            {section.id.includes('delete') ? 'DELETE' : 'GET'}
+                                        </span>
+                                        <span className={`expand-arrow ${expandedSection === section.id ? 'up' : 'down'}`}>
+                                            {expandedSection === section.id ? '▲' : '▼'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {expandedSection === section.id && (
+                                    <div className="operation-content">
+                                        <div className="operation-body">
+                                            {section.component === 'GetOperationPlanByIdForm' && <GetOperationPlanByIdForm />}
+                                            {section.component === 'SearchOperationPlanForm' && <SearchOperationPlanForm />}
+                                            {section.component === 'UpdateOperationPlanForm' && <UpdateOperationPlanForm onSuccess={loadPlans} />}
+                                            {section.component === 'DeleteOperationPlanForm' && <DeleteOperationPlanForm onSuccess={loadPlans} />}
+                                            {section.component === 'ApproveOperationPlanForm' && <ApproveOperationPlanForm onSuccess={loadPlans} />}
+                                            {section.component === 'RejectOperationPlanForm' && <RejectOperationPlanForm onSuccess={loadPlans} />}
+                                            {section.component === 'MissingPlansSection' && <MissingPlansSection />}
+                                            {section.component === 'ResourceUtilizationSection' && <ResourceUtilizationSection />}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </>
+            ) : (
+                // Optional: What Representatives see instead of the management tool
+                <div style={{ margin: '40px 0', textAlign: 'center', padding: '20px', borderTop: '1px solid #334155', color: '#94a3b8', fontStyle: 'italic' }}>
+                    <p>🔒 Management tools are restricted to authorized personnel.</p>
+                </div>
+            )}
+
 
             {/* Render the Modal */}
             {showPlanModal && (

@@ -10,7 +10,8 @@ const Footer = ({ currentPage, onNavigate }) => {
         { id: 'scheduling', labelKey: 'nav.scheduling', icon: '📅' },
         { id: 'admin-users', labelKey: 'nav.admin_users', icon: '👤' },
         { id: '3d-view', labelKey: 'nav.3d_view', icon: '🏗️' },
-        { id: 'vvn_representatives', labelKey: 'nav.vvn_representatives', icon: '🔔' }
+        { id: 'vvn_representatives', labelKey: 'nav.vvn_representatives', icon: '🔔' },
+        { id: 'privacy-management', labelKey: 'nav.privacy_management', icon: '🔒' }
     ];
 
     const handleQuickNavigate = (page) => {

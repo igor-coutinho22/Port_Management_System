@@ -12,6 +12,8 @@ const incidentRoutes = require('./routes/incidentRoutes');
 const schedulingRoutes = require('./routes/schedulingRoutes');
 const operationPlanRoutes = require('./routes/operationPlanRoutes');
 const complementaryTaskRoutes = require('./routes/complementaryTaskRoutes');
+const privacyRoutes = require('./routes/privacyPolicyRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Initialize App
 const app = express();
@@ -36,6 +38,9 @@ app.use('/api/scheduling', schedulingRoutes);
 
 app.use('/api/operationplan', operationPlanRoutes);
 app.use('/api/complementarytasks', complementaryTaskRoutes);
+
+app.use('/api/privacy', privacyRoutes);
+app.use('/api/users', userRoutes);
 
 // --- START SERVER (HTTPS) ---
 

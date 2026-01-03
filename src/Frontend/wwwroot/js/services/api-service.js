@@ -42,7 +42,9 @@ class ApiService {
             endpoint.includes('/operationPlan') ||
             endpoint.includes('/incidents') ||
             endpoint.includes('/vesselVisitExecution') ||
-            endpoint.includes('/complementarytasks')) {
+            endpoint.includes('/complementarytasks') ||
+            endpoint.includes('/privacy') ||
+            endpoint.includes('/users')) {
 
             targetBaseUrl = OEM_API;
         }
@@ -669,6 +671,32 @@ class ApiService {
 
     async deleteTask(id) {
         return this.delete(`/complementarytasks/${id}`);
+    }
+
+    // --- PRIVACY POLICY ---
+
+    async getLatestPrivacyPolicy() {
+        return this.get('/privacy/latest');
+    }
+
+    async getPrivacyPolicyHistory() {
+        return this.get('/privacy/history');
+    }
+
+    async publishPrivacyPolicy(content) {
+        // Sends { content: "..." } to POST /api/privacy
+        return this.post('/privacy', { content });
+    }
+
+    // --- USER PROFILE & GDPR ---
+
+    async getCurrentUser() {
+        // Updated to point to our new Controller that checks the policy version
+        return this.get('/users/me'); 
+    }
+
+    async acceptPrivacyPolicy() {
+        return this.post('/users/accept-privacy', {});
     }
 }
 

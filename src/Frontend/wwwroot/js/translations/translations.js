@@ -91,6 +91,8 @@ window.translations = {
       "🔔 Manage Vessel Visit Notifications ",
     "home.feature.vvn.representatives.desc":
       "Submit for approval Vessel Visit Notifications.",
+    "home.feature.privacy_policy.title": "🔒 Privacy Policy Management",
+    "home.feature.privacy_policy.desc": "Manage privacy policies and terms of service.",
 
     // Management Sidebar
     "management.title": "Management",
@@ -2377,6 +2379,8 @@ window.translations = {
       "🔔 Gestão de Notificações de Visitas de Embarcações",
     "home.feature.vvn.representatives.desc":
       "Submeta para aprovação notificações de visitas de embarcações.",
+    "home.feature.privacy_policy.title": "🔒 Política de Privacidade",
+    "home.feature.privacy_policy.desc": "Gerir políticas de privacidade e termos de serviço.",
 
     // Management Sidebar
     "management.title": "Gestão",

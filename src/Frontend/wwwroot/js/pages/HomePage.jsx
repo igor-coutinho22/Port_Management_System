@@ -31,6 +31,11 @@ const HomePage = () => {
             descKey: "home.feature.3d_view.desc",
             route: "3d-view",
         },
+        {
+            titleKey: "home.feature.privacy_policy.title",
+            descKey: "home.feature.privacy_policy.desc",
+            route: "privacy-management",
+        },
         /*{
             titleKey: "home.feature.api_docs.title",
             descKey: "home.feature.api_docs.desc",
