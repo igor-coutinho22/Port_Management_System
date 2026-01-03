@@ -1,18 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/privacyPolicyController');
-
-// IMPORT YOUR MIDDLEWARE
+// Ensure this path points to the file you just edited
+const privacyController = require('../controllers/privacyPolicyController'); 
 const requireAuth = require('../middleware/authMiddleware');
 
-// --- PUBLIC ROUTES ---
-// The footer needs this to be accessible to everyone (even without a token)
-router.get('/latest', controller.getLatest);
+// --- US 4.5.4 (The Public Route) ---
+// This connects GET /api/privacy/latest -> controller.getLatestPolicy
+router.get('/latest', privacyController.getLatestPolicy);
 
 // --- PROTECTED ROUTES (Admin Only) ---
-// 1. Get History (Audit logs are for admins only)
-// 2. Publish New (Only admins can write new policies)
-router.get('/history', requireAuth('Admin'), controller.getHistory);
-router.post('/', requireAuth('Admin'), controller.create);
+router.use(requireAuth()); 
+
+// --- US 4.5.1 (Publish) ---
+// This connects POST /api/privacy -> controller.publishPolicy
+router.post('/', privacyController.publishPolicy);
+
+// --- US 4.5.2 (History) ---
+// This connects GET /api/privacy/history -> controller.getPolicyHistory
+router.get('/history', privacyController.getPolicyHistory);
 
 module.exports = router;

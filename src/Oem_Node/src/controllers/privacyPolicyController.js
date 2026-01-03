@@ -2,7 +2,8 @@ const privacyPolicyService = require('../models/application/services/privacyPoli
 
 class PrivacyPolicyController {
 
-    async getLatest(req, res) {
+    // RENAMED: getLatest -> getLatestPolicy
+    async getLatestPolicy(req, res) {
         try {
             const policy = await privacyPolicyService.getLatestPolicy();
             if (!policy) {
@@ -15,7 +16,8 @@ class PrivacyPolicyController {
         }
     }
 
-    async getHistory(req, res) {
+    // RENAMED: getHistory -> getPolicyHistory
+    async getPolicyHistory(req, res) {
         try {
             const history = await privacyPolicyService.getPolicyHistory();
             res.status(200).json(history);
@@ -24,7 +26,8 @@ class PrivacyPolicyController {
         }
     }
 
-    async create(req, res) {
+    // RENAMED: create -> publishPolicy
+    async publishPolicy(req, res) {
         try {
             const { content } = req.body;
             
