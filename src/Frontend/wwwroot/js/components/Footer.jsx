@@ -63,19 +63,19 @@ const Footer = ({ currentPage, onNavigate }) => {
                 <div className="footer-section">
                     <h4 className="footer-title">{t('footer.help_support', 'Help & Support')}</h4>
                     <div className="footer-links">
-                        <button 
+                        <button
                             className="footer-link"
                             onClick={() => handleQuickNavigate('api-docs')}
                         >
                             📖 {t('footer.documentation', 'Documentation')}
                         </button>
-                        <button 
+                        <button
                             className="footer-link"
                             onClick={() => alert(t('footer.contact_email', 'Contact support at: support@portmanagement.com'))}
                         >
                             📧 {t('footer.contact_support', 'Contact Support')}
                         </button>
-                        <button 
+                        <button
                             className="footer-link"
                             onClick={() => window.open('https://github.com', '_blank')}
                         >
@@ -107,14 +107,14 @@ const Footer = ({ currentPage, onNavigate }) => {
                     <div className="footer-meta">
                         <span>{t('footer.built_for', 'Built for efficient port operations')}</span>
                         <span className="separator">•</span>
-                        <button 
+                        <button
                             className="footer-link-small"
                             onClick={() => alert(t('footer.privacy_message', 'Privacy Policy: This system respects your privacy and handles data according to GDPR standards.'))}
                         >
                             {t('footer.privacy_policy', 'Privacy Policy')}
                         </button>
                         <span className="separator">•</span>
-                        <button 
+                        <button
                             className="footer-link-small"
                             onClick={() => alert(t('footer.terms_message', 'Terms of Service: This system is provided as-is for port management operations.'))}
                         >
@@ -128,3 +128,7 @@ const Footer = ({ currentPage, onNavigate }) => {
 };
 
 console.log('Footer component loaded!');
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Footer;
+}

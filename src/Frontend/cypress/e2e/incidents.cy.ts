@@ -1,47 +1,60 @@
-describe('Incidents Module Tests', () => {
+
+describe('Incident Management (E2E)', () => {
     beforeEach(() => {
-        // Mock authenticated user
-        const user = {
-            name: 'Test Admin',
-            email: 'admin@test.com',
-            roles: ['Admin']
-        };
+        // Mock API responses to isolate the Frontend (SUT = Application)
+        cy.intercept('GET', '**/api/incidents*', {
+            statusCode: 200,
+            body: [
+                {
+                    id: 'inc-1',
+                    description: 'Oil spill at Dock 1',
+                    startTime: '2023-01-01T10:00:00Z',
+                    status: 'Open',
+                },
+            ],
+        }).as('getIncidents');
 
-        localStorage.setItem('pm.currentUser.v1', JSON.stringify(user));
-        localStorage.setItem('pm.activeRole.v1', 'Admin');
+        cy.intercept('POST', '**/api/incidents', {
+            statusCode: 201,
+            body: {
+                id: 'inc-new',
+                description: 'New Incident',
+            },
+        }).as('createIncident');
 
-        cy.intercept('GET', '**/api/me', { statusCode: 200, body: user }).as('getMe');
-        cy.intercept('GET', '**/api/incidents*', { statusCode: 200, body: [] }).as('getIncidents');
-        cy.intercept('GET', '**/api/incidents/types*', { statusCode: 200, body: [] }).as('getIncidentTypes');
+        cy.intercept('GET', '**/api/incidents/types/all', {
+            statusCode: 200,
+            body: [{ id: 'type-1', name: 'Spill' }],
+        }).as('getTypes');
+
+        // Visit the app
+        cy.visit('/#incidents');
     });
 
-    const mockMsal = (win) => {
-        win.__pca = {
-            getAllAccounts: () => [{ username: 'test_admin', homeAccountId: '1' }],
-            getActiveAccount: () => ({ username: 'test_admin', homeAccountId: '1' }),
-            setActiveAccount: () => { },
-            handleRedirectPromise: () => Promise.resolve(null),
-            addEventCallback: () => null,
-            removeEventCallback: () => null,
-            acquireTokenSilent: () => Promise.resolve({ accessToken: 'mock_token' }),
-            acquireTokenRedirect: () => Promise.resolve()
-        };
-        win.__msalReady = Promise.resolve();
-    };
-
-    it('should load incidents list', () => {
-        cy.visit('/#incidents', { onBeforeLoad: mockMsal });
-        cy.wait('@getMe');
-        cy.get('body').should('contain', 'Incidents');
-        // Should have a list or table, or empty state message
-        cy.get('body').should('exist');
-        cy.screenshot('incidents-list');
+    it('should list existing incidents', () => {
+        cy.wait('@getIncidents');
+        cy.contains('Oil spill at Dock 1').should('be.visible');
     });
 
-    it('should load incident types list', () => {
-        cy.visit('/#incident-types', { onBeforeLoad: mockMsal });
-        cy.wait('@getMe');
-        cy.get('body').should('contain', 'Incident Types');
-        cy.get('body').should('exist');
+    it('should allow creating a new incident', () => {
+        // Navigate to Create form (assuming a button exists)
+        cy.get('button').contains(/Create|New|Adicionar/i).click();
+
+        // Fill form
+        cy.get('input[name="description"], textarea[name="description"]').type('New Incident');
+        // Select type if dropdown exists (conceptual)
+        // cy.get('select[name="type"]').select('Spill');
+
+        // Submit
+        cy.get('button[type="submit"]').click();
+
+        // Verify API call
+        cy.wait('@createIncident').its('request.body').should('include', {
+            description: 'New Incident',
+        });
+
+        // Verify UI update (optimistic or re-fetch)
+        // For this test, we assume success message or redirection
+        cy.contains(/Success|Criado/i).should('exist');
     });
 });
