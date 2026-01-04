@@ -51,6 +51,9 @@ window.translations = {
     "nav.admin_users": "Admin Users",
     "nav.logout": "Sign out",
     "nav.vvn_representatives": "Vessel Visit Notifications",
+    "nav.privacy_policy": "Privacy Policy",
+    "nav.terms_of_service": "Terms of Service",
+
 
     // Theme
     "theme.switch_to_light": "Switch to Light Mode",
@@ -2336,6 +2339,8 @@ window.translations = {
     "nav.navigation": "Navegação",
     "nav.admin_users": "Menu do Utilizador",
     "nav.vvn_representatives": "Notificações de Visitas de Embarcações",
+    "nav.privacy_policy": "Política de Privacidade",
+    "nav.terms_of_service": "Termos de Serviço",
 
     // Theme
     "theme.switch_to_light": "Mudar para Modo Claro",

@@ -3,8 +3,8 @@ const privacyRepo = require('../models/infrastructure/repositories/privacyPolicy
 
 class UserController {
 
-    // GET /api/users/me
-    async getMe(req, res) {
+    // GET /api/users/privacy-status
+    async getPrivacyStatus(req, res) {
         try {
             // 1. Get user data from the Token (Middleware put it in req.user)
             const tokenUser = req.user;

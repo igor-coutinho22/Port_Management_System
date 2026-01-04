@@ -7,7 +7,7 @@ const requireAuth = require('../middleware/authMiddleware');
 router.use(requireAuth()); 
 
 // 1. Get Current User Status (Polls for Privacy Check)
-router.get('/me', userController.getMe);
+router.get('/privacy-status', userController.getPrivacyStatus);
 
 // 2. Accept the Policy
 router.post('/accept-privacy', userController.acceptPrivacyPolicy);
