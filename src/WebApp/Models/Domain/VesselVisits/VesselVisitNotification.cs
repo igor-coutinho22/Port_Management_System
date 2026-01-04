@@ -259,6 +259,24 @@ namespace WebApp.Models.Domain.VesselVisits
 
             EstimatedLoadingDurationMinutes = loadingMinutes;
             EstimatedUnloadingDurationMinutes = unloadingMinutes;
+
+        }
+
+        public void ApplyScheduledAssignment(Guid dockId, DateTime arrival, DateTime departure)
+        {
+            if (Status != VesselVisitStatus.Submitted &&
+                Status != VesselVisitStatus.Approved)
+                throw new InvalidOperationException(
+                    "Schedule can only be applied to submitted or approved visits.");
+
+            if (departure <= arrival)
+                throw new ArgumentException("Departure must be after arrival.");
+
+            CheckDateNotInPast(arrival);
+
+            DockId = dockId;
+            ArrivalTime = DateTime.SpecifyKind(arrival, DateTimeKind.Utc);
+            DesiredDepartureTime = DateTime.SpecifyKind(departure, DateTimeKind.Utc);
         }
 
     }

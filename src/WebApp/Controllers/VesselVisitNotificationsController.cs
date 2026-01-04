@@ -107,7 +107,7 @@ namespace WebApp.Controllers
             }
         }
 
-        
+
 
         // PUT: api/vesselvisitnotification/{id}/approve
         [HttpPut("{id:guid}/approve")]
@@ -184,7 +184,7 @@ namespace WebApp.Controllers
             var vvn = await _service.GetByIdAsync(id);
             if (vvn == null)
                 return NotFound("Vessel Visit Notification not found.");
-            
+
             if (vvn.LoadingManifest == null)
                 return BadRequest("No Loading Manifest to remove.");
 
@@ -245,7 +245,7 @@ namespace WebApp.Controllers
             var vvn = await _service.GetByIdAsync(id);
             if (vvn == null)
                 return NotFound("Vessel Visit Notification not found.");
-            
+
             if (vvn.UnloadingManifest == null)
                 return BadRequest("No Unloading Manifest to remove.");
 
@@ -383,5 +383,18 @@ namespace WebApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPut("schedule")]
+        public async Task<IActionResult> ApplyScheduleAsync([FromBody] List<VesselScheduleAssignmentDTO> assignments)
+        {
+            if (assignments == null || assignments.Count == 0)
+                return BadRequest("Schedule assignments required.");
+
+            await _service.ApplyScheduleAsync(assignments);
+            return NoContent();
+        }
+
+
+
     }
 }

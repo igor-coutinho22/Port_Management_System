@@ -264,5 +264,28 @@ namespace WebApp.Models.Application.Services
             var visits = await _repository.GetAllOnOrgAsync(organizationId);
             return visits.Select(VesselVisitNotificationMapper.ToDTO);
         }
+
+        public async Task ApplyScheduleAsync(IEnumerable<VesselScheduleAssignmentDTO> schedule)
+        {
+            foreach (var a in schedule)
+            {
+                var visit = await _repository.GetByIdAsync(a.VesselVisitId);
+                if (visit == null)
+                    throw new KeyNotFoundException($"Vessel Visit {a.VesselVisitId} not found.");
+
+                var dock = await _dockRepository.GetByIdAsync(a.DockId);
+                if (dock == null)
+                    throw new KeyNotFoundException($"Dock {a.DockId} not found.");
+
+                visit.ApplyScheduledAssignment(
+                    a.DockId,
+                    a.ArrivalTime,
+                    a.DepartureTime
+                );
+
+                await _repository.UpdateAsync(visit);
+            }
+        }
+
     }
 }

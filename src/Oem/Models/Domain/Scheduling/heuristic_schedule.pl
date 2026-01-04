@@ -1,4 +1,7 @@
 
+:- consult('genetic.pl').
+:- consult('dock_balance.pl').
+
 % Scheduling Vessels Unload/Load
 
 :-dynamic shortest_delay/2.
@@ -395,4 +398,5 @@ run_multi_from_sequence :-
     write(SeqQuad), nl,
     write(TotalDelay), nl,
     write(TotalCraneMinutes), nl.
+
 

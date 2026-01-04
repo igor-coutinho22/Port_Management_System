@@ -5,12 +5,17 @@
 const OperationPlanPreviewModal = window.OperationPlanPreviewModal || (() => null);
 
 const HEURISTICS = [
+    { value: "auto", label: "Auto (choose best for #vessels)" },
     { value: "minimum_slack_time", label: "Minimum Slack Time" },
     { value: "early_departure_time", label: "Earliest Departure First" },
     { value: "arrived_shortest_departure_time", label: "Arrived – Shortest Departure" },
     { value: "atc", label: "ATC (Apparent Tardiness Cost)" },
-    { value: "optimal", label: "Optimal (all permutations – slow)" }
+    { value: "optimal", label: "Optimal (all permutations – slow)" },
+    { value: "genetic", label: "Genetic (stochastic improvement)" }
 ];
+
+// default heuristic -> "auto"
+const [heuristic, setHeuristic] = React.useState("auto");
 
 function formatDateInputValue(date) {
     const y = date.getFullYear();
@@ -26,6 +31,26 @@ function formatDateTime(value) {
     return dt.toLocaleString();
 }
 
+function tryParsePrologAtomId(atom) {
+    // Accepts values like "v_0123456789abcdef..." or "d_..." or a plain GUID string
+    if (!atom) return null;
+    const s = String(atom).trim();
+    // strip wrapping quotes
+    const cleaned = s.replace(/^['"]|['"]$/g, '');
+    // if starts with v_ or d_ and then GUID-like, return guid part if possible
+    const m = cleaned.match(/^[vd]_(\{?[0-9a-fA-F\-]{8,}\}?)$/);
+    if (m && m[1]) {
+        // remove braces if present
+        return m[1].replace(/^\{|\}$/g, '');
+    }
+    // otherwise if it's a GUID already return it
+    const guidMatch = cleaned.match(/^\{?[0-9a-fA-F\-]{8,}\}?$/);
+    if (guidMatch) return cleaned.replace(/^\{|\}$/g, '');
+    // fallback return cleaned to allow server-sent GUIDs in other forms
+    return cleaned;
+}
+
+
 const SchedulingHubPage = () => {
     const [targetDate, setTargetDate] = React.useState(
         formatDateInputValue(new Date())
@@ -33,6 +58,12 @@ const SchedulingHubPage = () => {
     const [heuristic, setHeuristic] = React.useState("atc");
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(null);
+
+    // Rebalance preview state
+    const [rebalancePreview, setRebalancePreview] = React.useState(null);
+    const [rebalanceLoading, setRebalanceLoading] = React.useState(false);
+    const [applyLoading, setApplyLoading] = React.useState(false);
+    const [rebalanceError, setRebalanceError] = React.useState(null);
 
     // Result of classic single-crane endpoint
     const [result, setResult] = React.useState(null);
@@ -83,6 +114,97 @@ const SchedulingHubPage = () => {
             setLoading(false);
         }
     };
+
+    // Run rebalance preview (OEM)
+    const handleRebalance = async () => {
+        setRebalanceError(null);
+        setRebalancePreview(null);
+        setRebalanceLoading(true);
+        setResult(null);
+        setCompareResult(null);
+
+        try {
+            // date as 'YYYY-MM-DD'
+            const resp = await apiService.rebalanceDocks(targetDate);
+            // Defensive parsing:
+            // Expect resp.assignments or resp.Assignments or resp (some services return raw array)
+            let assignments = resp?.assignments ?? resp?.Assignments ?? resp ?? null;
+            let totalDelay = resp?.totalDelayMinutes ?? resp?.TotalDelayMinutes ?? resp?.totalDelay ?? null;
+
+            // If server returned a single string line like " [assign(...), ...]" try to parse
+            if (typeof assignments === 'string') {
+                // attempt to extract assign(...) atoms using regex
+                const re = /assign\(([^\),]+),\s*([^\)]+)\)/g;
+                const arr = [];
+                let m;
+                while ((m = re.exec(assignments)) !== null) {
+                    const vAtom = tryParsePrologAtomId(m[1]);
+                    const dAtom = tryParsePrologAtomId(m[2]);
+                    arr.push({ vesselVisitId: vAtom, dockId: dAtom });
+                }
+                assignments = arr;
+            }
+
+            // If server returned objects like { prologV: 'v_xxx', prologD: 'd_xxx' } normalize them
+            if (Array.isArray(assignments) && assignments.length > 0) {
+                assignments = assignments.map(a => {
+                    // if object contains prolog-like keys
+                    const v = a.vesselVisitId ?? a.VesselVisitId ?? a.v ?? a.PrologV ?? a.prologV ?? a[0] ?? null;
+                    const d = a.dockId ?? a.DockId ?? a.d ?? a.PrologD ?? a.prologD ?? a[1] ?? null;
+                    return {
+                        vesselVisitId: tryParsePrologAtomId(v),
+                        dockId: tryParsePrologAtomId(d)
+                    };
+                });
+            } else {
+                assignments = [];
+            }
+
+            setRebalancePreview({ assignments, totalDelayMinutes: totalDelay ?? 0 });
+        } catch (err) {
+            console.error("Rebalance failed:", err);
+            setRebalanceError(err?.message || "Failed to compute dock rebalance.");
+        } finally {
+            setRebalanceLoading(false);
+        }
+    };
+
+    // Apply preview assignments to WebApp backend
+    const handleApplyRebalance = async () => {
+        if (!rebalancePreview || !Array.isArray(rebalancePreview.assignments) || rebalancePreview.assignments.length === 0) {
+            setRebalanceError("No assignments to apply.");
+            return;
+        }
+
+        setApplyLoading(true);
+        setRebalanceError(null);
+
+        try {
+            // Build payload expected by WebApp controller: list of VesselScheduleAssignmentDTO
+            // We send only vesselVisitId and dockId because your backend ApplyScheduleAsync only updates DockId.
+            // If your backend requires ArrivalTime/DepartureTime include them here.
+            const payload = rebalancePreview.assignments.map(a => ({
+                vesselVisitId: a.vesselVisitId,
+                dockId: a.dockId
+            }));
+
+            await apiService.applyVesselDockAssignments(payload);
+
+            // Refresh UI: reload the single schedule for the day using same heuristic or show a success message
+            setRebalancePreview(prev => ({ ...prev, applied: true }));
+            // Optionally reload the scheduling result from server to reflect updated dock assignments
+            try {
+                const updated = await apiService.generateDailySchedule(targetDate, heuristic);
+                setResult(updated);
+            } catch (_) { /* ignore refresh errors */ }
+        } catch (err) {
+            console.error("Apply assignments failed:", err);
+            setRebalanceError(err?.message || "Failed to apply assignments to backend.");
+        } finally {
+            setApplyLoading(false);
+        }
+    };
+
 
     // ===== Helpers for SINGLE result =====
     const resolvedEntries = React.useMemo(() => {
@@ -291,6 +413,15 @@ const SchedulingHubPage = () => {
 
                                     <button type="button" className="submit-btn secondary" disabled={loading} onClick={handleCompare}>
                                         {loading ? "Computing…" : "Compare 1 vs 2 cranes"}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="submit-btn tertiary"
+                                        disabled={rebalanceLoading || loading}
+                                        onClick={handleRebalance}
+                                    >
+                                        {rebalanceLoading ? "Rebalancing…" : "Rebalance docks"}
                                     </button>
                                 </div>
                             </form>
@@ -517,6 +648,64 @@ const SchedulingHubPage = () => {
                     </div>
                 </div>
             )}
+
+            {/* --- REBALANCE PREVIEW --- */}
+            {rebalancePreview && !rebalanceLoading && (
+                <div className="operations-container" style={{ marginTop: 24 }}>
+                    <div className="operation-section">
+                        <div className="operation-header expanded" style={{ borderLeftColor: "#e67e22" }}>
+                            <div className="operation-info">
+                                <h3 className="operation-title">Dock Rebalance Preview</h3>
+                                <p className="operation-description">
+                                    Proposed assignments after rebalancing. Total delay (all docks): <strong>{Math.round(rebalancePreview.totalDelayMinutes ?? 0)} min</strong>
+                                </p>
+                            </div>
+                            <div className="operation-controls">
+                                <button
+                                    onClick={handleApplyRebalance}
+                                    disabled={applyLoading}
+                                    style={{ backgroundColor: "#e67e22", color: "white", padding: "8px 12px", borderRadius: 4, border: "none", cursor: "pointer" }}
+                                >
+                                    {applyLoading ? "Applying…" : "Apply assignments"}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="operation-content">
+                            <div className="operation-body">
+                                {rebalanceError && <div className="error">{rebalanceError}</div>}
+
+                                {rebalancePreview.assignments.length === 0 ? (
+                                    <div>No assignments returned.</div>
+                                ) : (
+                                    <div className="table-wrapper">
+                                        <table className="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Vessel Visit ID</th>
+                                                    <th>Dock ID</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {rebalancePreview.assignments.map((a, i) => (
+                                                    <tr key={i}>
+                                                        <td>{i + 1}</td>
+                                                        <td style={{ fontFamily: "monospace" }}>{a.vesselVisitId}</td>
+                                                        <td style={{ fontFamily: "monospace" }}>{a.dockId}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
 
             {loading && (
                 <div style={{ marginTop: 16 }} className="loading-indicator">

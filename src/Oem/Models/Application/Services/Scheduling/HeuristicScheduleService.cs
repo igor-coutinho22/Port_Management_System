@@ -1,7 +1,16 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Oem.Models.Application.DTOs;
 using Oem.Models.Domain.Scheduling;
 using Oem.Models.Domain.Scheduling.Services;
@@ -17,6 +26,8 @@ namespace Oem.Models.Application.Services.Scheduling
         private readonly ILogger<HeuristicScheduleService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private bool _prologChecked;
+        private readonly TimeSpan _prologTimeout = TimeSpan.FromSeconds(30); // tune as needed
+
 
         public HeuristicScheduleService(
             IHttpClientFactory httpClientFactory,
@@ -40,19 +51,16 @@ namespace Oem.Models.Application.Services.Scheduling
         {
             EnsurePrologAvailable();
 
-            var heuristicAtom = NormalizeHeuristicName(heuristicName);
-            ValidateHeuristic(heuristicAtom);
-
             var stopwatch = Stopwatch.StartNew();
 
-            // 1) Fetch approved visits for the selected day via REST
+            // Fetch approved visits for the selected day via REST
             var visits = await GetVisitsForDateAsync(targetDate, cancellationToken);
 
             if (!visits.Any())
             {
                 return new SchedulingResult
                 {
-                    HeuristicName = heuristicAtom,
+                    HeuristicName = heuristicName,
                     TotalDelayMinutes = 0,
                     RuntimeSeconds = 0,
                     Entries = new List<VesselScheduleEntry>(),
@@ -60,17 +68,25 @@ namespace Oem.Models.Application.Services.Scheduling
                 };
             }
 
-            // 2) Build Prolog facts & ID map
+            // AUTO selection (US 4.3.2): if user passed "auto" pick sensible algorithm
+            var selectedAlgorithm = SelectAlgorithmAutomatically(heuristicName, visits.Count);
+
+            var algorithmAtom = NormalizeHeuristicName(selectedAlgorithm);
+            ValidateHeuristic(algorithmAtom);
+
+            // Build Prolog facts & ID map
             var (vesselFacts, idMap) = BuildPrologVesselFacts(visits, targetDate);
 
-            // 3) Run specific heuristic
-            var (seqLine, delayLine) =
-                await RunPrologAsync(vesselFacts, heuristicAtom, cancellationToken);
+            _logger.LogInformation("Selected algorithm for scheduling: {Alg} (vessels={Count})", algorithmAtom, idMap.Count);
 
-            // 4) Parse the sequence returned by Prolog
+            // Run specific heuristic / genetic
+            var (seqLine, delayLine) =
+                await RunPrologAsync(vesselFacts, algorithmAtom, cancellationToken);
+
+            // Parse the sequence returned by Prolog
             var entries = ParseSeqTripletsLine(seqLine, idMap, targetDate);
 
-            // 5) Parse total delay
+            // Parse total delay
             if (!double.TryParse(delayLine, out var totalDelay))
                 throw new InvalidOperationException($"Could not parse delay value from Prolog: '{delayLine}'");
 
@@ -78,13 +94,30 @@ namespace Oem.Models.Application.Services.Scheduling
 
             return new SchedulingResult
             {
-                HeuristicName = heuristicAtom,
+                HeuristicName = algorithmAtom,
                 TotalDelayMinutes = totalDelay,
                 RuntimeSeconds = stopwatch.Elapsed.TotalSeconds,
                 Entries = entries,
                 Warnings = new List<string>()
             };
         }
+
+        private string SelectAlgorithmAutomatically(string requestedAlgorithm, int vesselCount)
+        {
+            // If user did NOT ask for auto, respect their choice
+            if (!requestedAlgorithm.Equals("auto", StringComparison.OrdinalIgnoreCase))
+                return requestedAlgorithm;
+
+            // Simple decision rules (can be tuned later)
+            if (vesselCount <= 6)
+                return "optimal";
+
+            if (vesselCount <= 12)
+                return "genetic";
+
+            return "atc";
+        }
+
 
         public async Task<MultiCraneComparisonResultDTO> GenerateDailyScheduleWithMultiCraneAsync(
             DateOnly targetDate,
@@ -184,8 +217,8 @@ namespace Oem.Models.Application.Services.Scheduling
         }
 
         private async Task<IReadOnlyList<VesselVisitNotificationDTO>> GetVisitsForDateAsync(
-    DateOnly targetDate,
-    CancellationToken cancellationToken)
+            DateOnly targetDate,
+            CancellationToken cancellationToken)
         {
             AttachUserBearerToken();
 
@@ -233,9 +266,42 @@ namespace Oem.Models.Application.Services.Scheduling
             return list;
         }
 
+        private async Task<IReadOnlyList<DockDTO>> GetDocksAsync(CancellationToken cancellationToken)
+        {
+            AttachUserBearerToken();
 
-        private (string Facts, Dictionary<string, VesselVisitNotificationDTO> IdMap)
-            BuildPrologVesselFacts(
+            var response = await _httpClient.GetAsync("/api/dock", cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+                throw new InvalidOperationException(
+                    $"Error fetching docks. Status={response.StatusCode}, Body={body}");
+
+            return System.Text.Json.JsonSerializer.Deserialize<List<DockDTO>>(body,
+                new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }) ?? new List<DockDTO>();
+        }
+
+
+        private Dictionary<string, Guid> BuildDockIdMap(IEnumerable<DockDTO> docks)
+        {
+            var map = new Dictionary<string, Guid>();
+
+            foreach (var d in docks)
+            {
+                if (d.Id is null)
+                    throw new InvalidOperationException("Dock without Id encountered");
+
+                map[$"d_{d.Id.Value:N}"] = d.Id.Value;
+            }
+
+            return map;
+        }
+
+
+        private (string Facts, Dictionary<string, VesselVisitNotificationDTO> IdMap) BuildPrologVesselFacts(
                 IEnumerable<VesselVisitNotificationDTO> visits,
                 DateOnly targetDate)
         {
@@ -287,7 +353,7 @@ namespace Oem.Models.Application.Services.Scheduling
 
         private async Task<(string SeqLine, string DelayLine)> RunPrologAsync(
             string vesselFacts,
-            string heuristicAtom,
+            string algorithmAtom,
             CancellationToken cancellationToken)
         {
             var tempFile = Path.Combine(Path.GetTempPath(), $"schedule_{Guid.NewGuid():N}.pl");
@@ -296,7 +362,7 @@ namespace Oem.Models.Application.Services.Scheduling
             {
                 var script = new StringBuilder();
 
-                // 1) Load your heuristics file
+                // 1) Load your heuristics file (and GA file if consulted inside)
                 script.AppendLine($":- consult('{EscapePathForProlog(_prologFilePath)}').");
                 script.AppendLine();
 
@@ -305,9 +371,14 @@ namespace Oem.Models.Application.Services.Scheduling
                 script.AppendLine(vesselFacts);   // ex: vessel(v_..., 360, 600, 60, 30).
                 script.AppendLine();
 
-                // 3) Define main/0 that just runs the chosen heuristic and halts
+                // 3) Define main/0 that runs the chosen algorithm and halts
                 script.AppendLine("main :-");
-                script.AppendLine($"    run_heuristic({heuristicAtom}),");
+
+                if (algorithmAtom == "genetic")
+                    script.AppendLine("    run_genetic,");
+                else
+                    script.AppendLine($"    run_heuristic({algorithmAtom}),");
+
                 script.AppendLine("    halt.");
                 script.AppendLine();
 
@@ -334,7 +405,7 @@ namespace Oem.Models.Application.Services.Scheduling
                 var waitTask = process.WaitForExitAsync(cancellationToken);
                 var completed = await Task.WhenAny(
                     waitTask,
-                    Task.Delay(TimeSpan.FromSeconds(10), cancellationToken));
+                    Task.Delay(_prologTimeout, cancellationToken));
 
                 if (completed != waitTask)
                 {
@@ -440,7 +511,7 @@ namespace Oem.Models.Application.Services.Scheduling
                 var waitTask = process.WaitForExitAsync(cancellationToken);
                 var completed = await Task.WhenAny(
                     waitTask,
-                    Task.Delay(TimeSpan.FromSeconds(10), cancellationToken));
+                    Task.Delay(_prologTimeout, cancellationToken));
 
                 if (completed != waitTask)
                 {
@@ -483,7 +554,6 @@ namespace Oem.Models.Application.Services.Scheduling
                 try { if (File.Exists(tempFile)) File.Delete(tempFile); } catch { }
             }
         }
-
 
         private string EscapePathForProlog(string path)
             => path.Replace("\\", "\\\\");
@@ -572,7 +642,6 @@ namespace Oem.Models.Application.Services.Scheduling
             return entries;
         }
 
-
         private string NormalizeHeuristicName(string name) =>
             name.Trim().ToLower().Replace("-", "_").Replace(" ", "_");
 
@@ -584,7 +653,8 @@ namespace Oem.Models.Application.Services.Scheduling
                 "early_departure_time",
                 "arrived_shortest_departure_time",
                 "atc",
-                "optimal"
+                "optimal",
+                "genetic"
             };
 
             if (!allowed.Contains(heuristic))
@@ -633,7 +703,6 @@ namespace Oem.Models.Application.Services.Scheduling
             return sb.ToString();
         }
 
-
         private void AttachUserBearerToken()
         {
             var httpContext = _httpContextAccessor.HttpContext;
@@ -657,5 +726,164 @@ namespace Oem.Models.Application.Services.Scheduling
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
         }
+
+        private async Task<(string AssignLine, string DelayLine)> RunPrologRebalanceAsync(string vesselFacts, string dockFacts, CancellationToken cancellationToken)
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), $"rebalance_{Guid.NewGuid():N}.pl");
+
+            try
+            {
+                var script = new StringBuilder();
+
+                script.AppendLine($":- consult('{EscapePathForProlog(_prologFilePath)}').");
+                script.AppendLine();
+                script.AppendLine(vesselFacts);
+                script.AppendLine(dockFacts);
+                script.AppendLine();
+                script.AppendLine("main :- main_rebalance, halt.");
+
+                await File.WriteAllTextAsync(tempFile, script.ToString(), cancellationToken);
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "swipl",
+                    Arguments = $"-q -s \"{tempFile}\" -g main -t halt",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var process = new Process { StartInfo = psi };
+                process.Start();
+
+                var stdoutTask = process.StandardOutput.ReadToEndAsync();
+                var stderrTask = process.StandardError.ReadToEndAsync();
+
+                await process.WaitForExitAsync(cancellationToken);
+
+                var stdout = await stdoutTask;
+                var stderr = await stderrTask;
+
+                if (process.ExitCode != 0)
+                    throw new InvalidOperationException($"Prolog failed: {stderr}");
+
+                var lines = stdout
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(l => l.Trim())
+                    .ToArray();
+
+                return (lines[0], lines[1]);
+            }
+            finally
+            {
+                try { File.Delete(tempFile); } catch { }
+            }
+        }
+
+        private List<(string PrologVisitId, string DockId)> ParseAssignments(string line)
+        {
+            // matches assign(v_xxxxx, d123)
+            var pattern = @"assign\(([^,]+),\s*([^)]+)\)";
+            var matches = Regex.Matches(line, pattern);
+
+            var list = new List<(string, string)>();
+
+            foreach (Match m in matches)
+            {
+                var v = m.Groups[1].Value.Trim();
+                var d = m.Groups[2].Value.Trim();
+                list.Add((v, d));
+            }
+
+            return list;
+        }
+
+        private string BuildDockFacts(IEnumerable<DockDTO> docks)
+        {
+            var sb = new StringBuilder();
+
+            foreach (var d in docks)
+            {
+                if (d.Id is null)
+                    throw new InvalidOperationException("Dock without Id encountered");
+
+                var did = $"d_{d.Id.Value:N}";
+
+                // base dock fact
+                sb.AppendLine($"dock({did}, {d.LengthMeters}, {d.DepthMeters}, {d.MaxDraftMeters}).");
+
+                // allowed vessel type facts
+                foreach (var vt in d.AllowedVesselTypes)
+                {
+                    var normalized = vt.Replace(" ", "_").ToLowerInvariant();
+                    sb.AppendLine($"allowed_type({did}, {normalized}).");
+                }
+            }
+
+            return sb.ToString();
+        }
+
+
+        public async Task ApplyDockRebalanceAsync(
+    DateOnly targetDate,
+    CancellationToken cancellationToken = default)
+        {
+            EnsurePrologAvailable();
+
+            // 1) Load data
+            var visits = await GetVisitsForDateAsync(targetDate, cancellationToken);
+            if (!visits.Any())
+                throw new InvalidOperationException("No approved visits to rebalance.");
+
+            var docks = await GetDocksAsync(cancellationToken);
+            if (!docks.Any())
+                throw new InvalidOperationException("No docks available.");
+
+            // 2) Build facts + maps
+            var (vesselFacts, vesselIdMap) = BuildPrologVesselFacts(visits, targetDate);
+            var dockFacts = BuildDockFacts(docks);
+            var dockIdMap = BuildDockIdMap(docks);
+
+            // 3) Run Prolog
+            var (assignLine, delayLine) =
+                await RunPrologRebalanceAsync(vesselFacts, dockFacts, cancellationToken);
+
+            // 4) Parse assign(v_x, d_y) list
+            var assignments = ParseAssignments(assignLine);
+
+            if (!double.TryParse(delayLine, out var totalDelay))
+                throw new InvalidOperationException($"Could not parse delay value '{delayLine}'");
+
+            // 5) Convert to DTO for backend
+            var dto = assignments.Select(a => new VesselScheduleAssignmentDTO
+            {
+                VesselVisitId = vesselIdMap[a.PrologVisitId].Id,
+                DockId = dockIdMap[a.DockId]
+            }).ToList();
+
+            // 6) Call backend apply endpoint
+            AttachUserBearerToken();
+            var json = System.Text.Json.JsonSerializer.Serialize(dto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(
+                "/api/vesselvisitnotification/schedule",
+                content,
+                cancellationToken);
+
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new InvalidOperationException(
+                    $"Backend rejected rebalance. Status={response.StatusCode}, Body={responseBody}");
+            }
+
+            _logger.LogInformation("Dock rebalance applied successfully. TotalDelay = {Delay}", totalDelay);
+        }
+
+
+
     }
 }

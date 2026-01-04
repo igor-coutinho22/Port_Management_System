@@ -544,6 +544,19 @@ class ApiService {
     async createVesselVisitExecution(data) {
         return this.post('/vesselVisitExecution/Create', data);
     }
+
+    // Request a dock rebalance preview from the OEM scheduling service.
+    async rebalanceDocks(targetDate) {
+        const body = { targetDate }; // targetDate should be 'YYYY-MM-DD'
+        // OEM endpoints are routed by ApiService when path includes '/scheduling'
+        return this.post('/scheduling/rebalance', body);
+    }
+
+    // Apply a list of assignments to the WebApp backend
+    async applyVesselDockAssignments(assignments) {
+        return this.put('/vesselvisitnotification/schedule', assignments);
+    }
+
 }
 
 const apiService = new ApiService();

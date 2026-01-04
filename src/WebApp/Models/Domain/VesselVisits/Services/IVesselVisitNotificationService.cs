@@ -20,5 +20,7 @@ namespace WebApp.Models.Domain.VesselVisits.Services
         Task RemoveCrewMemberAsync(Guid id, string citizenId);  
         Task RejectAsync(Guid id, string reason);
         Task DeleteVesselAsync(Guid id);
+        Task ApplyScheduleAsync(IEnumerable<VesselScheduleAssignmentDTO> schedule);
+
     }
 }
