@@ -1,0 +1,40 @@
+@startuml mappingDiagram
+title [Mapping] Implementation View (Development View)
+
+node "Node.js Container (Source Code)" {
+    folder "src" {
+        folder "controllers" {
+            artifact "vesselVisitExecutionController.js"
+            artifact "operationPlanController.js"
+            artifact "incidentController.js"
+        }
+        folder "models" {
+            folder "services" {
+                artifact "vesselVisitExecutionService.js"
+                artifact "operationPlanService.js"
+                artifact "incidentService.js"
+            }
+            folder "domain" {
+                artifact "vesselVisitExecution.js"
+                artifact "operationPlan.js"
+                artifact "incident.js"
+            }
+            folder "infrastructure/repositories" {
+                artifact "vesselVisitExecutionRepository.js"
+                artifact "operationPlanRepository.js"
+                artifact "incidentRepository.js"
+            }
+        }
+    }
+}
+
+' -- Mapping Logical to Physical --
+component "VVE Controller" as L_Ctrl
+component "VVE Service" as L_Svc
+component "VVE Repository" as L_Repo
+
+L_Ctrl ..> "vesselVisitExecutionController.js" : <<manifest>>
+L_Svc ..> "vesselVisitExecutionService.js" : <<manifest>>
+L_Repo ..> "vesselVisitExecutionRepository.js" : <<manifest>>
+
+@enduml

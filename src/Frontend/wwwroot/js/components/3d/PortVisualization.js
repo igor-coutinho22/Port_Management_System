@@ -54,6 +54,9 @@ class PortVisualization {
         this.selectedObject = null;
         this.hoveredObject = null;
 
+        this.onSelect = null; 
+        this.onToggleOverlay = null;
+
         // External callback (React-integrated)
         this.onSelect = null;
 
@@ -67,6 +70,15 @@ class PortVisualization {
         // Lighting
         this.addLights();
 
+        this.selectionSpotlight = new THREE.SpotLight(0xffffff, 0); // Intensidade inicial 0
+        this.selectionSpotlight.penumbra = 1; // CA: Penumbra suave para transição clara
+        this.selectionSpotlight.angle = Math.PI / 50; // Foco concentrado
+        this.selectionSpotlight.distance = 2500;
+        this.selectionSpotlight.castShadow = true;
+
+        this.scene.add(this.selectionSpotlight);
+        this.scene.add(this.selectionSpotlight.target);
+
         // Fly-To animation state
         this.flyToActive = false;
         this.flyStartTime = 0;
@@ -75,6 +87,9 @@ class PortVisualization {
         this.flyFromTarget = new THREE.Vector3();
         this.flyToPos = new THREE.Vector3();
         this.flyToTarget = new THREE.Vector3();
+
+        this.flyFromSpotlightTarget = new THREE.Vector3();
+        this.flyToSpotlightTarget = new THREE.Vector3();
 
         // -------------------------------
         // MINIMAP SETUP
@@ -90,11 +105,25 @@ class PortVisualization {
 
         this.timeOfDay = 0.45; // 0..1
         this.dayDurationSeconds = 300; // 1 full day per 5 minutes
+
+        this._keydownHandler = (e) => {
+            const key = e.key.toLowerCase();
+            if (e.key.toLowerCase() === 'i' && typeof this.onToggleOverlay === 'function') {
+                this.onToggleOverlay();
+            }
+
+            if (key === 'r') {
+                console.log("Reset disparado por tecla");
+                this.frameCamera();
+            }
+        };
+        window.addEventListener('keydown', this._keydownHandler);
     }
 
     // -------------------------------------------------------------------------
     // TOOLTIP
     // -------------------------------------------------------------------------
+    
     createTooltipElement() {
         const el = document.createElement("div");
         Object.assign(el.style, {
@@ -128,6 +157,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // LIGHTING
     // -------------------------------------------------------------------------
+    
     addLights() {
         const ambient = new THREE.AmbientLight(0xffffff, 1);
         this.scene.add(ambient);
@@ -173,6 +203,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // MINIMAP
     // -------------------------------------------------------------------------
+   
     setupMinimap() {
         const size = 110;
         this.minimapSize = size;
@@ -235,6 +266,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // LOAD PORT DATA
     // -------------------------------------------------------------------------
+   
     async loadPortData() {
         THREE.Cache.enabled = false;
         console.log("PortVisualization: loadPortData called");
@@ -278,6 +310,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // CAMERA FLY-TO
     // -------------------------------------------------------------------------
+    
     flyToObject(pos) {
         this.flyToActive = true;
         this.flyStartTime = performance.now();
@@ -285,8 +318,16 @@ class PortVisualization {
         this.flyFromPos.copy(this.camera.position);
         this.flyFromTarget.copy(this.controls.target);
 
+        // US 4.2.6: Captura a posição inicial do alvo do foco
+        if (this.selectionSpotlight) {
+            this.flyFromSpotlightTarget.copy(this.selectionSpotlight.target.position);
+        }
+
         this.flyToTarget.set(pos.x, pos.y, pos.z);
         this.flyToPos.set(pos.x + 180, pos.y + 120, pos.z + 180);
+
+        // US 4.2.6: O destino do foco é o centro do objeto (pos)
+        this.flyToSpotlightTarget.set(pos.x, pos.y, pos.z);
     }
 
     updateFlyTo() {
@@ -294,52 +335,88 @@ class PortVisualization {
 
         const now = performance.now();
         const t = Math.min(1, (now - this.flyStartTime) / this.flyDuration);
+        // Função de easing para suavizar o início e o fim do movimento
         const eased = t * t * (3 - 2 * t);
 
+        // Interpolação da câmara e do alvo dos controlos
         this.camera.position.lerpVectors(this.flyFromPos, this.flyToPos, eased);
         this.controls.target.lerpVectors(this.flyFromTarget, this.flyToTarget, eased);
+
+        // US 4.2.6: Interpolação suave do alvo do Spotlight
+        if (this.selectionSpotlight) {
+            this.selectionSpotlight.target.position.lerpVectors(
+                this.flyFromSpotlightTarget, 
+                this.flyToSpotlightTarget, 
+                eased
+            );
+            this.selectionSpotlight.target.updateMatrixWorld();
+        }
 
         if (t >= 1) {
             this.flyToActive = false;
         }
     }
-
+    
     // -------------------------------------------------------------------------
     // CLICK SELECTION
     // -------------------------------------------------------------------------
     onPointerDown(e) {
+        if (e.button !== 0) return;
+
         const cast = this.castRay(e);
         const obj = cast?.object || null;
         if (!obj || obj instanceof THREE.Sprite) return;
 
         this.handleSelection(obj);
-        this.flyToObject(cast.point);
+
+        if (this.selectedObject) {
+            const box = new THREE.Box3().setFromObject(this.selectedObject);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            
+            this.flyToObject(center); 
+        }
     }
 
     handleSelection(obj) {
-        if (this.selectedObject && this.selectedObject.material?.emissive) {
-            this.selectedObject.material.emissive.setHex(0x000000);
+        const targetEntity = this.findParent(obj);
+        if (!targetEntity) return;
+
+        // Lógica original de emissive (limpeza)
+        if (this.selectedObject) {
+            this.selectedObject.traverse(child => {
+                if (child.isMesh && child.material?.emissive) child.material.emissive.setHex(0x000000);
+            });
         }
 
-        let target = this.findParent(obj);
+        this.selectedObject = targetEntity;
 
-        this.selectedObject = obj;
+        // Lógica original de emissive (destaque)
+        targetEntity.traverse(child => {
+            if (child.isMesh && child.material?.emissive) {
+                child.material.emissive.setHex(0x333333);
+            }
+        });
 
-        if (obj.material?.emissive) {
-            obj.material.emissive.setHex(0x333333);
+        if (this.selectionSpotlight) {
+            // Apenas ativamos a luz aqui. O movimento da posição 
+            // será feito suavemente pelo updateFlyTo().
+            this.selectionSpotlight.intensity = 3.0; 
         }
 
-        if (this.onSelect && (obj.userData || target.userData)) {
-            this.onSelect(obj.userData || target.userData);
+        if (this.onSelect) {
+            this.onSelect(targetEntity.userData);
         }
     }
 
     findParent(obj) {
-        let target = obj;
-        if (obj.parent instanceof THREE.Group) {
-            target = obj.parent;
+        if (!obj || obj.type === 'Scene') return null;
+
+        if (obj.userData && obj.userData.isSelectableRoot) {
+            return obj;
         }
-        return target;
+
+        return this.findParent(obj.parent);
     }
 
     // -------------------------------------------------------------------------
@@ -415,27 +492,73 @@ class PortVisualization {
     // WATER & GROUND
     // -------------------------------------------------------------------------
     addWaterPlane() {
-        const geo = new THREE.PlaneGeometry(10000, 4980);
+        const geo = new THREE.PlaneGeometry(3000, 4980);
         const mat = this.geometryBuilder.materials.water;
         const water = new THREE.Mesh(geo, mat);
         water.rotation.x = -Math.PI / 2;
         water.position.y = -0.5;
-        water.position.z = -2450;
+        water.position.z = -2435;
         water.receiveShadow = true;
         this.scene.add(water);
     }
 
     addGroundPlane() {
-        const geo = new THREE.BoxGeometry(10000, 2, 5020);
+        const geo = new THREE.BoxGeometry(3000, 2, 5020);
         const mat = this.geometryBuilder.materials.asphalt;
         const ground = new THREE.Mesh(geo, mat);
         ground.position.y = 0.5;
-        ground.position.z = 2550;
+        ground.position.z = 2565;
         ground.receiveShadow = true;
         ground.castShadow = false;
         // Render ground before roads to reduce any remaining flicker.
         ground.renderOrder = -10;
         this.scene.add(ground);
+    }
+
+    // -------------------------------------------------------------------------
+    // SEARCH & FOCUS
+    // -------------------------------------------------------------------------
+    
+    // Procurar objeto por ID e focar a câmara
+    searchAndFocus(searchTerm) {
+        if (!searchTerm) return;
+        
+        const term = searchTerm.toLowerCase();
+        
+        // Procura nos objetos registados
+        const target = this.objects.find(obj => {
+            const data = obj.userData;
+            return (
+                (data.id && data.id.toString().toLowerCase() === term) ||
+                (data.name && data.name.toLowerCase().includes(term)) ||
+                (data.vesselName && data.vesselName.toLowerCase().includes(term))
+            );
+        });
+
+        if (target) {
+            // Usar a animação de voo para o centro do objeto
+            const box = new THREE.Box3().setFromObject(target);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            
+            this.flyToObject(center);
+            
+            // Opcional: Selecionar automaticamente para abrir o painel da US 3
+            this.handleSelection(target); 
+            return true;
+        }
+        
+        console.warn("Objeto não encontrado:", searchTerm);
+        return false;
+    }
+
+    // US 5: Devolve lista de todos os nomes/IDs para sugestões
+    // Adiciona este método à classe PortVisualization no teu ficheiro .js
+    getSearchableEntities() {
+        return this.objects
+            .filter(obj => obj.userData && obj.userData.isSelectableRoot)
+            .map(obj => obj.userData.name || obj.userData.vesselName || obj.userData.id?.toString())
+            .filter(name => name !== undefined);
     }
 
     // -------------------------------------------------------------------------
@@ -445,7 +568,7 @@ class PortVisualization {
         docks.forEach(d => {
             const mesh = this.geometryBuilder.createDock(d);
             mesh.position.set(d.x, d.y, d.z);
-            mesh.userData = { type: "Dock", ...d };
+            mesh.userData = { type: "Dock", ...d, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -467,7 +590,7 @@ class PortVisualization {
                     : this.geometryBuilder.createContainerYard(a);
 
             mesh.position.set(a.x, a.y, a.z);
-            mesh.userData = { ...a };
+            mesh.userData = { ...a, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -485,7 +608,7 @@ class PortVisualization {
         containers.forEach(c => {
             const mesh = this.geometryBuilder.createContainer(c);
             mesh.position.set(c.x, c.y, c.z);
-            mesh.userData = { type: "Container", ...c };
+            mesh.userData = { type: "Container", ...c, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -499,7 +622,7 @@ class PortVisualization {
         resources.forEach(r => {
             const mesh = this.geometryBuilder.createResource(r);
             mesh.position.set(r.x, r.y, r.z);
-            mesh.userData = { type: "resource", ...r };
+            mesh.userData = { type: "resource", ...r, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -513,7 +636,7 @@ class PortVisualization {
         vessels.forEach(v => {
             const mesh = this.geometryBuilder.createVessel(v);
             mesh.position.set(v.x, v.y, v.z);
-            mesh.userData = { type: "Vessel", ...v };
+            mesh.userData = { type: "Vessel", ...v, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -531,7 +654,7 @@ class PortVisualization {
         staffList.forEach(s => {
             const mesh = this.geometryBuilder.createStaff(s);
             mesh.position.set(s.x, s.y, s.z);
-            mesh.userData = { type: "Staff", ...s };
+            mesh.userData = { type: "Staff", ...s, isSelectableRoot: true };
 
             this.scene.add(mesh);
             this.objects.push(mesh);
@@ -639,7 +762,7 @@ class PortVisualization {
             // Place roads slightly above the ground plane to avoid z-fighting
             roadMesh.position.set(r.x, 1.75, r.z);
             roadMesh.renderOrder = 10;
-            roadMesh.userData = { type: "Road", orientation: r.orientation };
+            roadMesh.userData = { type: "Road", orientation: r.orientation, isSelectableRoot: true };
             this.scene.add(roadMesh);
             this.objects.push(roadMesh);
 
@@ -764,12 +887,12 @@ class PortVisualization {
             const roadW = this.layoutEngine.roadDepth;
             const sidewalkW = this.layoutEngine.sidewalkDepth;
 
-            const zebraStripeW = 4.5; // stripe thickness (along travel direction)
+            const zebraStripeW = 2.5; // stripe thickness (along travel direction)
             const zebraGap = 4;     // space between stripes (along travel direction)
-            const zebraCount = 7;
+            const zebraCount = 6;
 
             // Crosswalk length along curb (across the road). Keep it inside the asphalt (avoid sidewalks).
-            const zebraStripeL = Math.max(10, Math.min(roadW - 10, i.size * 0.55));
+            const zebraStripeL = Math.max(6, Math.min(roadW - 12, i.size * 0.55));
 
             // Place crosswalk just OUTSIDE the intersection and keep stop bar a bit before it.
             // Push crosswalk farther from the intersection than the curb line.
@@ -812,6 +935,21 @@ class PortVisualization {
                 }
             };
 
+            const offsets = [
+                { x: -i.size - 5, z: -i.size - 5 },
+                { x: i.size + 5, z: -i.size - 5 },
+                { x: -i.size - 5, z: i.size + 5 },
+                { x: i.size + 5, z: i.size + 5 }
+            ];
+
+            offsets.forEach(offset => {
+                const lightPost = this.geometryBuilder.createStreetLight();
+                lightPost.position.set(i.x + offset.x, 2, i.z + offset.z);
+                this.scene.add(lightPost);
+                // Não esquecer de adicionar ao array de objetos se quiseres que sejam clicáveis
+                this.objects.push(lightPost); 
+            });
+
             // Crosswalk stripes should be PERPENDICULAR to the direction of travel.
             // - Traffic along Z (north/south approaches) => crosswalk runs along X? No: stripes should run along Z,
             //   so the crosswalk plate is rotated 90°.
@@ -839,8 +977,19 @@ class PortVisualization {
     // CAMERA TARGET RESET
     // -------------------------------------------------------------------------
     frameCamera() {
-        this.controls.target.set(0, 0, 0);
-        this.controls.update();
+        console.log("PortVisualization: Executando reset suave da câmara");
+    
+        // Ativar o estado de animação 
+        this.flyToActive = true;
+        this.flyStartTime = performance.now();
+
+        // Definir a Origem
+        this.flyFromPos.copy(this.camera.position);
+        this.flyFromTarget.copy(this.controls.target);
+
+        // Definir o Destino
+        this.flyToPos.set(0, 300, 1100); 
+        this.flyToTarget.set(0, 0, 600); // Olhar para o meio do porto
     }
 
     onWindowResize() {
@@ -868,6 +1017,11 @@ class PortVisualization {
         this.updateFlyTo();
         this.controls.update();
 
+        // 4.2.5: Spotlight segue a câmara ---
+        if (this.selectionSpotlight) {
+            this.selectionSpotlight.position.copy(this.camera.position);
+        }
+
         const minY = 5;
         if (this.camera.position.y < minY) {
             this.camera.position.y = minY;
@@ -878,12 +1032,14 @@ class PortVisualization {
         this.updateWater(time);
         this.updateSun(deltaSec);
 
+        // Renderização principal
         this.renderer.setViewport(0, 0, this.container.clientWidth, this.container.clientHeight);
         this.renderer.setScissorTest(false);
         this.renderer.render(this.scene, this.camera);
 
         this.updateMinimap();
 
+        // Renderização do Minimapa (Scissor test)
         const size = this.minimapSize;
         this.renderer.setViewport(
             this.container.clientWidth - size - 12,
@@ -987,9 +1143,13 @@ class PortVisualization {
     // DISPOSE
     // -------------------------------------------------------------------------
     dispose() {
+        window.removeEventListener('keydown', this._keydownHandler);
         this.clearScene();
-        this.renderer.dispose();
         this.hideTooltip();
+        if (this.renderer) {
+            this.renderer.dispose();
+            this.renderer.domElement.remove();
+        }
         this.renderer = null;
     }
 }

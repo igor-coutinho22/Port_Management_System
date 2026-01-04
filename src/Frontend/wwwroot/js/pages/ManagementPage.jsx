@@ -67,6 +67,31 @@ const ManagementPage = () => {
             description: t("management_page.qualifications"),
             icon: "🎓",
         },
+        {
+            id: "vessel-visit-executions",
+            title: t("entities.executions"),
+            description: t("management_page.executions"),
+        },
+        {
+            id: "incident-types",
+            title: t("entities.incident_types"),
+            description: t("management_page.incident_types"),
+        },
+        {
+            id: "incidents",
+            title: t("entities.incidents"),
+            description: t("management_page.incidents"),
+        },
+        {
+            id: "task-categories",
+            title: t("entities.task_categories"),
+            description: t("management_page.task_categories"),
+        },
+        {
+            id: "complementary-tasks",
+            title: t("entities.complementary_tasks"),
+            description: t("management_page.complementary_tasks"),
+        },
     ];
 
     const handleEntityClick = (entity) => {

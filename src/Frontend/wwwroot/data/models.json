@@ -3,7 +3,7 @@
         "containerShip": {
             "url": "models/container_ship_empty.glb",
             "transform": {
-                "scale": 8,
+                "scale": 12,
                 "rotateY": 1.5707963,
                 "liftY": -5
             }
@@ -35,8 +35,8 @@
         "truck": {
             "url": "models/truck/source/2003_gmc_topkick_c6500.glb",
             "transform": {
-                "scale": 2,
-                "rotateY": 0,
+                "scale": 4,
+                "rotateY": 1.5707963,
                 "liftY": 2
             }
         },
@@ -51,7 +51,7 @@
         "emptyYardCrane": {
             "url": "models/empty_yard_crane.glb",
             "transform": {
-                "scale": 1,
+                "scale": 1.5,
                 "rotateY": 0,
                 "liftY": 0
             }
@@ -59,7 +59,7 @@
         "constructionCrane": {
             "url": "models/construction_crane.glb",
             "transform": {
-                "scale": 1,
+                "scale": 1.5,
                 "rotateY": 0,
                 "liftY": 0
             }

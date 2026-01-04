@@ -91,6 +91,8 @@ window.translations = {
       "🔔 Manage Vessel Visit Notifications ",
     "home.feature.vvn.representatives.desc":
       "Submit for approval Vessel Visit Notifications.",
+    "home.feature.privacy_policy.title": "🔒 Privacy Policy Management",
+    "home.feature.privacy_policy.desc": "Manage privacy policies and terms of service.",
 
     // Management Sidebar
     "management.title": "Management",
@@ -124,6 +126,18 @@ window.translations = {
     "entities.notifications_desc": "Vessel schedules",
     "entities.qualifications": "Qualifications",
     "entities.qualifications_desc": "Certifications",
+    "entities.executions": "Executions",
+    "entities.executions_desc": "Port operations",
+    "entities.incident_types": "Incident Types",
+    "entities.incident_types_desc": "Vessel incidents",
+    "entities.incidents": "Incidents",
+    "entities.incidents_desc": "Vessel incidents",
+    "entities.task_categories": "Task Categories",
+    "entities.task_categories_desc": "Vessel tasks",
+    "entities.complementary_tasks": "Complementary Tasks",
+    "entities.complementary_tasks_desc": "Non-cargo operations",
+
+
 
     // Breadcrumb
     "breadcrumb.you_are_here": "You are here:",
@@ -698,6 +712,11 @@ window.translations = {
     "management_page.notifications": "Upcoming vessel visits and schedules",
     "management_page.qualifications":
       "Professional certifications and qualifications",
+    "management_page.executions": "Port operation executions and logs",
+    "management_page.incident_types": "Vessel incident categories and types",
+    "management_page.incidents": "Vessel incident reports and management",
+    "management_page.task_categories": "Vessel task categories and types",
+    "management_page.complementary_tasks": "Vessel task assignments and tracking",
 
     // AdminUsersPage
     "adminUsersPage.title": "Admin — User Management",
@@ -2360,6 +2379,8 @@ window.translations = {
       "🔔 Gestão de Notificações de Visitas de Embarcações",
     "home.feature.vvn.representatives.desc":
       "Submeta para aprovação notificações de visitas de embarcações.",
+    "home.feature.privacy_policy.title": "🔒 Política de Privacidade",
+    "home.feature.privacy_policy.desc": "Gerir políticas de privacidade e termos de serviço.",
 
     // Management Sidebar
     "management.title": "Gestão",
@@ -2393,6 +2414,14 @@ window.translations = {
     "entities.notifications_desc": "Horários de embarcações",
     "entities.qualifications": "Qualificações",
     "entities.qualifications_desc": "Certificações",
+    "entities.executions": "Execuções",
+    "entities.executions_desc": "Operações portuárias",
+    "entities.incident_types": "Tipos de Incidentes",
+    "entities.incident_types_desc": "Tipos de incidentes",
+    "entities.incidents": "Incidentes",
+    "entities.incidents_desc": "Registos de incidentes",
+    "entities.task_categories": "Categorias de Tarefas",
+    "entities.task_categories_desc": "Categorias de tarefas",
 
     // Pages
     "page.home.title": "Bem-vindo ao Sistema de Gestão Portuária",
@@ -3193,6 +3222,12 @@ window.translations = {
       "Próximas visitas de embarcações e horários",
     "management_page.qualifications":
       "Certificações e qualificações profissionais",
+    "management_page.executions":
+      "Registos de execuções de agendamento e operações",
+    "management_page.incident_types": "Tipos de Incidentes Portuários",
+    "management_page.incidents": "Registo e gestão de incidentes portuários",
+    "management_page.task_categories": "Categorias de Tarefas Portuárias",
+    "management_page.complementary_tasks": "Gestão de Tarefas Portuárias",
 
     // AdminUsersPage
     "adminUsersPage.title": "Admin — Gestão de Utilizadores",

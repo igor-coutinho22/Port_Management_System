@@ -346,19 +346,20 @@ class PortGeometryBuilder {
     // DOCK GEOMETRY
     // -------------------------------------------------------------------------
     createDock(dock) {
-        const { width, height, depth } = dock;
+    const { width, height, depth } = dock;
 
-        const inst = this.makeConfiguredInstance("dock", width, height, depth);
-        if (inst) return inst;
+    // Fallback procedural dock - Apenas um bloco simples
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    this.adjustUVs(geometry, width, height, depth);
+    
+    const mesh = new THREE.Mesh(geometry, this.materials.dock);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
-        // Fallback procedural dock
-        const geometry = new THREE.BoxGeometry(width, height, depth);
-        this.adjustUVs(geometry, width, height, depth);
-        const mesh = new THREE.Mesh(geometry, this.materials.dock);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        return mesh;
-    }
+    mesh.userData.isSelectableRoot = true;
+
+    return mesh;
+}
 
     // -------------------------------------------------------------------------
     // CONTAINER YARD GEOMETRY
@@ -461,6 +462,7 @@ class PortGeometryBuilder {
     // -------------------------------------------------------------------------
     // WAREHOUSE GEOMETRY
     // -------------------------------------------------------------------------
+   
     createWarehouse(area) {
         const { width, height, depth } = area;
 
@@ -483,6 +485,34 @@ class PortGeometryBuilder {
         flatRoof.receiveShadow = true;
         flatRoof.position.y = height / 2 + 1;
         group.add(flatRoof);
+
+        return group;
+    }
+
+    // -------------------------------------------------------------------------
+    // STREET LIGHT GEOMETRY
+    // -------------------------------------------------------------------------
+    
+    createStreetLight() {
+        const group = new THREE.Group();
+        // Poste
+        const poleGeo = new THREE.CylinderGeometry(0.5, 0.8, 50);
+        const pole = new THREE.Mesh(poleGeo, new THREE.MeshStandardMaterial({color: 0x333333}));
+        group.add(pole);
+
+        // Lâmpada (Luz física)
+        const light = new THREE.PointLight(0xffaa00, 0, 100); // Intensidade inicial 0
+        light.position.set(0, 25, 0);
+        light.userData.isNightLight = true; // Etiqueta para o Visualization encontrar
+        group.add(light);
+
+        // Mesh brilhante (para o efeito visual)
+        const bulbGeo = new THREE.SphereGeometry(5);
+        const bulbMat = new THREE.MeshStandardMaterial({emissive: 0x000000}); // Apagado
+        bulbMat.userData.isNightBulb = true;
+        const bulb = new THREE.Mesh(bulbGeo, bulbMat);
+        bulb.position.copy(light.position);
+        group.add(bulb);
 
         return group;
     }

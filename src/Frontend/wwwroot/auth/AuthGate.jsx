@@ -1,116 +1,114 @@
 (function () {
-
   function AuthGate({ children }) {
-    const [ready, setReady] = React.useState(false);
+    const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+    const [showPolicy, setShowPolicy] = React.useState(false);
+    const [policyContent, setPolicyContent] = React.useState("");
+
+    const login = async () => {
+        const pca = window.__pca;
+        try {
+            await pca.loginRedirect(window.loginRequest);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleOpenPolicy = async (e) => {
+        e.preventDefault();
+        try {
+            // Fetch the public policy (US 4.5.4)
+            // Note: Ensure your backend runs on port 6001 or use full URL
+            const res = await fetch("https://localhost:6001/api/privacy/latest");
+            if(res.ok) {
+                const data = await res.json();
+                setPolicyContent(data.content);
+                setShowPolicy(true);
+            } else {
+                alert("Could not load policy.");
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     React.useEffect(() => {
-      let cancelled = false;
-
-      (async () => {
-        const pca = window.__pca;
-        const msalReady = window.__msalReady;
-
-        if (!pca || !msalReady) {
-          console.error("AuthGate: MSAL globals not ready.");
-          return;
-        }
-
-        // SPECIAL CASE: ACTIVATION PAGE (NO LOGIN)
-        const href = window.location.href;
-        const hash = window.location.hash || ""; // "#activation-success"
-        const pageHash = hash.startsWith("#") ? hash.substring(1) : hash;
-        const basePage = pageHash.split("?")[0]; // "activation-success"
-        const isActivationPage =
-          basePage === "activation-success" || href.includes("activation-success");
-
-        if (isActivationPage) {
-          console.log("AuthGate: allowing anonymous access to activation-success route");
-          sessionStorage.removeItem("msal.login.started");
-          sessionStorage.removeItem("msal.preventLogin");
-          setReady(true);
-          return;
-        }
-
-        // NORMAL FLOW
-        await msalReady;
-        if (cancelled) return;
-
-        const accounts = pca.getAllAccounts();
-        if (accounts.length > 0) {
-          if (!pca.getActiveAccount()) pca.setActiveAccount(accounts[0]);
-
-          sessionStorage.removeItem("msal.login.started");
-          sessionStorage.removeItem("msal.preventLogin");
-
-          setReady(true);
-          return;
-        }
-
-        // If a previous interactive login failed hard, don't keep retrying
-        if (sessionStorage.getItem("msal.preventLogin") === "1") {
-          console.warn("AuthGate: login prevented due to prior error.");
-          setReady(true);
-          return;
-        }
-
-        // Prevent double login attempts
-        const alreadyStarting = sessionStorage.getItem("msal.login.started") === "1";
-        if (alreadyStarting) return;
-
-        // NO ACCOUNT  START LOGIN 
-        sessionStorage.setItem("msal.login.started", "1");
-        try {
-          await pca.loginRedirect(window.loginRequest);
-        } catch (e) {
-          console.error(
-            "AuthGate: loginRedirect failed:",
-            e && (e.errorCode || e.message),
-            e
-          );
-          sessionStorage.removeItem("msal.login.started");
-          sessionStorage.setItem("msal.preventLogin", "1");
-
-          const root = document.getElementById("root");
-          if (root && !cancelled) {
-            root.insertAdjacentHTML(
-              "afterbegin",
-              '<div style="padding:12px;color:#b00;font-family:sans-serif">Login failed. Please refresh to retry.</div>'
-            );
-          }
-        }
-      })();
-
-      // MSAL EVENT CALLBACKS 
       const pca = window.__pca;
-      const cbId = pca?.addEventCallback((evt) => {
-        if (evt.eventType === msal.EventType.LOGIN_SUCCESS && evt.payload?.account) {
-          pca.setActiveAccount(evt.payload.account);
+      if (!pca) return;
 
-          sessionStorage.removeItem("msal.login.started");
-          sessionStorage.removeItem("msal.preventLogin");
+      // Check if user is already signed in
+      const accounts = pca.getAllAccounts();
+      if (accounts.length > 0) {
+        pca.setActiveAccount(accounts[0]);
+        setIsLoggedIn(true);
+      } else {
+        // DO NOT REDIRECT AUTOMATICALLY ANYMORE
+        // Just let the "Landing Page" render below
+        setIsLoggedIn(false);
+      }
 
-          pca.acquireTokenSilent(window.apiRequest).catch(e => {
-            console.warn("Initial acquireTokenSilent failed, trying redirect", e);
-            return pca.acquireTokenRedirect(window.apiRequest);
-          });
-
-          if (!cancelled) setReady(true);
-        }
-
-        if (evt.eventType === msal.EventType.LOGIN_FAILURE) {
-          sessionStorage.removeItem("msal.login.started");
-          sessionStorage.setItem("msal.preventLogin", "1");
-        }
+      // Listen for successful login callbacks (when they return from Microsoft)
+      const cbId = pca.addEventCallback((evt) => {
+         if (evt.eventType === msal.EventType.LOGIN_SUCCESS && evt.payload?.account) {
+             pca.setActiveAccount(evt.payload.account);
+             setIsLoggedIn(true);
+         }
       });
 
       return () => {
-        cancelled = true;
-        if (cbId) pca.removeEventCallback(cbId);
+         if(cbId) pca.removeEventCallback(cbId);
       };
     }, []);
 
-    if (!ready) return null;
-    return children;
+    // 1. If Logged In, render the App (Children)
+    if (isLoggedIn) {
+        return children;
+    }
+
+    // 2. If NOT Logged In, render the "Landing Page" (Login + Privacy Link)
+    return (
+        <div style={{ 
+            height: "100vh", display: "flex", flexDirection: "column", 
+            alignItems: "center", justifyContent: "center", background: "#f0f2f5" 
+        }}>
+            <div style={{ background: "white", padding: "40px", borderRadius: "8px", boxShadow: "0 2px 10px rgba(0,0,0,0.1)", textAlign: "center" }}>
+                <h1 style={{ marginBottom: "20px", color: "#333" }}>Sines Port Management</h1>
+                
+                <button 
+                    onClick={login}
+                    style={{ 
+                        padding: "10px 20px", fontSize: "16px", background: "#0078d4", 
+                        color: "white", border: "none", borderRadius: "4px", cursor: "pointer" 
+                    }}
+                >
+                    Sign In with Microsoft
+                </button>
+
+                {/* US 4.5.4: Privacy Policy Link for Non-Users */}
+                <div style={{ marginTop: "20px", fontSize: "14px", color: "#666" }}>
+                    Not a user? Read our 
+                    <a href="#" onClick={handleOpenPolicy} style={{ marginLeft: "5px", color: "#0078d4" }}>
+                        Privacy Policy
+                    </a>.
+                </div>
+            </div>
+
+            {/* Privacy Policy Modal */}
+            {showPolicy && (
+                <div style={{
+                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                    background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center"
+                }}>
+                    <div style={{ background: "white", padding: "20px", borderRadius: "8px", maxWidth: "600px", maxHeight: "80vh", overflow: "auto" }}>
+                        <h2>Privacy Policy</h2>
+                        <div style={{ whiteSpace: "pre-wrap", margin: "20px 0", textAlign: "left" }}>
+                            {policyContent}
+                        </div>
+                        <button onClick={() => setShowPolicy(false)}>Close</button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
   }
 
   window.AuthGate = AuthGate;

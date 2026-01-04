@@ -108,6 +108,7 @@ const MENU_PERMISSIONS = {
         "vessel-visit-notifications.approve",
     ],
     qualifications: ["qualifications.view"],
+    "privacy-management": ["privacy.manage"],
 };
 
 function computePermissionsForRole(role) {

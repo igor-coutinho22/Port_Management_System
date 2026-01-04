@@ -1,0 +1,38 @@
+@startuml Level2_C4_Sines_Port_System
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title [Level 2] Container Diagram - Sines Port Architecture
+
+' -- Actors --
+Person(log_op, "Logistics Operator")
+
+' -- System Boundary --
+System_Boundary(sines, "Sines Port System") {
+    
+    Container(spa, "Single Page Application (SPA)", "React / TS", "Provides UI for plans, VVEs, and dashboards (US 4.1.2-15).")
+    
+    Container(oem_api, "OEM Backend Service", "Node.js / Express", "Manages Plans, Executions, Incidents (US 4.1.1).")
+    
+    Container(master_api, "Master Data API", ".NET Core", "Manages Vessels, Users, and core resources.")
+    
+    ContainerDb(mongo, "OEM Database", "MongoDB", "Stores Plans, VVEs, Incidents, Tasks (NoSQL).")
+    ContainerDb(sql, "Master Database", "SQL Server", "Stores Vessels, Users (Relational).")
+}
+
+' -- External --
+System_Ext(algo, "Scheduling Engine", "Prolog/Java")
+
+' -- Relationships --
+Rel(log_op, spa, "Interacts with", "HTTPS")
+
+Rel(spa, oem_api, "Manage Operations", "JSON/HTTPS")
+Rel(spa, master_api, "Read Master Data", "JSON/HTTPS")
+
+Rel(oem_api, mongo, "Read/Write Data", "Mongoose Driver")
+Rel(master_api, sql, "Read/Write Data", "EF Core")
+
+' US 4.1.1 requirement: Communication via REST API only
+Rel(oem_api, master_api, "Validates Vessels/Users", "JSON/HTTPS")
+Rel(oem_api, algo, "Triggers Algorithms", "JSON/HTTP")
+
+@enduml

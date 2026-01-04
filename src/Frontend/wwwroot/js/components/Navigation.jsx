@@ -1,206 +1,261 @@
 // Navigation Component - React (Redesigned with hamburger menu)
 const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
-    const [isDarkMode, setIsDarkMode] = React.useState(false);
-    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const { currentUser, activeRole, canAccessMenu, isLoadingUser, logout } = useUser();
-    const { t } = useTranslation();
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const { currentUser, activeRole, canAccessMenu, isLoadingUser, logout } =
+    useUser();
+  const { t } = useTranslation();
 
-    // Load saved theme preference
-    React.useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        setIsDarkMode(prefersDark);
+  // Load saved theme preference
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark =
+      savedTheme === "dark" ||
+      (!savedTheme &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    setIsDarkMode(prefersDark);
 
-        // Apply theme to html element
-        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    // Apply theme to html element
+    document.documentElement.setAttribute(
+      "data-theme",
+      prefersDark ? "dark" : "light"
+    );
 
-        // Also add class to body for additional targeting
-        document.body.className = prefersDark ? 'dark-theme' : 'light-theme';
+    // Also add class to body for additional targeting
+    document.body.className = prefersDark ? "dark-theme" : "light-theme";
 
-        console.log('Theme applied:', prefersDark ? 'dark' : 'light'); // Debug log
-    }, []);
+    console.log("Theme applied:", prefersDark ? "dark" : "light"); // Debug log
+  }, []);
 
-    const toggleTheme = () => {
-        const newTheme = !isDarkMode;
-        setIsDarkMode(newTheme);
-        const theme = newTheme ? 'dark' : 'light';
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    const theme = newTheme ? "dark" : "light";
 
-        // Apply theme to html element
-        document.documentElement.setAttribute('data-theme', theme);
+    // Apply theme to html element
+    document.documentElement.setAttribute("data-theme", theme);
 
-        // Also add class to body
-        document.body.className = newTheme ? 'dark-theme' : 'light-theme';
+    // Also add class to body
+    document.body.className = newTheme ? "dark-theme" : "light-theme";
 
-        localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
 
-        console.log('Theme toggled to:', theme); // Debug log
-    };
+    console.log("Theme toggled to:", theme); // Debug log
+  };
 
-    // All possible navigation items (labels will be translated when rendered)
-    const allNavItems = [
-        { id: 'management', labelKey: 'nav.management', icon: '⚙️' },
-        { id: 'scheduling', labelKey: 'nav.scheduling', icon: '📅' },
-        { id: 'admin-users', labelKey: 'nav.admin_users', icon: '👤' },
-        { id: '3d-view', labelKey: 'nav.3d_view', icon: '🏗️' },
-        { id: 'vvn-representatives', labelKey: 'nav.vvn_representatives', icon: '🔔' }
-    ];
+  // All possible navigation items (labels will be translated when rendered)
+  const allNavItems = [
+    { id: "management", labelKey: "nav.management", icon: "⚙️" },
+    { id: "scheduling", labelKey: "nav.scheduling", icon: "📅" },
+    { id: "admin-users", labelKey: "nav.admin_users", icon: "👤" },
+    { id: "3d-view", labelKey: "nav.3d_view", icon: "🏗️" },
+    {
+      id: "vvn-representatives",
+      labelKey: "nav.vvn_representatives",
+      icon: "🔔",
+    },
+  ];
 
-    // Filter navigation items based on user permissions
-    const navItems = allNavItems.filter(item => canAccessMenu(item.id));
+  // Filter navigation items based on user permissions
+  const navItems = allNavItems.filter((item) => canAccessMenu(item.id));
 
-    const toggleMenu = () => {
-        const newMenuState = !isMenuOpen;
-        setIsMenuOpen(newMenuState);
-        // Notify parent component about hamburger menu state
-        if (onHamburgerMenuToggle) {
-            onHamburgerMenuToggle(newMenuState);
-        }
-    };
+  const toggleMenu = () => {
+    const newMenuState = !isMenuOpen;
+    setIsMenuOpen(newMenuState);
+    // Notify parent component about hamburger menu state
+    if (onHamburgerMenuToggle) {
+      onHamburgerMenuToggle(newMenuState);
+    }
+  };
 
-    const handleNavigateFromMenu = (page) => {
-        onNavigate(page);
-        setIsMenuOpen(false); // Close menu after navigation
+  const handleNavigateFromMenu = (page) => {
+    onNavigate(page);
+    setIsMenuOpen(false); // Close menu after navigation
+    // Notify parent that hamburger menu is closed
+    if (onHamburgerMenuToggle) {
+      onHamburgerMenuToggle(false);
+    }
+  };
+
+  // Close menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isMenuOpen &&
+        !event.target.closest(".nav-menu-container") &&
+        !event.target.closest(".hamburger-menu")
+      ) {
+        setIsMenuOpen(false);
         // Notify parent that hamburger menu is closed
         if (onHamburgerMenuToggle) {
-            onHamburgerMenuToggle(false);
+          onHamburgerMenuToggle(false);
         }
+      }
     };
 
-    // Close menu when clicking outside
-    React.useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (isMenuOpen && !event.target.closest('.nav-menu-container') && !event.target.closest('.hamburger-menu')) {
-                setIsMenuOpen(false);
-                // Notify parent that hamburger menu is closed
-                if (onHamburgerMenuToggle) {
-                    onHamburgerMenuToggle(false);
-                }
-            }
-        };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isMenuOpen]);
 
-        document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
-    }, [isMenuOpen]);
+  console.log(
+    "Navigation items filtered for user:",
+    currentUser?.role,
+    navItems
+  );
 
-    console.log('Navigation items filtered for user:', currentUser?.role, navItems);
+  return (
+    <>
+      <header className="header-bar">
+        <div className="header-content">
+          {/* Hamburger Menu Button */}
+          <button
+            className={`hamburger-menu ${isMenuOpen ? "active" : ""}`}
+            onClick={toggleMenu}
+            title={t("nav.toggle_menu", "Toggle navigation menu")}
+            aria-label={t("nav.toggle_menu", "Toggle navigation menu")}
+          >
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+          </button>
 
-    return (
-        <>
-            <header className="header-bar">
-                <div className="header-content">
-                    {/* Hamburger Menu Button */}
-                    <button
-                        className={`hamburger-menu ${isMenuOpen ? 'active' : ''}`}
-                        onClick={toggleMenu}
-                        title={t('nav.toggle_menu', 'Toggle navigation menu')}
-                        aria-label={t('nav.toggle_menu', 'Toggle navigation menu')}
-                    >
-                        <span className="hamburger-line"></span>
-                        <span className="hamburger-line"></span>
-                        <span className="hamburger-line"></span>
-                    </button>
+          {/* Logo/Home */}
+          <div
+            className="logo-section"
+            onClick={() => onNavigate("home")}
+            style={{ cursor: "pointer" }}
+          >
+            <h1>⚓ {t("header.title", "Port Management System")}</h1>
+          </div>
 
-                    {/* Logo/Home */}
-                    <div className="logo-section" onClick={() => onNavigate('home')} style={{ cursor: 'pointer' }}>
-                        <h1>⚓ {t('header.title', 'Port Management System')}</h1>
-                    </div>
+          {/* Header Actions - Right Side */}
+          <div className="header-actions">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
 
-                    {/* Header Actions - Right Side */}
-                    <div className="header-actions">
-                        {/* Language Switcher */}
-                        <LanguageSwitcher />
-
-                        {/* Theme Switch */}
-                        <div className="theme-switch" onClick={toggleTheme} title={isDarkMode ? t('theme.switch_to_light', 'Switch to Light Mode') : t('theme.switch_to_dark', 'Switch to Dark Mode')}>
-                            <div className={`theme-switch-track ${isDarkMode ? 'dark' : 'light'}`}>
-                                <div className={`theme-switch-thumb ${isDarkMode ? 'dark' : 'light'}`}>
-                                    <span className="theme-icon">{isDarkMode ? '🌙' : '☀️'}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* User Section */}
-                        <div className="user-section">
-                            <div className="user-info">
-                                <span className="user-name">
-                                    {isLoadingUser
-                                        ? t("user.loading", "A carregar…")
-                                        : currentUser?.name || t("user.unknown_user", "Utilizador Desconhecido")}
-                                </span>
-                                <span className="user-role">
-                                    ({isLoadingUser
-                                        ? "…"
-                                        : (currentUser?.roles && currentUser.roles.length > 0
-                                            ? currentUser.roles.join(", ")
-                                            : t("user.no_role", "sem função"))})
-                                </span>
-                            </div>
-                            <UserRoleSwitcher />
-                        </div>
-
-                        {/* Logout Button */}
-                        <button
-                            className="btn logout-button"
-                            onClick={logout}
-                            title={t('nav.logout', 'Sign out')}
-                        >
-                            {t('nav.logout', 'Sign out')}
-                        </button>
-
-                    </div>
+            {/* Theme Switch */}
+            <div
+              className="theme-switch"
+              onClick={toggleTheme}
+              title={
+                isDarkMode
+                  ? t("theme.switch_to_light", "Switch to Light Mode")
+                  : t("theme.switch_to_dark", "Switch to Dark Mode")
+              }
+            >
+              <div
+                className={`theme-switch-track ${
+                  isDarkMode ? "dark" : "light"
+                }`}
+              >
+                <div
+                  className={`theme-switch-thumb ${
+                    isDarkMode ? "dark" : "light"
+                  }`}
+                >
+                  <span className="theme-icon">{isDarkMode ? "🌙" : "☀️"}</span>
                 </div>
-            </header>
-
-            {/* Slide-out Navigation Menu */}
-            <div className={`nav-menu-container ${isMenuOpen ? 'open' : ''}`}>
-                <div className="nav-menu-overlay" onClick={() => {
-                    setIsMenuOpen(false);
-                    if (onHamburgerMenuToggle) {
-                        onHamburgerMenuToggle(false);
-                    }
-                }}></div>
-                <nav className="slide-out-menu">
-                    <div className="menu-header">
-                        <h3>{t('nav.navigation', 'Navigation')}</h3>
-                        <button
-                            className="menu-close"
-                            onClick={() => {
-                                setIsMenuOpen(false);
-                                if (onHamburgerMenuToggle) {
-                                    onHamburgerMenuToggle(false);
-                                }
-                            }}
-                            title={t('nav.close_menu', 'Close menu')}
-                        >
-                            ✕
-                        </button>
-                    </div>
-
-                    <ul className="menu-items">
-                        <li>
-                            <button
-                                className={`menu-item ${currentPage === 'home' ? 'active' : ''}`}
-                                onClick={() => handleNavigateFromMenu('home')}
-                            >
-                                <span className="menu-icon">⚓</span>
-                                <span className="menu-label">{t('nav.home', 'Home')}</span>
-                            </button>
-                        </li>
-
-                        {navItems.map(item => (
-                            <li key={item.id}>
-                                <button
-                                    className={`menu-item ${currentPage === item.id ? 'active' : ''}`}
-                                    onClick={() => handleNavigateFromMenu(item.id)}
-                                >
-                                    <span className="menu-icon">{item.icon}</span>
-                                    <span className="menu-label">{t(item.labelKey, item.labelKey)}</span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
+              </div>
             </div>
-        </>
-    );
+
+            {/* User Section */}
+            <div className="user-section">
+              <div className="user-info">
+                {/* CLICKABLE NAME -> NAVIGATES TO PROFILE */}
+                <span
+                  className="user-name"
+                  onClick={() => onNavigate("profile")}
+                  style={{
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    textDecorationColor: "rgba(255,255,255,0.3)",
+                  }}
+                  title="Go to My Profile"
+                >
+                  {isLoadingUser
+                    ? t("user.loading", "Loading...")
+                    : currentUser?.name ||
+                      t("user.unknown_user", "Unknown User")}
+                </span>
+
+                <span className="user-role">
+                  {/* ... existing role display ... */}
+                </span>
+              </div>
+              <UserRoleSwitcher />
+            </div>
+
+            {/* Logout Button */}
+            <button
+              className="btn logout-button"
+              onClick={logout}
+              title={t("nav.logout", "Sign out")}
+            >
+              {t("nav.logout", "Sign out")}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Slide-out Navigation Menu */}
+      <div className={`nav-menu-container ${isMenuOpen ? "open" : ""}`}>
+        <div
+          className="nav-menu-overlay"
+          onClick={() => {
+            setIsMenuOpen(false);
+            if (onHamburgerMenuToggle) {
+              onHamburgerMenuToggle(false);
+            }
+          }}
+        ></div>
+        <nav className="slide-out-menu">
+          <div className="menu-header">
+            <h3>{t("nav.navigation", "Navigation")}</h3>
+            <button
+              className="menu-close"
+              onClick={() => {
+                setIsMenuOpen(false);
+                if (onHamburgerMenuToggle) {
+                  onHamburgerMenuToggle(false);
+                }
+              }}
+              title={t("nav.close_menu", "Close menu")}
+            >
+              ✕
+            </button>
+          </div>
+
+          <ul className="menu-items">
+            <li>
+              <button
+                className={`menu-item ${
+                  currentPage === "home" ? "active" : ""
+                }`}
+                onClick={() => handleNavigateFromMenu("home")}
+              >
+                <span className="menu-icon">⚓</span>
+                <span className="menu-label">{t("nav.home", "Home")}</span>
+              </button>
+            </li>
+
+            {navItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  className={`menu-item ${
+                    currentPage === item.id ? "active" : ""
+                  }`}
+                  onClick={() => handleNavigateFromMenu(item.id)}
+                >
+                  <span className="menu-icon">{item.icon}</span>
+                  <span className="menu-label">
+                    {t(item.labelKey, item.labelKey)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </>
+  );
 };
