@@ -757,6 +757,10 @@ class ApiService {
 
   // --- USER PROFILE & GDPR ---
 
+  async getPrivacyStatus() {
+    return this.get("/user-profiles/privacy-status");
+  }
+
   async acceptPrivacyPolicy() {
     return this.post("/user-profiles/accept-privacy", {});
   }

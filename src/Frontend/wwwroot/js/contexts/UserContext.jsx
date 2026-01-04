@@ -163,6 +163,13 @@ const UserProvider = ({ children }) => {
         try {
             const me = await window.apiService.getCurrentUser(); // GET /api/me
 
+            let privacyData = {};
+            try {
+                privacyData = await window.apiService.getPrivacyStatus();
+            } catch (pErr) {
+                console.warn("Failed to check privacy status:", pErr);
+            }
+
             const roles = me.roles || [];
             const primaryRole = roles[0] || null;
 
@@ -180,6 +187,7 @@ const UserProvider = ({ children }) => {
 
             const userObj = {
                 ...me,
+                ...privacyData,
                 name,
                 roles,
             };
