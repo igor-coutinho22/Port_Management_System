@@ -1,0 +1,57 @@
+@startuml Level4_C4_Domain_Class_Diagram_OperationPlan
+title [Level 4] Domain Class Diagram (Logical View)
+
+class OperationPlan {
+  + UUID id
+  + Date scheduleDate
+  + String status
+  + approvePlan()
+  + updateItem()
+}
+
+class OperationPlanItem {
+  + String vesselVisitId
+  + Date startTime
+  + Date endTime
+  + int cranes
+  + int staff
+}
+
+class VesselVisitExecution {
+  + UUID id
+  + String vesselVisitId
+  + Date actualArrivalTime
+  + Date actualUnberthTime
+  + String status
+  + complete()
+  + checkDiscrepancy()
+}
+
+class Incident {
+  + UUID id
+  + Date startTime
+  + Date endTime
+  + String severity
+  + String status
+}
+
+class IncidentType {
+  + String code
+  + String name
+  + String parentTypeId
+}
+
+class ComplementaryTask {
+  + UUID id
+  + String responsibleTeam
+  + String status
+  + String impact (Parallel/Suspension)
+}
+
+OperationPlan "1" *-- "many" OperationPlanItem : contains
+VesselVisitExecution "1" o-- "0..1" OperationPlan : implements
+Incident "many" --> "many" VesselVisitExecution : affects
+Incident "many" --> "1" IncidentType : classified by
+ComplementaryTask "many" --> "1" VesselVisitExecution : performed during
+
+@enduml

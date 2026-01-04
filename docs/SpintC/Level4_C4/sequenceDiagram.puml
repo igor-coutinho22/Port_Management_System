@@ -1,0 +1,68 @@
+@startuml Level4_C4_Sequence_Diagram_VVE_Lifecycle
+title [Level 4] Sequence Diagram: VVE Lifecycle (Scenario View)
+autonumber
+
+actor "Logistics Operator" as User
+participant "SPA" as UI
+participant "VVE Controller" as Ctrl
+participant "VVE Service" as Svc
+participant "WebApp Integration" as Integ
+participant "VVE Repository" as Repo
+database "MongoDB" as DB
+
+' -- SCENARIO: Create Vessel Visit Execution --
+group US 4.1.7: Create VVE
+    User -> UI: Click "Start Visit" (VisitID)
+    UI -> Ctrl: POST /api/vve/Create
+    activate Ctrl
+    
+    Ctrl -> Integ: getVesselVisitById(visitId)
+    activate Integ
+    Integ --> Ctrl: VisitData (IMO, Dock)
+    deactivate Integ
+    
+    Ctrl -> Svc: create(domainEntity)
+    activate Svc
+    Svc -> Repo: getByVisitId(visitId)
+    Repo -> DB: findOne()
+    DB --> Repo: null (New)
+    
+    Svc -> Repo: addAsync(vve)
+    Repo -> DB: save()
+    
+    Svc --> Ctrl: Created VVE
+    deactivate Svc
+    
+    Ctrl --> UI: 201 Created
+    deactivate Ctrl
+end
+
+' -- SCENARIO: Complete VVE --
+group US 4.1.11: Complete VVE
+    User -> UI: Click "Complete" (UnberthTime)
+    UI -> Ctrl: POST /api/vve/{id}/Complete
+    activate Ctrl
+    
+    Ctrl -> Svc: complete(id, data)
+    activate Svc
+    
+    Svc -> Repo: getById(id)
+    Repo -> DB: find()
+    DB --> Repo: vve
+    
+    Svc -> Svc: vve.validateOperations()
+    note right: Ensure all ops are finished
+    
+    Svc -> Svc: vve.complete()
+    note right: Set status = Completed
+    
+    Svc -> Repo: updateAsync(vve)
+    Repo -> DB: update()
+    
+    Svc --> Ctrl: Success
+    deactivate Svc
+    
+    Ctrl --> UI: 200 OK
+    deactivate Ctrl
+end
+@enduml

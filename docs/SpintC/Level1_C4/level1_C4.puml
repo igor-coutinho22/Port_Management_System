@@ -1,0 +1,28 @@
+@startuml Level1_C4_Sines_Port_Management
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title [Level 1] System Context Diagram - Sines Port OEM Module
+
+' -- Actors (Derived from US) --
+Person(log_op, "Logistics Operator", "Manages Operation Plans, VVEs, and Incidents (US 4.1.2-11, 13, 15).")
+Person(port_auth, "Port Authority Officer", "Manages Incident Types Catalog (US 4.1.12).")
+Person(port_sup, "Operations Supervisor", "Manages Complementary Task Categories (US 4.1.14).")
+Person(admin, "System Admin", "Oversees system configuration and user roles.")
+
+' -- System --
+System(sines_sys, "Sines Port Management System", "Integrated platform for port logistics, scheduling, and execution tracking.")
+
+' -- External Systems --
+System_Ext(auth_provider, "Auth Provider", "Auth0/Microsoft (OIDC) for authentication (US 4.1.1).")
+System_Ext(planning_algo, "Scheduling Engine", "Prolog/Algorithm engine for scheduling (US 4.1.2).")
+
+' -- Relationships --
+Rel(log_op, sines_sys, "Manages Plans & Executions", "HTTPS")
+Rel(port_auth, sines_sys, "Manages Incident Types", "HTTPS")
+Rel(port_sup, sines_sys, "Manages Task Categories", "HTTPS")
+Rel(admin, sines_sys, "Administers System", "HTTPS")
+
+Rel(sines_sys, auth_provider, "Authenticates users via", "OAuth2")
+Rel(sines_sys, planning_algo, "Requests schedules via", "JSON/HTTP")
+
+@enduml

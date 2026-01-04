@@ -1,0 +1,44 @@
+@startuml Level3_C4_Component_Frontend_SPA
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title [Level 3] Component Diagram - Frontend Container (SPA)
+
+Container(oem_api, "OEM Backend API", "Node.js", "Handles business logic")
+
+Container_Boundary(spa, "Single Page Application (React)") {
+    
+    Component(router, "Router", "React Router", "Manages client-side navigation")
+
+    ' -- Pages / Views --
+    Component(plan_page, "Operation Planning View", "Page", "UI for generating and editing plans (US 4.1.2-6).")
+    Component(vve_page, "Execution Monitor View", "Page", "UI for tracking VVEs and completing visits (US 4.1.7-11).")
+    Component(inc_page, "Incident Manager View", "Page", "UI for reporting and resolving incidents (US 4.1.13).")
+    Component(task_page, "Task Manager View", "Page", "UI for managing user tasks (US 4.1.14-15).")
+    
+    ' -- Services (Frontend Logic) --
+    Component(auth_svc, "Auth Service", "Service", "Manages MSAL/OIDC Tokens")
+    Component(plan_svc, "Plan Service", "Service", "HTTP client for /api/operationplan")
+    Component(vve_svc, "VVE Service", "Service", "HTTP client for /api/vesselvisitexecution")
+    Component(inc_svc, "Incident Service", "Service", "HTTP client for /api/incidents")
+    Component(task_svc, "Task Service", "Service", "HTTP client for /api/tasks")
+
+}
+
+' -- Relationships --
+Rel(router, plan_page, "Routes to")
+Rel(router, vve_page, "Routes to")
+Rel(router, inc_page, "Routes to")
+Rel(router, task_page, "Routes to")
+
+Rel(plan_page, plan_svc, "Uses")
+Rel(vve_page, vve_svc, "Uses")
+Rel(inc_page, inc_svc, "Uses")
+Rel(task_page, task_svc, "Uses")
+Rel(plan_page, auth_svc, "Checks Permission")
+
+Rel(plan_svc, oem_api, "GET/POST Plans", "JSON/HTTPS")
+Rel(vve_svc, oem_api, "GET/POST VVEs", "JSON/HTTPS")
+Rel(inc_svc, oem_api, "GET/POST Incidents", "JSON/HTTPS")
+Rel(task_svc, oem_api, "GET/POST Tasks", "JSON/HTTPS")
+
+@enduml
