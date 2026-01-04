@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "dev": "concurrently \"cd src/Frontend && npm start\" \"cd src/Oem && dotnet run\" \"cd src/WebApp && dotnet run\""
+        "dev": "concurrently \"cd src/Frontend && npm start\" \"cd src/Oem_Node && npm run dev\" \"cd src/WebApp && dotnet run\""
     },
     "devDependencies": {
         "@types/jest": "^30.0.0",

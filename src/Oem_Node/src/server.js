@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const https = require('https');
+const https = require('http');
 const fs = require('fs');
 const path = require('path');
 
@@ -53,5 +53,5 @@ const sslOptions = {
 
 // 5. Create HTTPS Server instead of app.listen
 https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(`🚀 Secure Server running on https://localhost:${PORT}`);
+    console.log(` Secure Server running on https://localhost:${PORT}`);
 });

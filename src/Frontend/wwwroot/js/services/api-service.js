@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
 const WEB_APP_API = "https://localhost:5001/api"; // Port 5001 (Vessels, Users, ...)
-const OEM_API = "https://localhost:6001/api"; // Port 6001 (Scheduling, Plans)
+const OEM_API = "http://localhost:6001/api"; // Port 6001 (Scheduling, Plans)
 
 class ApiService {
     async _getApiAccessToken() {

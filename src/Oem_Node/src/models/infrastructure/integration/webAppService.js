@@ -110,6 +110,29 @@ class WebAppService {
             return [];
         }
     }
+    async applySchedule(assignments, token) {
+        try {
+            // This calls the backend endpoint that bulk-updates vessel dock assignments
+            const response = await this.client.put(
+                '/api/vesselvisitnotification/apply-schedule',
+                assignments,
+                this._getConfig(token)
+            );
+            return response.data;
+        } catch (error) {
+            console.error(`Error applying schedule to WebApp: ${error.message}`);
+            throw new Error(`Failed to persist rebalance: ${error.message}`);
+        }
+    }
+    async getDocks(token) {
+        try {
+            const response = await this.client.get('/api/docks', this._getConfig(token));
+            return response.data || [];
+        } catch (error) {
+            console.error(`Error fetching docks: ${error.message}`);
+            return [];
+        }
+    }
 }
 
 module.exports = new WebAppService();

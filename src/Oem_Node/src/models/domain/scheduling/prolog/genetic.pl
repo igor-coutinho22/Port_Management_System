@@ -1,5 +1,4 @@
 
-:- consult('heuristic_schedule.pl').
 
 :- dynamic generations/1.
 :- dynamic population/1.

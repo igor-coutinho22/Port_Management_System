@@ -13,9 +13,6 @@ const HEURISTICS = [
     { value: "genetic", label: "Genetic (stochastic improvement)" }
 ];
 
-// default heuristic -> "auto"
-const [heuristic, setHeuristic] = React.useState("auto");
-
 function formatDateInputValue(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -53,8 +50,8 @@ function tryParsePrologAtomId(atom) {
 const SchedulingHubPage = () => {
     // --- 1. GET USER PERMISSIONS ---
     // We try to use the global hook. If not available, default to safe object.
-    const { hasPermission } = typeof useUser === 'function' 
-        ? useUser() 
+    const { hasPermission } = typeof useUser === 'function'
+        ? useUser()
         : { hasPermission: () => false };
 
     // "operational-tasks.schedule" is the key permission for Operators.
@@ -65,7 +62,7 @@ const SchedulingHubPage = () => {
     const [targetDate, setTargetDate] = React.useState(
         formatDateInputValue(new Date())
     );
-    const [heuristic, setHeuristic] = React.useState("atc");
+    const [heuristic, setHeuristic] = React.useState("auto");
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(null);
 

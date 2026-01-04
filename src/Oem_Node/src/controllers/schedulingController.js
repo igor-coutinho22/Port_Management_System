@@ -53,3 +53,18 @@ exports.generateDailyScheduleWithMultiCrane = async (req, res) => {
         return res.status(500).send(err.message);
     }
 };
+
+exports.rebalanceDocks = async (req, res) => {
+    try {
+        const targetDate = req.body.targetDate || new Date().toISOString().split('T')[0];
+        const token = req.headers.authorization;
+
+        // Ensure this matches the name in your HeuristicScheduleService.js
+        const result = await scheduleService.applyDockRebalance(targetDate, token);
+
+        return res.status(200).json(result);
+    } catch (err) {
+        console.error("Rebalance Controller Error:", err.message);
+        return res.status(500).send(err.message);
+    }
+};

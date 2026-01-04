@@ -5,5 +5,6 @@ const requireAuth = require('../middleware/authMiddleware');
 
 router.post('/daily', requireAuth('RequireOperator'), controller.generateDailySchedule);
 router.post('/daily-with-multi-crane', requireAuth('RequireOperator'), controller.generateDailyScheduleWithMultiCrane);
+router.post('/rebalance', requireAuth('RequireOperator'), controller.rebalanceDocks);
 
 module.exports = router;
