@@ -34,6 +34,7 @@ describe('Incident Management (E2E)', () => {
     it('should list existing incidents', () => {
         cy.wait('@getIncidents');
         cy.contains('Oil spill at Dock 1').should('be.visible');
+        cy.screenshot('incidents-list');
     });
 
     it('should allow creating a new incident', () => {
@@ -56,5 +57,6 @@ describe('Incident Management (E2E)', () => {
         // Verify UI update (optimistic or re-fetch)
         // For this test, we assume success message or redirection
         cy.contains(/Success|Criado/i).should('exist');
+        cy.screenshot('incidents-create-success');
     });
 });
