@@ -242,7 +242,7 @@ const ThreeDView = () => {
                     Reset Câmara
                 </button>
                 <span style={{ marginLeft: '10px', fontSize: '0.75rem', opacity: 0.6, color: '#94a3b8' }}>
-                    Use as setas ↑↓ e Enter para navegar nas sugestões | Pressione <strong>'i'</strong> para ter as informações
+                    Use as setas ↑↓ e Enter para navegar nas sugestões | Pressione <strong>'i'</strong> para ter as informações | Pressione <strong>'r'</strong> para dar reset na câmara
                 </span>
             </div>
         </div>

@@ -35,7 +35,7 @@
         "truck": {
             "url": "models/truck/source/2003_gmc_topkick_c6500.glb",
             "transform": {
-                "scale": 4,
+                "scale": 2.7,
                 "rotateY": 1.5707963,
                 "liftY": 2
             }
@@ -83,7 +83,7 @@
         "maleWorker": {
             "url": "models/male_worker.glb",
             "transform": {
-                "scale": 0.2,
+                "scale": 0.5,
                 "rotateY": 0,
                 "liftY": 0
             }
@@ -91,7 +91,7 @@
         "maleWorkerYellow": {
             "url": "models/male_worker_yellowjacket.glb",
             "transform": {
-                "scale": 0.2,
+                "scale": 0.5,
                 "rotateY": 0,
                 "liftY": 0
             }
@@ -99,7 +99,7 @@
         "maleManager": {
             "url": "models/male_manager.glb",
             "transform": {
-                "scale": 0.2,
+                "scale": 0.5,
                 "rotateY": 0,
                 "liftY": 0
             }
@@ -107,10 +107,36 @@
         "femaleWorker": {
             "url": "models/female_worker.glb",
             "transform": {
-                "scale": 0.2,
+                "scale": 0.5,
                 "rotateY": 0,
                 "liftY": 0
             }
-        }
+        },
+        "containers": [
+            {
+                "id": "cont_01",
+                "yardId": "Yard_North",
+                "row": 0,
+                "col": 0,
+                "stack": 0,
+                "color": "blue"
+            },
+            {
+                "id": "cont_02",
+                "yardId": "Yard_North",
+                "row": 0,
+                "col": 0,
+                "stack": 1,
+                "color": "red"
+            },
+            {
+                "id": "cont_03",
+                "yardId": "Yard_North",
+                "row": 1,
+                "col": 0,
+                "stack": 0,
+                "color": "green"
+            }
+        ]
     }
 }

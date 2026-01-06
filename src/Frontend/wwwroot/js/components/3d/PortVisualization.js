@@ -54,7 +54,7 @@ class PortVisualization {
         this.selectedObject = null;
         this.hoveredObject = null;
 
-        this.onSelect = null; 
+        this.onSelect = null;
         this.onToggleOverlay = null;
 
         // External callback (React-integrated)
@@ -123,7 +123,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // TOOLTIP
     // -------------------------------------------------------------------------
-    
+
     createTooltipElement() {
         const el = document.createElement("div");
         Object.assign(el.style, {
@@ -157,7 +157,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // LIGHTING
     // -------------------------------------------------------------------------
-    
+
     addLights() {
         const ambient = new THREE.AmbientLight(0xffffff, 1);
         this.scene.add(ambient);
@@ -203,7 +203,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // MINIMAP
     // -------------------------------------------------------------------------
-   
+
     setupMinimap() {
         const size = 110;
         this.minimapSize = size;
@@ -266,7 +266,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // LOAD PORT DATA
     // -------------------------------------------------------------------------
-   
+
     async loadPortData() {
         THREE.Cache.enabled = false;
         console.log("PortVisualization: loadPortData called");
@@ -310,7 +310,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // CAMERA FLY-TO
     // -------------------------------------------------------------------------
-    
+
     flyToObject(pos) {
         this.flyToActive = true;
         this.flyStartTime = performance.now();
@@ -345,8 +345,8 @@ class PortVisualization {
         // US 4.2.6: Interpolação suave do alvo do Spotlight
         if (this.selectionSpotlight) {
             this.selectionSpotlight.target.position.lerpVectors(
-                this.flyFromSpotlightTarget, 
-                this.flyToSpotlightTarget, 
+                this.flyFromSpotlightTarget,
+                this.flyToSpotlightTarget,
                 eased
             );
             this.selectionSpotlight.target.updateMatrixWorld();
@@ -356,7 +356,7 @@ class PortVisualization {
             this.flyToActive = false;
         }
     }
-    
+
     // -------------------------------------------------------------------------
     // CLICK SELECTION
     // -------------------------------------------------------------------------
@@ -373,8 +373,8 @@ class PortVisualization {
             const box = new THREE.Box3().setFromObject(this.selectedObject);
             const center = new THREE.Vector3();
             box.getCenter(center);
-            
-            this.flyToObject(center); 
+
+            this.flyToObject(center);
         }
     }
 
@@ -401,7 +401,7 @@ class PortVisualization {
         if (this.selectionSpotlight) {
             // Apenas ativamos a luz aqui. O movimento da posição 
             // será feito suavemente pelo updateFlyTo().
-            this.selectionSpotlight.intensity = 3.0; 
+            this.selectionSpotlight.intensity = 1.5;
         }
 
         if (this.onSelect) {
@@ -518,13 +518,13 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     // SEARCH & FOCUS
     // -------------------------------------------------------------------------
-    
+
     // Procurar objeto por ID e focar a câmara
     searchAndFocus(searchTerm) {
         if (!searchTerm) return;
-        
+
         const term = searchTerm.toLowerCase();
-        
+
         // Procura nos objetos registados
         const target = this.objects.find(obj => {
             const data = obj.userData;
@@ -540,14 +540,14 @@ class PortVisualization {
             const box = new THREE.Box3().setFromObject(target);
             const center = new THREE.Vector3();
             box.getCenter(center);
-            
+
             this.flyToObject(center);
-            
+
             // Opcional: Selecionar automaticamente para abrir o painel da US 3
-            this.handleSelection(target); 
+            this.handleSelection(target);
             return true;
         }
-        
+
         console.warn("Objeto não encontrado:", searchTerm);
         return false;
     }
@@ -831,13 +831,13 @@ class PortVisualization {
                 const zBot = r.z - r.depth / 2 - sidewalkThickness / 2;
 
                 allowed.forEach(seg => {
-                    const swTop = this.geometryBuilder.createSidewalk(seg.length+12, sidewalkThickness);
+                    const swTop = this.geometryBuilder.createSidewalk(seg.length + 12, sidewalkThickness);
                     swTop.position.set(r.x + seg.center, 1.755, zTop);
                     swTop.renderOrder = 15;
                     swTop.userData = { type: "Sidewalk" };
                     this.scene.add(swTop);
 
-                    const swBot = this.geometryBuilder.createSidewalk(seg.length+12, sidewalkThickness);
+                    const swBot = this.geometryBuilder.createSidewalk(seg.length + 12, sidewalkThickness);
                     swBot.position.set(r.x + seg.center, 1.755, zBot);
                     swBot.renderOrder = 15;
                     swBot.userData = { type: "Sidewalk" };
@@ -848,13 +848,13 @@ class PortVisualization {
                 const xLeft = r.x - r.width / 2 - sidewalkThickness / 2;
 
                 allowed.forEach(seg => {
-                    const swR = this.geometryBuilder.createSidewalk(sidewalkThickness, seg.length+12);
+                    const swR = this.geometryBuilder.createSidewalk(sidewalkThickness, seg.length + 12);
                     swR.position.set(xRight, 1.755, r.z + seg.center);
                     swR.renderOrder = 15;
                     swR.userData = { type: "Sidewalk" };
                     this.scene.add(swR);
 
-                    const swL = this.geometryBuilder.createSidewalk(sidewalkThickness, seg.length+11.8);
+                    const swL = this.geometryBuilder.createSidewalk(sidewalkThickness, seg.length + 11.8);
                     swL.position.set(xLeft, 1.755, r.z + seg.center);
                     swL.renderOrder = 15;
                     swL.userData = { type: "Sidewalk" };
@@ -947,7 +947,7 @@ class PortVisualization {
                 lightPost.position.set(i.x + offset.x, 2, i.z + offset.z);
                 this.scene.add(lightPost);
                 // Não esquecer de adicionar ao array de objetos se quiseres que sejam clicáveis
-                this.objects.push(lightPost); 
+                this.objects.push(lightPost);
             });
 
             // Crosswalk stripes should be PERPENDICULAR to the direction of travel.
@@ -978,7 +978,7 @@ class PortVisualization {
     // -------------------------------------------------------------------------
     frameCamera() {
         console.log("PortVisualization: Executando reset suave da câmara");
-    
+
         // Ativar o estado de animação 
         this.flyToActive = true;
         this.flyStartTime = performance.now();
@@ -988,7 +988,7 @@ class PortVisualization {
         this.flyFromTarget.copy(this.controls.target);
 
         // Definir o Destino
-        this.flyToPos.set(0, 300, 1100); 
+        this.flyToPos.set(0, 300, 1100);
         this.flyToTarget.set(0, 0, 600); // Olhar para o meio do porto
     }
 
@@ -1080,7 +1080,7 @@ class PortVisualization {
 
         const angle = -t * Math.PI * 2;
         const southTilt = 0.25;
-        const h = Math.sin(angle);
+        const h = Math.sin(angle); // h > 0 é dia, h < 0 é noite
 
         const radius = 5500;
         const y = h * radius;
@@ -1106,6 +1106,31 @@ class PortVisualization {
             lightFactor = u * u * (3 - 2 * u);
         }
 
+        // --- LÓGICA DOS CANDEEIROS COM TIMING AJUSTADO ---
+        // Alteramos o limite de 0.1 para 0.8:
+        // 1. Ao pôr-do-sol: Ligam quando a luz desce dos 80% (Sol a chegar ao mar)
+        // 2. Ao nascer-do-sol: Apagam apenas quando a luz passa dos 80% (Sol já bem acima da terra)
+        const isNight = lightFactor < 0.8;
+
+        this.scene.traverse(obj => {
+            // Luz PointLight (o clarão no asfalto)
+            if (obj instanceof THREE.PointLight && obj.userData.isNightLight) {
+                obj.intensity = isNight ? 1.7 : 0;
+            }
+
+            // Brilho da bola (lâmpada visual)
+            if (obj.isMesh && obj.userData.isNightBulb) {
+                if (isNight) {
+                    obj.material.emissive.setHex(0xffffaa);
+                    obj.material.emissiveIntensity = 1.0;
+                } else {
+                    obj.material.emissive.setHex(0x000000);
+                    obj.material.emissiveIntensity = 0;
+                }
+            }
+        });
+        // -------------------------------------------------
+
         const dist = this.camera.position.distanceTo(this.sunMesh.position);
         if (dist > 0) {
             const baseSize = 100;
@@ -1115,13 +1140,11 @@ class PortVisualization {
         }
 
         this.sunMesh.lookAt(this.camera.position);
-
         this.sun.intensity = 0.2 + 0.8 * lightFactor;
 
         const minAmbient = 0.35;
         const maxAmbient = 0.6;
-        this.ambientLight.intensity =
-            minAmbient + (maxAmbient - minAmbient) * lightFactor;
+        this.ambientLight.intensity = minAmbient + (maxAmbient - minAmbient) * lightFactor;
 
         const daylightColor = this.dayAmbientColor || new THREE.Color(0xffffff);
         const moonColor = this.nightAmbientColor || new THREE.Color(0x4d6f9a);
@@ -1137,6 +1160,11 @@ class PortVisualization {
         const skyColor = new THREE.Color();
         skyColor.lerpColors(this.nightSkyColor, this.daySkyColor, lightFactor);
         this.scene.background = skyColor;
+
+        // Sincronizar o nevoeiro (Fog) com a cor do céu
+        if (this.scene.fog) {
+            this.scene.fog.color.copy(skyColor);
+        }
     }
 
     // -------------------------------------------------------------------------
