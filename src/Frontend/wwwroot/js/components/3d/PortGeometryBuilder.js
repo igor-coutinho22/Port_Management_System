@@ -346,20 +346,20 @@ class PortGeometryBuilder {
     // DOCK GEOMETRY
     // -------------------------------------------------------------------------
     createDock(dock) {
-    const { width, height, depth } = dock;
+        const { width, height, depth } = dock;
 
-    // Fallback procedural dock - Apenas um bloco simples
-    const geometry = new THREE.BoxGeometry(width, height, depth);
-    this.adjustUVs(geometry, width, height, depth);
-    
-    const mesh = new THREE.Mesh(geometry, this.materials.dock);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
+        // Fallback procedural dock - Apenas um bloco simples
+        const geometry = new THREE.BoxGeometry(width, height, depth);
+        this.adjustUVs(geometry, width, height, depth);
 
-    mesh.userData.isSelectableRoot = true;
+        const mesh = new THREE.Mesh(geometry, this.materials.dock);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
 
-    return mesh;
-}
+        mesh.userData.isSelectableRoot = true;
+
+        return mesh;
+    }
 
     // -------------------------------------------------------------------------
     // CONTAINER YARD GEOMETRY
@@ -462,7 +462,7 @@ class PortGeometryBuilder {
     // -------------------------------------------------------------------------
     // WAREHOUSE GEOMETRY
     // -------------------------------------------------------------------------
-   
+
     createWarehouse(area) {
         const { width, height, depth } = area;
 
@@ -492,27 +492,48 @@ class PortGeometryBuilder {
     // -------------------------------------------------------------------------
     // STREET LIGHT GEOMETRY
     // -------------------------------------------------------------------------
-    
+
     createStreetLight() {
         const group = new THREE.Group();
-        // Poste
-        const poleGeo = new THREE.CylinderGeometry(0.5, 0.8, 50);
-        const pole = new THREE.Mesh(poleGeo, new THREE.MeshStandardMaterial({color: 0x333333}));
+
+        // 1. O Poste (Altura total = 50)
+        const poleHeight = 50;
+        const poleGeo = new THREE.CylinderGeometry(0.5, 0.8, poleHeight);
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.2 });
+        const pole = new THREE.Mesh(poleGeo, poleMat);
+
+        // Posiciona o poste para que a base fique em y=0
+        pole.position.y = poleHeight / 2;
         group.add(pole);
 
-        // Lâmpada (Luz física)
-        const light = new THREE.PointLight(0xffaa00, 0, 100); // Intensidade inicial 0
-        light.position.set(0, 25, 0);
-        light.userData.isNightLight = true; // Etiqueta para o Visualization encontrar
-        group.add(light);
-
-        // Mesh brilhante (para o efeito visual)
-        const bulbGeo = new THREE.SphereGeometry(5);
-        const bulbMat = new THREE.MeshStandardMaterial({emissive: 0x000000}); // Apagado
-        bulbMat.userData.isNightBulb = true;
+        // 2. A Lâmpada (A bola no topo)
+        // Reduzi ligeiramente para 3 para ser proporcional ao poste
+        const bulbGeo = new THREE.SphereGeometry(4, 16, 16);
+        const bulbMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            emissive: 0x000000, // Começa desligada
+            emissiveIntensity: 0,
+            transparent: true,
+            opacity: 0.9
+        });
         const bulb = new THREE.Mesh(bulbGeo, bulbMat);
-        bulb.position.copy(light.position);
+
+        // Posiciona a bola exatamente no topo do poste (y=50)
+        bulb.position.set(0, poleHeight, 0);
+        bulb.userData.isNightBulb = true;
         group.add(bulb);
+
+        // 3. A Luz Física (PointLight)
+        // Criamos a luz exatamente na mesma posição da bola
+        const light = new THREE.PointLight(0xffffaa, 0, 200);
+        light.position.set(0, poleHeight, 0); // MESMA COORDENADA DA BOLA
+
+        // Decay 2 e Penumbra são essenciais para o realismo físico
+        light.decay = 2;
+        light.shadow.bias = -0.005;
+        light.userData.isNightLight = true;
+
+        group.add(light);
 
         return group;
     }
