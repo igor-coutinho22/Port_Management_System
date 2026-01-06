@@ -1,6 +1,10 @@
+// Detect the current host (IP or Domain) the browser is visiting
+const SERVER_IP = window.location.hostname;
+
 // --- CONFIGURATION ---
-const WEB_APP_API = "https://localhost:5001/api"; // Port 5001 (Vessels, Users, ...)
-const OEM_API = "http://localhost:6001/api"; // Port 6001 (Scheduling, Plans)
+// Use the detected IP so it works both on localhost and on the VM
+const WEB_APP_API = `http://${SERVER_IP}:5001/api`;
+const OEM_API = `http://${SERVER_IP}:6001/api`;
 
 class ApiService {
     async _getApiAccessToken() {
@@ -755,11 +759,11 @@ class ApiService {
         return this.post("/privacy", { content });
     }
 
-  // --- USER PROFILE & GDPR ---
+    // --- USER PROFILE & GDPR ---
 
-  async getPrivacyStatus() {
-    return this.get("/user-profiles/privacy-status");
-  }
+    async getPrivacyStatus() {
+        return this.get("/user-profiles/privacy-status");
+    }
 
     async acceptPrivacyPolicy() {
         return this.post("/user-profiles/accept-privacy", {});
