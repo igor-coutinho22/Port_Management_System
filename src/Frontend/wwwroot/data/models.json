@@ -67,7 +67,7 @@
         "stsCrane": {
             "url": "models/sts_crane.glb",
             "transform": {
-                "scale": 6,
+                "scale": 8,
                 "rotateY": 0,
                 "liftY": 8
             }
@@ -75,7 +75,7 @@
         "warehouse": {
             "url": "models/warehouse.glb",
             "transform": {
-                "scale": 1.5,
+                "scale": 2,
                 "rotateY": 3.14159,
                 "liftY": -7
             }
@@ -83,7 +83,7 @@
         "maleWorker": {
             "url": "models/male_worker.glb",
             "transform": {
-                "scale": 0.5,
+                "scale": 1,
                 "rotateY": 0,
                 "liftY": 0
             }
@@ -91,7 +91,7 @@
         "maleWorkerYellow": {
             "url": "models/male_worker_yellowjacket.glb",
             "transform": {
-                "scale": 0.5,
+                "scale": 1,
                 "rotateY": 0,
                 "liftY": 0
             }
@@ -99,7 +99,7 @@
         "maleManager": {
             "url": "models/male_manager.glb",
             "transform": {
-                "scale": 0.5,
+                "scale": 1,
                 "rotateY": 0,
                 "liftY": 0
             }
@@ -107,7 +107,7 @@
         "femaleWorker": {
             "url": "models/female_worker.glb",
             "transform": {
-                "scale": 0.5,
+                "scale": 1,
                 "rotateY": 0,
                 "liftY": 0
             }

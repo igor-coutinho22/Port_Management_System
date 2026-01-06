@@ -349,7 +349,7 @@ class PortGeometryBuilder {
         const { width, height, depth } = dock;
 
         // Fallback procedural dock - Apenas um bloco simples
-        const geometry = new THREE.BoxGeometry(width, height, depth);
+        const geometry = new THREE.BoxGeometry(width * 1.4, height * 0.5, depth * 1.8);
         this.adjustUVs(geometry, width, height, depth);
 
         const mesh = new THREE.Mesh(geometry, this.materials.dock);
@@ -378,6 +378,7 @@ class PortGeometryBuilder {
         ground.castShadow = true;
         ground.receiveShadow = true;
         group.add(ground);
+        this.addDecorContainers(group, width, depth, height / 2);
         return group;
     }
 
@@ -418,14 +419,14 @@ class PortGeometryBuilder {
     addDecorContainers(group, areaWidth, areaDepth, groundHeight) {
         const containerWidth = 5;
         const containerDepth = 10;
-        const gap = 2;
+        const gap = 1;
 
         const cellWidth = containerWidth + gap;
         const cellDepth = containerDepth + gap;
 
         const cols = Math.floor((areaWidth - 10) / cellWidth);
         const rows = Math.floor((areaDepth - 10) / cellDepth);
-        const maxContainers = Math.min(cols * rows, 50);
+        const maxContainers = Math.min(cols * rows, 200);
 
         const startX = -((cols * cellWidth) / 2) + cellWidth / 2;
         const startZ = -((rows * cellDepth) / 2) + cellDepth / 2;
@@ -438,7 +439,7 @@ class PortGeometryBuilder {
             for (let c = 0; c < cols; c++) {
                 if (count >= maxContainers) return;
 
-                if (Math.random() > 0.4) {
+                if (Math.random() > 0.3) {
                     const mat = this.materials.container[Math.floor(Math.random() * this.materials.container.length)];
                     const mesh = new THREE.Mesh(geo, mat);
 
