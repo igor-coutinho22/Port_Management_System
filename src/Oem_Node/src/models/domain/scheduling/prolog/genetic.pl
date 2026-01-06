@@ -86,16 +86,16 @@ run_genetic :-
     (prob_mutation(_); (prob_mutation(0.1), assertz(prob_mutation(0.1)))),
     (elitism_portion(_); (elitism_portion(0.2), assertz(elitism_portion(0.2)))),
     (stability_generations(_); (stability_generations(6), assertz(stability_generations(6)))),
-    % 1) create initial population
-    population(PS), generate_population(Pop0),
+    % create initial population
+    population(_), generate_population(Pop0),
     evaluate_population(Pop0, PopVal0),
     order_population(PopVal0, PopValOrd0),
     generations(NG),
-    % 2) run GA loop with stability and target stop conditions
+    % run GA loop with stability and target stop conditions
     ga_loop(0, NG, PopValOrd0, BestFinal),
 
-    % 3) BestFinal is BestInd*BestVal
-    BestFinal = BestInd*BestVal,
+    % BestFinal is BestInd*BestVal
+    BestFinal = BestInd*_BestVal,
     % BestInd is list of vessel ids
     sequence_temporization(BestInd, SeqTriplets),
     sum_delays(SeqTriplets, FinalDelay),

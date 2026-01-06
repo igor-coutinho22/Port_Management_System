@@ -1,121 +1,159 @@
-% entry point
+
+% Entry point
 main_rebalance :-
-    % 1. Collect vessels
-    findall((A,V), vessel(V,A,_,_,_), LAV),
-    sort(LAV, LAVSorted),
-    % Helper to extract just the IDs from the sorted pairs
-    extract_ids(LAVSorted, VesselsSorted),
+    % 1. Get all vessels and sort them by arrival time
+    findall((Arrival, V), vessel(V, Arrival, _, _, _), ListAV),
+    sort(ListAV, SortedAV),
+    extract_vessels(SortedAV, SortedVessels),
 
-    % 2. Collect docks (Arity 4)
+    % 2. Get all docks
     findall(D, dock(D, _, _, _), Docks),
+
+    % 3. Run the assignment logic
+    solve_greedy(SortedVessels, Docks, [], FinalAssignments),
+
+    % 4. Calculate final cost
+    calc_total_system_delay(FinalAssignments, TotalDelay),
+
+    % 5. Write outputs
+    write(FinalAssignments), nl,
+    write(TotalDelay), nl.
+
+
+% 1. Helper to extract just the Vessel ID from the (Arrival, Vessel) list
+
+extract_vessels([], []).
+extract_vessels([(_, V)|T], [V|Rest]) :-
+    extract_vessels(T, Rest).
+
+
+% 2. Greedy Allocation: Process one vessel at a time
+
+solve_greedy([], _, Assignments, Assignments).
+solve_greedy([V|RestV], Docks, CurrentAssigns, FinalAssigns) :-
+    % Find the best dock for vessel V given current assignments
+    find_best_dock(V, Docks, CurrentAssigns, BestDock),
     
-    % 3. Greedy assignment
-    assign_visits_greedy(VesselsSorted, Docks, [], Assignments),
+    % Add new assignment to the list
+    append(CurrentAssigns, [assign(V, BestDock)], NewAssigns),
+    
+    % Recursively process the rest
+    solve_greedy(RestV, Docks, NewAssigns, FinalAssigns).
 
-    % 4. Total delay
-    total_delay_for_assignment(Assignments, TotalDelay),
 
-    % 5. Output
-    write(Assignments), nl,
-    write(TotalDelay), nl,
-    halt.
+% 3. Find Best Dock
+%    Try all docks, calculate the cost (delay) for each, pick the lowest.
 
-extract_ids([], []).
-extract_ids([(_-V)|Rest], [V|Ids]) :- extract_ids(Rest, Ids).
+find_best_dock(V, Docks, CurrentAssigns, BestDock) :-
+    % Create a list of (Cost, Dock) tuples
+    get_dock_costs(Docks, V, CurrentAssigns, CostList),
+    % Sort by Cost (smallest first)
+    sort(CostList, SortedCosts),
+    % Pick the Dock from the first item
+    extract_best_dock(SortedCosts, BestDock).
 
-% --- Greedy assignment ---
-assign_visits_greedy([], _Docks, Acc, Acc).
-assign_visits_greedy([V|Vs], Docks, Acc, Assignments) :-
-    find_best_dock_for_visit(V, Docks, Acc, BestDock),
-    append(Acc, [assign(V, BestDock)], Acc1),
-    assign_visits_greedy(Vs, Docks, Acc1, Assignments).
+% Extract the dock from the first element of the sorted list
+extract_best_dock([( _, BestDock)|_], BestDock).
 
-find_best_dock_for_visit(V, Docks, CurrAssign, Best) :-
-    findall(D0-Delay0,
-            ( member(D0, Docks), projected_delay_if_assigned(D0, V, CurrAssign, Delay0) ),
-            Pairs),
-    min_delay_pick(Pairs, CurrAssign, Best).
+% Helper: Iterate all docks and compute cost for each
+get_dock_costs([], _, _, []).
+get_dock_costs([D|RestD], V, CurrentAssigns, [(Cost, D)|RestCosts]) :-
+    % Calculate what the delay would be if we assigned V to D
+    predict_delay(D, V, CurrentAssigns, Cost),
+    get_dock_costs(RestD, V, CurrentAssigns, RestCosts).
 
-projected_delay_if_assigned(Dock, V, CurrAssign, TotalDelay) :-
-    findall(Vx, (member(assign(Vx, Dock), CurrAssign)), AssignedV),
-    append(AssignedV, [V], NewList),
-    build_visit_sequence_by_arrival(NewList, Seq),
-    % Use 3 cranes max instead of DockLength (which is 200+)
-    MaxCr = 3, 
-    multi_crane_temporization_max_cranes(Seq, MaxCr, _SeqQuad, TotalDelay, _TotalCraneMinutes).
 
-min_delay_pick([D-Delay], _, D) :- !.
-min_delay_pick([D1-Delay1, D2-Delay2 | Rest], CurrAssign, Best) :-
-    ( Delay1 < Delay2 ->
-        min_delay_pick([D1-Delay1 | Rest], CurrAssign, Best)
-    ; Delay2 < Delay1 ->
-        min_delay_pick([D2-Delay2 | Rest], CurrAssign, Best)
-    ; count_assigned(D1, CurrAssign, C1),
-      count_assigned(D2, CurrAssign, C2),
-      ( C1 =< C2 ->
-          min_delay_pick([D1-Delay1 | Rest], CurrAssign, Best)
-      ;
-          min_delay_pick([D2-Delay2 | Rest], CurrAssign, Best)
-      )
-    ).
+% 4. Predict Delay
+%    Calculates the delay for a specific dock if we add vessel V to it.
 
-count_assigned(Dock, Assignments, Count) :-
-    findall(V, member(assign(V, Dock), Assignments), L),
-    length(L, Count).
+predict_delay(Dock, NewVessel, CurrentAssigns, Delay) :-
+    % 1. Get vessels already assigned to this dock
+    get_vessels_for_dock(CurrentAssigns, Dock, DockVessels),
+    
+    % 2. Add the new vessel
+    append(DockVessels, [NewVessel], AllVessels),
+    
+    % 3. Sort them by arrival so we calculate time sequentially
+    sort_vessels_by_arrival(AllVessels, SortedVessels),
+    
+    % 4. Calculate the delay for this sequence
+    calculate_sequence_delay(SortedVessels, 0, Delay).
 
-build_visit_sequence_by_arrival(VisitIds, SeqV) :-
-    findall((A,V),( member(V,VisitIds), vessel(V,A,_,_,_) ), Pairs),
+% Filter assignments to find those matching the Dock
+get_vessels_for_dock([], _, []).
+get_vessels_for_dock([assign(V, D)|T], D, [V|Rest]) :- 
+    !, % Cut: we found a match, dont backtrack
+    get_vessels_for_dock(T, D, Rest).
+get_vessels_for_dock([_|T], D, Rest) :-
+    get_vessels_for_dock(T, D, Rest).
+
+% Sort helper: get (Arrival, V), sort, extract V
+sort_vessels_by_arrival(Vessels, Sorted) :-
+    findall((A, V), (member(V, Vessels), vessel(V, A, _, _, _)), Pairs),
     sort(Pairs, SortedPairs),
-    extract_ids(SortedPairs, SeqV).
+    extract_vessels(SortedPairs, Sorted).
 
-total_delay_for_assignment(Assignments, TotalDelay) :-
-    findall(Dock, dock(Dock, _, _, _), Docks),
-    total_delay_for_docks(Docks, Assignments, 0, TotalDelay).
 
-total_delay_for_docks([], _Assign, Acc, Acc).
-total_delay_for_docks([D|Ds], Assign, Acc, Total) :-
-    findall(V, member(assign(V, D), Assign), Vlist),
-    build_visit_sequence_by_arrival(Vlist, Seq),
-    MaxCr = 3,
-    ( Seq = [] -> DelayD = 0 ; multi_crane_temporization_max_cranes(Seq, MaxCr, _Q, DelayD, _CM) ),
-    Acc1 is Acc + DelayD,
-    total_delay_for_docks(Ds, Assign, Acc1, Total).
+% 5. Delay Calculation (Simplified Multi-Crane Logic)
+%    Assume Max Cranes = 2.
 
-multi_crane_temporization_max_cranes(LV, MaxCr, SeqQuad, TotalDelay, TotalCraneMinutes) :-
-    multi_crane_temporization_max_cranes1(0, LV, MaxCr, SeqQuad, TotalDelay, TotalCraneMinutes).
 
-multi_crane_temporization_max_cranes1(_, [], [], 0, 0).
-multi_crane_temporization_max_cranes1(EndPrev, [V|LV], MaxCr,
-                                      [(V,TStart,TEnd,ChosenK)|SeqRest],
-                                      TotalDelay, TotalCraneMinutes) :-
-    vessel(V, TIn, TDep, TUnload, TLoad),
-    P is TUnload + TLoad,
-    ( TIn > EndPrev -> S is TIn ; S is EndPrev + 1 ),
-    generate_crane_options(1, MaxCr, P, S, TDep, Options),
-    pick_best_option(Options, opt(ChosenK, EChosen, DelayChosen, CraneMinutesChosen)),
-    TStart = S,
-    TEnd is EChosen,
-    _Duration is TEnd - TStart + 1,
-    multi_crane_temporization_max_cranes1(TEnd, LV, MaxCr, SeqRest, DelayRest, CraneMinutesRest),
-    TotalDelay is DelayChosen + DelayRest,
-    TotalCraneMinutes is CraneMinutesChosen + CraneMinutesRest.
+% Base case: No vessels, no delay.
+calculate_sequence_delay([], _, 0).
 
-generate_crane_options(K, MaxK, _P, _S, _TDep, []) :- K > MaxK, !.
-generate_crane_options(K, MaxK, P, S, TDep, [opt(K,E,Delay,CM)|Rest]) :-
-    P2 is (P + K - 1) // K,
-    E is S + P2 - 1,
-    TPossibleDep is E + 1,
-    ( TPossibleDep > TDep -> Delay is TPossibleDep - TDep ; Delay is 0 ),
-    Duration is E - S + 1,
-    CM is K * Duration,
-    K1 is K + 1,
-    generate_crane_options(K1, MaxK, P, S, TDep, Rest).
+% Recursive case:
+% LastEndTime: The time the PREVIOUS vessel finished occupying the dock.
+calculate_sequence_delay([V|Rest], LastEndTime, TotalDelay) :-
+    vessel(V, Arrival, Departure, Load, Unload),
+    
+    % Calculate pure processing time (Load + Unload)
+    ProcTime is Load + Unload,
+    
+    % Determine start time: max(Arrival, LastEndTime)
+    determine_start(Arrival, LastEndTime, StartTime),
+    
+    % Calculate Duration using 2 cranes logic (faster)
+    % Logic: With 2 cranes, time is roughly halved. 
+    % We use integer division: (ProcTime + 1) // 2.
+    Duration is (ProcTime + 1) // 2,
+    
+    EndTime is StartTime + Duration,
+    
+    % Calculate Delay for this vessel (ActualExit - DesiredDeparture)
+    % If ActualExit <= Departure, Delay is 0.
+    calc_single_delay(EndTime, Departure, DelayV),
+    
+    % Recurse for the rest
+    calculate_sequence_delay(Rest, EndTime, DelayRest),
+    
+    % Sum it up
+    TotalDelay is DelayV + DelayRest.
 
-pick_best_option([O], O) :- !.
-pick_best_option([opt(K1,E1,D1,CM1), opt(K2,E2,D2,CM2) | Rest], Best) :-
-    ( D1 < D2 -> pick_best_option([opt(K1,E1,D1,CM1) | Rest], Best)
-    ; D2 < D1 -> pick_best_option([opt(K2,E2,D2,CM2) | Rest], Best)
-    ; ( K1 =< K2 -> pick_best_option([opt(K1,E1,D1,CM1) | Rest], Best)
-      ; pick_best_option([opt(K2,E2,D2,CM2) | Rest], Best)
-      )
-    ).
+% Helper: Max(Arrival, LastEndTime)
+determine_start(Arrival, LastEndTime, Arrival) :- 
+    Arrival > LastEndTime, !.
+determine_start(_, LastEndTime, LastEndTime).
+
+% Helper: Max(0, EndTime - Departure)
+calc_single_delay(EndTime, Departure, Diff) :-
+    EndTime > Departure, 
+    !, 
+    Diff is EndTime - Departure.
+calc_single_delay(_, _, 0).
+
+
+
+% 6. Final Total System Delay
+%    Sum up delays of all assignments made.
+
+calc_total_system_delay(Assignments, Total) :-
+    findall(D, dock(D, _, _, _), Docks),
+    sum_docks(Docks, Assignments, Total).
+
+sum_docks([], _, 0).
+sum_docks([D|RestD], Assignments, Total) :-
+    get_vessels_for_dock(Assignments, D, VList),
+    sort_vessels_by_arrival(VList, Sorted),
+    calculate_sequence_delay(Sorted, 0, DelayD),
+    sum_docks(RestD, Assignments, RestTotal),
+    Total is DelayD + RestTotal.
