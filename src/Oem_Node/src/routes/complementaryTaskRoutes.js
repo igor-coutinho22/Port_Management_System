@@ -3,7 +3,7 @@ const router = express.Router();
 const controller = require('../controllers/complementaryTaskController');
 const requireAuth = require('../middleware/authMiddleware');
 
-const auth = requireAuth('RequireOperator'); // Assuming same auth level as Incidents
+const auth = requireAuth('RequireOperator');
 
 // Search
 router.get('/Search', auth, controller.search);

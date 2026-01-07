@@ -42,16 +42,9 @@ app.use('/api/complementarytasks', complementaryTaskRoutes);
 app.use('/api/privacy', privacyRoutes);
 app.use('/api/user-profiles', userRoutes);
 
-// --- START SERVER (HTTPS) ---
+// --- START SERVER (Standard HTTP for VM Deployment) ---
 
-// 4. Load the Certificate Files
-// Adjust the path string if you didn't move them to src/config/
-const sslOptions = {
-    key: fs.readFileSync(path.join(__dirname, 'config', 'localhost-key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'config', 'localhost.pem'))
-};
-
-// 5. Create HTTPS Server instead of app.listen
-https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(` Secure Server running on https://localhost:${PORT}`);
+// Replace the https.createServer block with a standard app.listen
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
 });

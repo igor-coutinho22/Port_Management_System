@@ -10,7 +10,7 @@ class WebAppService {
         this.client = axios.create({
             baseURL: process.env.WEBAPP_API_URL || 'https://localhost:5001',
             timeout: 10000,
-            httpsAgent: agent // Apply the agent here
+            httpsAgent: agent
         });
 
         console.log("--> [WebAppService] Initialized with SSL Bypass enabled.");
