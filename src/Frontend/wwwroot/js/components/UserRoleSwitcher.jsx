@@ -102,5 +102,3 @@ const UserRoleSwitcher = () => {
         </div>
     );
 };
-
-console.log("UserRoleSwitcher component loaded!");

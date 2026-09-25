@@ -47,7 +47,6 @@ const OperationPlanPreviewModal = ({ isOpen, onClose, scheduleResult, date, heur
                 if (val && val.includes("name")) {
                     const obj = parse(val);
                     if (isUserObject(obj)) {
-                        console.log(`Found User in key: "${key}"`); // Debug log to see where it was
                         return obj.name;
                     }
                 }

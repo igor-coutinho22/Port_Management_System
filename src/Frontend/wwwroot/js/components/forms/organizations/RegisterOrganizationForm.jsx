@@ -1,5 +1,4 @@
 // Register Organization Form Component
-console.log('RegisterOrganizationForm component loading...');
 
 const RegisterOrganizationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -189,5 +188,3 @@ const RegisterOrganizationForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('RegisterOrganizationForm component loaded!');

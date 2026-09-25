@@ -1,5 +1,4 @@
 // Register Warehouse Form Component
-console.log('📝 RegisterWarehouseForm component loading...');
 
 const RegisterWarehouseForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -90,5 +89,3 @@ const RegisterWarehouseForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('RegisterWarehouseForm component loaded! 📝');

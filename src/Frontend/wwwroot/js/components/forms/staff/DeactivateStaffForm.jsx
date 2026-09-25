@@ -1,5 +1,4 @@
 // Deactivate Staff Form Component
-console.log('DeactivateStaffForm component loading...');
 
 const DeactivateStaffForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -92,5 +91,3 @@ const DeactivateStaffForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('DeactivateStaffForm component loaded!');

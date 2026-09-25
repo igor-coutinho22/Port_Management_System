@@ -1,5 +1,4 @@
 // Delete Vessel Form Component
-console.log('🗑️ DeleteVesselForm component loading...');
 
 const DeleteVesselForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -278,5 +277,3 @@ const DeleteVesselForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('DeleteVesselForm component loaded! 🗑️');

@@ -1,5 +1,4 @@
 // Get Representative by ID Form Component
-console.log('GetRepresentativeByIdForm is loading...');
 
 const GetRepresentativeByIdForm = () => {
     const { t } = useTranslation();
@@ -188,5 +187,3 @@ const GetRepresentativeByIdForm = () => {
         </div>
     );
 }
-
-console.log('GetRepresentativeByIdForm component loaded!');

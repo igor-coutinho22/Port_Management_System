@@ -150,5 +150,3 @@ const Breadcrumb = ({ currentPage, onNavigate }) => {
         </nav>
     );
 };
-
-console.log('Breadcrumb component loaded!');

@@ -55,8 +55,6 @@ class PortDataFetcher {
             return false;
         });
 
-        console.log(`[PortDataFetcher] Matched ${vessels.length} vessels from ${allVessels.length} total vessels and ${approvedVisits.length} visits.`);
-
         const containers = this.extractContainers(storageAreas, vessels);
 
         const staff = await safeFetch("staff", () => this.fetchStaff(), null);
@@ -110,8 +108,6 @@ class PortDataFetcher {
             toDate: endOfDay
         });
 
-        console.log(`[PortDataFetcher] Fetching visits from ${startOfDay} to ${endOfDay}`);
-
         const resp = await fetch(this.api(`/api/vesselvisitnotification/search?${params.toString()}`), { credentials: 'include' });
 
         if (!resp.ok) {
@@ -121,7 +117,6 @@ class PortDataFetcher {
         }
 
         const visits = await resp.json();
-        console.log(`[PortDataFetcher] Fetched ${visits.length} visits:`, visits);
         return visits;
     }
 
@@ -157,7 +152,7 @@ class PortDataFetcher {
         return rawList.map(sa => {
             const common = sa.storageArea || sa.StorageArea || sa;
 
-            // IMPORTANT: container list might be on sa or on common depending on your DTO
+            // The container list may be on the storage area itself or on its common data
             const containerList = sa.containerList || sa.ContainerList || common.containerList || common.ContainerList || [];
 
             const base = {

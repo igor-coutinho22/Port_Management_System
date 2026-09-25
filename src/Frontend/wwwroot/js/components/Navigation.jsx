@@ -24,7 +24,6 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
     // Also add class to body for additional targeting
     document.body.className = prefersDark ? "dark-theme" : "light-theme";
 
-    console.log("Theme applied:", prefersDark ? "dark" : "light"); // Debug log
   }, []);
 
   const toggleTheme = () => {
@@ -40,7 +39,6 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
 
     localStorage.setItem("theme", theme);
 
-    console.log("Theme toggled to:", theme); // Debug log
   };
 
   // All possible navigation items (labels will be translated when rendered)
@@ -96,12 +94,6 @@ const Navigation = ({ currentPage, onNavigate, onHamburgerMenuToggle }) => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isMenuOpen]);
-
-  console.log(
-    "Navigation items filtered for user:",
-    currentUser?.role,
-    navItems
-  );
 
   return (
     <>

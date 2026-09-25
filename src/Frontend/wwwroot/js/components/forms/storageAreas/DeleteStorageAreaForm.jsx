@@ -1,5 +1,4 @@
 // Delete Storage Area Form Component
-console.log('DeleteStorageAreaForm component loading...');
 
 const DeleteStorageAreaForm = ({ onSuccess }) => {
     const [searchData, setSearchData] = React.useState({ id: '' });

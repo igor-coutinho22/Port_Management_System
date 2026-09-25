@@ -113,7 +113,6 @@ class PortVisualization {
             }
 
             if (key === 'r') {
-                console.log("Reset disparado por tecla");
                 this.frameCamera();
             }
         };
@@ -269,14 +268,12 @@ class PortVisualization {
 
     async loadPortData() {
         THREE.Cache.enabled = false;
-        console.log("PortVisualization: loadPortData called");
         this.clearScene();
         this.addWaterPlane();
         this.addGroundPlane();
 
         try {
             const data = await this.dataFetcher.loadAll();
-            console.log("PortVisualization: Data fetched", data);
 
             if (data.textureConfig) {
                 this.geometryBuilder.loadTextures(data.textureConfig);
@@ -287,7 +284,6 @@ class PortVisualization {
             }
 
             const layout = this.layoutEngine.computeLayout(data);
-            console.log("PortVisualization: Layout computed", layout);
 
 
             // Fator de distanciamento
@@ -337,8 +333,6 @@ class PortVisualization {
 
             // Constrói as estradas com as novas coordenadas e comprimentos
             this.buildRoads(layout.roads, layout.intersections);
-
-            console.log("PortVisualization: Scene built with objects", this.objects.length);
 
             this.frameCamera();
         } catch (err) {
@@ -788,7 +782,7 @@ class PortVisualization {
                 const start = seg.center - seg.length / 2;
                 const end = seg.center + seg.length / 2;
 
-                // Linha Central e Faixas... (Mantido o teu código)
+                // Linha Central e Faixas...
                 const centerLine = r.orientation === "horizontal"
                     ? this.geometryBuilder.createLaneLine(seg.length, 1.5)
                     : this.geometryBuilder.createLaneLine(1.5, seg.length);
@@ -817,7 +811,7 @@ class PortVisualization {
                     }
                 });
 
-                // Candeeiros... (Mantido o teu código)
+                // Candeeiros...
                 let lightCursor = start + 20;
                 while (lightCursor < end - 20) {
                     const sideOff = roadW_Fixed / 2 + 3;
@@ -908,7 +902,6 @@ class PortVisualization {
     // CAMERA TARGET RESET
     // -------------------------------------------------------------------------
     frameCamera() {
-        console.log("PortVisualization: Executando reset suave da câmara");
 
         // Ativar o estado de animação 
         this.flyToActive = true;

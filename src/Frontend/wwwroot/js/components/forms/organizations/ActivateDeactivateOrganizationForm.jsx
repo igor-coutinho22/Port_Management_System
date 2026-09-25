@@ -1,5 +1,4 @@
 // Activate/Deactivate Organization Form Component
-console.log('ActivateDeactivateOrganizationForm component loading...');
 
 const ActivateDeactivateOrganizationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -158,5 +157,3 @@ const ActivateDeactivateOrganizationForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('ActivateDeactivateOrganizationForm component loaded!');

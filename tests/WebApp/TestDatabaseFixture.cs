@@ -20,7 +20,7 @@ public class TestDatabaseFixture : IDisposable
 
         var services = new ServiceCollection();
 
-        // Logging so DataSeeder can log (or you can use NullLogger if you prefer)
+        // Logging so DataSeeder can log
         services.AddLogging(builder => builder.AddDebug());
 
         services.AddDbContext<PortManagementContext>(options =>

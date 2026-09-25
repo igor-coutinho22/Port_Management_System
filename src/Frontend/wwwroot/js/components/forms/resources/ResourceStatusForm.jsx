@@ -1,5 +1,4 @@
 // Resource Status Management Form Component
-console.log('🔧 ResourceStatusForm component loading...');
 
 const ResourceStatusForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -333,5 +332,3 @@ const ResourceStatusForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('ResourceStatusForm component loaded! 🔧');

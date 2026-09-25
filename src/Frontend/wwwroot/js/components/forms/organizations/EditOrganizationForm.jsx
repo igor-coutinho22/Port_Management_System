@@ -1,5 +1,4 @@
 // Edit Organization Form Component
-console.log('EditOrganizationForm component loading...');
 
 const EditOrganizationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -240,5 +239,3 @@ const EditOrganizationForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('EditOrganizationForm component loaded!');

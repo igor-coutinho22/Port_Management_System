@@ -1,5 +1,4 @@
 // Search Vessel Types Form Component
-console.log('🔍 SearchVesselTypesForm component loading...');
 
 const SearchVesselTypesForm = () => {
     const { t } = useTranslation();
@@ -217,5 +216,3 @@ const SearchVesselTypesForm = () => {
         </div>
     );
 };
-
-console.log('SearchVesselTypesForm component loaded! 🔍');

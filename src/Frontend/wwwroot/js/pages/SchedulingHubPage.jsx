@@ -819,9 +819,6 @@ const SchedulingHubPage = () => {
 
 // Operation Plans Quick Table Component
 const OperationPlansQuickTable = ({ plans, onRefresh }) => {
-    // Assuming simple translation or fallback
-    const t = (key) => key;
-
     return (
         <div className="quick-table-container">
             <div className="quick-table-header">

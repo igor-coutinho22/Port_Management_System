@@ -1,5 +1,4 @@
 // Get Dock by ID Form Component
-console.log('🎯 GetDockByIdForm component loading...');
 
 const GetDockByIdForm = () => {
     const { t } = useTranslation();
@@ -204,5 +203,3 @@ const GetDockByIdForm = () => {
         </div>
     );
 }
-
-console.log('GetDockByIdForm component loaded! 🎯');

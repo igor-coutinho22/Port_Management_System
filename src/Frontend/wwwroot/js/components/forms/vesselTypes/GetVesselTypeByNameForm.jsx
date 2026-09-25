@@ -1,5 +1,4 @@
 // Get Vessel Type by Name Form Component
-console.log('🎯 GetVesselTypeByNameForm component loading...');
 
 const GetVesselTypeByNameForm = () => {
     const { t } = useTranslation();
@@ -191,5 +190,3 @@ const GetVesselTypeByNameForm = () => {
         </div>
     );
 };
-
-console.log('GetVesselTypeByNameForm component loaded! 🎯');

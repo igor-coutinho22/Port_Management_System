@@ -1,5 +1,4 @@
 // Edit Vessel Visit Notification Form Component
-console.log('EditVesselVisitNotificationForm component loading...');
 
 const EditVesselVisitNotificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -346,5 +345,3 @@ const EditVesselVisitNotificationForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('EditVesselVisitNotificationForm component loaded!');

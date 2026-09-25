@@ -1,5 +1,4 @@
 // Get Dock-StorageArea Connection Form Component
-console.log('GetDockConnectionForm component loading...');
 
 const GetDockConnectionForm = () => {
     const [formData, setFormData] = React.useState({

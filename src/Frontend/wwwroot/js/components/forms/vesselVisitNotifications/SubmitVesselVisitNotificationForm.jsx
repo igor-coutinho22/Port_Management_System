@@ -1,5 +1,4 @@
 // Submit Vessel Visit Notification Form Component
-console.log('SubmitVesselVisitNotificationForm component loading...');
 
 const SubmitVesselVisitNotificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -87,5 +86,3 @@ const SubmitVesselVisitNotificationForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('SubmitVesselVisitNotificationForm component loaded!');

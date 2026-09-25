@@ -19,7 +19,7 @@ const ComplementaryTasksHubPage = () => {
       // We need to call the search endpoint for TASKS, not Visits.
       // We will assume apiService.searchComplementaryTasks exists or use the generic search.
       
-      // Let's use the search we defined in backend: GET /api/complementarytasks/Search
+      // GET /api/complementarytasks/Search
       const result = await apiService.searchComplementaryTasks({}); 
       setTasks(result || []);
     } catch (error) {

@@ -1,5 +1,4 @@
 // Search Resource Form Component
-console.log('🔍 SearchResourceForm component loading...');
 
 const SearchResourceForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -341,5 +340,3 @@ const SearchResourceForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('SearchResourceForm component loaded! 🔍');

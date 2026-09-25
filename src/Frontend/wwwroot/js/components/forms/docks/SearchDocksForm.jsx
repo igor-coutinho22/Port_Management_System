@@ -1,5 +1,4 @@
 // Search Docks Form Component
-console.log('🔍 SearchDocksForm component loading...');
 
 const SearchDocksForm = () => {
     const { t } = useTranslation();
@@ -249,5 +248,3 @@ const SearchDocksForm = () => {
         </div>
     );
 }
-
-console.log('SearchDocksForm component loaded! 🔍');

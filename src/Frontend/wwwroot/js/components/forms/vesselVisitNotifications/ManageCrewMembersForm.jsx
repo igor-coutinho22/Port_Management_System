@@ -1,5 +1,4 @@
 // Manage Crew Members Form Component
-console.log('ManageCrewMembersForm component loading...');
 
 const ManageCrewMembersForm = ({ onSuccess }) => {
     const [step, setStep] = React.useState(1); // 1: enter ID, 2: choose action, 3: add/remove
@@ -276,5 +275,3 @@ const ManageCrewMembersForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('ManageCrewMembersForm component loaded!');

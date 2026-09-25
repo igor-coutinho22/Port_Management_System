@@ -1,5 +1,4 @@
 // Delete Dock-StorageArea Connection Form Component
-console.log('DeleteDockConnectionForm component loading...');
 
 const DeleteDockConnectionForm = ({ onSuccess }) => {
     const [formData, setFormData] = React.useState({

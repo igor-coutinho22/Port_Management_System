@@ -1,5 +1,4 @@
 // Get Vessel by IMO Form Component
-console.log('🎯 GetVesselByImoForm component loading...');
 
 const GetVesselByImoForm = () => {
     const { t } = useTranslation();
@@ -192,5 +191,3 @@ const GetVesselByImoForm = () => {
         </div>
     );
 };
-
-console.log('GetVesselByImoForm component loaded! 🎯');

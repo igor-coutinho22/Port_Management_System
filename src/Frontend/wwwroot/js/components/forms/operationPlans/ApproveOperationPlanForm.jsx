@@ -22,7 +22,7 @@ const ApproveOperationPlanForm = ({ onSuccess }) => {
         try {
             // Note: If your API route is /approve?id=... vs /approve/{id}, adjust accordingly.
             // Based on your controller [HttpPut("approve")], it likely expects ID in query or body depending on setup.
-            // Assuming your apiService handles: PUT /api/operationPlan/approve?id={planId}
+            // PUT /api/operationPlan/approve?id={planId}
             await apiService.approveOperationPlan(planId.trim());
             
             setMessage({ type: 'success', text: '✅ Operation Plan approved successfully.' });

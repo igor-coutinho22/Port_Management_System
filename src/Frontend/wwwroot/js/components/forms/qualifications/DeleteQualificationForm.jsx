@@ -1,7 +1,6 @@
 // Delete Qualification Form Component
-console.log('🗑️ DeleteQualificationForm component loading...');
 
-export default function DeleteQualificationForm({ onSuccess }) {
+function DeleteQualificationForm({ onSuccess }) {
     const { t } = useTranslation();
     const [searchData, setSearchData] = React.useState({ code: '' });
     const [qualification, setQualification] = React.useState(null);
@@ -213,5 +212,3 @@ export default function DeleteQualificationForm({ onSuccess }) {
         </div>
     );
 }
-
-console.log('DeleteQualificationForm component loaded! 🗑️');

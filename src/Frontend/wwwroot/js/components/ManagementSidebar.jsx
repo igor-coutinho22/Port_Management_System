@@ -138,5 +138,3 @@ const ManagementSidebar = ({ currentPage, onNavigate, isVisible, onToggle, hambu
         </>
     );
 };
-
-console.log('ManagementSidebar component loaded!');

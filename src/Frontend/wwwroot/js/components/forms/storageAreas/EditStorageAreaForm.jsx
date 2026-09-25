@@ -1,5 +1,4 @@
 // Edit Storage Area Form Component
-console.log('✏️ EditStorageAreaForm component loading...');
 
 const EditStorageAreaForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -315,5 +314,3 @@ const EditStorageAreaForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('EditStorageAreaForm component loaded! ✏️');

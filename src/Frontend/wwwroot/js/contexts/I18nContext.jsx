@@ -61,7 +61,6 @@ const I18nProvider = ({ children }) => {
         if (LANGUAGES[languageCode]) {
             setCurrentLanguage(languageCode);
             localStorage.setItem('preferred-language', languageCode);
-            console.log(`Language changed to: ${LANGUAGES[languageCode].name}`);
         } else {
             console.error(`Invalid language code: ${languageCode}`);
         }
@@ -115,5 +114,3 @@ const I18nProvider = ({ children }) => {
         </I18nContext.Provider>
     );
 };
-
-console.log('I18n Context system loaded!');

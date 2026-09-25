@@ -1,5 +1,4 @@
 // Remove Qualification From Staff Form Component
-console.log('RemoveQualificationFromStaffForm component loading...');
 
 const RemoveQualificationFromStaffForm = ({ onSuccess }) => {
     const [number, setNumber] = React.useState('');
@@ -131,5 +130,3 @@ const RemoveQualificationFromStaffForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('RemoveQualificationFromStaffForm component loaded!');

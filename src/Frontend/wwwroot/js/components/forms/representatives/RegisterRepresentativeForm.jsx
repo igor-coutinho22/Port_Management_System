@@ -1,7 +1,6 @@
 // Register Representative Form Component
-console.log('RegisterRepresentativesForm is loading...');
 
-export default function RegisterRepresentativeForm({ onSuccess }) {
+function RegisterRepresentativeForm({ onSuccess }) {
     const { t } = useTranslation();
     const [formData, setFormData] = React.useState({
         organizationId: '',
@@ -239,5 +238,3 @@ export default function RegisterRepresentativeForm({ onSuccess }) {
         </div>
     );
 }
-
-console.log('RegisterRepresentativeForm component loaded!');

@@ -1,5 +1,4 @@
 // Get Vessel Visit Notification by ID Form Component
-console.log('GetVesselVisitNotificationByIdForm component loading...');
 
 const GetVesselVisitNotificationByIdForm = () => {
     const { t } = useTranslation();
@@ -175,5 +174,3 @@ const GetVesselVisitNotificationByIdForm = () => {
         </div>
     );
 };
-
-console.log('GetVesselVisitNotificationByIdForm component loaded!');

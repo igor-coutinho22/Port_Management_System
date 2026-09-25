@@ -1,8 +1,6 @@
 ﻿// Management Page Component - Unified management interface
 /* global React */
 
-console.log("ManagementPage.jsx file is being loaded!");
-
 const ManagementPage = () => {
     const { t } = useTranslation();
     const { canAccessMenu, isLoadingUser, isAuthenticated } = useUser();
@@ -95,7 +93,6 @@ const ManagementPage = () => {
     ];
 
     const handleEntityClick = (entity) => {
-        console.log("Navigating to", entity.title, "page...");
 
         if (window.appNavigate) {
             window.appNavigate(entity.id);
@@ -162,5 +159,3 @@ const ManagementPage = () => {
         </div>
     );
 };
-
-console.log("ManagementPage component loaded!");

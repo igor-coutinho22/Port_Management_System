@@ -1,5 +1,4 @@
 // Qualifications Management Hub Page - Swagger-style expandable interface
-console.log('QualificationsHubPage.jsx is loading...');
 
 const QualificationsHubPage = () => {
     const { t } = useTranslation();
@@ -172,5 +171,3 @@ const QualificationsQuickTable = ({ qualifications, onRefresh }) => {
         </div>
     );
 };
-
-console.log('QualificationsHubPage component loaded!');

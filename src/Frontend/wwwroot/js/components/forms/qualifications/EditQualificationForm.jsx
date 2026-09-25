@@ -1,5 +1,4 @@
 // Edit Qualification Form Component
-console.log('EditQualificationForm component loading...');
 
 const EditQualificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -211,5 +210,3 @@ const EditQualificationForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('EditQualificationForm component loaded!');

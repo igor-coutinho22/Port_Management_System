@@ -1,5 +1,4 @@
 // Vessel Visit Notifications Hub Page (Representatives View)
-console.log('VVNHubPageForRepresentatives.jsx is loading...');
 
 const VVNHubPageForRepresentatives = () => {
     const { t } = useTranslation();
@@ -240,5 +239,3 @@ const VVNRepresentativeQuickTable = ({ notifications, onRefresh }) => {
         </div>
     );
 };
-
-console.log('VVNHubPageForRepresentatives component loaded!');

@@ -1,5 +1,4 @@
 // Get Organization by ID Form Component
-console.log('GetOrganizationByIdForm component loading...');
 
 const GetOrganizationByIdForm = () => {
     const { t } = useTranslation();
@@ -185,5 +184,3 @@ const GetOrganizationByIdForm = () => {
         </div>
     );
 }
-
-console.log('GetOrganizationByIdForm component loaded!');

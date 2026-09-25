@@ -126,9 +126,3 @@ const Footer = ({ currentPage, onNavigate }) => {
         </footer>
     );
 };
-
-console.log('Footer component loaded!');
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Footer;
-}

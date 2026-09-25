@@ -1,5 +1,4 @@
 // Vessel Types Management Hub Page - Swagger-style expandable interface
-console.log('VesselTypesHubPage.jsx is loading...');
 
 const VesselTypesHubPage = () => {
     const { t } = useTranslation();
@@ -200,5 +199,3 @@ const VesselTypesQuickTable = ({ vesselTypes, onRefresh }) => {
         </div>
     );
 };
-
-console.log('VesselTypesHubPage component loaded!');

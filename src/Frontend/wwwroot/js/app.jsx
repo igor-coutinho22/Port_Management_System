@@ -73,7 +73,6 @@ const AppWithGlobalNav = () => {
         : "home";
 
     const handleNavigate = (page) => {
-        console.log(`Navigating to: ${page}`);
         setIsLoading(true);
         setCurrentPage(page);
         window.history.pushState({ page }, "", `#${page}`);
@@ -134,7 +133,6 @@ const AppWithGlobalNav = () => {
 
     React.useEffect(() => {
         window.appNavigate = handleNavigate;
-        console.log("Global navigation function set");
     }, []);
 
     React.useEffect(() => {
@@ -297,7 +295,6 @@ const basePage = pageHash.split("?")[0];
 const isActivationPage = basePage === "activation-success";
 
 if (isActivationPage) {
-    console.log("Root: rendering WITHOUT AuthGate (activation-success page)");
     root.render(
         <I18nProvider>
             <UserProvider>
@@ -306,7 +303,6 @@ if (isActivationPage) {
         </I18nProvider>
     );
 } else {
-    console.log("Root: rendering WITH AuthGate (normal secured app)");
     root.render(
         <I18nProvider>
             <AuthGate>
@@ -317,5 +313,3 @@ if (isActivationPage) {
         </I18nProvider>
     );
 }
-
-console.log("React SPA initialized successfully!");

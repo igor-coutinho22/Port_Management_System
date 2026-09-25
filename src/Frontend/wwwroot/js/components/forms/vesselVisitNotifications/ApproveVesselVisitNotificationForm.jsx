@@ -1,5 +1,4 @@
 // Approve Vessel Visit Notification Form Component
-console.log('ApproveVesselVisitNotificationForm component loading...');
 
 const ApproveVesselVisitNotificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -107,5 +106,3 @@ const ApproveVesselVisitNotificationForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('ApproveVesselVisitNotificationForm component loaded!');

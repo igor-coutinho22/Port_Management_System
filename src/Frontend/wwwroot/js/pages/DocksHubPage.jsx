@@ -1,5 +1,4 @@
 // Docks Management Hub Page - Swagger-style expandable interface
-console.log('DocksHubPage.jsx is loading...');
 
 const DocksHubPage = () => {
     const { t } = useTranslation();
@@ -208,5 +207,3 @@ const DocksQuickTable = ({ docks, onRefresh }) => {
         </div>
     );
 };
-
-console.log('DocksHubPage component loaded!S');

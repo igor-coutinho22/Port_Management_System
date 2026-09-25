@@ -1,5 +1,4 @@
 // Update Dock-StorageArea Connection Form Component
-console.log('UpdateDockConnectionForm component loading...');
 
 const UpdateDockConnectionForm = ({ onSuccess }) => {
     const [formData, setFormData] = React.useState({

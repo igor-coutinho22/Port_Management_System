@@ -1,5 +1,4 @@
 // Edit Dock Form Component
-console.log('✏️ EditDockForm component loading...');
 
 const EditDockForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -95,21 +94,11 @@ const EditDockForm = ({ onSuccess }) => {
         
         try {
             const data = await apiService.getDockById(searchData.id.trim());
-            console.log('🔍 API Response from getDockById:', data);
             if (data) {
                 setDock(data);
                 // Use the searchData.id since the API response doesn't include the ID
                 setFormData({
                     id: searchData.id.trim(), // Use the ID we searched with
-                    name: data.name || '',
-                    location: data.location || '',
-                    lengthMeters: data.lengthMeters || '',
-                    depthMeters: data.depthMeters || '',
-                    maxDraftMeters: data.maxDraftMeters || '',
-                    allowedVesselTypes: data.allowedVesselTypes || []
-                });
-                console.log('🔍 Form data after setting:', {
-                    id: searchData.id.trim(),
                     name: data.name || '',
                     location: data.location || '',
                     lengthMeters: data.lengthMeters || '',
@@ -178,12 +167,8 @@ const EditDockForm = ({ onSuccess }) => {
                 AllowedVesselTypes: formData.allowedVesselTypes
             };
 
-            console.log('🔍 Updating dock with data:', dockData);
-            console.log('🔍 Dock ID:', formData.id);
-
             // Update dock
             const result = await apiService.updateDock(formData.id, dockData);
-            console.log('🔍 Update result:', result);
             
             setMessage({ type: 'success', text: t('docks.forms.edit.success') });
             
@@ -474,5 +459,3 @@ const EditDockForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('EditDockForm component loaded! ✏️');

@@ -1,5 +1,4 @@
 // Register Vessel Type Form Component
-console.log('📝 RegisterVesselTypeForm component loading...');
 
 const RegisterVesselTypeForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -57,7 +56,6 @@ const RegisterVesselTypeForm = ({ onSuccess }) => {
             }
 
             // Debug: Log the data being sent
-            console.log('🔍 Sending vessel type data:', formData);
 
             // Transform data to match backend DTO expectations (PascalCase)
             const vesselTypeData = {
@@ -68,8 +66,6 @@ const RegisterVesselTypeForm = ({ onSuccess }) => {
                 MaxTiers: parseInt(formData.maxTiers),
                 MaxTEUCapacity: calculateTEUCapacity() // This will be calculated on backend too
             };
-
-            console.log('🔍 Transformed vessel type data:', vesselTypeData);
 
             // Create vessel type
             await apiService.createVesselType(vesselTypeData);
@@ -266,8 +262,6 @@ const RegisterVesselTypeForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('RegisterVesselTypeForm component loaded! 📝');
 
 /* -- FLOW --- */
 /* User Input → React State → Form Validation → Data Transform → 

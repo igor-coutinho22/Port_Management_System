@@ -1,5 +1,3 @@
-console.log('UpdateVesselVisitExecutionForm component loading...');
-
 const UpdateVesselVisitExecutionForm = ({ onSuccess }) => {
     // --- STATE ---
     const [searchId, setSearchId] = React.useState('');

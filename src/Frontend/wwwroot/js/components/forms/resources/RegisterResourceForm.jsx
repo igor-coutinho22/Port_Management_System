@@ -1,5 +1,4 @@
 // Register Resource Form Component
-console.log('📝 RegisterResourceForm component loading...');
 
 const RegisterResourceForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -301,5 +300,3 @@ const RegisterResourceForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('RegisterResourceForm component loaded! 📝');

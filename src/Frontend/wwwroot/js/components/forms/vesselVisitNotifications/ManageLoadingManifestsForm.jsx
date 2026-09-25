@@ -1,5 +1,4 @@
 // Manage Loading Manifests Form Component
-console.log('ManageLoadingManifestsForm component loading...');
 
 
 const ManageLoadingManifestsForm = ({ onSuccess }) => {
@@ -239,5 +238,3 @@ const ManageLoadingManifestsForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('ManageLoadingManifestsForm component loaded!');

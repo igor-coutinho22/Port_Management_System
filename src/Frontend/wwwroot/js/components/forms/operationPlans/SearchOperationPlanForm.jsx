@@ -71,7 +71,7 @@ const SearchOperationPlanForm = () => {
         setMessage({ type: '', text: '' });
         
         try {
-            // Assuming apiService.searchPlans accepts (start, end, imo)
+            // apiService.searchPlans(start, end, imo)
             // URL: `/api/OperationPlan/Search?startDate=...&endDate=...&vesselIMO=...`
             const data = await apiService.searchOperationPlans(
                 searchData.startDate, 

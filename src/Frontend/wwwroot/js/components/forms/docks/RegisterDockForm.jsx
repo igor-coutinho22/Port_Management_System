@@ -1,5 +1,4 @@
 // Register Dock Form Component
-console.log('📝 RegisterDockForm component loading...');
 
 const RegisterDockForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -90,7 +89,6 @@ const RegisterDockForm = ({ onSuccess }) => {
             }
 
             // Debug: Log the data being sent
-            console.log('🔍 Sending dock data:', formData);
 
             // Transform data to match backend DTO expectations
             const dockData = {
@@ -101,8 +99,6 @@ const RegisterDockForm = ({ onSuccess }) => {
                 MaxDraftMeters: parseFloat(formData.maxDraftMeters),
                 AllowedVesselTypes: formData.allowedVesselTypes
             };
-
-            console.log('🔍 Transformed dock data:', dockData);
 
             // Create dock
             await apiService.createDock(dockData);
@@ -316,5 +312,3 @@ const RegisterDockForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('RegisterDockForm component loaded! 📝');

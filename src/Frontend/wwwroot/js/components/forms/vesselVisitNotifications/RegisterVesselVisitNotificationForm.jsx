@@ -1,6 +1,5 @@
 
 // Register Vessel Visit Notification Form Component
-console.log('📝 RegisterVesselVisitNotificationForm component loading...');
 
 // ISO 6346 container ID validation (format only)
 function isValidContainerId(id) {
@@ -466,5 +465,3 @@ const RegisterVesselVisitNotificationForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('RegisterVesselVisitNotificationForm component loaded!');

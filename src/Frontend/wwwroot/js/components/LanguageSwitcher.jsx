@@ -67,5 +67,3 @@ const LanguageSwitcher = () => {
         </div>
     );
 };
-
-console.log('Language Switcher component loaded!');

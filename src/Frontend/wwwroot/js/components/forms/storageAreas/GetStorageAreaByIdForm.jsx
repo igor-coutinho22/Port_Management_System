@@ -1,5 +1,4 @@
 // Get Storage Area By ID Form Component
-console.log('GetStorageAreaByIdForm component loading...');
 
 const GetStorageAreaByIdForm = () => {
     const { t } = useTranslation();
@@ -180,5 +179,3 @@ const GetStorageAreaByIdForm = () => {
         </div>
     );
 };
-
-console.log('GetStorageAreaByIdForm component loaded! 🎯');

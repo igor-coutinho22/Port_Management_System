@@ -1,5 +1,4 @@
 // Delete Vessel Type Form Component
-console.log('🗑️ DeleteVesselTypeForm component loading...');
 
 const DeleteVesselTypeForm = ({ onSuccess }) => {
     const [searchData, setSearchData] = React.useState({
@@ -275,5 +274,3 @@ const DeleteVesselTypeForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('DeleteVesselTypeForm component loaded! 🗑️');

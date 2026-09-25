@@ -1,5 +1,4 @@
 // Activate/Deactivate Representative Form Component
-console.log('ActivateDeactivateRepresentativeForm is loading...');
 
 const ActivateDeactivateRepresentativeForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -163,5 +162,3 @@ const ActivateDeactivateRepresentativeForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('ActivateDeactivateRepresentativeForm component loaded!');

@@ -169,7 +169,6 @@ namespace WebApp.Controllers
                 var rep = await _representativeService.GetByIdAsync(dto.Id);
                 RepresentativeMapper.GetFromDto(rep!, id, dto);
 
-                // Assuming there's a method to add a representative in the service
                 await _service.AddRepresentativeAsync(id, rep!);
 
                 var updated = await _service.GetByIdAsync(id);

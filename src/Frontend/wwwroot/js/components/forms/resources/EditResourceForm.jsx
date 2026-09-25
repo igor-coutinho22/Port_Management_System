@@ -1,5 +1,4 @@
 // Edit Resource Form Component
-console.log('✏️ EditResourceForm component loading...');
 
 const EditResourceForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -435,5 +434,3 @@ const EditResourceForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('EditResourceForm component loaded! ✏️');

@@ -1,5 +1,4 @@
 // List Dock-StorageArea Connections Form Component
-console.log('ListDockConnectionsForm component loading...');
 
 const ListDockConnectionsForm = () => {
     const [storageAreaId, setStorageAreaId] = React.useState('');

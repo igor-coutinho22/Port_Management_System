@@ -1,5 +1,4 @@
 // Search Staff Form Component
-console.log('SearchStaffForm component loading...');
 
 const SearchStaffForm = () => {
     const { t } = useTranslation();
@@ -239,5 +238,3 @@ const SearchStaffForm = () => {
         </div>
     );
 }
-
-console.log('SearchStaffForm component loaded! 🔍');

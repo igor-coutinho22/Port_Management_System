@@ -1,5 +1,4 @@
 // Reject Vessel Visit Notification Form Component
-console.log('RejectVesselVisitNotificationForm component loading...');
 
 const RejectVesselVisitNotificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -110,5 +109,3 @@ const RejectVesselVisitNotificationForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('RejectVesselVisitNotificationForm component loaded!');

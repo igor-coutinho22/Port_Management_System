@@ -1,5 +1,4 @@
 // Staff Management Hub Page - Swagger-style expandable interface
-console.log('StaffHubPage.jsx is loading...');
 
 const StaffHubPage = () => {
     const { t } = useTranslation();
@@ -232,5 +231,3 @@ const StaffQuickTable = ({ staffList, onRefresh }) => {
         </div>
     );
 };
-
-console.log('StaffHubPage component loaded!');

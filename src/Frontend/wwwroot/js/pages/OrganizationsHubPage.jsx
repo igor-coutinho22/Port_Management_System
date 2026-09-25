@@ -1,5 +1,4 @@
 // Organizations Management Hub Page - Swagger-style expandable interface
-console.log('OrganizationsHubPage.jsx is loading...');
 
 const OrganizationsHubPage = () => {
     const { t } = useTranslation();
@@ -228,5 +227,3 @@ const OrganizationsQuickTable = ({ organizations, onRefresh }) => {
         </div>
     );
 };
-
-console.log('OrganizationsHubPage component loaded!');

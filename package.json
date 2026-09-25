@@ -3,8 +3,6 @@
         "dev": "concurrently \"cd src/Frontend && npm start\" \"cd src/Oem_Node && npm run dev\" \"cd src/WebApp && dotnet run\""
     },
     "devDependencies": {
-        "@types/jest": "^30.0.0",
-        "@types/mocha": "^10.0.10",
         "concurrently": "^9.2.1"
     }
 }

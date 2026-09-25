@@ -1,5 +1,4 @@
 // Get Storage Area By Name Form Component
-console.log('🔎 GetStorageAreaByNameForm component loading...');
 
 const GetStorageAreaByNameForm = () => {
     const { t } = useTranslation();
@@ -168,5 +167,3 @@ const GetStorageAreaByNameForm = () => {
         </div>
     );
 };
-
-console.log('GetStorageAreaByNameForm component loaded! 🔎');

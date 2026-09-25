@@ -4613,5 +4613,3 @@ window.translations = {
       "Plano de Operação não encontrado.",
   },
 };
-
-console.log("Translation files loaded successfully!");

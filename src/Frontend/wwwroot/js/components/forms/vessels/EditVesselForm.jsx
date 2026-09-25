@@ -1,5 +1,4 @@
 // Edit Vessel Form Component
-console.log('✏️ EditVesselForm component loading...');
 
 const EditVesselForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -471,5 +470,3 @@ const EditVesselForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('EditVesselForm component loaded! ✏️');

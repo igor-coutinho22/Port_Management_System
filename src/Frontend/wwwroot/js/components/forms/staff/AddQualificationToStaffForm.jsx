@@ -1,5 +1,4 @@
 // Add Qualification To Staff Form Component
-console.log('AddQualificationToStaffForm component loading...');
 
 const AddQualificationToStaffForm = ({ onSuccess }) => {
     const [number, setNumber] = React.useState('');
@@ -137,5 +136,3 @@ const AddQualificationToStaffForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('AddQualificationToStaffForm component loaded!');

@@ -79,7 +79,6 @@ class ApiService {
         }
 
         // Debug log to help you see which port is being called
-        console.log(`[API] ${config.method || "GET"} ${url}`);
 
         const response = await fetch(url, config);
 

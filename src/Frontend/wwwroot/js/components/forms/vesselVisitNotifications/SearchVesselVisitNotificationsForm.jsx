@@ -1,5 +1,4 @@
 // Search Vessel Visit Notifications Form Component
-console.log('SearchVesselVisitNotificationsForm component loading...');
 
 const SearchVesselVisitNotificationsForm = () => {
     const { t } = useTranslation();
@@ -240,5 +239,3 @@ const SearchVesselVisitNotificationsForm = () => {
         </div>
     );
 };
-
-console.log('SearchVesselVisitNotificationsForm component loaded!');

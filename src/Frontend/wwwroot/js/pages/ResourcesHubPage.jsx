@@ -1,5 +1,4 @@
 // Resources Management Hub Page - Swagger-style expandable interface
-console.log('SResourcesHubPage.jsx is loading...');
 
 const ResourcesHubPage = () => {
     const { t } = useTranslation();
@@ -228,5 +227,3 @@ const ResourcesQuickTable = ({ resources, onRefresh }) => {
         </div>
     );
 };
-
-console.log('ResourcesHubPage component loaded!');

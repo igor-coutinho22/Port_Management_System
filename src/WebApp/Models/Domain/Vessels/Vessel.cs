@@ -6,7 +6,6 @@ namespace WebApp.Models.Domain.Vessels
         public string VesselName { get; set; } = null!;
         public string OperatorName { get; set; } = null!;
 
-        // IMPORTANT: remove [NotMapped]
         public VesselGrid CargoGrid { get; private set; } = null!;
 
         public string VesselTypeName { get; set; } = null!;

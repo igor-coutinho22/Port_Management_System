@@ -1,5 +1,3 @@
-console.log('DeleteVesselVisitExecutionForm component loading...');
-
 const DeleteVesselVisitExecutionForm = ({ onSuccess }) => {
     // State management
     const [searchData, setSearchData] = React.useState({ id: '' });

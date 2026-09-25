@@ -1,5 +1,4 @@
 // Add Connection Form Component
-console.log('AddConnectionForm component loading...');
 
 const AddConnectionForm = ({ onSuccess }) => {
     const [formData, setFormData] = React.useState({

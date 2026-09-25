@@ -1,5 +1,4 @@
 // Activate Staff Form Component
-console.log('ActivateStaffForm component loading...');
 
 const ActivateStaffForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -93,5 +92,3 @@ const ActivateStaffForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('ActivateStaffForm component loaded!');

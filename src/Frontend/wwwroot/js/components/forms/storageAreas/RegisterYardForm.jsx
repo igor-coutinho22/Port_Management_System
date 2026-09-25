@@ -1,5 +1,4 @@
 // Register Yard (ContainerYard) Form Component
-console.log('📝 RegisterYardForm component loading...');
 
 const RegisterYardForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -159,5 +158,3 @@ const RegisterYardForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('RegisterYardForm component loaded! 📝');

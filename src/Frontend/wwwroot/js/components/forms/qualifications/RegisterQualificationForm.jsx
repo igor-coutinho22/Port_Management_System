@@ -1,5 +1,4 @@
 // Register Qualification Form Component
-console.log('📝 RegisterQualificationForm component loading...');
 
 const RegisterQualificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -117,5 +116,3 @@ const RegisterQualificationForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('RegisterQualificationForm component loaded! 📝');

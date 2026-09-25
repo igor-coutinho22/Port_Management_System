@@ -1,5 +1,4 @@
 // Edit Staff Form Component
-console.log('EditStaffForm component loading...');
 
 const EditStaffForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -437,5 +436,3 @@ const EditStaffForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('EditStaffForm component loaded!');

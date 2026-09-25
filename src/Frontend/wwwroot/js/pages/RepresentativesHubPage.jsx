@@ -1,5 +1,4 @@
 // Representatives Management Hub Page - Swagger-style expandable interface
-console.log('RepresentativesHubPage.jsx is loading...');
 
 const RepresentativesHubPage = () => {
     const { t } = useTranslation();
@@ -193,5 +192,3 @@ const RepresentativesQuickTable = ({ representatives, onRefresh }) => {
         </div>
     );
 };
-
-console.log('RepresentativesHubPage component loaded!');

@@ -1,5 +1,4 @@
 // Add Representative To Organization Form Component
-console.log('AddRepresentativeToOrganizationForm.jsx is loading...');
 
 
 const AddRepresentativeToOrganizationForm = ({ onSuccess }) => {
@@ -192,5 +191,3 @@ const AddRepresentativeToOrganizationForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('AddRepresentativeToOrganizationForm component loaded!');

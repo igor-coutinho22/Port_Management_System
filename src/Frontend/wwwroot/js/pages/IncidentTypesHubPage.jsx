@@ -1,5 +1,3 @@
-console.log("IncidentTypesHubPage.jsx is loading...");
-
 const IncidentTypesHubPage = () => {
   // State management
   const [expandedSection, setExpandedSection] = React.useState(null);

@@ -1,5 +1,4 @@
 // Delete Staff Form Component
-console.log('DeleteStaffForm component loading...');
 
 const DeleteStaffForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -247,5 +246,3 @@ const DeleteStaffForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('DeleteStaffForm component loaded!');

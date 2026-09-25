@@ -1,5 +1,4 @@
 // Vessel Visit Notifications Management Hub Page - Swagger-style expandable interface
-console.log('VesselVisitNotificationsHubPage.jsx is loading...');
 
 const VesselVisitNotificationsHubPage = () => {
 	const { t } = useTranslation();
@@ -292,5 +291,3 @@ const VesselVisitNotificationsQuickTable = ({ notifications, onRefresh }) => {
 		</div>
 	);
 };
-
-console.log('VesselVisitNotificationsHubPage component loaded!');

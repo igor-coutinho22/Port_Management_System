@@ -1,5 +1,4 @@
 // Get Qualification by Code Form Component
-console.log('GetQualificationByCodeForm component loading...');
 
 const GetQualificationByCodeForm = () => {
     const { t } = useTranslation();
@@ -152,5 +151,3 @@ const GetQualificationByCodeForm = () => {
         </div>
     );
 }
-
-console.log('GetQualificationByCodeForm component loaded!');

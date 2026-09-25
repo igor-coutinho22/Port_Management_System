@@ -1,5 +1,4 @@
 // Delete Dock Form Component
-console.log('🗑️ DeleteDockForm component loading...');
 
 const DeleteDockForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -281,5 +280,3 @@ const DeleteDockForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('DeleteDockForm component loaded! 🗑️');

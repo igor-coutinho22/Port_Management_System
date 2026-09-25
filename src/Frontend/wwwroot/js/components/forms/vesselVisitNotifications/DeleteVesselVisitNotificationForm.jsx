@@ -1,5 +1,4 @@
 // Delete Vessel Visit Notification Form Component
-console.log('DeleteVesselVisitNotificationForm component loading...');
 
 const DeleteVesselVisitNotificationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -197,5 +196,3 @@ const DeleteVesselVisitNotificationForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('DeleteVesselVisitNotificationForm component loaded!');

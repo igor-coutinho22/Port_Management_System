@@ -331,5 +331,3 @@ const useUser = () => {
     if (!ctx) throw new Error("useUser must be used within a UserProvider");
     return ctx;
 };
-
-console.log("UserContext (with activeRole + persistence) loaded!");

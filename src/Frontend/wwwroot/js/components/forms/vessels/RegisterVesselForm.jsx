@@ -1,5 +1,4 @@
 // Register Vessel Form Component
-console.log('📝 RegisterVesselForm component loading...');
 
 const RegisterVesselForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -74,9 +73,6 @@ const RegisterVesselForm = ({ onSuccess }) => {
             }
 
             // Debug: Log the data being sent
-            console.log('🔍 Sending vessel data:', formData);
-            console.log('🔍 Data type:', typeof formData);
-            console.log('🔍 Data JSON:', JSON.stringify(formData));
 
             // Transform data to match backend DTO expectations (PascalCase)
             const vesselData = {
@@ -90,8 +86,6 @@ const RegisterVesselForm = ({ onSuccess }) => {
                 Rows: parseInt(formData.rows),
                 Tiers: parseInt(formData.tiers)
             };
-
-            console.log('🔍 Transformed vessel data:', vesselData);
 
             // Create vessel
             await apiService.createVessel(vesselData);
@@ -326,8 +320,6 @@ const RegisterVesselForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('RegisterVesselForm component loaded! 📝');
 
 /* -- IGNORE --- */
 /* -- User Input → React State → Form Validation → Data Transform → 

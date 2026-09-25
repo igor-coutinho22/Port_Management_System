@@ -1,5 +1,4 @@
 // Edit Representative Form Component
-console.log('EditRepresentativeForm is loading...');
 
 const EditRepresentativeForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -189,5 +188,3 @@ const EditRepresentativeForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('EditRepresentativeForm component loaded!');

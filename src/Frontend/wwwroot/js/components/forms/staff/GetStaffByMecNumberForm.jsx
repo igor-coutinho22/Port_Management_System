@@ -1,5 +1,4 @@
 // Get Staff by MEC Number Form Component
-console.log('GetStaffByMecNumberForm component loading...');
 
 const GetStaffByMecNumberForm = () => {
     const { t } = useTranslation();
@@ -190,5 +189,3 @@ const GetStaffByMecNumberForm = () => {
         </div>
     );
 }
-
-console.log('GetStaffByMecNumberForm component loaded!');

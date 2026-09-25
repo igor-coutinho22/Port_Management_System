@@ -1,5 +1,4 @@
 // Remove Representative From Organization Form Component
-console.log('RemoveRepresentativeFromOrganizationForm.jsx is loading...');
 
 const RemoveRepresentativeFromOrganizationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -198,5 +197,3 @@ const RemoveRepresentativeFromOrganizationForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('RemoveRepresentativeFromOrganizationForm.jsx is loading!');

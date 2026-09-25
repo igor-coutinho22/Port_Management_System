@@ -1,5 +1,4 @@
 // Delete Organization Form Component
-console.log('DeleteOrganizationForm component loading...');
 
 const DeleteOrganizationForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -278,5 +277,3 @@ const DeleteOrganizationForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('DeleteOrganizationForm component loaded!');

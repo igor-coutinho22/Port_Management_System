@@ -1,5 +1,3 @@
-console.log("VesselVisitExecutionHubPage.jsx is loading...");
-
 const VesselVisitExecutionHubPage = () => {
   // State management
   const [expandedSection, setExpandedSection] = React.useState(null);

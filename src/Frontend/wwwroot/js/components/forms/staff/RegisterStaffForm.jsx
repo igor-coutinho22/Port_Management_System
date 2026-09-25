@@ -1,5 +1,4 @@
 // Register Staff Form Component
-console.log('📝 RegisterStaffForm component loading...');
 
 const RegisterStaffForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -216,5 +215,3 @@ const RegisterStaffForm = ({ onSuccess }) => {
         </div>
     );
 }
-
-console.log('RegisterStaffForm component loaded! 📝');

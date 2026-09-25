@@ -1,5 +1,4 @@
 // Delete Resource Form Component
-console.log('🗑️ DeleteResourceForm component loading...');
 
 const DeleteResourceForm = ({ onSuccess }) => {
     const { t } = useTranslation();
@@ -270,5 +269,3 @@ const DeleteResourceForm = ({ onSuccess }) => {
         </div>
     );
 };
-
-console.log('DeleteResourceForm component loaded! 🗑️');
