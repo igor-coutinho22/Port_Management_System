@@ -57,3 +57,13 @@ cypress/videos/
 cypress/screenshots/
 cypress/downloads/
 
+
+# Secrets & local config
+.env
+*.key
+*.pem
+*.pfx
+
+# IDE
+.vs/
+.qodo/
