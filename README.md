@@ -37,7 +37,9 @@ The demo mode can also be used locally by opening the frontend with `?demo` in t
 - **Vessel Visit Notifications**: submitted by shipping representatives with crew and cargo manifests
   (ISO 6346 container validation), approved or rejected by port officers
 - **Operations**: vessel visit executions, operation plans and complementary tasks
-- **Dock scheduling** in Prolog: heuristics and a genetic algorithm that balance docks and minimise delays
+- **Dock scheduling** in Prolog: an exact search for small days, constructive heuristics (e.g. ATC)
+  and a genetic algorithm seeded with the heuristic solutions, minimising the total departure delay;
+  plus multi-crane comparison and dock rebalancing
 - **Incidents**: reporting, tracking and resolution of operational incidents
 - **3D port visualization** with Three.js: docks, vessels, cranes and container yards built from live
   data, day/night lighting, object search and information panels, minimap
@@ -132,7 +134,7 @@ section of `appsettings.json` and the Azure variables in `.env`.
 | Suite | Command | Tests |
 |---|---|---|
 | WebApp (unit, integration, system) | `dotnet test` | 315 |
-| OEM service (unit, integration, functional, system) | `cd src/Oem_Node && npm test` | 72 |
+| OEM service (unit, integration, functional, system, Prolog) | `cd src/Oem_Node && npm test` | 75 |
 | End-to-end (Cypress, with the services running) | `cd src/Frontend && npx cypress run` | 28 |
 
 The WebApp and OEM suites run in GitHub Actions on every push.
@@ -150,7 +152,9 @@ I was part of the five-person team throughout the project. My main contributions
 - **Client analysis (US 2.3.x)**: characterization of the port authority (APS), SWOT analysis and
   strategic proposals for sustainability and digital transformation
 - **Portfolio preparation**: removed credentials from the history, hardened token validation in the
-  OEM service, fixed a page remounting bug, repaired the CI and E2E suites and updated dependencies
+  OEM service, fixed a page remounting bug, reworked the 3D selection spotlight, fixed the Prolog
+  genetic algorithm (it never completed; it is now seeded with the heuristics and tested in CI),
+  repaired the CI and E2E suites, updated dependencies and added the live demo mode
 
 ## Team
 

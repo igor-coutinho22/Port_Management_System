@@ -8,13 +8,13 @@
 :- dynamic target_cost/1.
 :- dynamic stability_generations/1.
 
-generations(60).
+generations(150).
 population(40).
 prob_crossover(0.7).
 prob_mutation(0.1).
 elitism_portion(0.2).             % fraction of population kept as elites
 target_cost(0).                  % 0 means search until other conditions
-stability_generations(6).        % stop if population unchanged for this many gens
+stability_generations(25).       % stop if the best has not improved for this many gens
 
 
 %  get all vessel ids in a list
@@ -25,19 +25,29 @@ vessel_ids(L) :-
 num_vessels(N) :- vessel_ids(L), length(L, N).
 
 % generate initial population (no duplicates)
+% There are only N! distinct sequences, so the population is capped at N! (e.g. 24 for 4 vessels).
 generate_population(Pop) :-
-    population(PS),
+    population(PS0),
     vessel_ids(Ids),
     num_vessels(N),
-    generate_population(PS, Ids, N, Pop).
+    factorial(N, MaxDistinct),
+    PS is min(PS0, MaxDistinct),
+    generate_population(PS, Ids, N, [], Pop).
 
-generate_population(0, _, _, []) :- !.
-generate_population(PS, IdsList, NT, [Ind | Rest]) :-
-    PS1 is PS - 1,
-    generate_population(PS1, IdsList, NT, Rest),
+% A duplicate individual is simply drawn again (instead of failing the whole generation)
+generate_population(0, _, _, Pop, Pop) :- !.
+generate_population(PS, IdsList, NT, Acc, Pop) :-
     generate_individual(IdsList, NT, Ind),
-    \+ member(Ind, Rest).  % avoid exact duplicates
+    (   memberchk(Ind, Acc)
+    ->  generate_population(PS, IdsList, NT, Acc, Pop)
+    ;   PS1 is PS - 1,
+        generate_population(PS1, IdsList, NT, [Ind | Acc], Pop)
+    ).
 
+factorial(N, 1) :- N =< 1, !.
+factorial(N, F) :- N1 is N - 1, factorial(N1, F1), F is N * F1.
+
+generate_individual([], 0, []) :- !.
 generate_individual([G], 1, [G]) :- !.
 generate_individual(IdsList, NumT, [G | Rest]) :-
     NumTemp is NumT + 1,
@@ -64,174 +74,105 @@ evaluate_sequence(Ind, TotalDelay) :-
     sequence_temporization(Ind, SeqTriplets),
     sum_delays(SeqTriplets, TotalDelay).
 
-% ordering (ascending by value)
-order_population(PopValue, PopValueOrd) :- bsort(PopValue, PopValueOrd).
-bsort([X], [X]) :- !.
-bsort([X | Xs], Ys) :-
-    bsort(Xs, Zs),
-    bchange([X | Zs], Ys).
+% ordering (ascending by value); keysort is stable and deterministic
+order_population(PopValue, PopValueOrd) :-
+    findall(V-(Ind*V), member(Ind*V, PopValue), Keyed),
+    keysort(Keyed, Sorted),
+    pairs_values(Sorted, PopValueOrd).
 
-bchange([X], [X]) :- !.
-bchange([X*VX, Y*VY | L1], [Y*VY | L2]) :-
-    VX > VY, !,
-    bchange([X*VX | L1], L2).
-bchange([X | L1], [X | L2]) :- bchange(L1, L2).
-
-% --- improved GA main entry point ---
+% --- GA main entry point ---
 run_genetic :-
     % Ensure params exist or use defaults
-    (population(_); (population(40), assertz(population(40)))),
-    (generations(_); (generations(60), assertz(generations(60)))),
-    (prob_crossover(_); (prob_crossover(0.7), assertz(prob_crossover(0.7)))),   
-    (prob_mutation(_); (prob_mutation(0.1), assertz(prob_mutation(0.1)))),
-    (elitism_portion(_); (elitism_portion(0.2), assertz(elitism_portion(0.2)))),
-    (stability_generations(_); (stability_generations(6), assertz(stability_generations(6)))),
-    % create initial population
-    population(_), generate_population(Pop0),
+    % (if-then-else: no choice points, so a later failure cannot re-run these and assert duplicates)
+    (population(_) -> true ; assertz(population(40))),
+    (generations(_) -> true ; assertz(generations(150))),
+    (prob_crossover(_) -> true ; assertz(prob_crossover(0.7))),
+    (prob_mutation(_) -> true ; assertz(prob_mutation(0.1))),
+    (elitism_portion(_) -> true ; assertz(elitism_portion(0.2))),
+    (stability_generations(_) -> true ; assertz(stability_generations(25))),
+    % create initial population: heuristic solutions + random sequences
+    generate_population(RandomPop),
+    length(RandomPop, PS),
+    heuristic_seeds(Seeds),
+    append(Seeds, RandomPop, Candidates),
+    list_to_set(Candidates, UniqueCandidates),
+    take_first(PS, UniqueCandidates, Pop0, _),
     evaluate_population(Pop0, PopVal0),
     order_population(PopVal0, PopValOrd0),
     generations(NG),
-    % run GA loop with stability and target stop conditions
-    ga_loop(0, NG, PopValOrd0, BestFinal),
-
-    % BestFinal is BestInd*BestVal
-    BestFinal = BestInd*_BestVal,
+    stability_generations(SG),
+    % run the GA until the generation limit or until the best stops improving
+    ga_loop(0, NG, SG, 0, PopValOrd0, BestInd*_BestVal),
     % BestInd is list of vessel ids
     sequence_temporization(BestInd, SeqTriplets),
     sum_delays(SeqTriplets, FinalDelay),
     write(SeqTriplets), nl,
     write(FinalDelay), nl.
 
-% GA loop: iteration, maxgens, population ordered, returns best element of final population
-ga_loop(NG, NG, [Best | _], Best).
+% heuristic_seeds(-Seeds): vessel orders produced by the constructive heuristics.
+% Starting from them (plus random sequences) the GA, thanks to elitism, is never worse
+% than the best heuristic and searches for improvements around it.
+heuristic_seeds(Seeds) :-
+    findall(Seq,
+            ( member(H, [atc, early_departure_time, minimum_slack_time, arrived_shortest_departure_time]),
+              catch(call_heuristic(H, Triplets, _), _, fail),
+              findall(V, member((V, _, _), Triplets), Seq),
+              Seq \== [] ),
+            Seeds0),
+    list_to_set(Seeds0, Seeds).
 
-ga_loop(I, NG, Pop, Best) :-
-    I < NG,
-    ga_step(Pop, _PopNext, stable),
-    Pop = [Best | _].
+% ga_loop(+Gen, +MaxGens, +MaxStableGens, +StableGens, +PopOrdered, -Best)
+% Stops after MaxGens generations, or after MaxStableGens consecutive generations
+% without improving the best total delay. Returns the best individual found.
+ga_loop(Gen, MaxGens, _, _, [Best | _], Best) :-
+    Gen >= MaxGens, !.
+ga_loop(_, _, MaxStable, Stable, [Best | _], Best) :-
+    Stable >= MaxStable, !.
+ga_loop(Gen, MaxGens, MaxStable, Stable, Pop, Best) :-
+    ga_step(Pop, PopNext),
+    Pop = [_*BestVal | _],
+    PopNext = [_*NextBestVal | _],
+    (   NextBestVal < BestVal
+    ->  Stable1 = 0
+    ;   Stable1 is Stable + 1
+    ),
+    Gen1 is Gen + 1,
+    ga_loop(Gen1, MaxGens, MaxStable, Stable1, PopNext, Best).
 
-ga_loop(I, NG, Pop, Best) :-
-    I < NG,
-    ga_step(Pop, PopNext, changed),
-    I1 is I + 1,
-    ga_loop(I1, NG, PopNext, Best).
-
-
-% This clause applies when the best individual does NOT change
-ga_step(PopOrd, PopNextOrd, stable) :-
-    % Extract only the individuals
+% ga_step(+PopOrdered, -NextPopOrdered): one generation
+% crossover + mutation, then elitism (best individuals always survive, so the best
+% never gets worse) and a fitness-biased lottery for the remaining places.
+ga_step(PopOrd, PopNextOrd) :-
     extract_inds(PopOrd, Parents),
-
-    % Randomly shuffle parents to avoid fixed crossover pairs
-    shuffle(Parents, ParentsPerm),
-
-    % Apply crossover to parent pairs to create offspring
+    shuffle(Parents, ParentsPerm),                  % random pairing of parents
     crossover_population(ParentsPerm, Offspring),
-
-    % Apply mutation to each offspring with given probability
     mutate_population(Offspring, OffspringMut),
-
-    % Evaluate offspring fitness (total delay)
     evaluate_population(OffspringMut, OffVal),
-
-    % Merge parents and offspring into a single population
     append(PopOrd, OffVal, Merged),
-
-    % Remove duplicate individuals, keeping the best fitness
     remove_duplicates_by_ind(Merged, MergedUnique),
-
-    % Sort population by fitness (ascending delay)
     order_population(MergedUnique, MergedSorted),
-
-    % Compute number of elite individuals to preserve
-    population(PS),
+    population(PS0),
+    length(MergedSorted, Available),
+    PS is min(PS0, Available),
     elitism_portion(EP),
-    PEliteFloat is EP * PS,
-    PElite is max(1, floor(PEliteFloat)),
+    PElite is max(1, floor(EP * PS)),
+    take_first(PElite, MergedSorted, Elites, Others),
+    Remaining is PS - PElite,
+    lottery_select(Others, Remaining, Selected),
+    append(Elites, Selected, NextPopVal),
+    order_population(NextPopVal, PopNextOrd), !.
 
-    % Keep the elite individuals unchanged
-    take_first(MergedSorted, PElite, Elites, RestForLottery),
-
-    % Assign random keys to the remaining individuals
-    attach_random_key(RestForLottery, RestRand),
-
-    % Sort remaining individuals using the random keys
-    order_population(RestRand, RestRandOrd),
-
-    % Select the remaining individuals to complete population
-    RemainingNeeded is PS - PElite,
-    take_first(RestRandOrd, RemainingNeeded, RestSelected, _),
-
-    % Combine elites and selected individuals
-    append(Elites, RestSelected, NextPopVal),
-
-    % Order final population for next generation
-    order_population(NextPopVal, PopNextOrd),
-
-    % Check that the best individual remained the same
-    same_best(PopOrd, PopNextOrd).
-
-
-
-% This clause applies when the best individual changes
-ga_step(PopOrd, PopNextOrd, changed) :-
-    % Extract individuals from current population
-    extract_inds(PopOrd, Parents),
-
-    % Shuffle parents for random pairing
-    shuffle(Parents, ParentsPerm),
-
-    % Generate offspring using crossover
-    crossover_population(ParentsPerm, Offspring),
-
-    % Apply mutation to offspring
-    mutate_population(Offspring, OffspringMut),
-
-    % Evaluate offspring fitness
-    evaluate_population(OffspringMut, OffVal),
-
-    % Merge current population with offspring
-    append(PopOrd, OffVal, Merged),
-
-    % Remove duplicate individuals
-    remove_duplicates_by_ind(Merged, MergedUnique),
-
-    % Sort population by fitness
-    order_population(MergedUnique, MergedSorted),
-
-    % Compute number of elites to preserve
-    population(PS),
-    elitism_portion(EP),
-    PEliteFloat is EP * PS,
-    PElite is max(1, floor(PEliteFloat)),
-
-    % Select elite individuals
-    take_first(MergedSorted, PElite, Elites, RestForLottery),
-
-    % Assign random selection keys to remaining individuals
-    attach_random_key(RestForLottery, RestRand),
-
-    % Sort remaining individuals by random keys
-    order_population(RestRand, RestRandOrd),
-
-    % Select remaining individuals to complete population
-    RemainingNeeded is PS - PElite,
-    take_first(RestRandOrd, RemainingNeeded, RestSelected, _),
-
-    % Build next population
-    append(Elites, RestSelected, NextPopVal),
-
-    % Sort next population
-    order_population(NextPopVal, PopNextOrd),
-
-    % Check that the best individual is different
-    \+ same_best(PopOrd, PopNextOrd).
-
-
-
-% Succeeds when the best individual and its fitness are equal
-same_best([Ind*Val | _], [Ind*Val | _]).
-
+% lottery_select(+Candidates, +N, -Selected): picks N individuals, favouring low delays.
+% The random key (delay * rnd) is only used for choosing; the real delays are kept.
+lottery_select(Candidates, N, Selected) :-
+    findall(Key-(Ind*Val),
+            ( member(Ind*Val, Candidates),
+              random(0.0, 1.0, R),
+              Key is Val * R ),
+            Keyed),
+    keysort(Keyed, Sorted),
+    pairs_values(Sorted, Ordered),
+    take_first(N, Ordered, Selected, _).
 
 extract_inds([], []).
 extract_inds([Ind*_|R], [Ind|R1]) :- extract_inds(R, R1).
@@ -288,6 +229,28 @@ insert([X|R],L,N,L2):-
 insert1(X,1,L,[X|L]):-!.
 insert1(X,N,[Y|L],[Y|L1]):- N1 is N-1, insert1(X,N1,L,L1).
 
+% generate_crossover_points(-P1, -P2): two distinct positions with P1 < P2
+% (with fewer than 2 vessels there is nothing to cross or mutate)
+generate_crossover_points(1, 1) :-
+    num_vessels(N), N < 2, !.
+generate_crossover_points(P1, P2) :-
+    num_vessels(N),
+    N1 is N + 1,
+    repeat,
+    random(1, N1, A),
+    random(1, N1, B),
+    A =\= B, !,
+    P1 is min(A, B),
+    P2 is max(A, B).
+
+% cross/4: order crossover between two parents at random cut points, producing two children
+cross(Ind, _, Ind, Ind) :-
+    num_vessels(N), N < 2, !.
+cross(Ind1, Ind2, Child1, Child2) :-
+    generate_crossover_points(P1, P2),
+    cross(Ind1, Ind2, P1, P2, Child1),
+    cross(Ind2, Ind1, P1, P2, Child2).
+
 cross(Ind1,Ind2,P1,P2,NInd11):-
     sublist(Ind1,P1,P2,Sub1),
     num_vessels(NumT),
@@ -302,6 +265,8 @@ removeh([],[]).
 removeh([h|R1],R2):-!, removeh(R1,R2).
 removeh([X|R1],[X|R2]):- removeh(R1,R2).
 
+mutacao1(Ind,Ind):-
+    num_vessels(N), N < 2, !.
 mutacao1(Ind,NInd):-
     generate_crossover_points(P1,P2),
     mutacao22(Ind,P1,P2,NInd).
@@ -319,47 +284,11 @@ mutacao23(G1,P,[G|Ind],G2,[G|NInd]):-
     P1 is P-1,
     mutacao23(G1,P1,Ind,G2,NInd).
 
-% remove duplicates
+% remove duplicates: one copy of each sequence (the fitness of a sequence is deterministic)
 remove_duplicates_by_ind(List, Unique) :-
-    remove_duplicates_by_ind(List, [], Unique).
-
-remove_duplicates_by_ind([], Acc, Acc).
-
-remove_duplicates_by_ind([Ind*Val | Rest], Acc, Out) :-
-    member_ind(Ind, Acc),
-    get_value(Ind, Acc, OldVal),
-    Val < OldVal,
-    remove_ind(Ind, Acc, Acc1),
-    Acc2 = [Ind*Val | Acc1],
-    remove_duplicates_by_ind(Rest, Acc2, Out).
-
-remove_duplicates_by_ind([Ind*Val | Rest], Acc, Out) :-
-    member_ind(Ind, Acc),
-    get_value(Ind, Acc, OldVal),
-    Val >= OldVal,
-    remove_duplicates_by_ind(Rest, Acc, Out).
-
-remove_duplicates_by_ind([Ind*Val | Rest], Acc, Out) :-
-    \+ member_ind(Ind, Acc),
-    Acc1 = [Ind*Val | Acc],
-    remove_duplicates_by_ind(Rest, Acc1, Out).
-
-member_ind(Ind, [Ind*_ | _]).
-member_ind(Ind, [_ | R]) :-
-    member_ind(Ind, R).
-
-remove_ind(_, [], []).
-remove_ind(Ind, [Ind*_ | R], R).
-remove_ind(Ind, [X | R], [X | R1]) :-
-    remove_ind(Ind, R, R1).
-
-get_value(Ind, [Ind*Val | _], Val).
-get_value(Ind, [_ | R], Val) :-
-    get_value(Ind, R, Val).
-
-replace_ind(Ind, NewVal, [Ind*_ | R], [Ind*NewVal | R]).
-replace_ind(Ind, NewVal, [X | R], [X | R1]) :-
-    replace_ind(Ind, NewVal, R, R1).
+    findall(Ind-Val, member(Ind*Val, List), Pairs),
+    sort(1, @<, Pairs, UniquePairs),
+    findall(Ind*Val, member(Ind-Val, UniquePairs), Unique).
 
 % take_first(N, List, FirstN, Rest)
 take_first(0, L, [], L) :- !.
@@ -367,17 +296,11 @@ take_first(_, [], [], []) :- !.
 take_first(N, [X | XS], [X | Ys], Rest) :-
     N1 is N - 1, take_first(N1, XS, Ys, Rest).
 
-% attach_random_key: multiply Val by rnd(0,1) but keep Ind*Val format (value remains Val)
-attach_random_key([], []).
-attach_random_key([Ind*Val | Rest], [Ind*NewVal | Rest2]) :-
-    random(0.0, 1.0, R),
-    NewVal is Val * R,
-    attach_random_key(Rest, Rest2).
-
-shuffle([], []).
+shuffle([], []) :- !.
 shuffle(L, [X | R]) :-
     length(L, N),
-    random(1, N+1, K),
+    N1 is N + 1,
+    random(1, N1, K),
     remove_nth(K, L, X, Rest),
     shuffle(Rest, R).
 
