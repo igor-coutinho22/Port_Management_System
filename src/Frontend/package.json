@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "certs": "mkcert create-ca && mkcert create-cert",
     "start": "http-server wwwroot -p 5179 -c-1 -S -C cert.crt -K cert.key",
     "cypress:open": "cypress open --e2e",
     "cypress:run": "cypress run --e2e",

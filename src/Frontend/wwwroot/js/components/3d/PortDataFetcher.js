@@ -1,7 +1,8 @@
 class PortDataFetcher {
 
     constructor() {
-        this.apiBaseUrl = "https://localhost:5001";
+        // Service endpoints are defined in js/config.js (the paths below already include /api)
+        this.apiBaseUrl = window.APP_CONFIG.webAppApiUrl.replace(/\/api\/?$/, "");
     }
 
     api(path) {

@@ -1,10 +1,6 @@
-// Detect the current host (IP or Domain) the browser is visiting
-const SERVER_IP = window.location.hostname;
-
-// --- CONFIGURATION ---
-// Use the detected IP so it works both on localhost and on the VM
-const WEB_APP_API = `http://${SERVER_IP}:5001/api`;
-const OEM_API = `http://${SERVER_IP}:6001/api`;
+// Service endpoints are defined in js/config.js
+const WEB_APP_API = window.APP_CONFIG.webAppApiUrl;
+const OEM_API = window.APP_CONFIG.oemApiUrl;
 
 class ApiService {
     async _getApiAccessToken() {

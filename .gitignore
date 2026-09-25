@@ -68,3 +68,4 @@ cypress/downloads/
 .vs/
 .qodo/
 *.user
+*.crt

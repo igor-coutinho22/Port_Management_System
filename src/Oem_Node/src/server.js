@@ -2,9 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const https = require('http');
-const fs = require('fs');
-const path = require('path');
 
 // Import Routes
 const vesselVisitExecutionRoutes = require('./routes/vesselVisitExecutionRoutes');
@@ -28,7 +25,7 @@ connectDB();
 
 // Basic Route
 app.get('/', (req, res) => {
-    res.send('OEM Node API is running securely on HTTPS...');
+    res.send('OEM Node API is running.');
 });
 
 // Routes
@@ -42,9 +39,7 @@ app.use('/api/complementarytasks', complementaryTaskRoutes);
 app.use('/api/privacy', privacyRoutes);
 app.use('/api/user-profiles', userRoutes);
 
-// --- START SERVER (Standard HTTP for VM Deployment) ---
-
-// Replace the https.createServer block with a standard app.listen
+// Start Server
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://0.0.0.0:${PORT}`);
 });

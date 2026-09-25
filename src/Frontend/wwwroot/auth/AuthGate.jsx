@@ -17,8 +17,7 @@
         e.preventDefault();
         try {
             // Fetch the public policy (US 4.5.4)
-            // Note: Ensure your backend runs on port 6001 or use full URL
-            const res = await fetch("https://localhost:6001/api/privacy/latest");
+            const res = await fetch(`${window.APP_CONFIG.oemApiUrl}/privacy/latest`);
             if(res.ok) {
                 const data = await res.json();
                 setPolicyContent(data.content);
