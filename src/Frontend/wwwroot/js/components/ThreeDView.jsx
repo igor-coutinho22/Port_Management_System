@@ -243,7 +243,7 @@ const ThreeDView = () => {
                     {t('threeDView.resetCamera')}
                 </button>
                 <span style={{ marginLeft: '10px', fontSize: '0.75rem', opacity: 0.6, color: '#94a3b8' }}>
-                    {t('threeDView.help.suggestions')} | {t('threeDView.help.press')} <strong>'i'</strong> {t('threeDView.help.info')} | {t('threeDView.help.press')} <strong>'r'</strong> {t('threeDView.help.reset')}
+                    {t('threeDView.help.suggestions')} | {t('threeDView.help.press')} <strong>'i'</strong> {t('threeDView.help.info')} | {t('threeDView.help.press')} <strong>'r'</strong> {t('threeDView.help.reset')} | {t('threeDView.help.press')} <strong>Esc</strong> {t('threeDView.help.clear')}
                 </span>
             </div>
         </div>

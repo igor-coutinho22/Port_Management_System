@@ -70,14 +70,7 @@ class PortVisualization {
         // Lighting
         this.addLights();
 
-        this.selectionSpotlight = new THREE.SpotLight(0xffffff, 0); // Intensidade inicial 0
-        this.selectionSpotlight.penumbra = 1; // CA: Penumbra suave para transição clara
-        this.selectionSpotlight.angle = Math.PI / 50; // Foco concentrado
-        this.selectionSpotlight.distance = 2500;
-        this.selectionSpotlight.castShadow = true;
-
-        this.scene.add(this.selectionSpotlight);
-        this.scene.add(this.selectionSpotlight.target);
+        this.setupSelectionSpotlight();
 
         // Fly-To animation state
         this.flyToActive = false;
@@ -87,9 +80,6 @@ class PortVisualization {
         this.flyFromTarget = new THREE.Vector3();
         this.flyToPos = new THREE.Vector3();
         this.flyToTarget = new THREE.Vector3();
-
-        this.flyFromSpotlightTarget = new THREE.Vector3();
-        this.flyToSpotlightTarget = new THREE.Vector3();
 
         // -------------------------------
         // MINIMAP SETUP
@@ -107,6 +97,10 @@ class PortVisualization {
         this.dayDurationSeconds = 300; // 1 full day per 5 minutes
 
         this._keydownHandler = (e) => {
+            // Ignore shortcuts while the user is typing (e.g. in the search box)
+            const el = e.target;
+            if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+
             const key = e.key.toLowerCase();
             if (e.key.toLowerCase() === 'i' && typeof this.onToggleOverlay === 'function') {
                 this.onToggleOverlay();
@@ -114,6 +108,10 @@ class PortVisualization {
 
             if (key === 'r') {
                 this.frameCamera();
+            }
+
+            if (key === 'escape') {
+                this.clearSelection();
             }
         };
         window.addEventListener('keydown', this._keydownHandler);
@@ -341,6 +339,112 @@ class PortVisualization {
     }
 
     // -------------------------------------------------------------------------
+    // SELECTION SPOTLIGHT (US 4.2.5 / 4.2.6)
+    // A spotlight above and in front of the selected object (camera side): the cone
+    // is sized to the object, it casts shadows, moves and fades smoothly, and the
+    // rest of the scene is dimmed while an object is selected.
+    // -------------------------------------------------------------------------
+    setupSelectionSpotlight() {
+        const spot = new THREE.SpotLight(0xfff4e0, 0);
+        spot.angle = Math.PI / 8;
+        spot.penumbra = 0.15;
+        spot.decay = 1;
+        spot.castShadow = true;
+        spot.shadow.mapSize.width = 1024;
+        spot.shadow.mapSize.height = 1024;
+        spot.shadow.bias = -0.0005;
+        spot.visible = false;
+        this.scene.add(spot);
+        this.scene.add(spot.target);
+        this.selectionSpotlight = spot;
+
+        this.spotState = {
+            object: null,
+            level: 0,            // 0 = off, 1 = fully on (smoothed)
+            center: new THREE.Vector3(),
+            height: 150,
+            lean: 0,
+            goalPosition: new THREE.Vector3(),
+            goalTarget: new THREE.Vector3(),
+            goalAngle: Math.PI / 8,
+            maxIntensity: 2.8
+        };
+    }
+
+    // Light position: above the object, leaning towards the camera so the visible side is lit
+    computeSpotlightPosition(out) {
+        const s = this.spotState;
+        const towardsCamera = new THREE.Vector3().subVectors(this.camera.position, s.center);
+        towardsCamera.y = 0;
+        if (towardsCamera.lengthSq() > 0) towardsCamera.normalize();
+        return out.copy(s.center).addScaledVector(towardsCamera, s.lean).setY(s.center.y + s.height);
+    }
+
+    focusSpotlight(object) {
+        const s = this.spotState;
+        const spot = this.selectionSpotlight;
+        if (!s || !spot) return;
+
+        const box = new THREE.Box3().setFromObject(object);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+
+        // Radius of the object's footprint on the ground: the pool of light hugs the object
+        const footprint = Math.max(Math.hypot(size.x, size.z) / 2, 5);
+
+        s.object = object;
+        s.center.set(center.x, box.min.y, center.z);    // aim at the base so the pool sits around the object
+        s.height = Math.max(footprint * 4, size.y * 3, 120);
+        s.lean = s.height * 0.25;                       // slightly towards the camera
+        s.goalTarget.copy(s.center);
+        this.computeSpotlightPosition(s.goalPosition);
+
+        // Cone just wide enough for the footprint (small margin for the soft edge)
+        const lightDistance = s.goalPosition.distanceTo(s.goalTarget);
+        s.goalAngle = THREE.MathUtils.clamp(Math.atan((footprint * 1.05) / lightDistance), Math.PI / 90, Math.PI / 5);
+
+        // When the light is off, it appears in place (fades in) instead of flying from the previous spot
+        if (s.level < 0.01) {
+            spot.position.copy(s.goalPosition);
+            spot.target.position.copy(s.goalTarget);
+            spot.angle = s.goalAngle;
+        }
+    }
+
+    clearSelection() {
+        this.selectedObject = null;
+        if (this.spotState) this.spotState.object = null;
+    }
+
+    updateSpotlight(deltaSec) {
+        const s = this.spotState;
+        const spot = this.selectionSpotlight;
+        if (!s || !spot) return;
+
+        if (s.object) this.computeSpotlightPosition(s.goalPosition);
+
+        // Exponential smoothing: frame-rate independent transitions
+        const k = 1 - Math.exp(-deltaSec * 6);
+        spot.position.lerp(s.goalPosition, k);
+        spot.target.position.lerp(s.goalTarget, k);
+        spot.target.updateMatrixWorld();
+        spot.angle += (s.goalAngle - spot.angle) * k;
+        s.level += ((s.object ? 1 : 0) - s.level) * k;
+        if (!s.object && s.level < 0.001) s.level = 0;
+
+        const lightDistance = spot.position.distanceTo(spot.target.position);
+        spot.distance = lightDistance * 2.2; // also bounds the shadow camera
+        spot.intensity = s.level * s.maxIntensity;
+        spot.visible = s.level > 0;
+
+        // Dim the rest of the scene so the spotlight stands out (runs after updateSun each frame)
+        const dim = 1 - 0.7 * s.level;
+        if (this.sun) this.sun.intensity *= dim;
+        if (this.ambientLight) this.ambientLight.intensity *= dim;
+        if (this.hemiLight) this.hemiLight.intensity *= dim;
+    }
+
+    // -------------------------------------------------------------------------
     // CAMERA FLY-TO
     // -------------------------------------------------------------------------
 
@@ -351,16 +455,8 @@ class PortVisualization {
         this.flyFromPos.copy(this.camera.position);
         this.flyFromTarget.copy(this.controls.target);
 
-        // US 4.2.6: Captura a posição inicial do alvo do foco
-        if (this.selectionSpotlight) {
-            this.flyFromSpotlightTarget.copy(this.selectionSpotlight.target.position);
-        }
-
         this.flyToTarget.set(pos.x, pos.y, pos.z);
         this.flyToPos.set(pos.x + 180, pos.y + 120, pos.z + 180);
-
-        // US 4.2.6: O destino do foco é o centro do objeto (pos)
-        this.flyToSpotlightTarget.set(pos.x, pos.y, pos.z);
     }
 
     updateFlyTo() {
@@ -374,16 +470,6 @@ class PortVisualization {
         // Interpolação da câmara e do alvo dos controlos
         this.camera.position.lerpVectors(this.flyFromPos, this.flyToPos, eased);
         this.controls.target.lerpVectors(this.flyFromTarget, this.flyToTarget, eased);
-
-        // US 4.2.6: Interpolação suave do alvo do Spotlight
-        if (this.selectionSpotlight) {
-            this.selectionSpotlight.target.position.lerpVectors(
-                this.flyFromSpotlightTarget,
-                this.flyToSpotlightTarget,
-                eased
-            );
-            this.selectionSpotlight.target.updateMatrixWorld();
-        }
 
         if (t >= 1) {
             this.flyToActive = false;
@@ -415,27 +501,8 @@ class PortVisualization {
         const targetEntity = this.findParent(obj);
         if (!targetEntity) return;
 
-        // Lógica original de emissive (limpeza)
-        if (this.selectedObject) {
-            this.selectedObject.traverse(child => {
-                if (child.isMesh && child.material?.emissive) child.material.emissive.setHex(0x000000);
-            });
-        }
-
         this.selectedObject = targetEntity;
-
-        // Lógica original de emissive (destaque)
-        targetEntity.traverse(child => {
-            if (child.isMesh && child.material?.emissive) {
-                child.material.emissive.setHex(0x333333);
-            }
-        });
-
-        if (this.selectionSpotlight) {
-            // Apenas ativamos a luz aqui. O movimento da posição 
-            // será feito suavemente pelo updateFlyTo().
-            this.selectionSpotlight.intensity = 1.5;
-        }
+        this.focusSpotlight(targetEntity);
 
         if (this.onSelect) {
             this.onSelect(targetEntity.userData);
@@ -941,11 +1008,6 @@ class PortVisualization {
         this.updateFlyTo();
         this.controls.update();
 
-        // 4.2.5: Spotlight segue a câmara ---
-        if (this.selectionSpotlight) {
-            this.selectionSpotlight.position.copy(this.camera.position);
-        }
-
         const minY = 5;
         if (this.camera.position.y < minY) {
             this.camera.position.y = minY;
@@ -955,6 +1017,7 @@ class PortVisualization {
 
         this.updateWater(time);
         this.updateSun(deltaSec);
+        this.updateSpotlight(deltaSec);
 
         // Renderização principal
         this.renderer.setViewport(0, 0, this.container.clientWidth, this.container.clientHeight);
