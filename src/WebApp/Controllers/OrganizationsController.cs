@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using WebApp.Models.Application.DTOs;
 using WebApp.Models.Application.Mappers;
 using WebApp.Models.Application.Services;
