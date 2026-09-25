@@ -1,5 +1,7 @@
 # Port Management System
 
+[![CI](https://github.com/igor-coutinho22/Port_Management_System/actions/workflows/ci.yml/badge.svg)](https://github.com/igor-coutinho22/Port_Management_System/actions/workflows/ci.yml)
+
 > **Portfolio copy.** This is a public mirror of the group project developed for LAPR5 (Integrative Project, 5th semester of the BSc in Informatics Engineering at ISEP, 2025/26). The full commit history of the team is preserved; credentials and private keys were removed from the history, so cloud services (Azure AD, databases) must be configured with your own values.
 
 A comprehensive port management system developed as part of the 5th semester integrated project (LAPR5) at ISEP. This system manages vessels, resources, docks, and operations in a modern port environment.
@@ -77,8 +79,8 @@ The Port Management System is a modern web application designed to streamline po
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/1230543-Igor/Portfolio_Igor.git
-   cd Portfolio_Igor
+   git clone https://github.com/igor-coutinho22/Port_Management_System.git
+   cd Port_Management_System
    ```
 
 2. **Navigate to the WebApp project**
