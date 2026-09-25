@@ -12,6 +12,24 @@ master data, vessel visit planning, dock scheduling, incidents and an interactiv
 
 ![3D port visualization](docs/images/3d-port.png)
 
+## Live demo
+
+**[Open the live demo](#live-demo)** *(Netlify link added after deployment)*
+
+The live demo lets anyone explore the application without installing anything or signing in.
+It is a **demo build of the frontend only**:
+
+- it is hosted on Netlify and opens with a demo user that has every role (Admin, Officer,
+  Operator, Representative), so all areas of the app can be visited;
+- API requests are answered in the browser with a built-in set of sample data, generated from the
+  real APIs ([`src/Frontend/wwwroot/demo/`](src/Frontend/wwwroot/demo/));
+- forms can be submitted, but changes are not saved.
+
+The **complete system is in this repository**: both backend APIs, the databases, the Prolog
+scheduling, Microsoft Entra ID authentication and the automated tests, as described below.
+The demo mode can also be used locally by opening the frontend with `?demo` in the URL
+(e.g. `https://localhost:5179/?demo`).
+
 ## Features
 
 - **Master data**: vessels, vessel types, docks, storage areas (warehouses and container yards),

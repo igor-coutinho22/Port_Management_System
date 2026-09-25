@@ -1,0 +1,5 @@
+# Netlify deploys only the SPA, which runs in demo mode (sample data, no sign-in).
+# See the "Live demo" section of the README.
+[build]
+  publish = "src/Frontend/wwwroot"
+  command = ""
