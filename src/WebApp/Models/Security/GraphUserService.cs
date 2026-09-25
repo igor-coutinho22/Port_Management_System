@@ -59,7 +59,7 @@ namespace WebApp.Models.Security
             var users = await _graph.Users.GetAsync(req =>
             {
                 req.QueryParameters.Filter =
-                    $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{_issuerDomain}')";
+                    $"identities/any(c:c/issuerAssignedId eq '{ODataFilter.Escape(email)}' and c/issuer eq '{_issuerDomain}')";
                 req.QueryParameters.Select = new[] { "id", "accountEnabled" };
             });
 
@@ -89,7 +89,7 @@ namespace WebApp.Models.Security
             var users = await _graph.Users.GetAsync(req =>
             {
                 req.QueryParameters.Filter =
-                    $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{_issuerDomain}')";
+                    $"identities/any(c:c/issuerAssignedId eq '{ODataFilter.Escape(email)}' and c/issuer eq '{_issuerDomain}')";
                 req.QueryParameters.Select = new[] { "id", "displayName", _extRoleName };
             });
 
@@ -119,7 +119,7 @@ namespace WebApp.Models.Security
             var users = await _graph.Users.GetAsync(req =>
             {
                 req.QueryParameters.Filter =
-                    $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{_issuerDomain}')";
+                    $"identities/any(c:c/issuerAssignedId eq '{ODataFilter.Escape(email)}' and c/issuer eq '{_issuerDomain}')";
                 req.QueryParameters.Select = new[] { "id" };
             });
 

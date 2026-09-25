@@ -1,5 +1,52 @@
+const axios = require('axios');
 const jwt = require('jsonwebtoken');
+const jwksRsa = require('jwks-rsa');
 const graphClient = require('../config/graphClient');
+
+// Token validation settings (Matches the JwtBearer configuration of the WebApp)
+const AUTHORITY_HOST = (process.env.AZURE_AUTHORITY_HOST || 'https://sinesport.ciamlogin.com').replace(/\/+$/, '');
+const AUTHORITY = `${AUTHORITY_HOST}/${process.env.AZURE_TENANT_ID}/v2.0`;
+const AUDIENCES = (process.env.AZURE_API_AUDIENCES || `api://port-management,${process.env.AZURE_CLIENT_ID}`)
+    .split(',')
+    .map(a => a.trim())
+    .filter(a => a.length > 0);
+
+// OpenID metadata (issuer + signing keys) is fetched once and cached
+let openIdConfigPromise = null;
+const getOpenIdConfig = () => {
+    if (!openIdConfigPromise) {
+        openIdConfigPromise = axios
+            .get(`${AUTHORITY}/.well-known/openid-configuration`)
+            .then(res => ({
+                issuer: res.data.issuer,
+                jwks: jwksRsa({ jwksUri: res.data.jwks_uri, cache: true, rateLimit: true })
+            }))
+            .catch(err => {
+                openIdConfigPromise = null;
+                throw err;
+            });
+    }
+    return openIdConfigPromise;
+};
+
+// Verifies signature, issuer, audience and lifetime. Throws if the token is not valid.
+const verifyToken = async (token) => {
+    const { issuer, jwks } = await getOpenIdConfig();
+    const getKey = (header, callback) => {
+        jwks.getSigningKey(header.kid)
+            .then(key => callback(null, key.getPublicKey()))
+            .catch(err => callback(err));
+    };
+    const issuers = [issuer.replace(/\/+$/, ''), `${issuer.replace(/\/+$/, '')}/`];
+
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, getKey, { algorithms: ['RS256'], audience: AUDIENCES, issuer: issuers }, (err, decoded) =>
+            err ? reject(err) : resolve(decoded));
+    });
+};
+
+// Escapes a value for use inside an OData string literal
+const odataString = (value) => String(value).replace(/'/g, "''");
 
 // Role Constants (Matches Oem.Security.Roles)
 const ROLES = {
@@ -34,9 +81,12 @@ const requireAuth = (requiredRole = null) => {
             }
             const token = authHeader.split(' ')[1];
 
-            // 2. Decode Token (Get claims)
-            const decoded = jwt.decode(token);
-            if (!decoded) {
+            // 2. Validate Token (signature, issuer, audience, lifetime) and get claims
+            let decoded;
+            try {
+                decoded = await verifyToken(token);
+            } catch (e) {
+                console.warn('JWT validation failed:', e.message);
                 return res.status(401).json({ message: 'Invalid token.' });
             }
 
@@ -48,7 +98,7 @@ const requireAuth = (requiredRole = null) => {
             const oid = decoded.oid;
             if (oid) {
                 try {
-                    userGraphData = await graphClient.api(`/users/${oid}`)
+                    userGraphData = await graphClient.api(`/users/${encodeURIComponent(oid)}`)
                         .select(['id', extName]) // Only fetch what we need
                         .get();
                 } catch (e) { console.log('Graph OID lookup failed, trying next...'); }
@@ -60,25 +110,11 @@ const requireAuth = (requiredRole = null) => {
                 if (email) {
                     try {
                         const result = await graphClient.api('/users')
-                            .filter(`identities/any(c:c/issuerAssignedId eq '${email}')`)
+                            .filter(`identities/any(c:c/issuerAssignedId eq '${odataString(email)}')`)
                             .select(['id', extName])
                             .get();
                         userGraphData = result.value?.[0];
                     } catch (e) { console.log('Graph Email lookup failed...'); }
-                }
-            }
-
-            // Strategy C: Try by Display Name (Last Resort)
-            if (!userGraphData) {
-                const name = decoded.name;
-                if (name) {
-                    try {
-                        const result = await graphClient.api('/users')
-                            .filter(`displayName eq '${name}'`)
-                            .select(['id', extName])
-                            .get();
-                        userGraphData = result.value?.[0];
-                    } catch (e) { console.log('Graph Name lookup failed...'); }
                 }
             }
 

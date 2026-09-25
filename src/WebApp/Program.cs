@@ -35,7 +35,7 @@ using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = builder.Environment.IsDevelopment();
 
 builder.Logging.AddConsole();
 
@@ -318,41 +318,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 
-app.MapGet("/api/admin/debug-user", async (
-    [FromQuery] string email,
-    GraphServiceClient graph,
-    IConfiguration cfg) =>
-{
-    var ciam = cfg.GetSection("AzureAdCiam");
-    var issuerDomain = ciam["IssuerDomain"];
-    var extAppNoDashes = ciam["ExtensionsAppIdNoDashes"];
-    var extRoleName = $"extension_{extAppNoDashes}_Role";
-
-    var users = await graph.Users.GetAsync(req =>
-    {
-        req.QueryParameters.Filter =
-            $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{issuerDomain}')";
-        req.QueryParameters.Select = new[] { "id", "displayName", extRoleName };
-    });
-
-    var user = users?.Value?.FirstOrDefault();
-    if (user == null)
-        return Results.NotFound("User not found");
-
-    return Results.Ok(new
-    {
-        user.Id,
-        user.DisplayName,
-        Extensions = user.AdditionalData    // should now contain the Role
-    });
-});
-
-
 // ---- Helper endpoint: who am I (from token/claims) ----
 app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
 {
-    // This endpoint now needs to be async and injects the DbContext
-
     if (!http.User.Identity?.IsAuthenticated ?? true)
         return Results.Unauthorized();
 
@@ -377,7 +345,6 @@ app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
     if (roles.Length == 0)
         return Results.StatusCode(StatusCodes.Status403Forbidden);
 
-    // ** START OF NEW LOGIC **
     Guid? organizationId = null;
     if (roles.Contains("Representative") && !string.IsNullOrEmpty(email))
     {
@@ -392,7 +359,6 @@ app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
             organizationId = representative.OrganizationId;
         }
     }
-    // ** END OF NEW LOGIC **
 
     return Results.Ok(new
     {
@@ -401,7 +367,7 @@ app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
         lastName = last,
         name,
         roles,
-        organizationId // The newly added field
+        organizationId
     });
 
 }).RequireAuthorization();
@@ -411,22 +377,11 @@ app.MapGet("/api/me", async (HttpContext http, PortManagementContext db) =>
 app.MapControllers();
 app.MapRazorPages();
 
-// SPA root
-app.MapGet("/", context =>
+// The SPA is served by src/Frontend; the API root points to its documentation in development
+if (app.Environment.IsDevelopment())
 {
-    context.Response.Redirect("/index.html");
-    return Task.CompletedTask;
-});
-
-// SPA fallback for non-API routes
-app.MapFallback(async context =>
-{
-    if (!context.Request.Path.StartsWithSegments("/api"))
-    {
-        context.Response.ContentType = "text/html";
-        await context.Response.SendFileAsync(Path.Combine(app.Environment.WebRootPath, "index.html"));
-    }
-});
+    app.MapGet("/", () => Results.Redirect("/swagger"));
+}
 
 app.Run();
 

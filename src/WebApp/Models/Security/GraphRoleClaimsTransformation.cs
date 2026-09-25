@@ -59,29 +59,12 @@ public sealed class GraphRoleClaimsTransformation : IClaimsTransformation
                 var usersByEmail = await _graph.Users.GetAsync(req =>
                 {
                     req.QueryParameters.Filter =
-                        $"identities/any(c:c/issuerAssignedId eq '{email}' and c/issuer eq '{_issuerDomain}')";
+                        $"identities/any(c:c/issuerAssignedId eq '{ODataFilter.Escape(email)}' and c/issuer eq '{_issuerDomain}')";
                     req.QueryParameters.Select = new[] { "id", _extRoleName };
                 });
 
                 var userByEmail = usersByEmail?.Value?.FirstOrDefault();
                 if (TryAddRoleFromUser(userByEmail, identity))
-                    return principal;
-            }
-
-            // 3) Fallback: use display name (name claim) – this we KNOW you have ("JoaoM")
-            var displayName = principal.FindFirst("name")?.Value;
-            if (!string.IsNullOrWhiteSpace(displayName))
-            {
-                _logger.LogDebug("Role transform: trying by displayName={DisplayName}", displayName);
-
-                var usersByName = await _graph.Users.GetAsync(req =>
-                {
-                    req.QueryParameters.Filter = $"displayName eq '{displayName}'";
-                    req.QueryParameters.Select = new[] { "id", _extRoleName, "displayName" };
-                });
-
-                var userByName = usersByName?.Value?.FirstOrDefault();
-                if (TryAddRoleFromUser(userByName, identity))
                     return principal;
             }
 
