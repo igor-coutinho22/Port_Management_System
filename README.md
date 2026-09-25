@@ -2,221 +2,155 @@
 
 [![CI](https://github.com/igor-coutinho22/Port_Management_System/actions/workflows/ci.yml/badge.svg)](https://github.com/igor-coutinho22/Port_Management_System/actions/workflows/ci.yml)
 
-> **Portfolio copy.** This is a public mirror of the group project developed for LAPR5 (Integrative Project, 5th semester of the BSc in Informatics Engineering at ISEP, 2025/26). The full commit history of the team is preserved; credentials and private keys were removed from the history, so cloud services (Azure AD, databases) must be configured with your own values.
+A web platform to manage the operations of a container port (modelled on the Port of Sines):
+master data, vessel visit planning, dock scheduling, incidents and an interactive 3D view of the port.
 
-A comprehensive port management system developed as part of the 5th semester integrated project (LAPR5) at ISEP. This system manages vessels, resources, docks, and operations in a modern port environment.
+> **Portfolio copy.** This project was developed by a team of five students for LAPR5, the integrative
+> project of the 5th semester of the BSc in Informatics Engineering at ISEP (2025/26). The team's full
+> commit history is preserved. Credentials were removed from the history, so cloud services
+> (Microsoft Entra ID, databases) must be configured with your own values.
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [User Stories](#user-stories)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [Team](#team)
-
-## Overview
-
-The Port Management System is a modern web application designed to streamline port operations, including:
-- **Vessel Management**: Track vessel arrivals, departures, and specifications
-- **Resource Management**: Monitor cranes, equipment, and facilities
-- **3D Visualization**: Interactive 3D view of port infrastructure
-- **Real-time Operations**: Manage docks, storage areas, and staff efficiently
+![3D port visualization](docs/images/3d-port.png)
 
 ## Features
 
-### Core Functionality
-- **Vessel Registration & Tracking**
-- **Resource & Equipment Management**
-- **Storage Area Organization**
-- **Staff & Qualifications Management**
-- **Dock Operations**
-- **Vessel Visit Notifications**
+- **Master data**: vessels, vessel types, docks, storage areas (warehouses and container yards),
+  resources, staff and qualifications, shipping organizations and their representatives
+- **Vessel Visit Notifications**: submitted by shipping representatives with crew and cargo manifests
+  (ISO 6346 container validation), approved or rejected by port officers
+- **Operations**: vessel visit executions, operation plans and complementary tasks
+- **Dock scheduling** in Prolog: heuristics and a genetic algorithm that balance docks and minimise delays
+- **Incidents**: reporting, tracking and resolution of operational incidents
+- **3D port visualization** with Three.js: docks, vessels, cranes and container yards built from live
+  data, day/night lighting, object search and information panels, minimap
+- **Security and privacy**: sign-in with Microsoft Entra External ID, role-based access
+  (Admin, Officer, Operator, Representative), user administration via Microsoft Graph,
+  GDPR privacy policy acceptance and personal data export
+- **Internationalization**: English and Portuguese
 
-### Technical Features
-- **Single Page Application (SPA)** with React
-- **Microsoft Entra ID Authentication**
-- **Responsive Web Design**
-- **Interactive 3D Port Visualization**
-- **RESTful API Architecture**
-- **Azure SQL Database**
+## Architecture
 
-## Technology Stack
+```
+                    ┌──────────────────────────────┐
+                    │ Frontend (SPA)  :5179        │
+                    │ React 18 · Three.js · MSAL   │
+                    └──────┬────────────────┬──────┘
+                           │ REST + JWT     │ REST + JWT
+          ┌────────────────▼─────┐   ┌──────▼──────────────────┐
+          │ WebApp  :5001        │◄──┤ OEM service  :6001      │
+          │ ASP.NET Core 8       │   │ Node.js · Express       │
+          │ EF Core · PostgreSQL │   │ MongoDB · SWI-Prolog    │
+          │ (master data)        │   │ (operations, scheduling)│
+          └──────────┬───────────┘   └──────────┬──────────────┘
+                     └──────────┬───────────────┘
+                   Microsoft Entra External ID + Microsoft Graph (roles)
+```
 
-### Backend
-- **Framework**: ASP.NET Core 6.0
-- **Database**: Azure SQL Database
-- **ORM**: Entity Framework Core
-- **Authentication**: Microsoft Entra ID
-- **API Documentation**: Swagger/OpenAPI
+Both backends follow a layered, DDD-inspired design (domain, application, infrastructure) with
+aggregates, value objects, DTOs, mappers and repositories. Architecture documentation (C4 model,
+domain model, sequence diagrams and glossary) is available in [`docs/`](docs/).
 
-### Frontend
-- **Framework**: React 18 (CDN-based)
-- **Build Tools**: Babel for JSX transformation
-- **3D Graphics**: Three.js
-- **Styling**: CSS3 with modular architecture
-- **HTTP Client**: Fetch API
+## Tech stack
 
-### Infrastructure
-- **Cloud Platform**: Microsoft Azure
-- **Database**: Azure SQL Server
-- **Version Control**: Git
-- **IDE**: Visual Studio Code
+| Area | Technologies |
+|---|---|
+| Master data API | C#, ASP.NET Core 8, Entity Framework Core, PostgreSQL, Swagger |
+| Operations API | Node.js, Express 5, Mongoose / MongoDB, SWI-Prolog |
+| Frontend | React 18, Three.js, MSAL.js, CSS |
+| Identity | Microsoft Entra External ID (CIAM), Microsoft Graph |
+| Testing | xUnit, Moq, FluentAssertions, Jest, Supertest, mongodb-memory-server, Cypress |
+| CI | GitHub Actions |
 
-## Getting Started
+## Project structure
 
-### Prerequisites
-- .NET 6.0 SDK
-- Visual Studio Code or Visual Studio
-- Azure SQL Database access
-- Modern web browser
+```
+├── src/
+│   ├── WebApp/        # ASP.NET Core API (master data)
+│   ├── Oem_Node/      # Node.js API (operations, scheduling, incidents, privacy)
+│   └── Frontend/      # SPA, 3D visualization and Cypress E2E tests
+├── tests/WebApp/      # Unit, integration and system tests for the WebApp
+└── docs/              # C4 diagrams, domain model, user stories, reports
+```
 
-### Installation & Setup
+## Running locally
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/igor-coutinho22/Port_Management_System.git
-   cd Port_Management_System
-   ```
+**Prerequisites:** .NET 8 SDK, Node.js 22+, PostgreSQL, MongoDB and, for dock scheduling,
+[SWI-Prolog](https://www.swi-prolog.org/) (`swipl` on the `PATH`).
 
-2. **Navigate to the WebApp project**
+1. **WebApp** (https://localhost:5001, Swagger at `/swagger`)
    ```bash
    cd src/WebApp
-   ```
-
-3. **Configure the database connection**
-   - Update `appsettings.json` with your Azure SQL connection string
-   - Ensure Azure AD configuration is set up
-
-4. **Run database migrations**
-   ```bash
-   dotnet ef database update
-   ```
-
-5. **Start the application**
-   ```bash
+   # adjust ConnectionStrings:DefaultConnection in appsettings.json if needed
+   dotnet user-secrets set "AzureAdCiam:BackendApp:ClientSecret" "<secret>"
    dotnet run
    ```
+   Migrations are applied and sample data is seeded on startup.
 
-6. **Access the application**
-   - Web App: `https://localhost:5001`
-   - API Documentation: `https://localhost:5001/swagger`
+2. **OEM service** (http://localhost:6001)
+   ```bash
+   cd src/Oem_Node
+   cp .env.example .env   # fill in the values
+   npm ci
+   npm run dev
+   ```
 
-### Quick Start Guide
-1. Navigate to the homepage to see available features
-2. Use the navigation menu to access different modules
-3. Check the API documentation for integration details
-4. Explore the 3D visualization for port layout
+3. **Frontend** (https://localhost:5179)
+   ```bash
+   cd src/Frontend
+   npm ci
+   npm run certs          # creates a local CA and a TLS certificate for localhost
+   npm start
+   ```
+   Service URLs are configured in [`src/Frontend/wwwroot/js/config.js`](src/Frontend/wwwroot/js/config.js).
 
-## Project Structure
+After installing the dependencies, `npm run dev` in the repository root starts all three services.
 
-```
-LEI-SEM5-PI-2025-26-3DD-02/
-├── src/WebApp/                 # Main application
-│   ├── Controllers/            # API Controllers
-│   ├── Models/                 # Domain, Application, Infrastructure layers
-│   │   ├── Domain/            # Business logic and entities
-│   │   ├── Application/       # Services and DTOs
-│   │   └── Infrastructure/    # Data access and repositories
-│   ├── wwwroot/               # Static web assets
-│   │   ├── js/               # React components and services
-│   │   └── css/              # Styling
-│   └── Migrations/           # Database migrations
-├── tests/WebApp/              # Test projects
-├── docs/                      # Documentation and diagrams
-└── README.md                 # This file
-```
-
-## API Documentation
-
-The system provides a comprehensive RESTful API. Access the interactive documentation at:
-- **Swagger UI**: `/swagger`
-- **OpenAPI Spec**: `/swagger/v1/swagger.json`
-
-### Main API Endpoints
-- `GET /api/vessels` - List all vessels
-- `GET /api/resources` - List port resources
-- `GET /api/docks` - List available docks
-- `GET /api/staff` - List staff members
-- `POST /api/vessels` - Register new vessel
-- And many more...
-
-## User Stories
-
-This project implements multiple user stories organized by sprints:
-
-### Sprint 1 (User Stories 2.2.1 - 2.2.13)
-- Vessel and dock management
-- Resource allocation
-- Staff management
-- Basic CRUD operations
-
-### Sprint 2 (User Stories 3.1.1+)
-- **US 3.1.1**: SPA framework implementation 
-- Modern web interface
-- Enhanced user experience
-
-See the `/docs` folder for detailed user story documentation and sequence diagrams.
+Signing in requires the project's Entra External ID tenant and a user with an assigned role.
+To use your own tenant, update `src/Frontend/wwwroot/auth/msalConfig.js`, the `AzureAdCiam`
+section of `appsettings.json` and the Azure variables in `.env`.
 
 ## Testing
 
-### Running Tests
-```bash
-# Run all tests
-dotnet test
+| Suite | Command | Tests |
+|---|---|---|
+| WebApp (unit, integration, system) | `dotnet test` | 315 |
+| OEM service (unit, integration, functional, system) | `cd src/Oem_Node && npm test` | 72 |
+| End-to-end (Cypress, with the services running) | `cd src/Frontend && npx cypress run` | 28 |
 
-# Run a specific test class
-dotnet test --filter "ClassName"
+The WebApp and OEM suites run in GitHub Actions on every push.
 
-# Run a specific test method
-dotnet test --filter "ClassName.MethodName"
-```
+## My contributions
 
-### Test Categories
-- **Unit Tests**: Domain logic and services
-- **Integration Tests**: Database and repository tests
-- **System Tests**: End-to-end API testing
+I was part of the five-person team throughout the project. My main contributions:
+
+- **Docks (US 2.2.3)**: the complete feature in the WebApp: domain model, EF Core configuration,
+  repository, service, DTOs/mappers and REST controller
+- **Vessel Visit Notifications**: crew and cargo manifest mappers, repository changes, seed data and
+  domain, application and integration tests
+- **3D port visualization (US 4.2.x)**: lighting (day/night, street lamps), object search with
+  suggestions, object information panels, camera controls and general scene improvements
+- **Client analysis (US 2.3.x)**: characterization of the port authority (APS), SWOT analysis and
+  strategic proposals for sustainability and digital transformation
+- **Portfolio preparation**: removed credentials from the history, hardened token validation in the
+  OEM service, fixed a page remounting bug, repaired the CI and E2E suites and updated dependencies
 
 ## Team
 
-### Development Team - Group 02 (3DD)
+| Name | Student ID |
+|---|---|
+| Rafael Barbosa | 1230544 |
+| Igor Coutinho | 1230543 |
+| João Soares | 1211064 |
+| Miguel Pais | 1230851 |
+| Sofia Costa | 1231006 |
 
-| Name | Student ID 
-|------|------------
-| **Rafael Barbosa** | 1230544
-| **Igor Coutinho** | 1230543
-| **João Soares** | 1211064
-| **Miguel Pais** | 1230851
-| **Sofia Costa** | 1231006
+Instituto Superior de Engenharia do Porto (ISEP), Departamento de Engenharia Informática,
+LAPR5, 2025/26, group 3DD-02.
 
-### Academic Context
+## Credits and license
 
-- **Course**: Laboratório de Projeto 5 (LAPR5)
-- **Institution**: Instituto Superior de Engenharia do Porto (ISEP)
-- **Department**: Departamento de Engenharia Informática
-- **Academic Year**: 2025/2026
-- **Semester**: 5th Semester
-- **Group**: 02 - 3DD
+Third-party 3D models are credited in
+[`src/Frontend/wwwroot/models/CREDITS.md`](src/Frontend/wwwroot/models/CREDITS.md).
 
----
-
-## License
-
-This project is developed for academic purposes as part of the LAPR5 course at ISEP.
-
----
-
-## Links
-
-- [Project Documentation](./docs/)
-- [Domain Model](./docs/domain_model/)
-- [API Documentation](https://localhost:5001/swagger)
-- [ISEP](https://www.isep.ipp.pt/)
-
----
-
-*Last updated: November 2025*
+This repository is shared for portfolio and educational purposes. No license is granted for reuse
+of the source code.

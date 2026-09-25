@@ -1,5 +1,6 @@
 // 3D View Component - React
 const ThreeDView = () => {
+    const { t } = useTranslation();
     const containerRef = React.useRef(null);
     const visualizationRef = React.useRef(null);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -47,7 +48,7 @@ const ThreeDView = () => {
                 setError(null);
                 setTimeout(() => { if (visualizationRef.current) visualizationRef.current.loadPortData(); }, 100);
             } catch (err) {
-                setError('Erro ao iniciar 3D: ' + err.message);
+                setError(t('threeDView.initError') + ' ' + err.message);
                 setIsLoading(false);
             }
         };
@@ -115,7 +116,7 @@ const ThreeDView = () => {
 
     return (
         <div className="page-section" style={{ position: 'relative' }}>
-            <h2 className="page-title">Visualização 3D do Porto</h2>
+            <h2 className="page-title">{t('threeDView.title')}</h2>
             
             <div style={{ position: 'relative', width: '100%' }}>
                 <div 
@@ -130,7 +131,7 @@ const ThreeDView = () => {
                         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
                             <input 
                                 type="text" 
-                                placeholder="Pesquisar..." 
+                                placeholder={t('threeDView.searchPlaceholder')}
                                 value={searchId}
                                 onChange={handleInputChange}
                                 onKeyDown={handleKeyDown}
@@ -174,7 +175,7 @@ const ThreeDView = () => {
                                     fontWeight: 'bold', border: '1px solid #ef4444', 
                                     whiteSpace: 'nowrap', zIndex: 1150
                                 }}>
-                                    ⚠️ Objeto não encontrado
+                                    ⚠️ {t('threeDView.notFound')}
                                 </div>
                             )}
                         </div>
@@ -188,7 +189,7 @@ const ThreeDView = () => {
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                             }}
                         >
-                            Ir
+                            {t('threeDView.go')}
                         </button>
                     </div>
                 </div>
@@ -202,21 +203,21 @@ const ThreeDView = () => {
                         maxHeight: '75vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #38bdf8', paddingBottom: '10px', marginBottom: '15px' }}>
-                            <h4 style={{ margin: 0, color: '#38bdf8' }}>ℹ️ Detalhes do Objeto</h4>
+                            <h4 style={{ margin: 0, color: '#38bdf8' }}>ℹ️ {t('threeDView.details')}</h4>
                             <button onClick={() => setShowOverlay(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
                         </div>
-                        {!selectedData ? <p style={{ textAlign: 'center' }}>Selecione um objeto no mapa.</p> : (
+                        {!selectedData ? <p style={{ textAlign: 'center' }}>{t('threeDView.selectObject')}</p> : (
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <tbody>
-                                    <tr><th style={labelStyle}>Nome</th><td style={valueStyle}>{selectedData.name || selectedData.vesselName || 'N/A'}</td></tr>
-                                    <tr><th style={labelStyle}>Tipo</th><td style={valueStyle}>{selectedData.subtype || selectedData.type || 'Objeto'}</td></tr>
-                                    <tr><th style={labelStyle}>Comprimento</th><td style={valueStyle}>{selectedData.lengthMeters || selectedData.length || selectedData.width || '0'}m</td></tr>
-                                    <tr><th style={labelStyle}>Largura / Prof.</th><td style={valueStyle}>{selectedData.depthMeters || selectedData.depth || selectedData.width || '0'}m</td></tr>
-                                    {selectedData.maxCapacityTeu && (<tr><th style={labelStyle}>Capacidade</th><td style={valueStyle}>{selectedData.maxCapacityTeu} TEU</td></tr>)}
+                                    <tr><th style={labelStyle}>{t('threeDView.name')}</th><td style={valueStyle}>{selectedData.name || selectedData.vesselName || 'N/A'}</td></tr>
+                                    <tr><th style={labelStyle}>{t('threeDView.type')}</th><td style={valueStyle}>{selectedData.subtype || selectedData.type || t('threeDView.object')}</td></tr>
+                                    <tr><th style={labelStyle}>{t('threeDView.length')}</th><td style={valueStyle}>{selectedData.lengthMeters || selectedData.length || selectedData.width || '0'}m</td></tr>
+                                    <tr><th style={labelStyle}>{t('threeDView.widthDepth')}</th><td style={valueStyle}>{selectedData.depthMeters || selectedData.depth || selectedData.width || '0'}m</td></tr>
+                                    {selectedData.maxCapacityTeu && (<tr><th style={labelStyle}>{t('threeDView.capacity')}</th><td style={valueStyle}>{selectedData.maxCapacityTeu} TEU</td></tr>)}
                                     {isAdmin && (
                                         <>
-                                            <tr style={{ background: 'rgba(56, 189, 248, 0.1)' }}><td colSpan="2" style={{ padding: '8px', textAlign: 'center', fontSize: '0.7rem', color: '#38bdf8', fontWeight: 'bold' }}>DADOS OPERACIONAIS</td></tr>
-                                            <tr><th style={labelStyle}>Estado</th><td style={{...valueStyle, color: '#4ade80'}}>{selectedData.status || 'Ativo'}</td></tr>
+                                            <tr style={{ background: 'rgba(56, 189, 248, 0.1)' }}><td colSpan="2" style={{ padding: '8px', textAlign: 'center', fontSize: '0.7rem', color: '#38bdf8', fontWeight: 'bold' }}>{t('threeDView.operationalData')}</td></tr>
+                                            <tr><th style={labelStyle}>{t('threeDView.status')}</th><td style={{...valueStyle, color: '#4ade80'}}>{selectedData.status || t('threeDView.active')}</td></tr>
                                             {selectedData.type === 'Vessel' && (
                                                 <>
                                                     <tr><th style={labelStyle}>ETA</th><td style={valueStyle}>{selectedData.arrivalTime || 'N/A'}</td></tr>
@@ -239,10 +240,10 @@ const ThreeDView = () => {
                     onClick={() => visualizationRef.current?.frameCamera()}
                     style={{ padding: '8px 15px', borderRadius: '20px', background: 'linear-gradient(to right, #6366f1, #a855f7)', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                    Reset Câmara
+                    {t('threeDView.resetCamera')}
                 </button>
                 <span style={{ marginLeft: '10px', fontSize: '0.75rem', opacity: 0.6, color: '#94a3b8' }}>
-                    Use as setas ↑↓ e Enter para navegar nas sugestões | Pressione <strong>'i'</strong> para ter as informações | Pressione <strong>'r'</strong> para dar reset na câmara
+                    {t('threeDView.help.suggestions')} | {t('threeDView.help.press')} <strong>'i'</strong> {t('threeDView.help.info')} | {t('threeDView.help.press')} <strong>'r'</strong> {t('threeDView.help.reset')}
                 </span>
             </div>
         </div>
