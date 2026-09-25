@@ -18,9 +18,11 @@ Cypress.Commands.add('logout', () => {
 // Extend Cypress chainable commands
 declare global {
   namespace Cypress {
-    interface Chainable {
+    interface Chainable<Subject = any> {
       login(email: string, password: string): Chainable<void>;
       logout(): Chainable<void>;
     }
   }
 }
+
+export {};

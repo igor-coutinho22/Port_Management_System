@@ -19,7 +19,7 @@ describe('Management Module Tests', () => {
         cy.intercept('GET', '**/api/docks*', { statusCode: 200, body: [] }).as('getDocks');
     });
 
-    const mockMsal = (win) => {
+    const mockMsal = (win: any) => {
         win.__pca = {
             getAllAccounts: () => [{ username: 'test_admin', homeAccountId: '1', environment: 'login.windows.net', tenantId: '1' }],
             getActiveAccount: () => ({ username: 'test_admin', homeAccountId: '1' }),

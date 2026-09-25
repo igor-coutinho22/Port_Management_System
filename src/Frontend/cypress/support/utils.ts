@@ -19,10 +19,12 @@ Cypress.Commands.add('takeScreenshot', (name: string) => {
 
 declare global {
   namespace Cypress {
-    interface Chainable {
+    interface Chainable<Subject = any> {
       waitForAPI(timeout?: number): Chainable<void>;
       checkPageLoaded(): Chainable<void>;
       takeScreenshot(name: string): Chainable<void>;
     }
   }
 }
+
+export {};

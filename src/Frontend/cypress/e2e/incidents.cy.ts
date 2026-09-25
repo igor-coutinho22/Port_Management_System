@@ -1,7 +1,7 @@
 describe('Incident Management (E2E)', () => {
     const user = { name: 'Test Admin', email: 'admin@test.com', roles: ['Admin'] };
 
-    const mockMsal = (win) => {
+    const mockMsal = (win: any) => {
         win.__pca = {
             getAllAccounts: () => [{ username: 'test_admin', homeAccountId: '1' }],
             getActiveAccount: () => ({ username: 'test_admin', homeAccountId: '1' }),

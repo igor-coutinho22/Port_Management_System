@@ -13,7 +13,7 @@ describe('3D Visualization Tests', () => {
         cy.intercept('GET', '**/api/me', { statusCode: 200, body: user }).as('getMe');
     });
 
-    const mockMsal = (win) => {
+    const mockMsal = (win: any) => {
         win.__pca = {
             getAllAccounts: () => [{ username: 'test_admin', homeAccountId: '1' }],
             getActiveAccount: () => ({ username: 'test_admin', homeAccountId: '1' }),
