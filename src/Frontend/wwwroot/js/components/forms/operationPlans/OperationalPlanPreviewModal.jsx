@@ -254,7 +254,7 @@ const OperationPlanPreviewModal = ({ isOpen, onClose, scheduleResult, date, heur
                                 <thead>
                                     <tr>
                                         <th style={{width: '10%'}}>IMO</th>
-                                        <th style={{width: '20%'}}>Visit ID</th> {/* NEW COLUMN */}
+                                        <th style={{width: '20%'}}>Visit ID</th>
                                         <th style={{width: '20%'}}>Service Slot</th>
                                         <th style={{width: '20%', color:'#fbbf24'}}>Unloading</th>
                                         <th style={{width: '20%', color:'#34d399'}}>Loading</th>

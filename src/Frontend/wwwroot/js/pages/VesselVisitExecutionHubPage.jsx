@@ -263,10 +263,10 @@ const VesselVisitExecutionsQuickTable = ({ executions, onRefresh }) => {
                 <th>Vessel Visit ID</th>
                 <th>Vessel IMO</th>
                 <th>Arrival</th>
-                <th>Berth Time</th> {/* New Column */}
-                <th>Dock ID</th> {/* New Column */}
+                <th>Berth Time</th>
+                <th>Dock ID</th>
                 <th>Status</th>
-                <th>Warnings</th> {/* New Column for Discrepancies */}
+                <th>Warnings</th>
               </tr>
             </thead>
             <tbody>

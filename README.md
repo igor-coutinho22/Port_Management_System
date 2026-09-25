@@ -14,21 +14,27 @@ master data, vessel visit planning, dock scheduling, incidents and an interactiv
 
 ## Live demo
 
-**[Open the live demo](#live-demo)** *(Netlify link added after deployment)*
+**Live demo:** *the Netlify link will be added here after deployment*
+<!-- Replace the line above with: **Live demo:** [port-management.netlify.app](https://...) -->
 
-The live demo lets anyone explore the application without installing anything or signing in.
-It is a **demo build of the frontend only**:
+This repository contains the **complete system**: two backend APIs (ASP.NET Core and Node.js), the
+PostgreSQL and MongoDB databases, the Prolog scheduling engine and sign-in with Microsoft Entra ID.
+Running all of that publicly would require servers, databases and accounts in the project's Entra
+tenant, so the public link runs a **demo build**: the real frontend with a **simulated backend** that
+runs in the browser and answers the API calls with sample data.
 
-- it is hosted on Netlify and opens with a demo user that has every role (Admin, Officer,
-  Operator, Representative), so all areas of the app can be visited;
-- API requests are answered in the browser with a built-in set of sample data, generated from the
-  real APIs ([`src/Frontend/wwwroot/demo/`](src/Frontend/wwwroot/demo/));
-- forms can be submitted, but changes are not saved.
+| | Full system (this repository) | Live demo (Netlify) |
+|---|---|---|
+| Frontend (pages, 3D view) | React SPA | the same code |
+| Backend APIs | ASP.NET Core + Node.js services | simulated in the browser ([`demo-mode.js`](src/Frontend/wwwroot/demo/demo-mode.js)) |
+| Data | PostgreSQL + MongoDB | sample data generated from the real APIs ([`demo-data.js`](src/Frontend/wwwroot/demo/demo-data.js)) |
+| Sign-in | Microsoft Entra External ID, role-based access | automatic demo user with every role |
+| Dock scheduling | Prolog algorithms (exact search, heuristics, genetic algorithm) | simplified schedule computed in the browser |
+| Creating / editing data | saved in the databases | accepted, but not saved |
 
-The **complete system is in this repository**: both backend APIs, the databases, the Prolog
-scheduling, Microsoft Entra ID authentication and the automated tests, as described below.
-The demo mode can also be used locally by opening the frontend with `?demo` in the URL
-(e.g. `https://localhost:5179/?demo`).
+The demo mode is enabled automatically on Netlify and can be used locally by adding `?demo` to the
+frontend URL (e.g. `https://localhost:5179/?demo`). It only lives in
+[`src/Frontend/wwwroot/demo/`](src/Frontend/wwwroot/demo/) and does not change how the full system works.
 
 ## Features
 
@@ -37,9 +43,9 @@ The demo mode can also be used locally by opening the frontend with `?demo` in t
 - **Vessel Visit Notifications**: submitted by shipping representatives with crew and cargo manifests
   (ISO 6346 container validation), approved or rejected by port officers
 - **Operations**: vessel visit executions, operation plans and complementary tasks
-- **Dock scheduling** in Prolog: an exact search for small days, constructive heuristics (e.g. ATC)
-  and a genetic algorithm seeded with the heuristic solutions, minimising the total departure delay;
-  plus multi-crane comparison and dock rebalancing
+- **Dock scheduling** in Prolog: orders the vessels of a day to minimise the total departure delay,
+  using an exact search (up to 6 vessels), a genetic algorithm seeded with heuristic solutions
+  (up to 12) or the ATC heuristic (larger days); plus multi-crane comparison and dock rebalancing
 - **Incidents**: reporting, tracking and resolution of operational incidents
 - **3D port visualization** with Three.js: docks, vessels, cranes and container yards built from live
   data, day/night lighting, object search and information panels, minimap
