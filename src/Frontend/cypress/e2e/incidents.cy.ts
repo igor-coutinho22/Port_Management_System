@@ -45,7 +45,8 @@ describe('Incident Management (E2E)', () => {
         }).as('createIncident');
 
         cy.visit('/#incidents', { onBeforeLoad: mockMsal });
-        cy.wait('@getMe');
+        // The SPA is compiled in the browser (Babel standalone), so the first load can be slow
+        cy.wait('@getMe', { timeout: 30000 });
     });
 
     it('should list existing incidents', () => {
