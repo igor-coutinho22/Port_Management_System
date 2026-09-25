@@ -592,7 +592,6 @@ class PortVisualization {
     }
 
     // US 5: Devolve lista de todos os nomes/IDs para sugestões
-    // Adiciona este método à classe PortVisualization no teu ficheiro .js
     getSearchableEntities() {
         return this.objects
             .filter(obj => obj.userData && obj.userData.isSelectableRoot)

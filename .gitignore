@@ -67,3 +67,4 @@ cypress/downloads/
 # IDE
 .vs/
 .qodo/
+*.user
