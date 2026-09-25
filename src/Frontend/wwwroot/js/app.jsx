@@ -48,6 +48,54 @@ if (!msalReady) {
 }
 
 // ---------- Your original app (updated) ----------
+// Maps each page to the menu entry that controls access to it
+const PAGE_TO_MENU_ID = {
+    home: "home",
+    management: "management",
+    "admin-users": "admin-users",
+    "3d-view": "3d-view",
+    "api-docs": "api-docs",
+    resources: "resources",
+    vessels: "vessels",
+    "vessel-types": "vessel-types",
+    docks: "docks",
+    "storage-areas": "storage-areas",
+    organizations: "organizations",
+    representatives: "representatives",
+    staff: "staff",
+    "vessel-visit-notifications": "vessel-visit-notifications",
+    qualifications: "qualifications",
+    scheduling: "scheduling",
+    "vvn-hub-for-representatives": "vvn-hub-for-representatives",
+    "vessel-visit-executions": "vessel-visit-executions",
+    "incident-types": "incident-types",
+    incidents: "incidents",
+    "task-categories": "task-categories",
+    "complementary-tasks": "complementary-tasks",
+    "privacy-management": "privacy-management",
+    profile: "profile",
+};
+
+// Declared outside AppWithGlobalNav so pages are not remounted (and lose state) on every re-render
+const ProtectedPage = ({ currentPage, render }) => {
+    const { canAccessMenu, isAuthenticated } = useUser();
+    const basePage = typeof currentPage === "string" ? currentPage.split("?")[0] : "home";
+    const menuId = PAGE_TO_MENU_ID[basePage] || basePage;
+
+    // Always allow home
+    if (basePage === "home") return render();
+
+    if (!isAuthenticated) {
+        return <div className="page-section"><p>A autenticação é necessária.</p></div>;
+    }
+
+    if (!canAccessMenu(menuId)) {
+        return <AccessDeniedPage />;
+    }
+
+    return render();
+};
+
 const AppWithGlobalNav = () => {
     const [currentPage, setCurrentPage] = React.useState("home");
     const [isLoading, setIsLoading] = React.useState(false);
@@ -103,33 +151,6 @@ const AppWithGlobalNav = () => {
             "privacy-management",
             "profile"
         ].includes(currentPage);
-
-    const PAGE_TO_MENU_ID = {
-        home: "home",
-        management: "management",
-        "admin-users": "admin-users",
-        "3d-view": "3d-view",
-        "api-docs": "api-docs",
-        resources: "resources",
-        vessels: "vessels",
-        "vessel-types": "vessel-types",
-        docks: "docks",
-        "storage-areas": "storage-areas",
-        organizations: "organizations",
-        representatives: "representatives",
-        staff: "staff",
-        "vessel-visit-notifications": "vessel-visit-notifications",
-        qualifications: "qualifications",
-        scheduling: "scheduling",
-        "vvn-hub-for-representatives": "vvn-hub-for-representatives",
-        "vessel-visit-executions": "vessel-visit-executions",
-        "incident-types": "incident-types",
-        incidents: "incidents",
-        "task-categories": "task-categories",
-        "complementary-tasks": "complementary-tasks",
-        "privacy-management": "privacy-management",
-        profile: "profile",
-    };
 
     React.useEffect(() => {
         window.appNavigate = handleNavigate;
@@ -224,25 +245,6 @@ const AppWithGlobalNav = () => {
                 console.warn(`Unknown page: ${basePage}, defaulting to home`);
                 return <HomePage />;
         }
-    };
-
-    const ProtectedPage = ({ currentPage, render }) => {
-        const { canAccessMenu, isAuthenticated } = useUser();
-        const basePage = typeof currentPage === "string" ? currentPage.split("?")[0] : "home";
-        const menuId = PAGE_TO_MENU_ID[basePage] || basePage;
-
-        // Always allow home
-        if (basePage === "home") return render();
-
-        if (!isAuthenticated) {
-            return <div className="page-section"><p>A autenticação é necessária.</p></div>;
-        }
-
-        if (!canAccessMenu(menuId)) {
-            return <AccessDeniedPage />;
-        }
-
-        return render();
     };
 
     return (

@@ -21,7 +21,7 @@ describe('Incident Management (E2E)', () => {
 
         // Mock API responses to isolate the Frontend (SUT = Application)
         cy.intercept('GET', '**/api/me', { statusCode: 200, body: user }).as('getMe');
-        cy.intercept('GET', '**/api/user-profiles/privacy-status', { statusCode: 200, body: { mustAcceptPrivacy: false } }).as('privacyStatus');
+        cy.intercept('GET', '**/api/user-profiles/privacy-status', { statusCode: 200, body: { mustAcceptPrivacy: false } });
         cy.intercept('GET', '**/api/vesselVisitExecution/GetAll', { statusCode: 200, body: [] });
         cy.intercept('GET', '**/api/incidents/Search*', {
             statusCode: 200,
@@ -46,8 +46,6 @@ describe('Incident Management (E2E)', () => {
 
         cy.visit('/#incidents', { onBeforeLoad: mockMsal });
         cy.wait('@getMe');
-        // The page re-renders once the user's privacy status is loaded
-        cy.wait('@privacyStatus');
     });
 
     it('should list existing incidents', () => {
