@@ -92,7 +92,7 @@ const AdminUsersPage = () => {
                             </div>
                             <div className="operation-controls">
                                 <span className="http-method" style={{ backgroundColor: section.color }}>
-                                    {section.id.toUpperCase()}
+                                    {t(`sectionBadge.${section.id}`, section.id).toUpperCase()}
                                 </span>
                             </div>
                         </div>

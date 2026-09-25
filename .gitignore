@@ -53,9 +53,9 @@ Thumbs.db
 *.wmv
 
 # Cypress
-cypress/videos/
-cypress/screenshots/
-cypress/downloads/
+**/cypress/videos/
+**/cypress/screenshots/
+**/cypress/downloads/
 
 
 # Secrets & local config

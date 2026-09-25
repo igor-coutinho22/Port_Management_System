@@ -156,7 +156,7 @@ const VesselVisitNotificationsHubPage = () => {
 									className="http-method" 
 									style={{ backgroundColor: section.color }}
 								>
-									{section.id.toUpperCase()}
+									{t(`sectionBadge.${section.id}`, section.id).toUpperCase()}
 								</span>
 								<span className={`expand-arrow ${expandedSection === section.id ? 'up' : 'down'}`}>
 									{expandedSection === section.id ? '▲' : '▼'}

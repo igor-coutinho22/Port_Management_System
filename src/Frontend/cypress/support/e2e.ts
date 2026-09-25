@@ -12,6 +12,11 @@ Cypress.on('uncaught:exception', (err, runnable) => {
   return false;
 });
 
+// Run every test with the English UI so assertions do not depend on the default language
+beforeEach(() => {
+  localStorage.setItem('preferred-language', 'en');
+});
+
 // Note: Do NOT automatically visit('/') here
 // Let individual tests handle navigation
 // This allows tests to work with authentication redirects
