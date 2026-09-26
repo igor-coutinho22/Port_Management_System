@@ -50,6 +50,9 @@ namespace WebApp.Models.Security
             };
 
             var createdUser = await _graph.Users.PostAsync(user);
+            if (createdUser?.Id is null)
+                throw new InvalidOperationException("Microsoft Graph did not return the created user.");
+
             return new CreateUserResult(createdUser.Id, tempPassword);
         }
 
