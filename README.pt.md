@@ -13,7 +13,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
 
-[**Demonstração**](#demonstração) · [**Documentação**](docs/) · [**English**](README.md)
+[**Demonstração**](https://igor-coutinho22.github.io/Port_Management_System/) · [**Documentação**](docs/) · [**English**](README.md)
 
 <img src="docs/images/3d-port.png" alt="Vista 3D do porto" width="850">
 
@@ -51,14 +51,13 @@ porto, operador logístico e representante de transporte marítimo) acede às á
 
 ## Demonstração
 
-**Demonstração:** *o link do Netlify será adicionado aqui após a publicação*
-<!-- Substituir a linha acima por: **Demonstração:** [port-management.netlify.app](https://...) -->
+**Demonstração:** [igor-coutinho22.github.io/Port_Management_System](https://igor-coutinho22.github.io/Port_Management_System/)
 
 O repositório contém o **sistema completo**, mas o link público corre uma **versão de demonstração**:
 o frontend real com um **backend simulado** que corre no browser, para que qualquer pessoa possa
 experimentar a aplicação sem servidores, bases de dados ou contas.
 
-| | Sistema completo (este repositório) | Demonstração (Netlify) |
+| | Sistema completo (este repositório) | Demonstração (GitHub Pages) |
 |---|---|---|
 | **Frontend** | SPA em React com vista 3D | o mesmo código |
 | **Backend** | APIs ASP.NET Core + Node.js | simulado no browser |
@@ -71,7 +70,7 @@ experimentar a aplicação sem servidores, bases de dados ou contas.
 <summary><b>Como funciona o modo de demonstração</b></summary>
 <br>
 
-- É ativado automaticamente no Netlify ou, localmente, acrescentando `?demo` ao endereço do frontend
+- É publicado no GitHub Pages por um [workflow](.github/workflows/pages.yml) e ativado automaticamente aí ou, localmente, acrescentando `?demo` ao endereço do frontend
   (ex.: `https://localhost:5179/?demo`).
 - Está contido apenas em [`src/Frontend/wwwroot/demo/`](src/Frontend/wwwroot/demo/):
   [`demo-mode.js`](src/Frontend/wwwroot/demo/demo-mode.js) responde aos pedidos à API e

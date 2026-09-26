@@ -13,7 +13,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
 
-[**Live demo**](#live-demo) · [**Documentation**](docs/) · [**Português**](README.pt.md)
+[**Live demo**](https://igor-coutinho22.github.io/Port_Management_System/) · [**Documentation**](docs/) · [**Português**](README.pt.md)
 
 <img src="docs/images/3d-port.png" alt="3D view of the port" width="850">
 
@@ -51,14 +51,13 @@ representative) has access to the areas of their role.
 
 ## Live demo
 
-**Live demo:** *the Netlify link will be added here after deployment*
-<!-- Replace the line above with: **Live demo:** [port-management.netlify.app](https://...) -->
+**Live demo:** [igor-coutinho22.github.io/Port_Management_System](https://igor-coutinho22.github.io/Port_Management_System/)
 
 The repository contains the **complete system**, but the public link runs a **demo build**: the real
 frontend with a **simulated backend** that runs in the browser, so anyone can try the app without
 servers, databases or accounts.
 
-| | Full system (this repository) | Live demo (Netlify) |
+| | Full system (this repository) | Live demo (GitHub Pages) |
 |---|---|---|
 | **Frontend** | React SPA with 3D view | the same code |
 | **Backend** | ASP.NET Core + Node.js APIs | simulated in the browser |
@@ -71,7 +70,7 @@ servers, databases or accounts.
 <summary><b>How the demo mode works</b></summary>
 <br>
 
-- It is enabled automatically on Netlify, or locally by adding `?demo` to the frontend URL
+- It is published to GitHub Pages by a [workflow](.github/workflows/pages.yml) and enabled automatically there, or locally by adding `?demo` to the frontend URL
   (e.g. `https://localhost:5179/?demo`).
 - It lives only in [`src/Frontend/wwwroot/demo/`](src/Frontend/wwwroot/demo/):
   [`demo-mode.js`](src/Frontend/wwwroot/demo/demo-mode.js) answers the API calls and

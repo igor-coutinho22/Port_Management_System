@@ -1,8 +1,10 @@
 // Demo mode: runs the SPA without backends or sign-in, answering API requests with the sample
-// data from demo-data.js. Enabled on Netlify deployments or with ?demo in the URL; otherwise inert.
+// data from demo-data.js. Enabled on the public demo (GitHub Pages) or with ?demo in the URL;
+// otherwise inert.
 (function () {
     const params = new URLSearchParams(window.location.search);
-    const enabled = params.has("demo") || window.location.hostname.endsWith(".netlify.app");
+    const host = window.location.hostname;
+    const enabled = params.has("demo") || host.endsWith(".github.io");
     if (!enabled || !window.DEMO_DATA) return;
 
     window.APP_CONFIG = Object.assign({}, window.APP_CONFIG, { demoMode: true });
