@@ -1,5 +1,7 @@
 # Port Management System
 
+**English** | [Português](README.pt.md)
+
 [![CI](https://github.com/igor-coutinho22/Port_Management_System/actions/workflows/ci.yml/badge.svg)](https://github.com/igor-coutinho22/Port_Management_System/actions/workflows/ci.yml)
 
 A web platform to manage the operations of a container port (modelled on the Port of Sines):
@@ -144,23 +146,6 @@ section of `appsettings.json` and the Azure variables in `.env`.
 | End-to-end (Cypress, with the services running) | `cd src/Frontend && npx cypress run` | 28 |
 
 The WebApp and OEM suites run in GitHub Actions on every push.
-
-## My contributions
-
-I was part of the five-person team throughout the project. My main contributions:
-
-- **Docks (US 2.2.3)**: the complete feature in the WebApp: domain model, EF Core configuration,
-  repository, service, DTOs/mappers and REST controller
-- **Vessel Visit Notifications**: crew and cargo manifest mappers, repository changes, seed data and
-  domain, application and integration tests
-- **3D port visualization (US 4.2.x)**: lighting (day/night, street lamps), object search with
-  suggestions, object information panels, camera controls and general scene improvements
-- **Client analysis (US 2.3.x)**: characterization of the port authority (APS), SWOT analysis and
-  strategic proposals for sustainability and digital transformation
-- **Portfolio preparation**: removed credentials from the history, hardened token validation in the
-  OEM service, fixed a page remounting bug, reworked the 3D selection spotlight, fixed the Prolog
-  genetic algorithm (it never completed; it is now seeded with the heuristics and tested in CI),
-  repaired the CI and E2E suites, updated dependencies and added the live demo mode
 
 ## Team
 
