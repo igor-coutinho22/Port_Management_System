@@ -4,6 +4,7 @@ const ThreeDView = () => {
     const containerRef = React.useRef(null);
     const visualizationRef = React.useRef(null);
     const [isLoading, setIsLoading] = React.useState(true);
+    const [isSceneLoading, setIsSceneLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
 
     const [showOverlay, setShowOverlay] = React.useState(false);
@@ -46,7 +47,10 @@ const ThreeDView = () => {
 
                 setIsLoading(false);
                 setError(null);
-                setTimeout(() => { if (visualizationRef.current) visualizationRef.current.loadPortData(); }, 100);
+                setTimeout(() => {
+                    if (!visualizationRef.current) return;
+                    visualizationRef.current.loadPortData().finally(() => setIsSceneLoading(false));
+                }, 100);
             } catch (err) {
                 setError(t('threeDView.initError') + ' ' + err.message);
                 setIsLoading(false);
@@ -124,6 +128,23 @@ const ThreeDView = () => {
                     className="visualization-container" 
                     style={{ width: '100%', height: '600px', background: '#111', borderRadius: '8px', overflow: 'hidden' }} 
                 />
+
+                {/* Shown while the 3D models are downloaded and the port is built */}
+                {isSceneLoading && (
+                    <div style={{
+                        position: 'absolute', inset: 0, zIndex: 1050, borderRadius: '8px',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px',
+                        background: 'rgba(15, 23, 42, 0.75)', color: '#e2e8f0', pointerEvents: 'none'
+                    }}>
+                        <div className="spinner" style={{
+                            width: '42px', height: '42px', borderRadius: '50%',
+                            border: '4px solid rgba(56, 189, 248, 0.25)', borderTopColor: '#38bdf8',
+                            animation: 'threeDViewSpin 0.9s linear infinite'
+                        }} />
+                        <div style={{ fontWeight: 600 }}>{t('threeDView.loading')}</div>
+                        <style>{'@keyframes threeDViewSpin { to { transform: rotate(360deg); } }'}</style>
+                    </div>
+                )}
 
                 {/* BARRA DE PESQUISA MINI (Sem autoFocus) */}
                 <div style={{ position: 'absolute', top: '15px', left: '20px', zIndex: 1100 }}>
