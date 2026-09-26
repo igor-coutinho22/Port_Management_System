@@ -51,8 +51,8 @@ porto, operador logístico e representante de transporte marítimo) acede às á
 
 ## Demonstração
 
-> **Demonstração:** *o link do Netlify será adicionado aqui após a publicação*
-<!-- Substituir a linha acima por: > **Demonstração:** [port-management.netlify.app](https://...) -->
+**Demonstração:** *o link do Netlify será adicionado aqui após a publicação*
+<!-- Substituir a linha acima por: **Demonstração:** [port-management.netlify.app](https://...) -->
 
 O repositório contém o **sistema completo**, mas o link público corre uma **versão de demonstração**:
 o frontend real com um **backend simulado** que corre no browser, para que qualquer pessoa possa

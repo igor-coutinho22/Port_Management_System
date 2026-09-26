@@ -51,8 +51,8 @@ representative) has access to the areas of their role.
 
 ## Live demo
 
-> **Live demo:** *the Netlify link will be added here after deployment*
-<!-- Replace the line above with: > **Live demo:** [port-management.netlify.app](https://...) -->
+**Live demo:** *the Netlify link will be added here after deployment*
+<!-- Replace the line above with: **Live demo:** [port-management.netlify.app](https://...) -->
 
 The repository contains the **complete system**, but the public link runs a **demo build**: the real
 frontend with a **simulated backend** that runs in the browser, so anyone can try the app without
