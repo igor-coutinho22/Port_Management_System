@@ -1,60 +1,102 @@
+<div align="center">
+
 # Port Management System
 
-**English** | [Português](README.pt.md)
+**A web platform to manage the operations of a container port, inspired by the Port of Sines.**
 
 [![CI](https://github.com/igor-coutinho22/Port_Management_System/actions/workflows/ci.yml/badge.svg)](https://github.com/igor-coutinho22/Port_Management_System/actions/workflows/ci.yml)
+![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![Three.js](https://img.shields.io/badge/Three.js-3D-000000?logo=threedotjs&logoColor=white)
+![Prolog](https://img.shields.io/badge/SWI--Prolog-scheduling-E61B23)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
 
-A web platform to manage the operations of a container port (modelled on the Port of Sines):
-master data, vessel visit planning, dock scheduling, incidents and an interactive 3D view of the port.
+[**Live demo**](#live-demo) · [**Documentation**](docs/) · [**Português**](README.pt.md)
 
-> **Portfolio copy.** This project was developed by a team of five students for LAPR5, the integrative
-> project of the 5th semester of the BSc in Informatics Engineering at ISEP (2025/26). The team's full
-> commit history is preserved. Credentials were removed from the history, so cloud services
-> (Microsoft Entra ID, databases) must be configured with your own values.
+<img src="docs/images/3d-port.png" alt="3D view of the port" width="850">
 
-![3D port visualization](docs/images/3d-port.png)
+</div>
+
+> [!NOTE]
+> **Academic team project.** Developed by a team of five students for LAPR5, the integrative project of
+> the 3rd year of the BSc in Informatics Engineering at ISEP (2025/26). This is a portfolio copy with
+> the team's full commit history.
+
+---
+
+## Contents
+
+- [About](#about)
+- [Live demo](#live-demo)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Testing](#testing)
+- [Team](#team)
+- [Credits and license](#credits-and-license)
+
+---
+
+## About
+
+The system supports the daily work of a container port: registering vessels, docks and storage
+areas, planning vessel visits, scheduling dock operations, handling incidents and visualising the
+whole port in 3D. Each type of user (administrator, port officer, logistics operator and shipping
+representative) has access to the areas of their role.
+
+---
 
 ## Live demo
 
-**Live demo:** *the Netlify link will be added here after deployment*
-<!-- Replace the line above with: **Live demo:** [port-management.netlify.app](https://...) -->
+> **Live demo:** *the Netlify link will be added here after deployment*
+<!-- Replace the line above with: > **Live demo:** [port-management.netlify.app](https://...) -->
 
-This repository contains the **complete system**: two backend APIs (ASP.NET Core and Node.js), the
-PostgreSQL and MongoDB databases, the Prolog scheduling engine and sign-in with Microsoft Entra ID.
-Running all of that publicly would require servers, databases and accounts in the project's Entra
-tenant, so the public link runs a **demo build**: the real frontend with a **simulated backend** that
-runs in the browser and answers the API calls with sample data.
+The repository contains the **complete system**, but the public link runs a **demo build**: the real
+frontend with a **simulated backend** that runs in the browser, so anyone can try the app without
+servers, databases or accounts.
 
 | | Full system (this repository) | Live demo (Netlify) |
 |---|---|---|
-| Frontend (pages, 3D view) | React SPA | the same code |
-| Backend APIs | ASP.NET Core + Node.js services | simulated in the browser ([`demo-mode.js`](src/Frontend/wwwroot/demo/demo-mode.js)) |
-| Data | PostgreSQL + MongoDB | sample data generated from the real APIs ([`demo-data.js`](src/Frontend/wwwroot/demo/demo-data.js)) |
-| Sign-in | Microsoft Entra External ID, role-based access | automatic demo user with every role |
-| Dock scheduling | Prolog algorithms (exact search, heuristics, genetic algorithm) | simplified schedule computed in the browser |
-| Creating / editing data | saved in the databases | accepted, but not saved |
+| **Frontend** | React SPA with 3D view | the same code |
+| **Backend** | ASP.NET Core + Node.js APIs | simulated in the browser |
+| **Data** | PostgreSQL + MongoDB | sample data generated from the real APIs |
+| **Sign-in** | Microsoft Entra ID, role-based access | automatic demo user with every role |
+| **Scheduling** | Prolog algorithms | simplified plan computed in the browser |
+| **Saving changes** | stored in the databases | accepted, but not saved |
 
-The demo mode is enabled automatically on Netlify and can be used locally by adding `?demo` to the
-frontend URL (e.g. `https://localhost:5179/?demo`). It only lives in
-[`src/Frontend/wwwroot/demo/`](src/Frontend/wwwroot/demo/) and does not change how the full system works.
+<details>
+<summary><b>How the demo mode works</b></summary>
+<br>
+
+- It is enabled automatically on Netlify, or locally by adding `?demo` to the frontend URL
+  (e.g. `https://localhost:5179/?demo`).
+- It lives only in [`src/Frontend/wwwroot/demo/`](src/Frontend/wwwroot/demo/):
+  [`demo-mode.js`](src/Frontend/wwwroot/demo/demo-mode.js) answers the API calls and
+  [`demo-data.js`](src/Frontend/wwwroot/demo/demo-data.js) holds the sample data.
+- It does not change how the full system works.
+
+</details>
+
+---
 
 ## Features
 
-- **Master data**: vessels, vessel types, docks, storage areas (warehouses and container yards),
-  resources, staff and qualifications, shipping organizations and their representatives
-- **Vessel Visit Notifications**: submitted by shipping representatives with crew and cargo manifests
-  (ISO 6346 container validation), approved or rejected by port officers
-- **Operations**: vessel visit executions, operation plans and complementary tasks
-- **Dock scheduling** in Prolog: orders the vessels of a day to minimise the total departure delay,
-  using an exact search (up to 6 vessels), a genetic algorithm seeded with heuristic solutions
-  (up to 12) or the ATC heuristic (larger days); plus multi-crane comparison and dock rebalancing
-- **Incidents**: reporting, tracking and resolution of operational incidents
-- **3D port visualization** with Three.js: docks, vessels, cranes and container yards built from live
-  data, day/night lighting, object search and information panels, minimap
-- **Security and privacy**: sign-in with Microsoft Entra External ID, role-based access
-  (Admin, Officer, Operator, Representative), user administration via Microsoft Graph,
-  GDPR privacy policy acceptance and personal data export
-- **Internationalization**: English and Portuguese
+| Area | What it does |
+|---|---|
+| **Master data** | Vessels, vessel types, docks, storage areas (warehouses and container yards), resources, staff and qualifications, shipping organizations and representatives |
+| **Vessel visits** | Visit notifications with crew and cargo manifests (ISO 6346 container validation), approved or rejected by port officers |
+| **Operations** | Vessel visit executions, daily operation plans and complementary tasks |
+| **Dock scheduling** | Prolog algorithms that order the day's vessels to minimise departure delays (exact search, genetic algorithm and heuristics), multi-crane comparison and dock rebalancing |
+| **Incidents** | Reporting, tracking and resolution of operational incidents |
+| **3D port view** | Docks, vessels, cranes and yards built from live data, day/night cycle, object search, information panels, selection spotlight and minimap |
+| **Security** | Sign-in with Microsoft Entra External ID, role-based access and user administration via Microsoft Graph |
+| **Privacy (GDPR)** | Versioned privacy policy, user acceptance and personal data export |
+| **Languages** | English and Portuguese |
+
+---
 
 ## Architecture
 
@@ -74,22 +116,28 @@ frontend URL (e.g. `https://localhost:5179/?demo`). It only lives in
                    Microsoft Entra External ID + Microsoft Graph (roles)
 ```
 
-Both backends follow a layered, DDD-inspired design (domain, application, infrastructure) with
-aggregates, value objects, DTOs, mappers and repositories. Architecture documentation (C4 model,
-domain model, sequence diagrams and glossary) is available in [`docs/`](docs/).
+- **WebApp**: master data API (vessels, docks, storage areas, staff, visit notifications).
+- **OEM service**: operations API (executions, plans, incidents, tasks, privacy) and the Prolog scheduler.
+- Both follow a **layered, DDD-inspired design**: domain, application and infrastructure layers, with
+  aggregates, value objects, DTOs, mappers and repositories.
+- Architecture documentation (C4 model, domain model, sequence diagrams, glossary) is in [`docs/`](docs/).
+
+---
 
 ## Tech stack
 
-| Area | Technologies |
+| Layer | Technologies |
 |---|---|
-| Master data API | C#, ASP.NET Core 8, Entity Framework Core, PostgreSQL, Swagger |
-| Operations API | Node.js, Express 5, Mongoose / MongoDB, SWI-Prolog |
-| Frontend | React 18, Three.js, MSAL.js, CSS |
-| Identity | Microsoft Entra External ID (CIAM), Microsoft Graph |
-| Testing | xUnit, Moq, FluentAssertions, Jest, Supertest, mongodb-memory-server, Cypress |
-| CI | GitHub Actions |
+| **Master data API** | C#, ASP.NET Core 8, Entity Framework Core, PostgreSQL, Swagger |
+| **Operations API** | Node.js, Express 5, Mongoose, MongoDB, SWI-Prolog |
+| **Frontend** | React 18, Three.js, MSAL.js, CSS |
+| **Identity** | Microsoft Entra External ID (CIAM), Microsoft Graph |
+| **Testing** | xUnit, Moq, FluentAssertions, Jest, Supertest, mongodb-memory-server, Cypress |
+| **CI** | GitHub Actions |
 
-## Project structure
+<details>
+<summary><b>Project structure</b></summary>
+<br>
 
 ```
 ├── src/
@@ -100,56 +148,86 @@ domain model, sequence diagrams and glossary) is available in [`docs/`](docs/).
 └── docs/              # C4 diagrams, domain model, user stories, reports
 ```
 
-## Running locally
+</details>
 
-**Prerequisites:** .NET 8 SDK, Node.js 22+, PostgreSQL, MongoDB and, for dock scheduling,
-[SWI-Prolog](https://www.swi-prolog.org/) (`swipl` on the `PATH`).
+---
 
-1. **WebApp** (https://localhost:5001, Swagger at `/swagger`)
-   ```bash
-   cd src/WebApp
-   # adjust ConnectionStrings:DefaultConnection in appsettings.json if needed
-   dotnet user-secrets set "AzureAdCiam:BackendApp:ClientSecret" "<secret>"
-   dotnet run
-   ```
-   Migrations are applied and sample data is seeded on startup.
+## Getting started
 
-2. **OEM service** (http://localhost:6001)
-   ```bash
-   cd src/Oem_Node
-   cp .env.example .env   # fill in the values
-   npm ci
-   npm run dev
-   ```
+### Prerequisites
 
-3. **Frontend** (https://localhost:5179)
-   ```bash
-   cd src/Frontend
-   npm ci
-   npm run certs          # creates a local CA and a TLS certificate for localhost
-   npm start
-   ```
-   Service URLs are configured in [`src/Frontend/wwwroot/js/config.js`](src/Frontend/wwwroot/js/config.js).
+- .NET 8 SDK
+- Node.js 22 or later
+- PostgreSQL and MongoDB
+- [SWI-Prolog](https://www.swi-prolog.org/), with `swipl` on the `PATH` (for dock scheduling)
 
-After installing the dependencies, `npm run dev` in the repository root starts all three services.
+### 1. Master data API (WebApp)
+
+```bash
+cd src/WebApp
+dotnet user-secrets set "AzureAdCiam:BackendApp:ClientSecret" "<secret>"
+dotnet run
+```
+
+Runs on `https://localhost:5001` (Swagger at `/swagger`). The database is migrated and filled with
+sample data on startup. The connection string is in `appsettings.json`.
+
+### 2. Operations API (OEM service)
+
+```bash
+cd src/Oem_Node
+cp .env.example .env    # then fill in the values
+npm ci
+npm run dev
+```
+
+Runs on `http://localhost:6001`.
+
+### 3. Frontend
+
+```bash
+cd src/Frontend
+npm ci
+npm run certs           # creates a local TLS certificate for localhost
+npm start
+```
+
+Open `https://localhost:5179`. The backend addresses are set in
+[`src/Frontend/wwwroot/js/config.js`](src/Frontend/wwwroot/js/config.js).
+
+> [!TIP]
+> After installing the dependencies, `npm run dev` in the repository root starts the three services at once.
+
+<details>
+<summary><b>Sign-in and using your own Microsoft Entra tenant</b></summary>
+<br>
 
 Signing in requires the project's Entra External ID tenant and a user with an assigned role.
-To use your own tenant, update `src/Frontend/wwwroot/auth/msalConfig.js`, the `AzureAdCiam`
-section of `appsettings.json` and the Azure variables in `.env`.
+To use your own tenant, update:
+
+- `src/Frontend/wwwroot/auth/msalConfig.js`
+- the `AzureAdCiam` section of `src/WebApp/appsettings.json`
+- the Azure variables in `src/Oem_Node/.env`
+
+</details>
+
+---
 
 ## Testing
 
 | Suite | Command | Tests |
 |---|---|---|
-| WebApp (unit, integration, system) | `dotnet test` | 315 |
-| OEM service (unit, integration, functional, system, Prolog) | `cd src/Oem_Node && npm test` | 75 |
-| End-to-end (Cypress, with the services running) | `cd src/Frontend && npx cypress run` | 28 |
+| **WebApp** (unit, integration, system) | `dotnet test` | 315 |
+| **OEM service** (unit, integration, functional, system, Prolog) | `cd src/Oem_Node && npm test` | 75 |
+| **End-to-end** (Cypress, services running) | `cd src/Frontend && npx cypress run` | 28 |
 
-The WebApp and OEM suites run in GitHub Actions on every push.
+The WebApp and OEM test suites run automatically in GitHub Actions on every push.
+
+---
 
 ## Team
 
-| Name | Student ID |
+| Name | Student number |
 |---|---|
 | Rafael Barbosa | 1230544 |
 | Igor Coutinho | 1230543 |
@@ -157,13 +235,12 @@ The WebApp and OEM suites run in GitHub Actions on every push.
 | Miguel Pais | 1230851 |
 | Sofia Costa | 1231006 |
 
-Instituto Superior de Engenharia do Porto (ISEP), Departamento de Engenharia Informática,
-LAPR5, 2025/26, group 3DD-02.
+**Instituto Superior de Engenharia do Porto (ISEP)** · Informatics Engineering · LAPR5 · 2025/26 · Group 3DD-02
+
+---
 
 ## Credits and license
 
-Third-party 3D models are credited in
-[`src/Frontend/wwwroot/models/CREDITS.md`](src/Frontend/wwwroot/models/CREDITS.md).
-
-This repository is shared for portfolio and educational purposes. No license is granted for reuse
-of the source code.
+- Third-party 3D models are credited in [`CREDITS.md`](src/Frontend/wwwroot/models/CREDITS.md).
+- This repository is shared for portfolio and educational purposes. No license is granted for reuse
+  of the source code.
